@@ -17,9 +17,9 @@ public class GambrelRoof extends RoofWithRidge {
 
 	private final LineSegmentXZ cap1part, cap2part;
 
-	public GambrelRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	public GambrelRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(0, originalPolygon, tags, height, material);
+		super(0, originalPolygon, tags, material);
 
 		cap1part = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, cap1.p2, 1/6.0),

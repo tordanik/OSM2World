@@ -22,8 +22,8 @@ import org.osm2world.core.target.common.material.TextureLayer;
 
 abstract public class SpindleRoof extends Roof {
 
-	public SpindleRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
-		super(originalPolygon, tags, height, material);
+	public SpindleRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(originalPolygon, tags, material);
 	}
 
 	@Override

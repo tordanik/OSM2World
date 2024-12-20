@@ -12,8 +12,8 @@ import org.osm2world.core.target.common.material.Material;
 
 public class DomeRoof extends SpindleRoof {
 
-	public DomeRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
-		super(originalPolygon, tags, height, material);
+	public DomeRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(originalPolygon, tags, material);
 	}
 
 	/**

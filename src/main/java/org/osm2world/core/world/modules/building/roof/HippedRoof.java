@@ -13,8 +13,8 @@ import org.osm2world.core.target.common.material.Material;
 
 public class HippedRoof extends RoofWithRidge {
 
-	public HippedRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
-		super(1/3.0, originalPolygon, tags, height, material);
+	public HippedRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(1/3.0, originalPolygon, tags, material);
 	}
 
 	@Override

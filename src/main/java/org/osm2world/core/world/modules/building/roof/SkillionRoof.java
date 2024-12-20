@@ -1,19 +1,19 @@
 package org.osm2world.core.world.modules.building.roof;
 
-import static java.lang.Math.PI;
-import static java.util.Collections.*;
+import static java.lang.Math.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLine;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
+import static org.osm2world.core.util.ValueParseUtil.parseAngle;
+import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.target.common.material.Material;
 
 public class SkillionRoof extends HeightfieldRoof {
@@ -21,9 +21,9 @@ public class SkillionRoof extends HeightfieldRoof {
 	private final LineSegmentXZ ridge;
 	private final double roofLength;
 
-	public SkillionRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	public SkillionRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(originalPolygon, tags, height, material);
+		super(originalPolygon, tags, material);
 
 		SimplePolygonXZ simplifiedOuter = originalPolygon.getOuter().getSimplifiedPolygon();
 
@@ -84,6 +84,18 @@ public class SkillionRoof extends HeightfieldRoof {
 	@Override
 	public Collection<VectorXZ> getInnerPoints() {
 		return emptyList();
+	}
+
+	@Override
+	public Double calculatePreliminaryHeight() {
+		Double roofHeight = parseMeasure(tags.getValue("roof:height"));
+		if (roofHeight == null) {
+			Double angle = parseAngle(tags.getValue("roof:angle"));
+			if (angle != null && angle >= 0 && angle < 90.0) {
+				roofHeight = tan(toRadians(angle)) * roofLength;
+			}
+		}
+		return roofHeight;
 	}
 
 	@Override

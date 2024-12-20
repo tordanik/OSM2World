@@ -24,12 +24,17 @@ import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 public class ChimneyRoof extends Roof {
 
 	public ChimneyRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, 0, material);
+		super(originalPolygon, tags, material);
 	}
 
 	@Override
 	public PolygonWithHolesXZ getPolygon() {
 		return originalPolygon;
+	}
+
+	@Override
+	public Double calculatePreliminaryHeight() {
+		return 0.0;
 	}
 
 	@Override

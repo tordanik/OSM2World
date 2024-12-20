@@ -35,8 +35,8 @@ abstract public class HeightfieldRoof extends Roof {
 
 	protected @Nullable AttachmentSurface attachmentSurface;
 
-	public HeightfieldRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
-		super(originalPolygon, tags, height, material);
+	public HeightfieldRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(originalPolygon, tags, material);
 	}
 
 	/** returns segments within the roof polygon that define apex nodes of the roof */

@@ -18,9 +18,9 @@ public class PyramidalRoof extends HeightfieldRoof {
 	private final VectorXZ apex;
 	private final List<LineSegmentXZ> innerSegments;
 
-	public PyramidalRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	public PyramidalRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(originalPolygon, tags, height, material);
+		super(originalPolygon, tags, material);
 
 		SimplePolygonXZ outerPoly = originalPolygon.getOuter();
 

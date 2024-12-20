@@ -23,6 +23,9 @@ import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
+import org.osm2world.core.world.modules.building.roof.DomeRoof;
+import org.osm2world.core.world.modules.building.roof.FlatRoof;
+import org.osm2world.core.world.modules.building.roof.Roof;
 
 import com.google.common.collect.Lists;
 
@@ -100,7 +103,7 @@ public class LevelAndHeightData {
 	 * If available, explicitly tagged data is used, with tags on indoor=level elements having the highest priority.
 	 */
 	public LevelAndHeightData(TagSet buildingTags, TagSet buildingPartTags, Map<Integer, TagSet> levelTagSets,
-							  String roofShape, PolygonShapeXZ outline, MapRelation.Element element) {
+							  Roof roof, PolygonShapeXZ outline, MapRelation.Element element) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(inheritTags(buildingPartTags, buildingTags));
 
@@ -136,9 +139,9 @@ public class LevelAndHeightData {
 
 		int roofLevels = parseUInt(tags.getValue("roof:levels"), 1);
 
-		Double roofHeight = parseMeasure(tags.getValue("roof:height"));
+		Double roofHeight = roof.calculatePreliminaryHeight();
 
-		if ("flat".equals(roofShape)) {
+		if (roof instanceof FlatRoof) {
 			roofHeight = 0.0;
 		} else if (roofHeight == null && buildingLevels == 0 && parseHeight(tags, 0) > 0) {
 			//building with only roof levels
@@ -152,7 +155,7 @@ public class LevelAndHeightData {
 		}
 
 		if (roofHeight == null) {
-			if ("dome".equals(roofShape)) {
+			if (roof instanceof DomeRoof) {
 				roofHeight = outline.getDiameter();
 			} else if (buildingLevels == 1) {
 				roofHeight = 1.0;

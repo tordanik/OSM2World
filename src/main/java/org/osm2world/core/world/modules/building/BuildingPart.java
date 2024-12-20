@@ -109,21 +109,22 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			}
 		}
 
-		/* determine the level structure */
-
-		levelStructure = new LevelAndHeightData(building.getPrimaryMapElement().getTags(),
-				area.getTags(), levelTagSets, roofShape, this.area.getPolygon(), this.area);
-
 		/* build the roof */
 
 		Material materialRoof = createRoofMaterial(tags, config);
-		double roofHeight = levelStructure.height() - levelStructure.heightWithoutRoof();
 
 		try {
-			roof = Roof.createRoofForShape(roofShape, area, polygon, tags, roofHeight, materialRoof);
+			roof = Roof.createRoofForShape(roofShape, area, polygon, tags, materialRoof);
 		} catch (InvalidGeometryException e) {
 			throw new InvalidGeometryException("error constructing roof for " + area + ": " + e);
 		}
+
+		/* determine the level structure */
+
+		levelStructure = new LevelAndHeightData(building.getPrimaryMapElement().getTags(),
+				area.getTags(), levelTagSets, roof, this.area.getPolygon(), this.area);
+
+		roof.setRoofHeight(levelStructure.height() - levelStructure.heightWithoutRoof());
 
 		/* potentially create indoor environment */
 

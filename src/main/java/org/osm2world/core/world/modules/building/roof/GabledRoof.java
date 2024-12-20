@@ -1,7 +1,9 @@
 package org.osm2world.core.world.modules.building.roof;
 
-import static java.util.Collections.*;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.GeometryUtil.insertIntoPolygon;
 
 import java.util.Collection;
 
@@ -14,8 +16,8 @@ import org.osm2world.core.target.common.material.Material;
 
 public class GabledRoof extends RoofWithRidge {
 
-	public GabledRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
-		super(0, originalPolygon, tags, height, material);
+	public GabledRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(0, originalPolygon, tags, material);
 	}
 
 	@Override

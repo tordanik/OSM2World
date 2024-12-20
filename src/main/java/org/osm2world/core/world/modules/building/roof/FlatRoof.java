@@ -13,7 +13,7 @@ import org.osm2world.core.target.common.material.Material;
 public class FlatRoof extends HeightfieldRoof {
 
 	public FlatRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, 0, material);
+		super(originalPolygon, tags, material);
 	}
 
 	@Override
@@ -29,6 +29,11 @@ public class FlatRoof extends HeightfieldRoof {
 	@Override
 	public Collection<LineSegmentXZ> getInnerSegments() {
 		return emptyList();
+	}
+
+	@Override
+	public Double calculatePreliminaryHeight() {
+		return 0.0;
 	}
 
 	@Override

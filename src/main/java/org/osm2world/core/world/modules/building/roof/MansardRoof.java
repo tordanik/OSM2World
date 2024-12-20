@@ -16,9 +16,9 @@ public class MansardRoof extends RoofWithRidge {
 
 	private final LineSegmentXZ mansardEdge1, mansardEdge2;
 
-	public MansardRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	public MansardRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(1/3.0, originalPolygon, tags, height, material);
+		super(1/3.0, originalPolygon, tags, material);
 
 		mansardEdge1 = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, ridge.p1, 1/3.0),

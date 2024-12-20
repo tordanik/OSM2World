@@ -17,9 +17,9 @@ public class HalfHippedRoof extends RoofWithRidge {
 
 	private final LineSegmentXZ cap1part, cap2part;
 
-	public HalfHippedRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	public HalfHippedRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(1/6.0, originalPolygon, tags, height, material);
+		super(1/6.0, originalPolygon, tags, material);
 
 		cap1part = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, cap1.p2, 0.5 - ridgeOffset / cap1.getLength()),

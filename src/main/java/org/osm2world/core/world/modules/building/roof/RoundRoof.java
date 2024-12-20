@@ -21,22 +21,12 @@ public class RoundRoof extends RoofWithRidge {
 
 	private final List<LineSegmentXZ> capParts;
 	private final int rings;
-	private final double radius;
 
-	public RoundRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	public RoundRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(0, originalPolygon, tags, height, material);
+		super(0, originalPolygon, tags, material);
 
-		if (roofHeight < maxDistanceToRidge) {
-			double squaredHeight = roofHeight * roofHeight;
-			double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
-			double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
-			radius = sqrt(squaredDist + centerY * centerY);
-		} else {
-			radius = 0;
-		}
-
-		rings = (int)max(3, roofHeight/ROOF_SUBDIVISION_METER);
+		rings = (int)max(3, maxDistanceToRidge/ROOF_SUBDIVISION_METER);
 		capParts = new ArrayList<>(rings*2);
 		// TODO: would be good to vary step size with slope
 		float step = 0.5f / (rings + 1);
@@ -90,6 +80,17 @@ public class RoundRoof extends RoofWithRidge {
 
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
+
+		double radius;
+		if (roofHeight < maxDistanceToRidge) {
+			double squaredHeight = roofHeight * roofHeight;
+			double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
+			double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
+			radius = sqrt(squaredDist + centerY * centerY);
+		} else {
+			radius = 0;
+		}
+
 		double distRidge = distanceFromLineSegment(pos, ridge);
 		double result;
 

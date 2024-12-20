@@ -4,13 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
@@ -18,11 +12,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.target.common.material.Material;
 
 /**
@@ -30,27 +20,27 @@ import org.osm2world.core.target.common.material.Material;
  */
 public class ComplexRoof extends HeightfieldRoof {
 
-	private final Map<VectorXZ, Double> roofHeightMap;
-	private PolygonWithHolesXZ simplePolygon;
 	private final Collection<LineSegmentXZ> ridgeAndEdgeSegments;
+	private final List<MapWaySegment> edges;
+	private final List<MapWaySegment> ridges;
 
-	public ComplexRoof(MapArea area, PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
+	private Map<VectorXZ, Double> roofHeightMap;
+	private PolygonWithHolesXZ simplePolygon;
 
-		super(originalPolygon, tags, height, material);
+	public ComplexRoof(MapArea area, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+
+		super(originalPolygon, tags, material);
 
 		/* find ridge and/or edges
 		 * (apex nodes don't need to be handled separately
 		 *  as they should always be part of an edge segment) */
 
-		roofHeightMap = new HashMap<>();
-		Set<VectorXZ> nodeSet = new HashSet<>();
-
 		ridgeAndEdgeSegments = new ArrayList<>();
 
 		List<MapNode> nodes = area.getBoundaryNodes();
 
-		List<MapWaySegment> edges = new ArrayList<>();
-		List<MapWaySegment> ridges = new ArrayList<>();
+		edges = new ArrayList<>();
+		ridges = new ArrayList<>();
 
 		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 
@@ -84,6 +74,43 @@ public class ComplexRoof extends HeightfieldRoof {
 			}
 		}
 
+	}
+
+	@Override
+	public PolygonWithHolesXZ getPolygon() {
+		calculateRoofHeightMap();
+		return simplePolygon;
+	}
+
+	@Override
+	public Collection<VectorXZ> getInnerPoints() {
+		return emptyList();
+	}
+
+	@Override
+	public Collection<LineSegmentXZ> getInnerSegments() {
+		return ridgeAndEdgeSegments;
+	}
+
+
+	@Override
+	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
+		calculateRoofHeightMap();
+		if (roofHeightMap.containsKey(pos)) {
+			return roofHeightMap.get(pos);
+		} else {
+			return null;
+		}
+	}
+
+	private void calculateRoofHeightMap() {
+
+		if (roofHeight == null) throw new IllegalStateException("Roof height not set yet");
+
+		roofHeightMap = new HashMap<>();
+
+		Set<VectorXZ> nodeSet = new HashSet<>();
+
 		for (MapWaySegment waySegment : edges) {
 			for (MapNode node : waySegment.getStartEndNodes()) {
 
@@ -92,7 +119,7 @@ public class ComplexRoof extends HeightfieldRoof {
 
 				if (node.getTags().containsKey("roof:height")) {
 					nodeHeight = parseMeasure(node.getTags().getValue("roof:height"));
-				// hmm, shouldn't edges be interpolated? some seem to think they don't
+					// hmm, shouldn't edges be interpolated? some seem to think they don't
 				} else if (waySegment.getTags().containsKey("roof:height")) {
 					nodeHeight = parseMeasure(waySegment.getTags().getValue("roof:height"));
 				} else if (node.getTags().contains("roof:apex",	"yes")) {
@@ -198,30 +225,6 @@ public class ComplexRoof extends HeightfieldRoof {
 			}
 		}
 
-	}
-
-	@Override
-	public PolygonWithHolesXZ getPolygon() {
-		return simplePolygon;
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
-	}
-
-	@Override
-	public Collection<LineSegmentXZ> getInnerSegments() {
-		return ridgeAndEdgeSegments;
-	}
-
-	@Override
-	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
-		if (roofHeightMap.containsKey(pos)) {
-			return roofHeightMap.get(pos);
-		} else {
-			return null;
-		}
 	}
 
 	public static final boolean hasComplexRoof(MapArea area) {
