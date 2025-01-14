@@ -87,12 +87,13 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 		/* determine the roof shape */
 
-		String roofShape = null;
+		String roofShape = tags.getValue("roof:shape");
 
-		if (!("no".equals(tags.getValue("roof:lines"))) && ComplexRoof.hasComplexRoof(area)) {
+		if (!("no".equals(tags.getValue("roof:lines")))
+				&& (roofShape == null || !List.of("flat", "round", "dome", "onion").contains(roofShape))
+				&& ComplexRoof.hasComplexRoof(area)) {
 			roofShape = "complex";
 		} else {
-			roofShape = tags.getValue("roof:shape");
 			if (roofShape == null) { roofShape = tags.getValue("building:roof:shape"); }
 			if (roofShape == null) { roofShape = defaults.roofShape; }
 		}
