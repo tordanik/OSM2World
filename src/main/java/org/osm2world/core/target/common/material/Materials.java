@@ -47,6 +47,8 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f));
 	public static final ConfMaterial CONCRETE =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f));
+	public static final ConfMaterial COPPER_ROOF =
+			new ConfMaterial(Interpolation.FLAT, new Color(195, 219, 185));
 	public static final ConfMaterial CORRUGATED_STEEL =
 			new ConfMaterial(Interpolation.FLAT, new Color(200, 200, 200));
 	public static final ConfMaterial EARTH =

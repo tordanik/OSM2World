@@ -577,6 +577,8 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			} else if ("glass".equals(materialString)
 					|| "mirror".equals(materialString)) {
 				material = roof ? Materials.GLASS_ROOF : Materials.GLASS_WALL;
+			} else if ("copper".equals(materialString) && roof) {
+				material = Materials.COPPER_ROOF;
 			} else if ("wood".equals(materialString)
 					|| "bamboo".equals(materialString)) {
 				material = Materials.WOOD_WALL;
