@@ -261,6 +261,7 @@ public final class Materials {
 		surfaceMaterialMap.put("cobblestone", SETT);
 		surfaceMaterialMap.put("compacted", GRAVEL);
 		surfaceMaterialMap.put("concrete", CONCRETE);
+		surfaceMaterialMap.put("concrete:plates", CONCRETE);
 		surfaceMaterialMap.put("grass", GRASS);
 		surfaceMaterialMap.put("gravel", GRAVEL);
 		surfaceMaterialMap.put("grass_paver", GRASS_PAVER);
