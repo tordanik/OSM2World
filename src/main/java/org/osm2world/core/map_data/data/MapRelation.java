@@ -1,63 +1,25 @@
 package org.osm2world.core.map_data.data;
 
-import static java.util.Collections.emptyList;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * A relation from an OSM dataset.
- * Multipolygon relations will have been turned into {@link MapArea}s instead.
+ * Most multipolygon relations will have been turned into {@link MapArea}s instead.
+ * (Only multipolygons with multiple outer rings will additionally be represented as a {@link MapMultipolygonRelation}.)
  *
  * @see MapData
  */
-public class MapRelation {
-
-	/**
-	 * TODO: eventually merge with {@link MapElement}
-	 * Something that can be a member of a relation
-	 */
-	public static abstract class Element {
-
-		private List<Membership> memberships = emptyList();
-
-		/** returns all relation memberships containing this element */
-		public Collection<Membership> getMemberships() {
-			return memberships;
-		}
-
-		private void addMembership(Membership membership) {
-
-			assert membership.getElement() == this;
-
-			if (memberships.isEmpty()) {
-				memberships = new ArrayList<>();
-			}
-
-			memberships.add(membership);
-
-		}
-
-		public abstract long getId();
-
-		/** see {@link MapElement#getTags()} */
-		public abstract TagSet getTags();
-
-		/** returns the element's id, prefixed with a letter (n for node, w for way, r for relation) */
-		@Override
-		public abstract String toString();
-
-	}
+public class MapRelation extends MapRelationElement {
 
 	/** a member of the relation along with its role */
 	public static class Membership {
 
 		private final MapRelation relation;
 		private final String role;
-		private final Element element;
+		private final MapRelationElement element;
 
-		public Membership(MapRelation relation, String role, Element element) {
+		public Membership(MapRelation relation, String role, MapRelationElement element) {
 			this.relation = relation;
 			this.role = role;
 			this.element = element;
@@ -71,7 +33,7 @@ public class MapRelation {
 			return role;
 		}
 
-		public Element getElement() {
+		public MapRelationElement getElement() {
 			return element;
 		}
 
@@ -87,17 +49,23 @@ public class MapRelation {
 
 	private final List<Membership> memberships = new ArrayList<MapRelation.Membership>();
 
-	public List<Membership> getMemberships() {
+	public List<Membership> getMembers() {
 		return memberships;
 	}
 
 	/** add a membership to the relation. Also adds it to the element at the same time! */
-	public void addMembership(String role, Element element) {
+	public void addMember(String role, MapRelationElement element) {
 		Membership membership = new Membership(this, role, element);
 		memberships.add(membership);
 		element.addMembership(membership);
 	}
 
+	@Override
+	public long getId() {
+		return id;
+	}
+
+	@Override
 	public TagSet getTags() {
 		return tags;
 	}

@@ -15,7 +15,7 @@ import org.osm2world.core.math.shapes.PolylineXZ;
  *
  * @see MapData
  */
-public class MapWay extends MapRelation.Element implements BoundedObject {
+public class MapWay extends MapRelationElement implements BoundedObject {
 
 	private final long id;
 	private final TagSet tags;

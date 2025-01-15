@@ -60,7 +60,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 			/* find building parts based on the relation */
 
-			for (Membership membership : buildingRelation.get().getMemberships()) {
+			for (Membership membership : buildingRelation.get().getMembers()) {
 				if ("part".equals(membership.getRole()) && membership.getElement() instanceof MapArea) {
 					parts.add(new BuildingPart(this, (MapArea) membership.getElement(), config));
 				}

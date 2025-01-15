@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.data;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.map_data.creation.MapDataCreationUtil.withoutConsecutiveDuplicates;
 
 import java.util.ArrayList;
@@ -8,13 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.world.data.AreaWorldObject;
 
 /**
@@ -22,7 +18,7 @@ import org.osm2world.core.world.data.AreaWorldObject;
  *
  * @see MapData
  */
-public class MapArea extends MapRelation.Element implements MapElement {
+public class MapArea extends MapRelationElement implements MapElement {
 
 	private final long id;
 	private final boolean basedOnRelation;
@@ -231,7 +227,7 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public Element getElementWithId() {
+	public MapRelationElement getElementWithId() {
 		return this;
 	}
 

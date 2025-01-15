@@ -79,14 +79,14 @@ public class MapDataBuilder {
 
 	}
 
-	public MapRelation createRelation(List<Map.Entry<String, MapRelation.Element>> members, TagSet tags) {
+	public MapRelation createRelation(List<Map.Entry<String, MapRelationElement>> members, TagSet tags) {
 
 		if (tags.contains("type", "multipolygon")) {
 			throw new IllegalArgumentException("type=multipolygon should use createMultipolygonArea");
 		}
 
 		MapRelation result = new MapRelation(createdRelations ++, tags);
-		members.forEach(m -> result.addMembership(m.getKey(), m.getValue()));
+		members.forEach(m -> result.addMember(m.getKey(), m.getValue()));
 		relations.add(result);
 		return result;
 

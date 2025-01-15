@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelationElement;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
@@ -103,7 +103,7 @@ public class LevelAndHeightData {
 	 * If available, explicitly tagged data is used, with tags on indoor=level elements having the highest priority.
 	 */
 	public LevelAndHeightData(TagSet buildingTags, TagSet buildingPartTags, Map<Integer, TagSet> levelTagSets,
-							  Roof roof, PolygonShapeXZ outline, MapRelation.Element element) {
+							  Roof roof, PolygonShapeXZ outline, MapRelationElement element) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(inheritTags(buildingPartTags, buildingTags));
 

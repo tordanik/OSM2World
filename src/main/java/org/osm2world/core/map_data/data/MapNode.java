@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -19,7 +18,7 @@ import org.osm2world.core.world.data.NodeWorldObject;
  *
  * @see MapData
  */
-public class MapNode extends MapRelation.Element implements MapElement {
+public class MapNode extends MapRelationElement implements MapElement {
 
 	private final long id;
 	private final TagSet tags;
@@ -192,7 +191,7 @@ public class MapNode extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public Element getElementWithId() {
+	public MapRelationElement getElementWithId() {
 		return this;
 	}
 

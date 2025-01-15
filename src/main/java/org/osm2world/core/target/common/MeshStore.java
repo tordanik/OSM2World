@@ -1,23 +1,25 @@
 package org.osm2world.core.target.common;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import org.osm2world.core.map_data.data.MapRelation;
-import org.osm2world.core.target.common.mesh.Geometry;
-import org.osm2world.core.target.common.mesh.Mesh;
-import org.osm2world.core.world.data.WorldObject;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.target.common.mesh.Geometry.combine;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.target.common.mesh.Geometry.combine;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.osm2world.core.map_data.data.MapRelationElement;
+import org.osm2world.core.target.common.mesh.Geometry;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.world.data.WorldObject;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /** a collection of meshes along with some metadata */
 public class MeshStore {
@@ -26,7 +28,7 @@ public class MeshStore {
 	public static interface MeshProcessingStep extends Function<MeshStore, MeshStore> {}
 
 	public record MeshMetadata(
-			@Nullable MapRelation.Element mapElement,
+			@Nullable MapRelationElement mapElement,
 			@Nullable Class<? extends WorldObject> modelClass) {
 
 		@Override

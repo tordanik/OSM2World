@@ -25,11 +25,7 @@ import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapRelation.Element;
-import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
@@ -272,7 +268,7 @@ public class FrontendPbfTarget extends MeshTarget {
 
 	}
 
-	private static VectorXZ getCenter(Element element) {
+	private static VectorXZ getCenter(MapRelationElement element) {
 		if (element instanceof MapNode) {
 			return ((MapNode) element).getPos();
 		} else if (element instanceof MapWay) {
@@ -480,7 +476,7 @@ public class FrontendPbfTarget extends MeshTarget {
 			throw new IllegalStateException("a WorldObject needs geometry");
 		}
 
-		Element element = worldObjectMetadata == null ? null : worldObjectMetadata.mapElement();
+		MapRelationElement element = worldObjectMetadata == null ? null : worldObjectMetadata.mapElement();
 
 		/* check for 3DMR ids */
 

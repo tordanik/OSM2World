@@ -3,6 +3,7 @@ package org.osm2world.core.map_data.creation;
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.map_data.data.MapRelation.Membership;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
@@ -14,7 +15,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.*;
-import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.*;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.datastructures.IndexGrid;
@@ -104,8 +104,15 @@ public class OSMToMapDataConverter {
 
 			try {
 
-				for (MapArea area : MultipolygonAreaBuilder
-						.createAreasForMultipolygon(relation, nodeIdMap, osmData)) {
+				Collection<MapArea> areas = MultipolygonAreaBuilder
+						.createAreasForMultipolygon(relation, nodeIdMap, osmData);
+
+				if (areas.size() > 1) {
+					// create a relation object to link the areas created from multiple outer rings
+					mapRelations.add(new MapMultipolygonRelation(relation.getId(), tags, areas));
+				}
+
+				for (MapArea area : areas) {
 
 					mapAreas.add(area);
 
@@ -193,15 +200,19 @@ public class OSMToMapDataConverter {
 
 		/* create relations from the remaining relevant OSM relations */
 
-		TLongObjectMap<MapRelation.Element> wayIdMap = new TLongObjectHashMap<>();
-		TLongObjectMap<MapRelation.Element> relationIdMap = new TLongObjectHashMap<>();
+		TLongObjectMap<MapRelationElement> wayIdMap = new TLongObjectHashMap<>();
+		TLongObjectMap<MapRelationElement> relationIdMap = new TLongObjectHashMap<>();
 
 		for (MapWay way : mapWays) {
 			wayIdMap.put(way.getId(), way);
 		}
 
 		for (MapArea area : mapAreas) {
-			if (!area.isBasedOnRelation()) {
+			var parentMultipolygon = area.getMemberships().stream().map(Membership::getRelation)
+					.filter(it -> it.getTags().contains(MULTIPOLYON_TAG)).findAny();
+			if (parentMultipolygon.isPresent()) {
+				relationIdMap.put(parentMultipolygon.get().getId(), parentMultipolygon.get());
+			} else if (!area.isBasedOnRelation()) {
 				wayIdMap.put(area.getId(), area);
 			} else {
 				relationIdMap.put(area.getId(), area);
@@ -222,7 +233,7 @@ public class OSMToMapDataConverter {
 
 				for (OsmRelationMember osmMember : membersAsList(osmRelation)) {
 
-					Element element = null;
+					MapRelationElement element = null;
 
 					switch (osmMember.getType()) {
 					case Node:
@@ -232,7 +243,7 @@ public class OSMToMapDataConverter {
 						element = wayIdMap.get(osmMember.getId());
 						break;
 					case Relation:
-						if (relationIdMap.get(osmMember.getId()) instanceof MapArea) {
+						if (relationIdMap.containsKey(osmMember.getId())) {
 							element = relationIdMap.get(osmMember.getId());
 							break;
 						} else {
@@ -247,7 +258,7 @@ public class OSMToMapDataConverter {
 						continue;
 					}
 
-					relation.addMembership(osmMember.getRole(), element);
+					relation.addMember(osmMember.getRole(), element);
 
 				}
 
@@ -258,7 +269,7 @@ public class OSMToMapDataConverter {
 							"'" + m.getRole() + "': " + m.getType() + " " + m.getId()));
 					ConversionLog.warn("Relation " + relation + " is incomplete, missing members: " + memberList);
 
-					if (relation.getMemberships().isEmpty()) continue;
+					if (relation.getMembers().isEmpty()) continue;
 
 				}
 

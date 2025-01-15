@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -44,7 +43,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	}
 
 	@Override
-	public Element getElementWithId() {
+	public MapRelationElement getElementWithId() {
 		return getWay();
 	}
 

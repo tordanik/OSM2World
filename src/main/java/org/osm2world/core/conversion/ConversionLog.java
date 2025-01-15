@@ -11,7 +11,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelationElement;
 
 /**
  * OSM2World's internal logging solution.
@@ -25,7 +25,7 @@ public class ConversionLog {
 			@Nonnull Instant time,
 			@Nonnull String message,
 			@Nullable Throwable e,
-			@Nullable MapRelation.Element element
+			@Nullable MapRelationElement element
 	) {
 		@Override
 		public String toString() {
@@ -66,11 +66,11 @@ public class ConversionLog {
 		}
 	}
 
-	public static void log(LogLevel level, String message, @Nullable Throwable e, @Nullable MapRelation.Element element) {
+	public static void log(LogLevel level, String message, @Nullable Throwable e, @Nullable MapRelationElement element) {
 		log(new Entry(level, Instant.now(), message, e, element));
 	}
 
-	public static void error(String message, Throwable e, MapRelation.Element element) {
+	public static void error(String message, Throwable e, MapRelationElement element) {
 		log(LogLevel.ERROR, message, e, element);
 	}
 
@@ -78,7 +78,7 @@ public class ConversionLog {
 		log(LogLevel.ERROR, message, e, null);
 	}
 
-	public static void error(String message, MapRelation.Element element) {
+	public static void error(String message, MapRelationElement element) {
 		log(LogLevel.ERROR, message, null, element);
 	}
 
@@ -86,7 +86,7 @@ public class ConversionLog {
 		log(LogLevel.ERROR, message, null, null);
 	}
 
-	public static void error(Throwable e, MapRelation.Element element) {
+	public static void error(Throwable e, MapRelationElement element) {
 		log(LogLevel.ERROR, e.getMessage(), e, element);
 	}
 
@@ -94,7 +94,7 @@ public class ConversionLog {
 		log(LogLevel.ERROR, e.getMessage(), e, null);
 	}
 
-	public static void warn(String message, Throwable e, MapRelation.Element element) {
+	public static void warn(String message, Throwable e, MapRelationElement element) {
 		log(LogLevel.WARNING, message, e, element);
 	}
 
@@ -102,7 +102,7 @@ public class ConversionLog {
 		log(LogLevel.WARNING, message, e, null);
 	}
 
-	public static void warn(String message, MapRelation.Element element) {
+	public static void warn(String message, MapRelationElement element) {
 		log(LogLevel.WARNING, message, null, element);
 	}
 
@@ -110,7 +110,7 @@ public class ConversionLog {
 		log(LogLevel.WARNING, message, null, null);
 	}
 
-	public static void warn(Throwable e, MapRelation.Element element) {
+	public static void warn(Throwable e, MapRelationElement element) {
 		log(LogLevel.WARNING, e.getMessage(), e, element);
 	}
 

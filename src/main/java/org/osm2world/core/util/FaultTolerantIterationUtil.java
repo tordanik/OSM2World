@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelationElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 
 /**
@@ -38,7 +38,7 @@ final public class FaultTolerantIterationUtil {
 
 	/** a default exception handler that logs to {@link ConversionLog} */
 	public static final BiConsumer<Throwable, Object> DEFAULT_EXCEPTION_HANDLER = (Throwable e, Object o) -> {
-		if (o instanceof MapRelation.Element element) {
+		if (o instanceof MapRelationElement element) {
 			ConversionLog.error(e, element);
 		} else if (o instanceof MapWaySegment s) {
 			ConversionLog.error(e, s.getWay());

@@ -403,7 +403,7 @@ public class TrafficSignModule extends AbstractModule {
 			MapWay to = null;
 			MapNode intersection = null;
 
-			for (Membership member : relation.getMemberships()) {
+			for (Membership member : relation.getMembers()) {
 				if (member.getRole().equals("from") && member.getElement() instanceof MapWay w) {
 					fromMembers.add(w);
 				} else if (member.getRole().equals("to") && member.getElement() instanceof MapWay w) {

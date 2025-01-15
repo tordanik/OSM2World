@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.osm2world.core.GlobalValues;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelationElement;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
@@ -607,7 +607,7 @@ public class GltfTarget extends MeshTarget {
 
 	private static void addMeshNameAndId(GltfNode node, MeshMetadata metadata) {
 
-		MapRelation.Element mapElement = metadata.mapElement();
+		MapRelationElement mapElement = metadata.mapElement();
 
 		if (mapElement != null) {
 			Map<String, Object> extras = new HashMap<>();
