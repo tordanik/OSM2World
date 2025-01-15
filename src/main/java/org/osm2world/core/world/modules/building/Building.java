@@ -10,10 +10,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -36,7 +33,9 @@ import org.osm2world.core.world.modules.building.indoor.IndoorWall;
  */
 public class Building extends CachingProceduralWorldObject implements AreaWorldObject {
 
-	private final MapArea area;
+	/** a {@link MapArea} or {@link MapMultipolygonRelation} (for a multipolygon with multiple outer rings) */
+	private final MapRelationElement element;
+
 	private final Configuration config;
 
 	private final List<BuildingPart> parts = new ArrayList<>();
@@ -45,16 +44,19 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	private Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
-	public Building(MapArea area, Configuration config) {
+	public Building(MapRelationElement element, Configuration config) {
 
-		this.area = area;
+		this.element = element;
 		this.config = config;
 
-		Optional<MapRelation> buildingRelation = area.getMemberships().stream()
+		Optional<MapRelation> buildingRelation = element.getMemberships().stream()
 				.filter(it -> "outline".equals(it.getRole()))
 				.map(Membership::getRelation)
 				.filter(it -> it.getTags().contains("type", "building"))
 				.findAny();
+
+		List<MapArea> areas = element instanceof MapMultipolygonRelation r
+				? r.getAreas() : List.of((MapArea) element);
 
 		if (buildingRelation.isPresent()) {
 
@@ -70,22 +72,24 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 			/* find building part areas geometrically contained within the building outline */
 
-			FaultTolerantIterationUtil.forEach(area.getOverlaps(), (MapOverlap<?,?> overlap) -> {
-				MapElement other = overlap.getOther(area);
-				if (other instanceof MapArea otherArea
-						&& other.getTags().containsKey("building:part")) {
+			for (MapArea area : areas) {
+				FaultTolerantIterationUtil.forEach(area.getOverlaps(), (MapOverlap<?, ?> overlap) -> {
+					MapElement other = overlap.getOther(area);
+					if (other instanceof MapArea otherArea
+							&& other.getTags().containsKey("building:part")) {
 
-					if (otherArea.getMemberships().stream().anyMatch(m -> "part".equals(m.getRole())
-							&& m.getRelation().getTags().contains("type", "building"))) {
-						return; // belongs to another building's relation
+						if (otherArea.getMemberships().stream().anyMatch(m -> "part".equals(m.getRole())
+								&& m.getRelation().getTags().contains("type", "building"))) {
+							return; // belongs to another building's relation
+						}
+
+						if (roughlyContains(area.getPolygon(), otherArea.getPolygon())) {
+							parts.add(new BuildingPart(this, otherArea, config));
+						}
+
 					}
-
-					if (roughlyContains(area.getPolygon(), otherArea.getPolygon())) {
-						parts.add(new BuildingPart(this, otherArea, config));
-					}
-
-				}
-			});
+				});
+			}
 
 		}
 
@@ -93,13 +97,14 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 		boolean useBuildingAsPart = parts.isEmpty();
 
-		String buildingPartValue = area.getTags().getValue("building:part");
+		String buildingPartValue = element.getTags().getValue("building:part");
 		if (buildingPartValue != null && !"no".equals(buildingPartValue)) {
 			// building is also tagged as a building part (non-standard mapping)
 			useBuildingAsPart = true;
 		}
 
-		if (parts.stream().mapToDouble(p -> p.area.getPolygon().getArea()).sum() < 0.9 * area.getPolygon().getArea()) {
+		if (element instanceof MapArea area
+				&& parts.stream().mapToDouble(p -> p.area.getPolygon().getArea()).sum() < 0.9 * area.getPolygon().getArea()) {
 			var remainder = subtractPolygons(area.getPolygon(), parts.stream().map(p -> p.area.getPolygon()).toList());
 			if (remainder.stream().mapToDouble(PolygonShapeXZ::getArea).sum() < 0.9 * area.getPolygon().getArea()) {
 				// less than 90% of the building polygon is covered by building parts (non-standard mapping)
@@ -108,7 +113,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 		}
 
 		if (useBuildingAsPart) {
-			parts.add(new BuildingPart(this, area, config));
+			areas.forEach(area -> parts.add(new BuildingPart(this, area, config)));
 		}
 
 		/* create connectors along the outline.
@@ -117,7 +122,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 		 */
 
 		outlineConnectors = new EleConnectorGroup();
-		outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON);
+		areas.forEach(area -> outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON));
 
 	}
 
@@ -127,7 +132,13 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	public MapArea getPrimaryMapElement() {
-		return area;
+		if (element instanceof MapArea a) {
+			return a;
+		} else if (element instanceof MapMultipolygonRelation r) {
+			return r.getAreas().get(0);
+		} else {
+			throw new Error("unexpected element type: " + element.getClass().getSimpleName());
+		}
 	}
 
 	@Override
@@ -145,7 +156,15 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
-		return area.getPolygon().getOuter().makeCounterclockwise();
+		if (element instanceof MapArea area) {
+			return area.getPolygon().getOuter().makeCounterclockwise();
+		} else if (element instanceof MapMultipolygonRelation r) {
+			var largestPolygon = r.getAreas().stream().map(MapArea::getPolygon).max(Comparator.comparingDouble(PolygonShapeXZ::getArea));
+			assert largestPolygon.isPresent();
+			return largestPolygon.get().getOuter().makeCounterclockwise();
+		} else {
+			throw new Error("unexpected element type: " + element.getClass().getSimpleName());
+		}
 	}
 
 	public double getGroundLevelEle() {
