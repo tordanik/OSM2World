@@ -154,7 +154,6 @@ public class OSMToMapDataConverter {
 
 					} catch (EntityNotFoundException | InvalidGeometryException e) {
 						ConversionLog.error(e.getMessage());
-						break;
 					}
 
 				}
