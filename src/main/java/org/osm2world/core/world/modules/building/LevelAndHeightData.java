@@ -179,6 +179,7 @@ public class LevelAndHeightData {
 		height = max(height, 0.01); // make sure buildings have at least some height
 
 		double heightWithoutRoof = height - roofHeight;
+		heightWithoutRoof = Math.round(heightWithoutRoof * 1e4) / 1e4;
 
 		double minHeight;
 		if (parseMeasure(tags.getValue("min_height")) != null) {
