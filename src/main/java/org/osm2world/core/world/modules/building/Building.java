@@ -4,6 +4,7 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 import java.util.*;
 
@@ -22,7 +23,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.util.ConfigUtil;
-import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.CachingProceduralWorldObject;
@@ -73,7 +73,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 			/* find building part areas geometrically contained within the building outline */
 
 			for (MapArea area : areas) {
-				FaultTolerantIterationUtil.forEach(area.getOverlaps(), (MapOverlap<?, ?> overlap) -> {
+				forEach(area.getOverlaps(), (MapOverlap<?, ?> overlap) -> {
 					MapElement other = overlap.getOther(area);
 					if (other instanceof MapArea otherArea
 							&& other.getTags().containsKey("building:part")) {
@@ -188,16 +188,14 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	public void buildMeshesAndModels(Target target) {
-		FaultTolerantIterationUtil.forEach(parts, part -> part.buildMeshesAndModels(target));
+		forEach(parts, part -> part.buildMeshesAndModels(target));
 		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments);
 	}
 
 	@Override
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
 		List<AttachmentSurface> result = new ArrayList<>(super.getAttachmentSurfaces());
-		for (BuildingPart part : parts) {
-			result.addAll(part.getAttachmentSurfaces());
-		}
+		forEach(parts, part -> result.addAll(part.getAttachmentSurfaces()));
 		return result;
 	}
 
