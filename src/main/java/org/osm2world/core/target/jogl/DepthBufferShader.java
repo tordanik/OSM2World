@@ -4,7 +4,7 @@ import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES2.GL_TEXTURE_BORDER_COLOR;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
-import java.awt.Color;
+import java.awt.*;
 import java.nio.FloatBuffer;
 
 import org.osm2world.core.target.common.material.Material;
@@ -74,10 +74,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		/*
 		 * only set textures (needed for transparency)
 		 */
-		int numTexLayers = 0;
-		if (material.getTextureLayers() != null) {
-			numTexLayers = material.getTextureLayers().size();
-		}
+		int numTexLayers = material.getNumTextureLayers();
 
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);

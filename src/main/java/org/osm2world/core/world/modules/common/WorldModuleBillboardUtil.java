@@ -55,48 +55,48 @@ public final class WorldModuleBillboardUtil {
 			VectorXYZ posTop = pos.addY(height);
 
 			builder.addTriangleStrip(List.of(xNegTop, xNegBottom, posTop, pos),
-					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
+					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
 
 			builder.addTriangleStrip(List.of(xPosBottom, xPosTop, pos, posTop),
-					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
+					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
 
 			builder.addTriangleStrip(List.of(zNegTop, zNegBottom, posTop, pos),
-					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
+					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
 
 			builder.addTriangleStrip(List.of(zPosBottom, zPosTop, pos, posTop),
-					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
+					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
 
 			if (!material.isDoubleSided()) {
 
 				builder.addTriangleStrip(List.of(xPosTop, xPosBottom, posTop, pos),
-						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
+						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
 
 				builder.addTriangleStrip(List.of(xNegBottom, xNegTop, pos, posTop),
-						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
+						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
 
 				builder.addTriangleStrip(List.of(zPosTop, zPosBottom, posTop, pos),
-						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
+						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
 
 				builder.addTriangleStrip(List.of(zNegBottom, zNegTop, pos, posTop),
-						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
+						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
 
 			}
 
 		} else {
 
 			builder.addTriangleStrip(List.of(xNegTop, xNegBottom, xPosTop, xPosBottom),
-					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
 
 			builder.addTriangleStrip(List.of(zNegTop, zNegBottom, zPosTop, zPosBottom),
-					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
 
 			if (!material.isDoubleSided()) {
 
 				builder.addTriangleStrip(List.of(xPosTop, xPosBottom, xNegTop, xNegBottom),
-						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
 
 				builder.addTriangleStrip(List.of(zPosTop, zPosBottom, zNegTop, zNegBottom),
-						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
 			}
 
 		}

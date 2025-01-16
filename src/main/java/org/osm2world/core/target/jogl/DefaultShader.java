@@ -5,7 +5,7 @@ import static com.jogamp.opengl.GL2ES2.GL_TEXTURE_BORDER_COLOR;
 import static java.lang.Math.min;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
-import java.awt.Color;
+import java.awt.*;
 import java.nio.FloatBuffer;
 
 import org.osm2world.core.math.VectorXYZ;
@@ -170,10 +170,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (!super.setMaterial(material, textureManager))
 			return false;
 
-		int numTexLayers = 0;
-		if (material.getTextureLayers() != null) {
-			numTexLayers = material.getTextureLayers().size();
-		}
+		int numTexLayers = material.getNumTextureLayers();
 
 		/* set color / lighting */
 

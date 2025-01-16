@@ -1,15 +1,11 @@
 package org.osm2world.core.target.jogl;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.Primitive;
@@ -72,9 +68,8 @@ public abstract class JOGLRendererVBO {
 
 		int numValues = 6; // vertex coordinates and normals
 
-		if (material.getTextureLayers() != null) {
-			numValues += 2 * material.getTextureLayers().size();
-		}
+		numValues += 2 * material.getNumTextureLayers();
+
 		if (false /*material.hasBumpMap()*/) {
 			numValues += 4; // tangent vectors are 4D
 		}

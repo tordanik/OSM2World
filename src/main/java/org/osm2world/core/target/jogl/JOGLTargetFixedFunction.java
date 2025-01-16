@@ -313,10 +313,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 
-		int numTexLayers = 0;
-		if (material.getTextureLayers() != null) {
-			numTexLayers = material.getTextureLayers().size();
-		}
+		int numTexLayers = material.getNumTextureLayers();
 
 		/* handle back-face culling and double-sided materials */
 
@@ -491,7 +488,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE0_ALPHA, GL2.GL_CONSTANT );
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND0_ALPHA, GL_SRC_ALPHA );
 
-		        	float[] mycolor = {0.0f, 0.0f, 0.0f, 1.0f}; //RGB doesn't matter since its not used
+		        	float[] mycolor = {0.0f, 0.0f, 0.0f, 1.0f}; //RGB doesn't matter since it's not used
 		        	gl.glTexEnvfv(GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, mycolor, 0);
 
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE1_ALPHA, GL_PREVIOUS );
