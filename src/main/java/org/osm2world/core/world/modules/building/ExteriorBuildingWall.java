@@ -131,44 +131,48 @@ public class ExteriorBuildingWall {
 
 		List<VectorXZ> topPointsXZ = null;
 
-		for (SimplePolygonXZ rawPolygon : buildingPart.roof.getPolygon().getRings()) {
+		outer:
+		for (boolean allowInsertion : List.of(false, true)) {
+			for (SimplePolygonXZ rawPolygon : buildingPart.roof.getPolygon().getRings()) {
 
-			SimplePolygonXZ polygon = buildingPart.roof.getPolygon().getHoles().contains(rawPolygon)
-					? rawPolygon.makeClockwise()
-					: rawPolygon.makeCounterclockwise();
+				SimplePolygonXZ polygon = buildingPart.roof.getPolygon().getHoles().contains(rawPolygon)
+						? rawPolygon.makeClockwise()
+						: rawPolygon.makeCounterclockwise();
 
-			VectorXZ firstBottomPoint = bottomPoints.get(0).xz();
-			VectorXZ lastBottomPoint = bottomPoints.get(bottomPoints.size() - 1).xz();
+				VectorXZ firstBottomPoint = bottomPoints.get(0).xz();
+				VectorXZ lastBottomPoint = bottomPoints.get(bottomPoints.size() - 1).xz();
 
-			for (VectorXZ bottomPoint : asList(firstBottomPoint, lastBottomPoint)) {
-				// insert points that are in the bottom polygon, but not in the top (e.g. with building passage)
-				if (!polygon.getVertices().contains(bottomPoint)
-						&& polygon.getClosestSegment(bottomPoint).closestPoint(bottomPoint).distanceTo(bottomPoint) < 0.1) {
-					try {
-						polygon = insertIntoPolygon(polygon, bottomPoint, 0);
-					} catch (InvalidGeometryException e) { /* keep the previous polygon */ }
+				for (VectorXZ bottomPoint : asList(firstBottomPoint, lastBottomPoint)) {
+					// insert points that are in the bottom polygon, but not in the top (e.g. with building passage)
+					if (!polygon.getVertices().contains(bottomPoint)) {
+						if (allowInsertion && polygon.getClosestSegment(bottomPoint).closestPoint(bottomPoint).distanceTo(bottomPoint) < 0.1) {
+							try {
+								polygon = insertIntoPolygon(polygon, bottomPoint, 0);
+							} catch (InvalidGeometryException e) { /* keep the previous polygon */ }
+						}
+					}
 				}
+
+				int firstIndex = polygon.verticesNoDup().indexOf(firstBottomPoint);
+				int lastIndex = polygon.verticesNoDup().indexOf(lastBottomPoint);
+
+				if (firstIndex != -1 && lastIndex != -1) {
+
+					topPointsXZ = new ArrayList<>();
+
+					if (lastIndex < firstIndex) {
+						lastIndex += polygon.size();
+					}
+
+					for (int i = firstIndex; i <= lastIndex; i++) {
+						topPointsXZ.add(polygon.getVertex(i % polygon.size()));
+					}
+
+					break outer;
+
+				}
+
 			}
-
-			int firstIndex = polygon.getVertices().indexOf(firstBottomPoint);
-			int lastIndex = polygon.getVertices().indexOf(lastBottomPoint);
-
-			if (firstIndex != -1 && lastIndex != -1) {
-
-				topPointsXZ = new ArrayList<>();
-
-				if (lastIndex < firstIndex) {
-					lastIndex += polygon.size();
-				}
-
-				for (int i = firstIndex; i <= lastIndex; i ++) {
-					topPointsXZ.add(polygon.getVertex(i % polygon.size()));
-				}
-
-				break;
-
-			}
-
 		}
 
 		if (topPointsXZ == null) {
