@@ -330,7 +330,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 		if (material.isDoubleSided()) {
 			gl.glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-		} else if (material.isDoubleSided()) {
+		} else {
 			gl.glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 		}
 
