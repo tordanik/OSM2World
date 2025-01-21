@@ -4,8 +4,7 @@ import static org.osm2world.core.GlobalValues.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.net.URL;
+import java.io.InputStream;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -64,18 +63,16 @@ public class AboutAction extends AbstractAction {
 
 		String attributionText;
 
-		try {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			URL resource = classLoader.getResource("attribution.xml");
-			if (resource != null) {
+		try (InputStream attributionStream = classLoader.getResourceAsStream("attribution.xml")) {
 
-				var attributionFile = new File(resource.getFile());
+			if (attributionStream != null) {
 
 				var attributionTextBuilder = new StringBuilder();
 				attributionTextBuilder.append("<html><body style='padding: 10px;'>");
 
-				Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(attributionFile);
+				Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(attributionStream);
 				document.getDocumentElement().normalize();
 
 				// Get all <dependency> elements
