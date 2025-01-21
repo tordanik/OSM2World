@@ -1,4 +1,28 @@
 --------------------------------------------------------------------------------
+ OSM2World 0.4.0                                                     2025-01-21
+--------------------------------------------------------------------------------
+
+* upgrade to Java 17
+* upgrade to JOGL 2.4.0, drop i586 natives
+* new output format: glb
+* new input format: GeoDesk
+* zipped glTF output
+* initial support for including existing glTF models
+* command line option for LOD
+* LOD support for all modules
+* LOD selector in viewer
+* ability to read tile metadata from external sources
+* ability to read zipped SRTM hgt files
+* reasonable default elevation handler
+* consistent handling of overlapping features
+* rendering of parked vehicles
+* padding for textures to avoid clamping artifacts
+* 3D building improvements: roof:angle, relation and roof line edge cases
+* resolution of config paths relative to config location
+* improved logging
+
+
+--------------------------------------------------------------------------------
  OSM2World 0.3.1                                                     2022-12-29 
 --------------------------------------------------------------------------------
 

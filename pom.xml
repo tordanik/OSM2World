@@ -5,7 +5,7 @@
 
 	<groupId>org.osm2world</groupId>
 	<artifactId>osm2world</artifactId>
-	<version>0.4.0-SNAPSHOT</version>
+	<version>0.4.0</version>
 
 	<name>OSM2World</name>
 	<description>OSM2World creates three-dimensional models of the world from OpenStreetMap data</description>
