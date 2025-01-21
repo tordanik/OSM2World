@@ -1,25 +1,18 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.lang.Math.max;
-import static java.util.Arrays.*;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
-import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.core.util.ValueParseUtil.parseUInt;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.CircularSectorXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
@@ -207,8 +200,11 @@ public class WindowParameters {
 			type = WindowType.PLAIN;
 		}
 
+		String materialString = tags.getValue("window:material");
+		materialString = "glass".equals(materialString) ? null : materialString;
+
 		opaqueWindowMaterial = BuildingPart.buildMaterial(
-				tags.getValue("window:material"),
+				materialString,
 				tags.getValue("window:colour"),
 				Materials.GLASS, false);
 
