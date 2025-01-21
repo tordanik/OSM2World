@@ -326,6 +326,23 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<groupId>com.github.jinnovations</groupId>
+				<artifactId>attribution-maven-plugin</artifactId>
+				<version>0.9.9</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate-attribution-file</goal>
+						</goals>
+						<phase>generate-resources</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<outputFile>${project.build.directory}/attribution.xml</outputFile>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
