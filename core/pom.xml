@@ -1,0 +1,164 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.osm2world</groupId>
+		<artifactId>osm2world</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+	</parent>
+
+	<packaging>jar</packaging>
+	<groupId>org.osm2world</groupId>
+	<artifactId>osm2world-core</artifactId>
+	<version>0.5.0-SNAPSHOT</version>
+
+	<name>OSM2World Core</name>
+	<description>OSM2World core library</description>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>1.10</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.locationtech.jts</groupId>
+			<artifactId>jts-core</artifactId>
+			<version>1.19.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-core</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-pbf</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-xml</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.25.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jhlabs</groupId>
+			<artifactId>javaproj</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>33.2.1-jre</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.orbisgis</groupId>
+			<artifactId>poly2tri-core</artifactId>
+			<version>0.1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ar.com.hjg</groupId>
+			<artifactId>pngj</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.earcut4j</groupId>
+			<artifactId>earcut4j</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-transcoder</artifactId>
+			<version>1.17</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-rasterizer</artifactId>
+			<version>1.17</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.imintel</groupId>
+			<artifactId>mbtiles4j</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.geodesk</groupId>
+			<artifactId>geodesk</artifactId>
+			<version>0.1.9</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>  <!-- Create javadoc.jar -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.6.3</version>
+				<configuration>
+					<doclint>all,-missing</doclint>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>
