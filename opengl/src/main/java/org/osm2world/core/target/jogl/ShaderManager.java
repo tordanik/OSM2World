@@ -2,13 +2,7 @@ package org.osm2world.core.target.jogl;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -26,10 +20,10 @@ public class ShaderManager {
 
 	/**
 	 * Loads the vertex shader from a resource file, compiles it and does error checking.
-	 * @param filename path to the resource containing the shader code
+	 * @param resourceName path to the resource containing the shader code
 	 * @return handle of the created vertex shader
 	 */
-	public static int createVertexShader(GL3 gl, String filename) {
+	public static int createVertexShader(GL3 gl, String resourceName) {
 
 		// get the unique id
 		int vertShader = gl.glCreateShader(GL3.GL_VERTEX_SHADER);
@@ -42,9 +36,9 @@ public class ShaderManager {
 		String line;
 
 		// open the file and read the contents into the String array.
-		InputStream stream = loadShaderFile(filename);
+		InputStream stream = loadShaderFile(resourceName);
 		if (stream == null) {
-			throw new RuntimeException("Vertex shader not found in classpath: \""+ filename +"\"");
+			throw new RuntimeException("Vertex shader not found in classpath: \""+ resourceName +"\"");
 		}
 
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
@@ -65,7 +59,7 @@ public class ShaderManager {
 			// check whether compilation was successful
 			if (shaderStatus.get() == GL.GL_FALSE) {
 				printShaderInfoLog(gl, vertShader);
-				throw new IllegalStateException("compilation error for shader [" + filename + "].");
+				throw new IllegalStateException("compilation error for shader [" + resourceName + "].");
 			}
 			printShaderInfoLog(gl, vertShader);
 
@@ -73,7 +67,7 @@ public class ShaderManager {
 			return vertShader;
 
 		} catch (IOException e) {
-			throw new RuntimeException("Failed reading vertex shader \"" + filename + "\".",e);
+			throw new RuntimeException("Failed reading vertex shader \"" + resourceName + "\".",e);
 		}
 
 	}
@@ -230,10 +224,10 @@ public class ShaderManager {
 	 * load from resources folder in filesystem. If also unsuccessful return
 	 * <code>null</code>.
 	 */
-	private static InputStream loadShaderFile(String filename) {
-		InputStream stream = System.class.getResourceAsStream(filename);
+	private static InputStream loadShaderFile(String resourceName) {
+		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
 		if (stream == null) {
-			File file = new File("resources/" + (filename.charAt(0) == '/' ? filename.substring(1) : filename));
+			File file = new File("resources/" + (resourceName.charAt(0) == '/' ? resourceName.substring(1) : resourceName));
 			try {
 				stream = new FileInputStream(file);
 			} catch (FileNotFoundException e) {

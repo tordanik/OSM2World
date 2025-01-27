@@ -30,7 +30,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	private int[] vertexTexCoordID = new int[DefaultShader.MAX_TEXTURE_LAYERS];
 
 	public DepthBufferShader(GL3 gl) {
-		super(gl, "/shaders/shadowmap");
+		super(gl, "shaders/shadowmap");
 
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");

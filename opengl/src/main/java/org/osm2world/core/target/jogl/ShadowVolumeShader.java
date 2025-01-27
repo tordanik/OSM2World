@@ -16,7 +16,7 @@ public class ShadowVolumeShader extends AbstractPrimitiveShader {
 	private int vertexPositionID;
 
 	public ShadowVolumeShader(GL3 gl) {
-		super(gl, "/shaders/shadowvolume");
+		super(gl, "shaders/shadowvolume");
 
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");

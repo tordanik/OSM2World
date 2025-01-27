@@ -70,7 +70,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	private int vertexTangentID;
 
 	public DefaultShader(GL3 gl) {
-		super(gl, "/shaders/default");
+		super(gl, "shaders/default");
 
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");

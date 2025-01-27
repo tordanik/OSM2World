@@ -17,7 +17,7 @@ public class BackgroundShader extends AbstractShader {
 	private int textureID;
 
 	public BackgroundShader(GL3 gl) {
-		super(gl, "/shaders/background");
+		super(gl, "shaders/background");
 
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");

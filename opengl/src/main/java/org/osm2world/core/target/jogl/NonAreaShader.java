@@ -16,7 +16,7 @@ public class NonAreaShader extends AbstractShader {
 	private int vertexColorID;
 
 	public NonAreaShader(GL3 gl) {
-		super(gl, "/shaders/nonarea");
+		super(gl, "shaders/nonarea");
 
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");
