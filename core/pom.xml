@@ -10,7 +10,6 @@
 	</parent>
 
 	<packaging>jar</packaging>
-	<groupId>org.osm2world</groupId>
 	<artifactId>osm2world-core</artifactId>
 	<version>0.5.0-SNAPSHOT</version>
 
@@ -22,8 +21,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
