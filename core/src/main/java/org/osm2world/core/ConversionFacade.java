@@ -236,7 +236,7 @@ public class ConversionFacade {
 
 		MapProjection mapProjection = mapProjectionFactory.apply(osmData.getCenter());
 
-		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
+		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData mapData = null;
 		try {
 			mapData = converter.createMapData(osmData, metadata);

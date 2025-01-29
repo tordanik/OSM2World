@@ -12,7 +12,6 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.*;
@@ -36,14 +35,12 @@ public class OSMToMapDataConverter {
 	private final Ruleset ruleset = new HardcodedRuleset();
 
 	private final MapProjection mapProjection;
-	private final Configuration config;
 
 	private static final Tag MULTIPOLYON_TAG = new Tag("type", "multipolygon");
 
 
-	public OSMToMapDataConverter(MapProjection mapProjection, Configuration config) {
+	public OSMToMapDataConverter(MapProjection mapProjection) {
 		this.mapProjection = mapProjection;
-		this.config = config;
 	}
 
 	public MapData createMapData(OSMData osmData, @Nullable MapMetadata metadata) throws EntityNotFoundException {
@@ -164,8 +161,7 @@ public class OSMToMapDataConverter {
 
 		AxisAlignedRectangleXZ terrainBoundary = calculateFileBoundary(osmData.getUnionOfExplicitBounds());
 
-		if (terrainBoundary != null
-				&& config.getBoolean("createTerrain", true)) {
+		if (terrainBoundary != null) {
 
 			EmptyTerrainBuilder.createAreasForEmptyTerrain(
 					mapNodes, mapAreas, terrainBoundary);

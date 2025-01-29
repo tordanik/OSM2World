@@ -67,7 +67,10 @@ public class SurfaceAreaModule extends AbstractModule {
 		TagSet tags = area.getTags();
 
 		if (tags.containsKey("surface")) {
-			area.addRepresentation(new SurfaceArea(area, tags.getValue("surface")));
+			if (!tags.contains("surface", EMPTY_SURFACE_VALUE)
+					|| config.getBoolean("createTerrain", true)) {
+				area.addRepresentation(new SurfaceArea(area, tags.getValue("surface")));
+			}
 		} else {
 
 			for (Tag tagWithDefault : defaultSurfaceMap.keySet()) {
