@@ -3,10 +3,13 @@
 /locales
 /models
 /srtm
-/standard.properties
+/*.properties
 
 # Build
 /target
+/core/target
+/desktop/target
+/opengl/target
 /dist
 /bin
 /build
