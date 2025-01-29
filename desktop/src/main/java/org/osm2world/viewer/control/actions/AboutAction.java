@@ -4,9 +4,13 @@ import static org.osm2world.core.GlobalValues.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -17,6 +21,7 @@ import org.w3c.dom.NodeList;
 
 public class AboutAction extends AbstractAction {
 
+	@Serial
 	private static final long serialVersionUID = -6717063896933933005L; //generated serialVersionUID
 
 	public AboutAction() {
@@ -36,14 +41,16 @@ public class AboutAction extends AbstractAction {
 
 		dialog.setLayout(new BorderLayout());
 		dialog.add(tabbedPane, BorderLayout.CENTER);
-
-		dialog.setSize(800, 600);
+		dialog.setSize(1000, 600);
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 
 	}
 
 	private static JComponent createAboutTabContent() {
+
+		var panel = new JPanel();
+		panel.setLayout(new BorderLayout());
 
 		String text = "<html><body style='padding: 10px;'>"
 				+ "<h1>OSM2World</h1>"
@@ -55,7 +62,22 @@ public class AboutAction extends AbstractAction {
 				+ "<tr><td>Issues<td><a href='https://github.com/tordanik/OSM2World/issues'>github.com/tordanik/OSM2World/issues</a><br>"
 				+ "</table></p></body></html>";
 
-		return createReadonlyHtmlComponent(text);
+		JComponent textComponent = createReadonlyHtmlComponent(text, false);
+		panel.add(textComponent, BorderLayout.CENTER);
+
+		try (InputStream logoStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("logo.png")) {
+			if (logoStream == null) throw new IOException("logo is null");
+			var logoImage = ImageIO.read(logoStream).getScaledInstance(200, 200, Image.SCALE_DEFAULT);
+			var logoLabel = new JLabel(new ImageIcon(logoImage));
+			logoLabel.setBackground(Color.WHITE);
+			logoLabel.setOpaque(true);
+			logoLabel.setBorder(new EmptyBorder(0, 10, 0, 10));
+			panel.add(logoLabel, BorderLayout.WEST);
+		} catch (IOException e) {
+			System.err.println("Error loading logo image:" + e.getMessage());
+		}
+
+		return panel;
 
 	}
 
@@ -120,19 +142,21 @@ public class AboutAction extends AbstractAction {
 			attributionText = "Could not read license information: <br/>" + e.getMessage();
 		}
 
-		return createReadonlyHtmlComponent(attributionText);
+		return createReadonlyHtmlComponent(attributionText, true);
 
 	}
 
-	/** returns a component showing scrollable, read-only HTML text with clickable links */
-	private static JComponent createReadonlyHtmlComponent(String text) {
+	/** returns a component showing read-only HTML text with clickable links */
+	private static JComponent createReadonlyHtmlComponent(String text, boolean scrollable) {
 
 		var tabText = new JEditorPane();
 		tabText.setContentType("text/html");
 		tabText.setText(text);
 		tabText.setCaretPosition(0);
 		tabText.setEditable(false);
-		tabText.setOpaque(false);
+		tabText.setOpaque(true);
+		tabText.setBackground(Color.WHITE);
+		tabText.setBorder(BorderFactory.createEmptyBorder());
 		tabText.addHyperlinkListener(e -> {
 			if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 				try {
@@ -141,7 +165,11 @@ public class AboutAction extends AbstractAction {
 			}
 		});
 
-		return new JScrollPane(tabText);
+		if (scrollable) {
+			return new JScrollPane(tabText);
+		} else {
+			return tabText;
+		}
 
 	}
 

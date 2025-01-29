@@ -7,6 +7,8 @@ import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 
 import java.awt.*;
 import java.io.File;
+import java.io.Serial;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +30,7 @@ import com.jogamp.opengl.GLProfile;
 
 public class ViewerFrame extends JFrame {
 
+	@Serial
 	private static final long serialVersionUID = 5807635150399807163L;
 
 	/**
@@ -52,7 +55,13 @@ public class ViewerFrame extends JFrame {
 	public ViewerFrame(final O2WConfig config, @Nullable LevelOfDetail lod,
 			final List<File> configFiles, File inputFile) {
 
-		super("OSM2World Viewer");
+		super("OSM2World");
+
+		URL iconURL = Thread.currentThread().getContextClassLoader().getResource("logo.png");
+		if (iconURL != null) {
+			ImageIcon icon = new ImageIcon(iconURL);
+			this.setIconImage(icon.getImage());
+		}
 
 		data = new Data(configFiles, config);
 
