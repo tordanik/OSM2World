@@ -202,29 +202,16 @@ public class ConversionFacade {
 	 *                      of the modules' behavior; null to use defaults
 	 * @param targets       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
-	 *
-	 * @throws BoundingBoxSizeException  for oversized bounding boxes
 	 */
 	public Results createRepresentations(OSMData osmData, @Nullable MapMetadata metadata,
 			List<? extends WorldModule> worldModules, Configuration config,
 			List<? extends Target> targets)
-			throws IOException, BoundingBoxSizeException {
+			throws IOException {
 
 		/* check the inputs */
 
 		if (osmData == null) {
 			throw new IllegalArgumentException("osmData must not be null");
-		}
-
-		if (config == null) {
-			config = new BaseConfiguration();
-		}
-
-		Double maxBoundingBoxDegrees = config.getDouble("maxBoundingBoxDegrees", null);
-		if (maxBoundingBoxDegrees != null
-				&& (osmData.getLatLonBounds().sizeLat() > maxBoundingBoxDegrees
-						|| osmData.getLatLonBounds().sizeLon() > maxBoundingBoxDegrees)) {
-			throw new BoundingBoxSizeException();
 		}
 
 		/* create map data from OSM data */
@@ -532,22 +519,5 @@ public class ConversionFacade {
 //			listener.updatePhaseProgress(phaseProgress);
 //		}
 //	}
-
-	/**
-	 * exception to be thrown if the OSM input data covers an area
-	 * larger than the maxBoundingBoxDegrees config property
-	 */
-	public static class BoundingBoxSizeException extends RuntimeException {
-
-		private static final long serialVersionUID = 2841146365929523046L; //generated VersionID
-
-		private BoundingBoxSizeException() {}
-
-		@Override
-		public String toString() {
-			return "oversized bounding box";
-		}
-
-	}
 
 }

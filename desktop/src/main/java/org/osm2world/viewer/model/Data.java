@@ -2,6 +2,7 @@ package org.osm2world.viewer.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.List;
 import java.util.Observable;
 
@@ -11,7 +12,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.osm2world.console.OSM2World;
 import org.osm2world.core.ConversionFacade;
-import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_elevation.creation.EleCalculator;
@@ -20,6 +20,7 @@ import org.osm2world.core.osm.creation.GeodeskReader;
 import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.osm.creation.OSMFileReader;
+import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.functions.Factory;
 
@@ -63,7 +64,7 @@ public class Data extends Observable {
 			Factory<? extends TerrainInterpolator> interpolatorFactory,
 			Factory<? extends EleCalculator> eleCalculatorFactory,
 			ProgressListener listener)
-					throws IOException, BoundingBoxSizeException {
+					throws IOException {
 
 		try {
 
@@ -83,30 +84,25 @@ public class Data extends Observable {
 
 			converter.addProgressListener(listener);
 
+			OSMData osmData = reader.getAllData();
+
 			if (failOnLargeBBox) {
-				config.addProperty("maxBoundingBoxDegrees", 1);
+				double maxBoundingBoxDegrees = 1;
+				if (osmData.getLatLonBounds().sizeLat() > maxBoundingBoxDegrees
+						|| osmData.getLatLonBounds().sizeLon() > maxBoundingBoxDegrees) {
+					throw new BoundingBoxSizeException();
+				}
 			}
 
 			conversionResults = converter.createRepresentations(
-					reader.getAllData(), null, null, config, null);
+					osmData, null, null, config, null);
 
-		} catch (IOException e) {
-
-			osmFile = null;
-			conversionResults = null;
-
-			throw e;
-
-		} catch (BoundingBoxSizeException e) {
+		} catch (IOException | BoundingBoxSizeException e) {
 
 			osmFile = null;
 			conversionResults = null;
 
 			throw e;
-
-		} finally {
-
-			config.clearProperty("maxBoundingBoxDegrees");
 
 		}
 
@@ -121,6 +117,23 @@ public class Data extends Observable {
 
 	public Results getConversionResults() {
 		return conversionResults;
+	}
+
+	/**
+	 * exception to be thrown if the OSM input data covers an area that may be too large for the viewer to handle
+	 */
+	public static class BoundingBoxSizeException extends RuntimeException {
+
+		@Serial
+		private static final long serialVersionUID = 2841146365929523046L; //generated VersionID
+
+		private BoundingBoxSizeException() {}
+
+		@Override
+		public String toString() {
+			return "Oversize bounding box";
+		}
+
 	}
 
 }

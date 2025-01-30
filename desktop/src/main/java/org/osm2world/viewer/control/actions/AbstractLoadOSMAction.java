@@ -1,5 +1,7 @@
 package org.osm2world.viewer.control.actions;
 
+import static org.osm2world.viewer.model.Data.BoundingBoxSizeException;
+
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serial;
@@ -7,7 +9,6 @@ import java.io.Serial;
 import javax.swing.*;
 
 import org.apache.commons.configuration.ConfigurationException;
-import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.map_elevation.creation.EleCalculator;

@@ -15,7 +15,6 @@ import java.util.Optional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
-import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.TagSet;
@@ -61,7 +60,7 @@ public class FrontendPbfTargetTest {
 	}
 
 	@Test
-	public void testWritePbfFile_empty() throws BoundingBoxSizeException, IOException {
+	public void testWritePbfFile_empty() throws IOException {
 
 		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
@@ -78,7 +77,7 @@ public class FrontendPbfTargetTest {
 	}
 
 	@Test
-	public void testWritePbfFile_extrusion() throws BoundingBoxSizeException, IOException {
+	public void testWritePbfFile_extrusion() throws IOException {
 
 		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
