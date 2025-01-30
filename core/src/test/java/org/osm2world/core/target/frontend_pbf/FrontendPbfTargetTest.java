@@ -1,7 +1,6 @@
 package org.osm2world.core.target.frontend_pbf;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.osm2world.core.math.VectorXZ.*;
@@ -18,9 +17,10 @@ import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
@@ -28,12 +28,9 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.SimpleBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.VectorBlock;
 import org.osm2world.core.test.TestWorldModule;
 
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.impl.Node;
-
 public class FrontendPbfTargetTest {
 
-	public void testBlock(Block<VectorXZ> block) {
+	void testBlock(Block<VectorXZ> block) {
 
 		List<VectorXZ> testVectors = asList(
 				new VectorXZ(5, 22.2), NULL_VECTOR, X_UNIT, Z_UNIT);
@@ -55,12 +52,12 @@ public class FrontendPbfTargetTest {
 
 	@Test
 	public void testSimpleBlock() {
-		testBlock(new SimpleBlock<VectorXZ>());
+		testBlock(new SimpleBlock<>());
 	}
 
 	@Test
 	public void testVectorBlock() {
-		testBlock(new VectorBlock<VectorXZ>());
+		testBlock(new VectorBlock<>());
 	}
 
 	@Test
@@ -68,11 +65,11 @@ public class FrontendPbfTargetTest {
 
 		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
-		OsmNode node = new Node(0, 0, 0);
-		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());
+		var mapDataBuilder = new MapDataBuilder();
+		mapDataBuilder.createNode(0, 0);
 
 		ConversionFacade cf = new ConversionFacade();
-		Results results = cf.createRepresentations(osmData, null, asList(new TestWorldModule()), null, null);
+		Results results = cf.createRepresentations(null, mapDataBuilder.build(), List.of(new TestWorldModule()), null, null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
@@ -85,11 +82,11 @@ public class FrontendPbfTargetTest {
 
 		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
-		OsmNode node = new Node(0, 0, 0, asList(new de.topobyte.osm4j.core.model.impl.Tag("highway", "street_lamp")));
-		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());
+		var mapDataBuilder = new MapDataBuilder();
+		mapDataBuilder.createNode(0, 0, TagSet.of("highway", "street_lamp"));
 
 		ConversionFacade cf = new ConversionFacade();
-		Results results = cf.createRepresentations(osmData, null, null, null, null);
+		Results results = cf.createRepresentations(null, mapDataBuilder.build(), null, null, null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();

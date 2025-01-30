@@ -135,17 +135,14 @@ public class ConversionFacade {
 	private @Nullable Factory<? extends EleCalculator> eleCalculatorFactory = null;
 
 	/**
-	 * sets the factory that will make {@link MapProjection}
-	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
+	 * sets the factory that will make {@link MapProjection} instances during subsequent uses.
 	 */
 	public void setMapProjectionFactory(Function<LatLon, ? extends MapProjection> mapProjectionFactory) {
 		this.mapProjectionFactory = mapProjectionFactory;
 	}
 
 	/**
-	 * sets the factory that will make {@link EleCalculator} instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
+	 * sets the factory that will make {@link EleCalculator} instances during subsequent uses.
 	 * Can be set to null, in which case there will be an attempt to parse the configuration for this.
 	 */
 	public void setEleCalculatorFactory(@Nullable Factory<? extends EleCalculator> eleCalculatorFactory) {
@@ -153,8 +150,7 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * sets the factory that will make {@link TerrainInterpolator} instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
+	 * sets the factory that will make {@link TerrainInterpolator} instances during subsequent uses.
 	 *  Can be set to null, in which case there will be an attempt to parse the configuration for this.
 	 */
 	public void setTerrainEleInterpolatorFactory(@Nullable Factory<? extends TerrainInterpolator> enforcerFactory) {
