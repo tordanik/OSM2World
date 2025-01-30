@@ -69,11 +69,11 @@ public class ConversionFacade {
 	 */
 	public static final class Results {
 
-		private final MapProjection mapProjection;
+		private final @Nullable MapProjection mapProjection;
 		private final MapData mapData;
 		private final TerrainElevationData eleData;
 
-		private Results(MapProjection mapProjection, MapData mapData, TerrainElevationData eleData) {
+		private Results(@Nullable MapProjection mapProjection, MapData mapData, TerrainElevationData eleData) {
 			this.mapProjection = mapProjection;
 			this.mapData = mapData;
 			this.eleData = eleData;
@@ -253,16 +253,18 @@ public class ConversionFacade {
 	/**
 	 * variant of {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}
 	 * that takes {@link MapData} instead of {@link OSMData}
+	 *
+	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
+	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMData}.
 	 */
-	public Results createRepresentations(MapProjection mapProjection, MapData mapData,
-			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target> targets)
-			throws IOException {
+	public Results createRepresentations(@Nullable MapProjection mapProjection, MapData mapData,
+			@Nullable List<? extends WorldModule> worldModules, @Nullable Configuration config,
+			@Nullable List<? extends Target> targets) {
 
 		/* check the inputs */
 
 		if (mapData == null) {
-			throw new IllegalArgumentException("osmData must not be null");
+			throw new IllegalArgumentException("map data is required");
 		}
 
 		if (config == null) {
@@ -292,6 +294,9 @@ public class ConversionFacade {
 		TerrainElevationData eleData = null;
 
 		if (srtmDir != null) {
+			if (mapProjection == null) {
+				throw new IllegalArgumentException("Using SRTM data requires a map projection");
+			}
 			eleData = new SRTMData(srtmDir, mapProjection);
 		}
 

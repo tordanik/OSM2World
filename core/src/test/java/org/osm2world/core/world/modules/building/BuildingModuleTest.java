@@ -11,9 +11,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
-import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -76,8 +74,7 @@ public class BuildingModuleTest {
 		), TagSet.of("type", "building"));
 
 		MapData mapData = builder.build();
-		new ConversionFacade().createRepresentations(new MetricMapProjection(new LatLon(0, 0)),
-				mapData, null, null, null);
+		new ConversionFacade().createRepresentations(null, mapData, null, null, null);
 
 		if (!(buildingArea.getPrimaryRepresentation() instanceof Building building)) {
 			fail();
@@ -125,8 +122,7 @@ public class BuildingModuleTest {
 		), TagSet.of("type", "building"));
 
 		MapData mapData = builder.build();
-		new ConversionFacade().createRepresentations(new MetricMapProjection(new LatLon(0, 0)),
-				mapData, null, null, null);
+		new ConversionFacade().createRepresentations(null, mapData, null, null, null);
 
 		if (!(buildingArea.getPrimaryRepresentation() instanceof Building building)) {
 			fail();

@@ -13,9 +13,7 @@ import java.util.List;
 import org.apache.commons.configuration.MapConfiguration;
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
-import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
-import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
@@ -54,9 +52,8 @@ public class TrafficSignModuleTest {
 
 			/* generate models */
 
-			var proj = new MetricMapProjection(new LatLon(0, 0));
 			var result = new ConversionFacade().createRepresentations(
-					proj, builder.build(), null, null, null);
+					null, builder.build(), null, null, null);
 
 			/* extract results */
 
