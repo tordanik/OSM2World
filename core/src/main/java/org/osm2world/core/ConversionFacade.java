@@ -220,11 +220,11 @@ public class ConversionFacade {
 		MapProjection mapProjection = mapProjectionFactory.apply(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
-		MapData mapData = null;
+		MapData mapData;
 		try {
 			mapData = converter.createMapData(osmData, metadata);
 		} catch (EntityNotFoundException e) {
-			// TODO: what to do here?
+			throw new IOException(e);
 		}
 
 		/* perform the rest of the conversion */
