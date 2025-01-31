@@ -2,7 +2,7 @@ package org.osm2world.core.world.data;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
-import static org.osm2world.core.math.GeometryUtil.interpolateOnTriangle;
+import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateOnTriangle;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,9 +16,11 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;

@@ -6,7 +6,11 @@ import static org.osm2world.core.target.common.MeshTarget.ClipToBounds.getSegmen
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 
 public class MeshTargetTest {
 

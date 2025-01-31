@@ -5,13 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.poly2tri.Poly2Tri;
-import org.poly2tri.triangulation.Triangulatable;
-import org.poly2tri.triangulation.TriangulationAlgorithm;
-import org.poly2tri.triangulation.TriangulationContext;
-import org.poly2tri.triangulation.TriangulationMode;
-import org.poly2tri.triangulation.TriangulationPoint;
+import org.poly2tri.triangulation.*;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 import org.poly2tri.triangulation.point.TPoint;
 /**

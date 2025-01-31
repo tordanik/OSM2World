@@ -5,8 +5,8 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.world.data.WorldObject;
 
 import com.google.common.base.Function;

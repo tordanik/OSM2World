@@ -1,9 +1,9 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.algorithms.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.test.TestUtil.anyVectorXZ;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
@@ -11,6 +11,13 @@ import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 
 public class GeometryUtilTest {
 

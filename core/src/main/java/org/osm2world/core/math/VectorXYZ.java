@@ -7,6 +7,9 @@ import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
+
 public class VectorXYZ implements Vector3D, BoundedObject {
 
 	public final double x, y, z;

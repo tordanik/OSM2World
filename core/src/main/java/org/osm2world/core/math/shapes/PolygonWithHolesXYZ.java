@@ -1,7 +1,9 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osm2world.core.math.BoundedObject;
 
 /**
  * a three-dimensional polygon that may have inner rings

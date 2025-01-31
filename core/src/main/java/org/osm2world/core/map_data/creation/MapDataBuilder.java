@@ -1,6 +1,6 @@
 package org.osm2world.core.map_data.creation;
 
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,9 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * creates {@link MapData} consisting of one or more {@link MapElement}s.

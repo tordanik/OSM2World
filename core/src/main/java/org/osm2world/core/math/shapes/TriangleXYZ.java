@@ -1,10 +1,18 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
+import org.osm2world.core.util.exception.InvalidGeometryException;
+
 import com.google.common.collect.ImmutableList;
 
+/**
+ * immutable 3D triangle
+ */
 public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 
 	public final VectorXYZ v1, v2, v3;

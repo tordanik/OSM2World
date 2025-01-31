@@ -2,8 +2,8 @@ package org.osm2world.core.world.modules.building;
 
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
-import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
+import static org.osm2world.core.math.algorithms.GeometryUtil.roughlyContains;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 import java.util.*;
@@ -18,9 +18,9 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;

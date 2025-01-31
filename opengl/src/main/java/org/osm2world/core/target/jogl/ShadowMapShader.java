@@ -13,8 +13,8 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;

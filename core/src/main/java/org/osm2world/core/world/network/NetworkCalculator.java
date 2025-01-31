@@ -2,10 +2,10 @@ package org.osm2world.core.world.network;
 
 import static java.lang.Math.PI;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.GeometryUtil.getLineIntersection;
-import static org.osm2world.core.math.GeometryUtil.projectPerpendicular;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
 import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.math.algorithms.GeometryUtil.getLineIntersection;
+import static org.osm2world.core.math.algorithms.GeometryUtil.projectPerpendicular;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.*;
@@ -18,8 +18,8 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject.JunctionSegmentInterface;
 

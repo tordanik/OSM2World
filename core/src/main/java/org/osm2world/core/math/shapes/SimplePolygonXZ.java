@@ -1,21 +1,21 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
-import static org.osm2world.core.math.GeometryUtil.isRightOf;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.algorithms.GeometryUtil.isRightOf;
 
 import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 /**
  * a non-self-intersecting polygon in the XZ plane

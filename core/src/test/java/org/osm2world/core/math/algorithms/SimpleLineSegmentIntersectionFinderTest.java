@@ -14,8 +14,8 @@ import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 
 //TODO deduplicate with LineSegmentIntersectionFinderTest (or remove this test along with the SimpleLSIF implementation)
 public class SimpleLineSegmentIntersectionFinderTest {

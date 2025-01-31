@@ -1,7 +1,11 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 
 /** an infinite line in the XZ plane */
 public record LineXZ(@Nonnull VectorXZ p1, @Nonnull VectorXZ p2) {

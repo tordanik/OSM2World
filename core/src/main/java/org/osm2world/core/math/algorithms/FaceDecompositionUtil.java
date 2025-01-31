@@ -4,17 +4,17 @@ import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
 import java.util.*;
 
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.*;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

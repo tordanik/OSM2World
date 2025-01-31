@@ -7,8 +7,8 @@ import static java.lang.Math.*;
 import static java.util.Collections.min;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.algorithms.GeometryUtil.*;
 import static org.osm2world.core.target.common.material.Materials.BUILDING_WINDOWS;
 import static org.osm2world.core.target.common.material.Materials.GLASS_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
@@ -22,15 +22,16 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 import org.osm2world.core.world.data.ProceduralWorldObject;
 
 /**

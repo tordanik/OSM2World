@@ -1,9 +1,13 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXYZ;
 
 /**
  * immutable representation of an axis-aligned bounding box

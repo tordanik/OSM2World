@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules.building.Indoor;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.world.modules.building.Building;
 import org.osm2world.core.world.modules.building.BuildingPart;
 import org.osm2world.core.world.modules.building.indoor.IndoorObjectData;

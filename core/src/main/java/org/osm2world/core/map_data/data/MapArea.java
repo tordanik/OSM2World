@@ -10,7 +10,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 import org.osm2world.core.world.data.AreaWorldObject;
 
 /**

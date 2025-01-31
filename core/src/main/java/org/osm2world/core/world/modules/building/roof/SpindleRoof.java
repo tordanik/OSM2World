@@ -13,8 +13,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureData;

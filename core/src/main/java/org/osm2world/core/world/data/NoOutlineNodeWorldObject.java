@@ -5,9 +5,9 @@ import static java.util.Collections.singleton;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * superclass for {@link NodeWorldObject}s that don't have an outline,

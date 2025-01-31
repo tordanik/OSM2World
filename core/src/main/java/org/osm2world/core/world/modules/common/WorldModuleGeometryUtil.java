@@ -10,9 +10,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
 

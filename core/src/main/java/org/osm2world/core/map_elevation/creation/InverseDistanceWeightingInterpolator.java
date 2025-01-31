@@ -1,7 +1,7 @@
 package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Math.*;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.Collection;
 

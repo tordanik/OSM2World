@@ -22,7 +22,10 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.Angle;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.mesh.LODRange;
 import org.osm2world.core.target.common.mesh.Mesh;
@@ -31,6 +34,7 @@ import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.gltf.data.*;
 import org.osm2world.core.util.color.LColor;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 import com.google.gson.Gson;
 

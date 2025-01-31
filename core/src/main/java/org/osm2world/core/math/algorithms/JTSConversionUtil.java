@@ -1,4 +1,4 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.algorithms;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -9,9 +9,9 @@ import java.util.List;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.PolylineShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.*;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 /**
  * converts between OSM2World's own geometry classes and the JTS geometry representations.

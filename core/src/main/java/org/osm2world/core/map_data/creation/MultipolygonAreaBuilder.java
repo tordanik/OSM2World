@@ -11,8 +11,8 @@ import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.map_data.creation.OSMToMapDataConverter.tagsOfEntity;
 import static org.osm2world.core.map_data.creation.OSMToMapDataConverter.wayNodes;
-import static org.osm2world.core.math.GeometryUtil.getLineSegmentIntersection;
-import static org.osm2world.core.math.GeometryUtil.isRightOf;
+import static org.osm2world.core.math.algorithms.GeometryUtil.getLineSegmentIntersection;
+import static org.osm2world.core.math.algorithms.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,10 +23,16 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.impl.Relation;

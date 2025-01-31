@@ -1,7 +1,7 @@
 package org.osm2world.core.world.attachment;
 
 import static java.util.Collections.singletonList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +10,12 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.FaceXYZ;
+import org.osm2world.core.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.core.target.common.mesh.Geometry;
 import org.osm2world.core.target.common.mesh.Mesh;
 

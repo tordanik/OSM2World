@@ -3,8 +3,8 @@ package org.osm2world.core.map_elevation.creation;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * a source of terrain elevation data. Implementations may range from raster

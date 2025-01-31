@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.core.target.common.material.Material;
 
 public class OnionRoof extends SpindleRoof {

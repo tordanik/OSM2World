@@ -8,11 +8,11 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedBoundingBoxXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;

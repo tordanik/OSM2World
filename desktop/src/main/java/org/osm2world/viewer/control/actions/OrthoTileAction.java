@@ -4,10 +4,9 @@ import java.awt.event.ActionEvent;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.TileNumber;

@@ -1,8 +1,9 @@
 package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.max;
-import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLine;
+import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +11,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /**

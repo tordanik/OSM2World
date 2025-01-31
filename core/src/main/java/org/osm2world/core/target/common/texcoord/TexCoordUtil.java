@@ -9,9 +9,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureDataDimensions;

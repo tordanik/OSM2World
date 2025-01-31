@@ -2,14 +2,15 @@ package org.osm2world.core.math.datastructures;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * a data structure that can be used to quickly find candidates for intersection tests and similar geometric operations.

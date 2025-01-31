@@ -9,8 +9,10 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.*;
 
 /**
  * superclass for {@link NodeWorldObject}s that do have an outline

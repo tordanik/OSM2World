@@ -1,11 +1,12 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.math.SimplePolygonXZ.isSelfIntersecting;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.isSelfIntersecting;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.test.TestUtil.*;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+import static org.osm2world.core.test.TestUtil.assertSameCyclicOrder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.VectorXZ;
 
 public class SimplePolygonXZTest {
 

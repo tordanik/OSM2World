@@ -6,8 +6,8 @@ import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;

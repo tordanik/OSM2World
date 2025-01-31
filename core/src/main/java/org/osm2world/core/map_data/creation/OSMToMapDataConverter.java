@@ -4,8 +4,8 @@ import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.map_data.data.MapRelation.Membership;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 import java.util.*;
@@ -15,12 +15,17 @@ import javax.annotation.Nullable;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.*;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;

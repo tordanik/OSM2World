@@ -1,7 +1,8 @@
 package org.osm2world.core.target.jogl;
 
-import static com.jogamp.opengl.GL.*;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static org.osm2world.core.math.algorithms.GeometryUtil.*;
 
 import java.nio.Buffer;
 import java.util.ArrayList;

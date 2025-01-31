@@ -1,15 +1,16 @@
 package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.math.algorithms.GeometryUtil.trianglesFromTriangleFan;
+import static org.osm2world.core.math.algorithms.GeometryUtil.trianglesFromTriangleStrip;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

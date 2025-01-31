@@ -1,24 +1,20 @@
 package org.osm2world.core.math.algorithms;
 
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.JTSConversionUtil.*;
+import static org.osm2world.core.math.algorithms.JTSConversionUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 
 /**
  * uses the JTS library for triangulation.

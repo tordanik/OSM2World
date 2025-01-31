@@ -1,9 +1,9 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.Color;
+import java.awt.*;
 
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.modules.building.Building;

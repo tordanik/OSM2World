@@ -2,8 +2,8 @@ package org.osm2world.core.world.modules.common;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.osm2world.core.math.GeometryUtil.trianglesFromTriangleStrip;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.algorithms.GeometryUtil.trianglesFromTriangleStrip;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 

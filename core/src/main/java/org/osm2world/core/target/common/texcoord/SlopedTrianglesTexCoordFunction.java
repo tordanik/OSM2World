@@ -5,9 +5,9 @@ import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 
 /**

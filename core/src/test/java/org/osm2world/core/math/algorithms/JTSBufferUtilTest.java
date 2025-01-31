@@ -1,18 +1,19 @@
 package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.osm2world.core.math.algorithms.JTSBufferUtil.bufferPolygon;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.test.TestUtil.assertSameCyclicOrder;
 
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 
 public class JTSBufferUtilTest {
 

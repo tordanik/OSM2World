@@ -12,10 +12,9 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.CircularSectorXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.Angle;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.enums.LeftRightBoth;

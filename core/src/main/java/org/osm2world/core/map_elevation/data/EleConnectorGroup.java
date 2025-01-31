@@ -2,7 +2,9 @@ package org.osm2world.core.map_elevation.data;
 
 import java.util.*;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.*;
 
 
 /**

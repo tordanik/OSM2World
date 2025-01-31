@@ -2,7 +2,7 @@ package org.osm2world.core.target.common.texcoord;
 
 import java.util.function.Function;
 
-import org.osm2world.core.math.FaceXYZ;
+import org.osm2world.core.math.shapes.FaceXYZ;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 
 /**

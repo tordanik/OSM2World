@@ -4,8 +4,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.math.algorithms.GeometryUtil.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -14,10 +14,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.NormalCalculationUtil;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 

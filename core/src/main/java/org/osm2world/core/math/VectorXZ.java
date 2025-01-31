@@ -5,6 +5,9 @@ import static java.lang.Math.*;
 
 import java.util.List;
 
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 

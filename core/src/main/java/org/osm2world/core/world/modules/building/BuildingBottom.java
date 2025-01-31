@@ -7,10 +7,10 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTex
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 

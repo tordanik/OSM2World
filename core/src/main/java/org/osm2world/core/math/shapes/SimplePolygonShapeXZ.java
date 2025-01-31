@@ -2,21 +2,19 @@ package org.osm2world.core.math.shapes;
 
 import static java.lang.Double.NaN;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 
 public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeXZ {
 

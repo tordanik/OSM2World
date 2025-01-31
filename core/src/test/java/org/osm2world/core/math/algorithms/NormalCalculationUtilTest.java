@@ -9,8 +9,8 @@ import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 
 
 public class NormalCalculationUtilTest {

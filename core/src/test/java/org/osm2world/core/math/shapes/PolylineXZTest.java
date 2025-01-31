@@ -1,12 +1,12 @@
 package org.osm2world.core.math.shapes;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.osm2world.core.math.VectorXZ.Z_UNIT;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
 public class PolylineXZTest {

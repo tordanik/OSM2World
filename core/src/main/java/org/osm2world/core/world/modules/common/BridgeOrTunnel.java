@@ -6,7 +6,7 @@ import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.Co
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.ABOVE;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
-import static org.osm2world.core.math.GeometryUtil.isBetween;
+import static org.osm2world.core.math.algorithms.GeometryUtil.isBetween;
 
 import java.util.List;
 
@@ -19,8 +19,8 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;

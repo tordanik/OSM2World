@@ -1,14 +1,15 @@
 package org.osm2world.core.math.algorithms;
 
-import static org.osm2world.core.math.JTSConversionUtil.*;
+import static org.osm2world.core.math.algorithms.JTSConversionUtil.polygonsFromJTS;
+import static org.osm2world.core.math.algorithms.JTSConversionUtil.toJTS;
 
 import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.operation.buffer.BufferOp;
 import org.locationtech.jts.operation.buffer.BufferParameters;
-import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 
 public final class JTSBufferUtil {
 

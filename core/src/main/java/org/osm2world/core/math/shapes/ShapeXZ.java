@@ -1,18 +1,16 @@
 package org.osm2world.core.math.shapes;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 
 /**
  * two-dimensional, immutable shape. The shape is not required to be closed.

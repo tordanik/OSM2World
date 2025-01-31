@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.mirroredHorizontally;
@@ -11,10 +11,10 @@ import java.util.List;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonXYZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 

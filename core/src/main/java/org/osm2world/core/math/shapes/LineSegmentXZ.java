@@ -1,10 +1,10 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.osm2world.core.math.JTSConversionUtil.fromJTS;
-import static org.osm2world.core.math.JTSConversionUtil.toJTS;
+import static org.osm2world.core.math.algorithms.JTSConversionUtil.fromJTS;
+import static org.osm2world.core.math.algorithms.JTSConversionUtil.toJTS;
 
 import java.util.List;
 import java.util.function.Function;
@@ -13,8 +13,9 @@ import javax.annotation.Nullable;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
-import org.osm2world.core.math.shapes.PolylineShapeXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
+import org.osm2world.core.math.algorithms.JTSConversionUtil;
 
 public class LineSegmentXZ implements PolylineShapeXZ {
 

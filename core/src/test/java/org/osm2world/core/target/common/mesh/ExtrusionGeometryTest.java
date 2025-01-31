@@ -2,25 +2,25 @@ package org.osm2world.core.target.common.mesh;
 
 import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static org.junit.Assert.*;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.mesh.MeshTestUtil.*;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.assertContainsQuad;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.containsTriangle;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.common.ExtrudeOption;
 
 public class ExtrusionGeometryTest {

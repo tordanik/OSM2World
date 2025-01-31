@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.*;
 
 /**
  * triangulation utility class that picks a suitable implementation, such as

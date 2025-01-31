@@ -1,11 +1,15 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 
 /**
  * a three-dimensional polygon

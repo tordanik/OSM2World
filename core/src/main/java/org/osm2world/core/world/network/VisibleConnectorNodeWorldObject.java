@@ -3,8 +3,8 @@ package org.osm2world.core.world.network;
 import static java.util.Arrays.asList;
 
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 
 public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmentWorldObject>
 		extends NetworkNodeWorldObject<S> {

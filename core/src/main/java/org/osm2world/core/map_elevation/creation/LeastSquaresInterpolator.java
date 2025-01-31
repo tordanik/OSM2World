@@ -1,29 +1,18 @@
 package org.osm2world.core.map_elevation.creation;
 
-import static java.lang.Math.*;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.apache.commons.math3.linear.*;
 import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IndexGrid;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * uses least squares method to approximate a polynomial at each site,

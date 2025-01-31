@@ -1,22 +1,22 @@
 package org.osm2world.core.math.algorithms;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.findAllIntersections;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 
 public class LineSegmentIntersectionFinderTest {
 

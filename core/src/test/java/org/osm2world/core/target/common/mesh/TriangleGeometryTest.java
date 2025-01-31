@@ -17,8 +17,8 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 
 public class TriangleGeometryTest {

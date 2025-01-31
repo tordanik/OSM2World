@@ -1,13 +1,16 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.lang.Double.isFinite;
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.*;
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXZ;
 
 /**
  * immutable representation of an axis-aligned rectangle with x and z dimensions.

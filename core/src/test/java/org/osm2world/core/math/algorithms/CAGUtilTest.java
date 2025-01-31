@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 
 public class CAGUtilTest {
 

@@ -2,14 +2,12 @@ package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.PI;
 import static java.util.Collections.reverse;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 

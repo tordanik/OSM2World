@@ -5,8 +5,8 @@ import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.interpolateOnTriangle;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateOnTriangle;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -18,10 +18,10 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer.TextureType;
 import org.osm2world.core.target.common.mesh.Mesh;

@@ -6,7 +6,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.isRightOf;
+import static org.osm2world.core.math.algorithms.GeometryUtil.isRightOf;
 
 import java.awt.*;
 import java.util.List;
@@ -15,8 +15,13 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;

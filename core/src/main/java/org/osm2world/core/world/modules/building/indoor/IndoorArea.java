@@ -6,7 +6,7 @@ import java.util.Collection;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;

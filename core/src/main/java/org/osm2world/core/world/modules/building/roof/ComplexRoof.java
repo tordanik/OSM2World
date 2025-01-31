@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules.building.roof;
 
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 
 import java.util.*;
@@ -12,8 +12,12 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 /**
  * roof that has been mapped with explicit roof edge/ridge/apex elements

@@ -1,16 +1,17 @@
 package org.osm2world.core.target.jogl;
 
 import static com.jogamp.opengl.GL.*;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.algorithms.GeometryUtil.triangleVertexListFromTriangleFan;
+import static org.osm2world.core.math.algorithms.GeometryUtil.triangleVertexListFromTriangleStrip;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 

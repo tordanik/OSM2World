@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.FaceTarget.Face;
 import org.osm2world.core.target.common.FaceTarget.IsolatedTriangle;
 

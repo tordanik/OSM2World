@@ -11,9 +11,9 @@ import java.util.Random;
 import org.junit.Test;
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation;
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 
 public class DelaunayTriangulationTest {

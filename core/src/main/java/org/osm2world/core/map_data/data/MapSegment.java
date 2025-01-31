@@ -1,13 +1,13 @@
 package org.osm2world.core.map_data.data;
 
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 
 import com.google.common.collect.ImmutableList;
 

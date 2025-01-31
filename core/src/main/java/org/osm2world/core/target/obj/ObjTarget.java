@@ -14,9 +14,9 @@ import java.util.*;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.ResourceOutputSettings;
 import org.osm2world.core.target.common.material.Material;

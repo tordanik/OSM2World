@@ -8,9 +8,9 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.VectorGridXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * utility class for building geometry representing empty terrain.

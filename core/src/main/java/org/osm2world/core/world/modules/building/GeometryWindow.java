@@ -5,10 +5,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.algorithms.FaceDecompositionUtil.splitPolygonIntoFaces;
+import static org.osm2world.core.math.algorithms.GeometryUtil.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD0;
@@ -22,7 +22,9 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 
 import java.util.*;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.Angle;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.CommonTarget;

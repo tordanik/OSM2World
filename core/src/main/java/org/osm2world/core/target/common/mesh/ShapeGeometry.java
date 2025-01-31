@@ -10,11 +10,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ClosedShapeXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureDataDimensions;

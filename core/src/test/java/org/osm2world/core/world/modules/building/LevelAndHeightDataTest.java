@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules.building;
 
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
 
 import java.util.EnumSet;
 import java.util.List;

@@ -1,10 +1,12 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 
 public class FaceXYZTest {
 

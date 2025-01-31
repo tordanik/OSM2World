@@ -1,4 +1,4 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.lang.Double.isFinite;
 import static java.util.Collections.singletonList;
@@ -6,10 +6,15 @@ import static java.util.Collections.singletonList;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 
 import com.google.common.collect.ImmutableList;
 
+/**
+ * immutable 2D triangle
+ */
 public class TriangleXZ implements SimplePolygonShapeXZ {
 
 	public final VectorXZ v1, v2, v3;

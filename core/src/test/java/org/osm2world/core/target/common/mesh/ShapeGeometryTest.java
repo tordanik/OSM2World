@@ -1,18 +1,20 @@
 package org.osm2world.core.target.common.mesh;
 
 import static java.awt.Color.WHITE;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 import static org.junit.Assert.*;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.*;
-import static org.osm2world.core.target.common.mesh.MeshTestUtil.*;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.assertContainsQuad;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.containsTriangle;
 
 import org.junit.Test;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 
 public class ShapeGeometryTest {
 

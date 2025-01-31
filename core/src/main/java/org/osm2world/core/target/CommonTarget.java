@@ -1,9 +1,9 @@
 package org.osm2world.core.target;
 
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.trianglesFromTriangleFan;
-import static org.osm2world.core.math.GeometryUtil.trianglesFromTriangleStrip;
 import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.math.algorithms.GeometryUtil.trianglesFromTriangleFan;
+import static org.osm2world.core.math.algorithms.GeometryUtil.trianglesFromTriangleStrip;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
@@ -13,9 +13,13 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.GeometryUtil;
 import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;

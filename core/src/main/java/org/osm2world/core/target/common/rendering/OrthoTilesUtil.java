@@ -2,16 +2,16 @@ package org.osm2world.core.target.common.rendering;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.union;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.union;
 
 import java.util.List;
 
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**
  * calculates camera and projection information for orthographic tiles.

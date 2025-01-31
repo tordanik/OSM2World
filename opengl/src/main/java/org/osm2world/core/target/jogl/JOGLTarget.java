@@ -1,12 +1,12 @@
 package org.osm2world.core.target.jogl;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;

@@ -11,7 +11,7 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
 import org.osm2world.core.world.modules.building.BuildingPart;

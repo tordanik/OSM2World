@@ -1,14 +1,11 @@
 package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.PI;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 public class CircleXZ implements SimpleClosedShapeXZ, RoundShapeXZ {

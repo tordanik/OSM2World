@@ -1,13 +1,5 @@
 package org.osm2world.core.target.povray;
 
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.AbstractTarget;
-import org.osm2world.core.target.common.material.*;
-
-import javax.annotation.Nonnull;
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -15,6 +7,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.*;
+
+import javax.annotation.Nonnull;
+import javax.imageio.ImageIO;
+
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.material.*;
 
 public class POVRayTarget extends AbstractTarget {
 

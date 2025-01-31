@@ -9,8 +9,12 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonXYZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.util.color.LColor;
 
 public final class TestUtil {

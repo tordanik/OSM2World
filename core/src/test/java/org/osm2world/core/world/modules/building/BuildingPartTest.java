@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules.building;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
 
 import java.util.List;
 

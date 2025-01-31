@@ -1,18 +1,20 @@
 package org.osm2world.core.math.algorithms;
 
-import com.google.common.primitives.Ints;
-import earcut4j.Earcut;
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
+
+import com.google.common.primitives.Ints;
+
+import earcut4j.Earcut;
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 /**
  * uses the earcut4j library for triangulation.

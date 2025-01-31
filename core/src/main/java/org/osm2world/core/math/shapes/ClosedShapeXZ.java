@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /** a closed shape. For this kind of shape, the vertices describe an area's boundary. Can have holes. */

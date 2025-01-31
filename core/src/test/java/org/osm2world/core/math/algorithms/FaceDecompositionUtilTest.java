@@ -5,22 +5,19 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.osm2world.core.math.GeometryUtil.closeLoop;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.FaceDecompositionUtil.facesFromGraph;
 import static org.osm2world.core.math.algorithms.FaceDecompositionUtil.splitPolygonIntoFaces;
+import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.test.TestUtil.assertSameCyclicOrder;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.*;
 
 public class FaceDecompositionUtilTest {
 

@@ -1,15 +1,15 @@
 package org.osm2world.core.math.algorithms;
 
 import static java.lang.Double.NaN;
-import static org.osm2world.core.math.GeometryUtil.getTrueLineSegmentIntersection;
+import static org.osm2world.core.math.algorithms.GeometryUtil.getTrueLineSegmentIntersection;
 
 import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

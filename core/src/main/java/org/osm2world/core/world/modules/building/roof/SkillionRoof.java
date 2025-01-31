@@ -4,16 +4,20 @@ import static java.lang.Math.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLine;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLine;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.core.util.ValueParseUtil.parseAngle;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.Angle;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.common.material.Material;
 
 public class SkillionRoof extends HeightfieldRoof {

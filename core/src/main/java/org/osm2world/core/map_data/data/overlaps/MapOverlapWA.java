@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.data.overlaps;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.VectorXZ.distance;
 
@@ -11,8 +12,8 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
 
 /**
  * overlap between a {@link MapWaySegment} and a {@link MapArea} ("Way-Area").

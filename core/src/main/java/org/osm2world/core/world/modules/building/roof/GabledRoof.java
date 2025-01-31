@@ -2,16 +2,16 @@ package org.osm2world.core.world.modules.building.roof;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
-import static org.osm2world.core.math.GeometryUtil.insertIntoPolygon;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.algorithms.GeometryUtil.insertIntoPolygon;
 
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.common.material.Material;
 
 public class GabledRoof extends RoofWithRidge {

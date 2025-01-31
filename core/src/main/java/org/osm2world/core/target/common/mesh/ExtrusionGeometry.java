@@ -5,9 +5,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.max;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.algorithms.GeometryUtil.triangleVertexListFromTriangleStrip;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
@@ -19,8 +19,6 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.*;

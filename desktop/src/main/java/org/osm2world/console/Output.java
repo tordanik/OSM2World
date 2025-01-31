@@ -6,7 +6,7 @@ import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.ConversionFacade.Phase.*;
 import static org.osm2world.core.conversion.ConversionLog.LogLevel.FATAL;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -35,8 +35,8 @@ import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonEle;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapMetadata;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;

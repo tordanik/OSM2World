@@ -13,7 +13,7 @@ import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;

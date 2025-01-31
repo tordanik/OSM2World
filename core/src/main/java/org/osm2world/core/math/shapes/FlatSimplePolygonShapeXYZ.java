@@ -1,15 +1,20 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.osm2world.core.math.*;
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 /**
  * a simple 3D polygon where all vertices are in the same plane.

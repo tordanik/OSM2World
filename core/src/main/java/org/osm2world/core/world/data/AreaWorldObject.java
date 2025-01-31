@@ -3,8 +3,8 @@ package org.osm2world.core.world.data;
 import javax.annotation.Nonnull;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 
 public interface AreaWorldObject extends WorldObject {
 

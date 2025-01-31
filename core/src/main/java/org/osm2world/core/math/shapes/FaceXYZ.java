@@ -1,9 +1,12 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.lang.Math.abs;
-import static org.osm2world.core.math.FlatSimplePolygonShapeXYZ.triangleOnFace;
+import static org.osm2world.core.math.shapes.FlatSimplePolygonShapeXYZ.triangleOnFace;
 
 import java.util.List;
+
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 /**
  * a simple polygon where all vertices are in the same plane

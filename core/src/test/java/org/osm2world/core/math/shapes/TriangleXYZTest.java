@@ -1,4 +1,4 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -8,6 +8,9 @@ import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 
 public class TriangleXYZTest {

@@ -1,8 +1,8 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
+import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
 import org.junit.Test;
 

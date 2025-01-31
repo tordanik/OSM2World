@@ -1,4 +1,4 @@
-package org.osm2world.core.math;
+package org.osm2world.core.util.exception;
 
 /**
  * exception that is used when attempting to construct geometry that

@@ -1,13 +1,13 @@
 package org.osm2world.core.world.network;
 
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonXZ;
 
 /** junction between at least three segments in a network */
 public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldObject>

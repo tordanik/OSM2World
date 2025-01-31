@@ -3,8 +3,8 @@ package org.osm2world.core.math.datastructures;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 public class IndexGridTest {
 

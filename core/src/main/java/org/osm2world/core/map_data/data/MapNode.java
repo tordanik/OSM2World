@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.world.data.NodeWorldObject;
 
 

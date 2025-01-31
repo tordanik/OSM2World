@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.ProceduralWorldObject;

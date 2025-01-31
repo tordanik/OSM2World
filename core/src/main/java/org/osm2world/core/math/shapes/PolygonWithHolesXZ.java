@@ -1,14 +1,15 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 
 public class PolygonWithHolesXZ implements PolygonShapeXZ {
 

@@ -11,10 +11,10 @@ import java.awt.*;
 import java.io.File;
 import java.nio.FloatBuffer;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
+import org.osm2world.core.math.shapes.AxisAlignedBoundingBoxXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData.Wrap;

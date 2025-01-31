@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules.building.roof;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.material.Materials.VOID;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
@@ -11,8 +11,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;

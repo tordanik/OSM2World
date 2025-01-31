@@ -1,4 +1,6 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
+
+import org.osm2world.core.math.VectorXYZ;
 
 public class LineSegmentXYZ {
 

@@ -1,12 +1,13 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.awt.Color.*;
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
 
-import java.awt.Color;
+import java.awt.*;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**

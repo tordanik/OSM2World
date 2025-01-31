@@ -1,4 +1,4 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.algorithms;
 
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
@@ -18,12 +18,14 @@ import java.util.function.Function;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.*;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXYZW;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.util.color.LColor;
 
 /**
- * utility class for some useful calculations
+ * utility class for some useful calculations involving geometric objects and shapes
  */
 public final class GeometryUtil {
 

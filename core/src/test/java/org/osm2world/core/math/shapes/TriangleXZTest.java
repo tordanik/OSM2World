@@ -1,9 +1,11 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
+import org.osm2world.core.math.VectorXZ;
 
 public class TriangleXZTest {
 

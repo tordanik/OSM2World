@@ -2,14 +2,14 @@ package org.osm2world.core.world.modules.building.roof;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.LineSegmentXZ;
+import org.osm2world.core.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.core.target.common.material.Material;
 
 public class MansardRoof extends RoofWithRidge {

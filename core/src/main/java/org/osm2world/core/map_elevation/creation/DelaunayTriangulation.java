@@ -1,27 +1,18 @@
 package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Math.*;
-import static org.osm2world.core.math.GeometryUtil.isRightOf;
+import static org.osm2world.core.math.algorithms.GeometryUtil.isRightOf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.math.shapes.TriangleXZ;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

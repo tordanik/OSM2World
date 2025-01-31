@@ -2,9 +2,9 @@ package org.osm2world.core.world.modules.building.roof;
 
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
-import static org.osm2world.core.math.GeometryUtil.interpolateValue;
-import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.algorithms.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateValue;
+import static org.osm2world.core.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.SLOPED_TRIANGLES;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
@@ -16,9 +16,9 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentConnector;

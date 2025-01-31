@@ -1,10 +1,11 @@
-package org.osm2world.core.math;
+package org.osm2world.core.math.shapes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
+import org.osm2world.core.math.VectorXZ;
 
 public class LineXZTest {
 

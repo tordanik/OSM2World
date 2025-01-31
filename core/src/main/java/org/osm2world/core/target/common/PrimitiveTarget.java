@@ -1,17 +1,18 @@
 package org.osm2world.core.target.common;
 
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
+import static org.osm2world.core.math.algorithms.NormalCalculationUtil.*;
+import static org.osm2world.core.target.common.Primitive.Type.*;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.osm2world.core.math.algorithms.NormalCalculationUtil.*;
-import static org.osm2world.core.target.common.Primitive.Type.*;
+import javax.annotation.Nonnull;
+
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.TriangleXYZ;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 
 /**
  * superclass for targets that are based on OpenGL primitives.
