@@ -1,4 +1,4 @@
-package org.osm2world.core.map_data.creation;
+package org.osm2world.core.math.geo;
 
 import org.osm2world.core.math.VectorXZ;
 

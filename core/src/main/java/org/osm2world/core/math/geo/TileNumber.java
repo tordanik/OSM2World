@@ -1,4 +1,4 @@
-package org.osm2world.core.target.common.rendering;
+package org.osm2world.core.math.geo;
 
 import static java.lang.Math.*;
 
@@ -8,9 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
-
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
 
 /**
  * immutable tile number with zoom level.

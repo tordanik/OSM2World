@@ -14,6 +14,9 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.geo.LatLon;
+import org.osm2world.core.math.geo.MapProjection;
+import org.osm2world.core.math.geo.MetricMapProjection;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 

@@ -8,10 +8,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.datastructures.VectorGridXZ;
+import org.osm2world.core.math.geo.MapProjection;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.ImmutableMaterial;

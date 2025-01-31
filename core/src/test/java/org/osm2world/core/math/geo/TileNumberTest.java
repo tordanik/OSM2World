@@ -1,16 +1,14 @@
-package org.osm2world.core.target.common.rendering;
+package org.osm2world.core.math.geo;
 
-import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.osm2world.core.math.geo.TileNumber.tilesForBounds;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.util.HashSet;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.osm2world.core.target.common.rendering.TileNumber.tilesForBounds;
-import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+import org.junit.Test;
 
 public class TileNumberTest {
 

@@ -1,6 +1,7 @@
-package org.osm2world.core.map_data.creation;
+package org.osm2world.core.math.geo;
 
-import static java.lang.Double.*;
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 
 import java.util.ArrayList;
 import java.util.List;

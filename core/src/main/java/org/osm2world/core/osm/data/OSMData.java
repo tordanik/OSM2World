@@ -1,6 +1,7 @@
 package org.osm2world.core.osm.data;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
@@ -8,8 +9,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLon;
+import org.osm2world.core.math.geo.LatLonBounds;
 
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
 import de.topobyte.osm4j.core.model.iface.OsmBounds;

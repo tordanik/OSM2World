@@ -8,9 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.geo.LatLon;
+import org.osm2world.core.math.geo.LatLonBounds;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 

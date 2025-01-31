@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.junit.Test;
-import org.osm2world.core.target.common.rendering.TileNumber;
+import org.osm2world.core.math.geo.TileNumber;
 
 public class MapMetadataTest {
 

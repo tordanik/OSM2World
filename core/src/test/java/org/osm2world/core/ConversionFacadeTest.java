@@ -16,14 +16,14 @@ import java.nio.file.Files;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
-import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.geo.LatLon;
+import org.osm2world.core.math.geo.MapProjection;
+import org.osm2world.core.math.geo.MetricMapProjection;
 import org.osm2world.core.math.shapes.FaceXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.gltf.GltfTarget;

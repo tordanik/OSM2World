@@ -1,15 +1,6 @@
-package org.osm2world.core.map_data.creation;
+package org.osm2world.core.math.geo;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.atan;
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
-import static java.lang.Math.pow;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static java.lang.Math.tan;
-import static java.lang.Math.toDegrees;
-import static java.lang.Math.toRadians;
+import static java.lang.Math.*;
 
 final class MercatorProjection {
 

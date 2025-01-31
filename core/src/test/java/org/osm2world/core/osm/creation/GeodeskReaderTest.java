@@ -12,9 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.TileNumber;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.common.rendering.TileNumber;
 
 public class GeodeskReaderTest {
 

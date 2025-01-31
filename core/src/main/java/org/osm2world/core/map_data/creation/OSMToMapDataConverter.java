@@ -19,6 +19,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.GeometryUtil;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.MapProjection;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.math.shapes.PolygonWithHolesXZ;

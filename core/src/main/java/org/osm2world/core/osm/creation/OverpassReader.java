@@ -8,7 +8,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
 import org.osm2world.core.osm.data.OSMData;
 
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;

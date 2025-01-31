@@ -1,6 +1,6 @@
-package org.osm2world.core.map_data.creation;
+package org.osm2world.core.math.geo;
 
-import static org.osm2world.core.map_data.creation.MercatorProjection.*;
+import static org.osm2world.core.math.geo.MercatorProjection.*;
 
 import org.osm2world.core.math.VectorXZ;
 

@@ -6,7 +6,7 @@ import java.awt.event.KeyEvent;
 import javax.annotation.Nullable;
 import javax.swing.*;
 
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
 import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.viewer.model.Data;

@@ -7,10 +7,11 @@ import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.union;
 
 import java.util.List;
 
-import org.osm2world.core.map_data.creation.LatLonBounds;
-import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.MapProjection;
+import org.osm2world.core.math.geo.TileNumber;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 /**

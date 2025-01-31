@@ -2,9 +2,9 @@ package org.osm2world.core.osm.creation;
 
 import java.io.IOException;
 
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.TileNumber;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.common.rendering.TileNumber;
 
 /**
  * a data source which provides access to map data using the OpenStreetMap data model

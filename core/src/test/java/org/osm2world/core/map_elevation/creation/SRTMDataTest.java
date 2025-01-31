@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
-import org.osm2world.core.map_data.creation.OrthographicAzimuthalMapProjection;
+import org.osm2world.core.math.geo.LatLon;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 
 public class SRTMDataTest {

@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
-import org.osm2world.core.target.common.rendering.TileNumber;
+import org.osm2world.core.math.geo.TileNumber;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;

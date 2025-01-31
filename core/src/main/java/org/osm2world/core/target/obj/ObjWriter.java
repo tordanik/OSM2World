@@ -11,10 +11,10 @@ import java.util.Iterator;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.GlobalValues;
-import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.geo.MapProjection;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;

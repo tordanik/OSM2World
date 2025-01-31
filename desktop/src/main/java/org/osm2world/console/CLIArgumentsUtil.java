@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
 import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.util.Resolution;

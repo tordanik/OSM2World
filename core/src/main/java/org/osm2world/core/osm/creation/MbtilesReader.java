@@ -10,9 +10,9 @@ import java.util.Map;
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
 import org.imintel.mbtiles4j.Tile;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.TileNumber;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.common.rendering.TileNumber;
 
 import de.topobyte.osm4j.core.access.OsmIterator;
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;

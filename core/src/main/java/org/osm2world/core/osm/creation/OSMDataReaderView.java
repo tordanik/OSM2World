@@ -4,9 +4,9 @@ import java.io.IOException;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLonBounds;
+import org.osm2world.core.math.geo.TileNumber;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.common.rendering.TileNumber;
 
 /**
  * view of another {@link OSMDataReader} which may be limited to a bounding region.

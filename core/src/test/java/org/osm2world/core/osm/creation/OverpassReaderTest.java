@@ -5,8 +5,8 @@ import static org.junit.Assert.assertFalse;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.math.geo.LatLon;
+import org.osm2world.core.math.geo.LatLonBounds;
 import org.osm2world.core.osm.data.OSMData;
 
 public class OverpassReaderTest {
