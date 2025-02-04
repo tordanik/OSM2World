@@ -1,8 +1,6 @@
 package org.osm2world.viewer.view;
 
 import static jogamp.nativewindow.awt.AWTMisc.getWindow;
-import static org.osm2world.core.conversion.ConfigUtil.BG_COLOR_KEY;
-import static org.osm2world.core.conversion.ConfigUtil.parseColor;
 
 import java.awt.*;
 
@@ -68,7 +66,7 @@ public class ViewerGLCanvas extends GLCanvas {
 
 	        final GL gl = glDrawable.getGL();
 
-			Color clearColor = parseColor(data.getConfig().getString(BG_COLOR_KEY), Color.BLACK);
+			Color clearColor = data.getConfig().backgroundColor();
 			AbstractJOGLTarget.clearGL(gl, clearColor);
 
 	        if (renderOptions.camera == null) {

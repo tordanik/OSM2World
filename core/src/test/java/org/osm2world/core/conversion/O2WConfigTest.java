@@ -2,9 +2,14 @@ package org.osm2world.core.conversion;
 
 import static org.junit.Assert.*;
 
+import java.awt.*;
 import java.io.File;
+import java.util.Map;
 
 import org.junit.Test;
+import org.osm2world.core.util.enums.ForwardBackward;
+import org.osm2world.core.util.enums.LeftRight;
+import org.osm2world.core.util.enums.LeftRightBoth;
 
 public class O2WConfigTest {
 
@@ -28,7 +33,7 @@ public class O2WConfigTest {
 		assertEquals("baz", result.getString("stringProperty", "something"));
 		assertFalse(result.getBoolean("keepOsmElements"));
 
-		File texturePath = ConfigUtil.resolveFileConfigProperty(result, "textures/test.png");
+		File texturePath = result.resolveFileConfigProperty("textures/test.png");
 		assertTrue(texturePath.exists());
 
 	}
@@ -52,6 +57,32 @@ public class O2WConfigTest {
 		assertEquals(0.42, result.getDouble("treesPerSquareMeter", 0.42), 0);
 		assertEquals("baz", result.getString("stringProperty", "something"));
 		assertFalse(result.getBoolean("keepOsmElements"));
+
+	}
+
+	@Test
+	public void testGetEnum() {
+
+		var config = new O2WConfig(Map.of(
+				"key1", "LEFT",
+				"key2", "BACKWARD"
+		));
+
+		assertEquals(LeftRight.LEFT, config.getEnum(LeftRight.class, "key1"));
+		assertEquals(LeftRightBoth.LEFT, config.getEnum(LeftRightBoth.class, "key1"));
+		assertEquals(ForwardBackward.BACKWARD, config.getEnum(ForwardBackward.class, "key2"));
+
+	}
+
+	@Test
+	public void testGetColor() {
+
+		var config = new O2WConfig(Map.of(
+				"key1", "#00FF00"
+		));
+
+		assertEquals(new Color(0, 255, 0), config.getColor("key1"));
+		assertEquals(Color.RED, config.getColor("no_such_key", Color.RED));
 
 	}
 

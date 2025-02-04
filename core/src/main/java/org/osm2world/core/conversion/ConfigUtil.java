@@ -1,18 +1,8 @@
 package org.osm2world.core.conversion;
 
-import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
-
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.configuration.FileConfiguration;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
 
 /**
  * utility class for parsing configuration values
@@ -20,85 +10,6 @@ import org.osm2world.core.target.common.mesh.LevelOfDetail;
 final public class ConfigUtil {
 
 	private ConfigUtil() { }
-
-	public static final String BG_COLOR_KEY = "backgroundColor";
-	public static final String BG_IMAGE_KEY = "backgroundImage";
-	public static final String CANVAS_LIMIT_KEY = "canvasLimit";
-
-	/** reads and parses the value of the lod property */
-	public static LevelOfDetail readLOD(O2WConfig config) {
-		return switch (config.getInt("lod", 4)) {
-			case 0 -> LOD0;
-			case 1 -> LOD1;
-			case 2 -> LOD2;
-			case 3 -> LOD3;
-			default -> LOD4;
-		};
-	}
-
-	public static final Color parseColor(@Nullable String colorString, Color defaultValue) {
-		Color result = parseColor(colorString);
-		return result != null ? result : defaultValue;
-	}
-
-	public static final @Nullable Color parseColor(@Nullable String colorString) {
-
-		if (colorString == null) {
-			return null;
-		}
-
-		Color color = parseColorTuple(colorString);
-
-		if (color != null) {
-			return color;
-		} else {
-
-			try {
-				return Color.decode(colorString);
-			} catch (NumberFormatException e) {
-				return null;
-			}
-
-		}
-
-	}
-
-	private static final Pattern hsvTuplePattern = Pattern.compile(
-		"^hsv\\s*\\(\\s*(\\d{1,3})\\s*," +
-			"\\s*(\\d{1,3})\\s*%\\s*," +
-			"\\s*(\\d{1,3})\\s*%\\s*\\)");
-		
-	/**
-	 * parses colors that are given as a color scheme identifier
-	 * with a value tuple in brackets.
-	 * 
-	 * Currently only supports hsv.
-	 * 
-	 * @return color; null on parsing errors
-	 */
-	public static final Color parseColorTuple(String colorString) {
-
-		Matcher matcher = hsvTuplePattern.matcher(colorString);
-
-		if (matcher.matches()) {
-
-			try {
-
-				int v1 = Integer.parseInt(matcher.group(1));
-				int v2 = Integer.parseInt(matcher.group(2));
-				int v3 = Integer.parseInt(matcher.group(3));
-
-				return Color.getHSBColor(v1 / 360f, v2 / 100f, v3 / 100f);
-
-			} catch (NumberFormatException nfe) {
-				return null;
-			}
-
-		}
-
-		return null;
-
-	}
 
 	/**
 	 * Registers the fonts that exist in the directory specified
@@ -129,49 +40,6 @@ final public class ConfigUtil {
 				}
 		    }
 		}
-	}
-
-	public static <T extends Enum<T>> @Nullable T readEnum(Class<T> enumClass, O2WConfig config, String key) {
-		String value = config.getString(key);
-		if (value != null) {
-			try {
-				return Enum.valueOf(enumClass, value.toUpperCase());
-			} catch (IllegalArgumentException ignored) {}
-		}
-		return null;
-	}
-
-	/**
-	 * If config references some files by path e.g. textures
-	 * resolve file paths relative to config location
-	 */
-	public static File resolveFileConfigProperty(O2WConfig config, String fileName) {
-		if (fileName == null) {
-			return null;
-		}
-
-		File file = new File(fileName);
-		
-		String basePath = null;
-		if (config.containsKey("configPath")) {
-			basePath = config.getString("configPath");
-		}
-
-		if (basePath == null && config instanceof FileConfiguration fc && fc.getFile() != null) {
-			basePath = fc.getFile().getAbsoluteFile().getParent();
-		}
-
-		if (basePath != null) {
-			file = Path.of(basePath).normalize()
-					.resolve(Path.of(fileName).normalize()).toFile();
-		}
-
-		if (!file.exists()) {
-			System.err.println("File referenced in config does not exist: " + file);
-			return null;
-		}
-
-		return file;
 	}
 
 }

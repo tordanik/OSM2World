@@ -1,10 +1,16 @@
 package org.osm2world.core.conversion;
 
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
+
+import java.awt.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -121,8 +127,131 @@ public class O2WConfig {
 		return config.getList(key);
 	}
 
+	public <T extends Enum<T>> @Nullable T getEnum(Class<T> enumClass, String key) {
+		String value = getString(key);
+		if (value != null) {
+			try {
+				return Enum.valueOf(enumClass, value.toUpperCase());
+			} catch (IllegalArgumentException ignored) {}
+		}
+		return null;
+	}
+
+	public @Nullable Color getColor(String key) {
+		return parseColor(getString(key));
+	}
+
+	public Color getColor(String key, Color defaultValue) {
+		Color result = getColor(key);
+		return result != null ? result : defaultValue;
+	}
+
+	private static @Nullable Color parseColor(@Nullable String colorString) {
+
+		if (colorString == null) {
+			return null;
+		}
+
+		Color color = parseColorTuple(colorString);
+
+		if (color != null) {
+			return color;
+		} else {
+
+			try {
+				return Color.decode(colorString);
+			} catch (NumberFormatException e) {
+				return null;
+			}
+
+		}
+
+	}
+
+	private static final Pattern hsvTuplePattern = Pattern.compile(
+			"^hsv\\s*\\(\\s*(\\d{1,3})\\s*," +
+					"\\s*(\\d{1,3})\\s*%\\s*," +
+					"\\s*(\\d{1,3})\\s*%\\s*\\)");
+
+	/**
+	 * parses colors that are given as a color scheme identifier
+	 * with a value tuple in brackets.
+	 * Currently only supports hsv.
+	 *
+	 * @return color; null on parsing errors
+	 */
+	public static Color parseColorTuple(String colorString) {
+
+		Matcher matcher = hsvTuplePattern.matcher(colorString);
+
+		if (matcher.matches()) {
+
+			try {
+
+				int v1 = Integer.parseInt(matcher.group(1));
+				int v2 = Integer.parseInt(matcher.group(2));
+				int v3 = Integer.parseInt(matcher.group(3));
+
+				return Color.getHSBColor(v1 / 360f, v2 / 100f, v3 / 100f);
+
+			} catch (NumberFormatException nfe) {
+				return null;
+			}
+
+		}
+
+		return null;
+
+	}
+
+	/** parses and returns the value of the lod property */
 	public LevelOfDetail getLod() {
-		return ConfigUtil.readLOD(this);
+		return switch (this.getInt("lod", 4)) {
+			case 0 -> LOD0;
+			case 1 -> LOD1;
+			case 2 -> LOD2;
+			case 3 -> LOD3;
+			default -> LOD4;
+		};
+	}
+
+	public Color backgroundColor() {
+		return getColor("backgroundColor", Color.BLACK);
+	}
+
+	/**
+	 * if this config references some files by path, e.g. textures,
+	 * resolve file paths relative to the location of the config file used to load this config (if any)
+	 */
+	public File resolveFileConfigProperty(String fileName) {
+
+		if (fileName == null) {
+			return null;
+		}
+
+		File file = new File(fileName);
+
+		String basePath = null;
+		if (this.containsKey("configPath")) {
+			basePath = this.getString("configPath");
+		}
+
+		if (basePath == null && config.getFile() != null) {
+			basePath = config.getFile().getAbsoluteFile().getParent();
+		}
+
+		if (basePath != null) {
+			file = Path.of(basePath).normalize()
+					.resolve(Path.of(fileName).normalize()).toFile();
+		}
+
+		if (!file.exists()) {
+			System.err.println("File referenced in config does not exist: " + file);
+			return null;
+		}
+
+		return file;
+
 	}
 
 	private static PropertiesConfiguration loadConfigFiles(File... configFiles) throws ConfigurationException {

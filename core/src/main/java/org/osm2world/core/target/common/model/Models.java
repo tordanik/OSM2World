@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.gltf.GltfModel;
 import org.osm2world.core.world.creation.WorldModule;
@@ -79,7 +78,7 @@ public class Models {
 				try {
 					List<Model> ms = new ArrayList<>(fileNames.size());
 					for (String fileName : fileNames) {
-						File modelFile = ConfigUtil.resolveFileConfigProperty(config, fileName);
+						File modelFile = config.resolveFileConfigProperty(fileName);
 						if (modelFile == null) {
 							System.err.println("Can't read model file " + fileName);
 						}

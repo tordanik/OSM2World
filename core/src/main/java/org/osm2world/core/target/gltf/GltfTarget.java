@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.osm2world.core.GlobalValues;
-import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.map_data.data.MapRelationElement;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.Vector3D;
@@ -385,7 +384,7 @@ public class GltfTarget extends MeshTarget {
 			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
 		}
 
-		LevelOfDetail lod = ConfigUtil.readLOD(config);
+		LevelOfDetail lod = config.getLod();
 
 		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
 				new FilterLod(lod),

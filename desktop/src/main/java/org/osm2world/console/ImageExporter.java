@@ -4,7 +4,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
 import static org.osm2world.console.CLIArgumentsUtil.getResolution;
-import static org.osm2world.core.conversion.ConfigUtil.*;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 
 import java.awt.*;
@@ -21,7 +20,6 @@ import java.nio.charset.Charset;
 
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -49,6 +47,7 @@ public class ImageExporter {
 	 * (which would lead to crashes)
 	 */
 	private static final int DEFAULT_CANVAS_LIMIT = 1024;
+	private static final String CANVAS_LIMIT_KEY = "canvasLimit";
 
 	private final Results results;
 	private final O2WConfig config;
@@ -96,15 +95,15 @@ public class ImageExporter {
 
 		this.exportAlpha = config.getBoolean("exportAlpha", false);
 
-		Color bgColor = parseColor(config.getString(BG_COLOR_KEY), Color.BLACK);
+		Color bgColor = config.backgroundColor();
 		if (exportAlpha) {
 			this.clearColor = new Color(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), 0);
 		} else {
 			this.clearColor = bgColor;
 		}
 
-		if (config.containsKey(BG_IMAGE_KEY)) {
-			backgroundImage = ConfigUtil.resolveFileConfigProperty(config, config.getString(BG_IMAGE_KEY));
+		if (config.containsKey("backgroundImage")) {
+			backgroundImage = config.resolveFileConfigProperty(config.getString("backgroundImage"));
 			if (backgroundImage == null || !backgroundImage.exists()) {
 				System.err.println("background image file doesn't exist: "
 						+ backgroundImage);

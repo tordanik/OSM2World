@@ -2,7 +2,6 @@ package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.conversion.ConfigUtil.readEnum;
 
 import java.awt.*;
 import java.io.File;
@@ -16,7 +15,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Transparency;
@@ -420,23 +418,23 @@ public final class Materials {
 						material.setDoubleSided(doubleSided);
 					}
 					case "interpolation" -> {
-						Interpolation interpolation = readEnum(Interpolation.class, config, key);
+						Interpolation interpolation = config.getEnum(Interpolation.class, key);
 						if (interpolation != null) { material.setInterpolation(interpolation); }
 					}
 					case "shadow" -> {
-						Material.Shadow shadow = readEnum(Material.Shadow.class, config, key);
+						Material.Shadow shadow = config.getEnum(Material.Shadow.class, key);
 						if (shadow != null) { material.setShadow(shadow); }
 					}
 					case "ssao" -> {
-						Material.AmbientOcclusion ao = readEnum(Material.AmbientOcclusion.class, config, key);
+						Material.AmbientOcclusion ao = config.getEnum(Material.AmbientOcclusion.class, key);
 						if (ao != null) { material.setAmbientOcclusion(ao); }
 					}
 					case "transparency" -> {
-						Transparency transparency = readEnum(Transparency.class, config, key);
+						Transparency transparency = config.getEnum(Transparency.class, key);
 						if (transparency != null) { material.setTransparency(transparency); }
 					}
 					case "color" -> {
-						Color color = ConfigUtil.parseColor(config.getString(key));
+						Color color = config.getColor(key);
 						if (color != null) {
 							material.setColor(color);
 						} else {
@@ -484,7 +482,7 @@ public final class Materials {
 
 		if (config.containsKey(keyPrefix + "_dir")) {
 
-			File textureDir = ConfigUtil.resolveFileConfigProperty(config, config.getString(keyPrefix + "_dir"));
+			File textureDir = config.resolveFileConfigProperty(config.getString(keyPrefix + "_dir"));
 			if (textureDir!= null && textureDir.exists() && textureDir.isDirectory()) {
 				for (File file : textureDir.listFiles()) {
 					if (file.getName().contains("_Color.")) {
@@ -588,15 +586,7 @@ public final class Materials {
 			}
 
 			//get text color configuration
-			Color color = Color.BLACK;
-			String colorString = config.getString(textColorKey);
-			if (colorString != null) {
-				color = ConfigUtil.parseColor(colorString);
-				if (color == null) {
-					System.err.println("Incorrect color value: "+colorString+". Defaulting to black.");
-					color = Color.BLACK;
-				}
-			}
+			Color color = config.getColor(textColorKey, Color.BLACK);
 
 			//get relative font size
 			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
@@ -606,7 +596,7 @@ public final class Materials {
 					relativeFontSize, wrap, coordFunction);
 
 		} else if ("image".equals(type)) {
-			File file = ConfigUtil.resolveFileConfigProperty(config, config.getString(keyPrefix + "_file"));
+			File file = config.resolveFileConfigProperty(config.getString(keyPrefix + "_file"));
 			
 			if (file == null || file.isDirectory()) {
 				file = null;

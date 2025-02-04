@@ -272,7 +272,7 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 
-		File srtmDir = ConfigUtil.resolveFileConfigProperty(config, config.getString("srtmDir", null));
+		File srtmDir = config.resolveFileConfigProperty(config.getString("srtmDir", null));
 		TerrainElevationData eleData = null;
 
 		if (srtmDir != null) {

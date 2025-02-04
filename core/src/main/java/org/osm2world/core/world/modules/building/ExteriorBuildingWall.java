@@ -6,7 +6,6 @@ import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.osm2world.core.conversion.ConfigUtil.readLOD;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.math.algorithms.GeometryUtil.insertIntoPolygon;
@@ -272,7 +271,7 @@ public class ExteriorBuildingWall {
 
 								DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
 								if (lodRange.max().ordinal() < 3
-										|| readLOD(buildingPart.config).ordinal() < 3) {
+										|| buildingPart.config.getLod().ordinal() < 3) {
 									params = params.withInset(0.0);
 								}
 								mainSurface.addElementIfSpaceFree(new Door(pos, params));
@@ -443,7 +442,7 @@ public class ExteriorBuildingWall {
 		TagSet doorTags = TagSet.of("door", "overhead");
 		DoorParameters params = DoorParameters.fromTags(doorTags, this.tags);
 
-		if (readLOD(buildingPart.config).ordinal() < 3) {
+		if (buildingPart.config.getLod().ordinal() < 3) {
 			params = params.withInset(0.0);
 		}
 
