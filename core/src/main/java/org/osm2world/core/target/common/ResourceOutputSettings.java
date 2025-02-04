@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.RasterImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
@@ -77,7 +77,7 @@ public record ResourceOutputSettings(
 
 	}
 
-	public static ResourceOutputSettings fromConfig(Configuration config, URI textureDirectory, boolean canEmbed) {
+	public static ResourceOutputSettings fromConfig(O2WConfig config, URI textureDirectory, boolean canEmbed) {
 
 		/* parse the modes */
 

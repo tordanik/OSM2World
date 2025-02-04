@@ -7,8 +7,8 @@ import static org.osm2world.core.math.algorithms.GeometryUtil.closeLoop;
 
 import java.util.List;
 
-import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Test;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
@@ -38,7 +38,7 @@ public class IndoorWallTest {
 				builder.createNode(-10, +5));
 
 		MapArea buildingPartArea = builder.createWayArea(buildingNodes, TagSet.of("building", "yes", "building:levels", "5", "height", "12.5"));
-		Building building = new Building(buildingPartArea, new BaseConfiguration());
+		Building building = new Building(buildingPartArea, new O2WConfig());
 		BuildingPart buildingPart = building.getParts().get(0);
 
 		/* generate wall */

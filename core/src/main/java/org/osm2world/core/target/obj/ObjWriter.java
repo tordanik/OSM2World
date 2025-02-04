@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -29,7 +29,7 @@ public final class ObjWriter {
 
 	public static final void writeObjFile(
 			File objFile, MapData mapData, MapProjection mapProjection,
-			Configuration config, Camera camera, Projection projection, boolean underground)
+			O2WConfig config, Camera camera, Projection projection, boolean underground)
 			throws IOException {
 
 		if (!objFile.exists()) {
@@ -70,7 +70,7 @@ public final class ObjWriter {
 
 	public static final void writeObjFiles(
 			final File objDirectory, MapData mapData, final MapProjection mapProjection,
-			Configuration config, Camera camera, Projection projection,
+			O2WConfig config, Camera camera, Projection projection,
 			int primitiveThresholdPerFile)
 			throws IOException {
 

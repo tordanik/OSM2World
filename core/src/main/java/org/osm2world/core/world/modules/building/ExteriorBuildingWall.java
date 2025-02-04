@@ -6,11 +6,11 @@ import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.osm2world.core.conversion.ConfigUtil.readLOD;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.math.algorithms.GeometryUtil.insertIntoPolygon;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
-import static org.osm2world.core.util.ConfigUtil.readLOD;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
@@ -18,8 +18,8 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWay;
@@ -201,7 +201,7 @@ public class ExteriorBuildingWall {
 
 			LODRange lodRange = windowImplementations.get(windowImplementation);
 			if (buildingPart.config.containsKey("lod") &&
-					!lodRange.contains(readLOD(buildingPart.config))) continue;
+					!lodRange.contains(buildingPart.config.getLod())) continue;
 			target.setCurrentLodRange(lodRange);
 
 			/* construct the surface(s) */
@@ -375,7 +375,7 @@ public class ExteriorBuildingWall {
 	protected PolylineShapeXZ getPoints() { return points; }
 
 	private static Map<WindowImplementation, LODRange> chooseWindowImplementations(
-			boolean explicitWindows, boolean hasDoor, Configuration config) {
+			boolean explicitWindows, boolean hasDoor, O2WConfig config) {
 
 		var explicitWI = WindowImplementation.getValue(config.getString("explicitWindowImplementation"), null);
 		var implicitWI = WindowImplementation.getValue(config.getString("implicitWindowImplementation"), null);

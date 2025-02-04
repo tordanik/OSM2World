@@ -2,8 +2,7 @@ package org.osm2world.core.target.common;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.Target;
 
 /**
@@ -13,19 +12,19 @@ import org.osm2world.core.target.Target;
  */
 public abstract class AbstractTarget implements Target {
 
-	protected @Nonnull Configuration config = new PropertiesConfiguration();
+	protected @Nonnull O2WConfig config = new O2WConfig();
 
 	@Override
-	public Configuration getConfiguration() {
+	public O2WConfig getConfiguration() {
 		return config;
 	}
 
 	@Override
-	public void setConfiguration(Configuration config) {
+	public void setConfiguration(O2WConfig config) {
 		if (config != null) {
 			this.config = config;
 		} else {
-			this.config = new PropertiesConfiguration();
+			this.config = new O2WConfig();
 		}
 	}
 

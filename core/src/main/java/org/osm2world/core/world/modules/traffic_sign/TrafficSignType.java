@@ -5,7 +5,7 @@ import static org.osm2world.core.target.common.material.Materials.getMaterial;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
@@ -38,12 +38,12 @@ public class TrafficSignType {
 	}
 
 	/**
-	 * Parses a {@link Configuration} for the traffic sign-specific keys
-	 * trafficSign_NAME_numPosts|defaultHeight|material
+	 * Parses an {@link O2WConfig} for the traffic sign-specific keys
+	 * <code>trafficSign_NAME_numPosts|defaultHeight|material</code>
 	 *
-	 * @return  a {@link TrafficSignType} with the the parsed values; null if the type does not exist or is invalid
+	 * @return  a {@link TrafficSignType} with the parsed values; null if the type does not exist or is invalid
 	 */
-	public static @Nullable TrafficSignType fromConfig(TrafficSignIdentifier sign, Configuration config) {
+	public static @Nullable TrafficSignType fromConfig(TrafficSignIdentifier sign, O2WConfig config) {
 		TrafficSignType result = fromConfig(sign.configKey(), config);
 		if (result == null) {
 			result = fromConfig(sign.configKeyWithoutSubType(), config);
@@ -51,7 +51,7 @@ public class TrafficSignType {
 		return result;
 	}
 
-	private static @Nullable TrafficSignType fromConfig(String configKey, Configuration config) {
+	private static @Nullable TrafficSignType fromConfig(String configKey, O2WConfig config) {
 
 		String keyPrefix = "trafficSign_" + configKey;
 

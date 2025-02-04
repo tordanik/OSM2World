@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.map_data.data.MapRelationElement;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.Vector3D;
@@ -42,7 +43,6 @@ import org.osm2world.core.target.gltf.data.GltfMaterial.NormalTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.OcclusionTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.PbrMetallicRoughness;
 import org.osm2world.core.target.gltf.data.GltfMaterial.TextureInfo;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 

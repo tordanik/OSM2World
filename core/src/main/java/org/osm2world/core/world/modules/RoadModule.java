@@ -29,8 +29,8 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.ArrayUtils;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -111,16 +111,16 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	/** returns the default driving side based on a {@link Configuration} */
-	public static LeftRight getDefaultDrivingSide(Configuration config) {
-		return "left".equals(config.getString("drivingSide", "right").toLowerCase()) ? LeftRight.LEFT : LeftRight.RIGHT;
+	/** returns the default driving side based on an {@link O2WConfig} */
+	public static LeftRight getDefaultDrivingSide(O2WConfig config) {
+		return "left".equalsIgnoreCase(config.getString("drivingSide", "right")) ? LeftRight.LEFT : LeftRight.RIGHT;
 	}
 
 	/**
 	 * Determine whether this segment has left-hand or right-hand traffic,
 	 * based on the configured default and the way's driving_side tags, if any.
 	 */
-	public static LeftRight getDrivingSide(MapWaySegment segment, Configuration config) {
+	public static LeftRight getDrivingSide(MapWaySegment segment, O2WConfig config) {
 		if (segment.getTags().contains("driving_side", "left")) {
 			return LeftRight.LEFT;
 		} else if (segment.getTags().contains("driving_side", "right")) {
@@ -773,7 +773,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		final private boolean steps;
 
-		public Road(MapWaySegment segment, Configuration config) {
+		public Road(MapWaySegment segment, O2WConfig config) {
 
 			super(segment);
 

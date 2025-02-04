@@ -4,8 +4,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
 import static org.osm2world.console.CLIArgumentsUtil.getResolution;
+import static org.osm2world.core.conversion.ConfigUtil.*;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
-import static org.osm2world.core.util.ConfigUtil.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -19,15 +19,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.conversion.ConfigUtil;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.*;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.Resolution;
 
 import com.jogamp.opengl.*;
@@ -51,7 +51,7 @@ public class ImageExporter {
 	private static final int DEFAULT_CANVAS_LIMIT = 1024;
 
 	private final Results results;
-	private final Configuration config;
+	private final O2WConfig config;
 
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
@@ -74,7 +74,7 @@ public class ImageExporter {
 	 * Creates an {@link ImageExporter} for later use.
 	 * Already performs calculations that only need to be done once for a group of files.
 	 */
-	private ImageExporter(Configuration config, Results results,
+	private ImageExporter(O2WConfig config, Results results,
 						  int pBufferSizeX, int pBufferSizeY, boolean unbufferedRendering) {
 
 		this.results = results;
@@ -165,7 +165,7 @@ public class ImageExporter {
 	 *                       for the files that will later be requested.
 	 *                       Basis for optimization preparations.
 	 */
-	public static ImageExporter create(Configuration config, Results results,
+	public static ImageExporter create(O2WConfig config, Results results,
 			CLIArgumentsGroup expectedGroup) {
 
 		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
@@ -224,7 +224,7 @@ public class ImageExporter {
 	 *   but those with a perspective projection need to be rendered all at once.)
 	 *   If the value is too high for the system's capabilities, OSM2World may crash.
 	 */
-	public static ImageExporter create(Configuration config, Results results,
+	public static ImageExporter create(O2WConfig config, Results results,
 									   Resolution canvasResolution) {
 
 		boolean unbufferedRendering = true;
@@ -349,7 +349,7 @@ public class ImageExporter {
 	}
 
 	private static JOGLTarget createJOGLTarget(GL gl, Results results,
-			Configuration config) {
+			O2WConfig config) {
 
 		JOGLTarget target;
 		if ("shader".equals(config.getString("joglImplementation"))) {

@@ -10,7 +10,7 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -22,7 +22,6 @@ import org.osm2world.core.math.shapes.LineSegmentXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonXZ;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.CachingProceduralWorldObject;
@@ -36,7 +35,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	/** a {@link MapArea} or {@link MapMultipolygonRelation} (for a multipolygon with multiple outer rings) */
 	private final MapRelationElement element;
 
-	private final Configuration config;
+	private final O2WConfig config;
 
 	private final List<BuildingPart> parts = new ArrayList<>();
 
@@ -44,7 +43,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	private Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
-	public Building(MapRelationElement element, Configuration config) {
+	public Building(MapRelationElement element, O2WConfig config) {
 
 		this.element = element;
 		this.config = config;
@@ -183,7 +182,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	protected @Nullable LevelOfDetail getConfiguredLod() {
-		return ConfigUtil.readLOD(config);
+		return config.getLod();
 	}
 
 	@Override

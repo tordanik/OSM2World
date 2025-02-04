@@ -1,8 +1,8 @@
 package org.osm2world.viewer.view;
 
 import static jogamp.nativewindow.awt.AWTMisc.getWindow;
-import static org.osm2world.core.util.ConfigUtil.BG_COLOR_KEY;
-import static org.osm2world.core.util.ConfigUtil.parseColor;
+import static org.osm2world.core.conversion.ConfigUtil.BG_COLOR_KEY;
+import static org.osm2world.core.conversion.ConfigUtil.parseColor;
 
 import java.awt.*;
 

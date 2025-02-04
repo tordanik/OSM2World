@@ -7,7 +7,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 import java.util.List;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.TagSet;
@@ -32,7 +32,7 @@ public final class IndoorObjectData {
 
         this.levels = parseLevels(mapElement.getTags().getValue("level"), emptyList());
 
-        Configuration config = buildingPart.getConfig();
+        O2WConfig config = buildingPart.getConfig();
 
         if (config.getString("renderLevels") != null){
             List<String> renLevels = asList(config.getString("renderLevels").split(","));

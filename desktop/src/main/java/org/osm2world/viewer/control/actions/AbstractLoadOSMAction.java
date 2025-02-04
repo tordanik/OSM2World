@@ -8,13 +8,12 @@ import java.io.Serial;
 
 import javax.swing.*;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.util.exception.InvalidGeometryException;
 import org.osm2world.core.osm.creation.OSMDataReaderView;
+import org.osm2world.core.util.exception.InvalidGeometryException;
 import org.osm2world.core.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
@@ -45,7 +44,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 
 		try {
 			data.reloadConfig(renderOptions);
-		} catch (ConfigurationException e) {
+		} catch (Exception e) {
 
 			JOptionPane.showMessageDialog(viewerFrame,
 					"Could not reload the properties configuration file:\n"

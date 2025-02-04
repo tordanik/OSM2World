@@ -13,7 +13,7 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -186,7 +186,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	private double defaultTreeHeightForest = 20;
 
 	@Override
-	public void setConfiguration(@Nonnull Configuration config) {
+	public void setConfiguration(@Nonnull O2WConfig config) {
 		super.setConfiguration(config);
 		useBillboards = config.getBoolean("useBillboards", false);
 		defaultTreeHeight = config.getDouble("defaultTreeHeight", 10);

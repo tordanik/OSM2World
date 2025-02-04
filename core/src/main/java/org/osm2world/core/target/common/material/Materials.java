@@ -2,7 +2,7 @@ package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.util.ConfigUtil.readEnum;
+import static org.osm2world.core.conversion.ConfigUtil.readEnum;
 
 import java.awt.*;
 import java.io.File;
@@ -16,14 +16,14 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.ConfigUtil;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.TextTexture.FontStyle;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -370,7 +370,7 @@ public final class Materials {
 	 * configures the attributes of the materials within this class
 	 * based on external configuration settings
 	 */
-	synchronized public static final void configureMaterials(Configuration config) {
+	synchronized public static final void configureMaterials(O2WConfig config) {
 
 		externalMaterials.clear();
 
@@ -475,7 +475,7 @@ public final class Materials {
 
 	}
 
-	private static @Nullable TextureLayer createTextureLayer(Configuration config, String keyPrefix, boolean implicitColorTexture) {
+	private static @Nullable TextureLayer createTextureLayer(O2WConfig config, String keyPrefix, boolean implicitColorTexture) {
 
 		File baseColorTexture = null;
 		File ormTexture = null;
@@ -523,7 +523,7 @@ public final class Materials {
 	 * @param defaultFile  texture file to use if there's no _file attribute
 	 * @return  valid {@link TextureData} extracted from the config file, or null
 	 */
-	private static @Nullable TextureData createTextureData(Configuration config, String keyPrefix,
+	private static @Nullable TextureData createTextureData(O2WConfig config, String keyPrefix,
 			@Nullable File defaultFile) {
 
 		TextureDataDimensions dimensions = createTextureDataDimensions(config, keyPrefix);
@@ -627,7 +627,7 @@ public final class Materials {
 	/**
 	 * @return  valid {@link TextureDataDimensions} extracted from the config file, possibly using default values
 	 */
-	private static TextureDataDimensions createTextureDataDimensions(Configuration config, String keyPrefix) {
+	private static TextureDataDimensions createTextureDataDimensions(O2WConfig config, String keyPrefix) {
 
 		double width = config.getDouble(keyPrefix + "_width", 1.0);
 		double height = config.getDouble(keyPrefix + "_height", 1.0);

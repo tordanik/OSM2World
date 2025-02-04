@@ -1,30 +1,22 @@
 package org.osm2world.console;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.GUI;
+import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-import javax.swing.UIManager;
+import javax.swing.*;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.viewer.view.ViewerFrame;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
@@ -174,12 +166,13 @@ public class OSM2World {
 
 		/* load configuration file */
 
-		Configuration config = new BaseConfiguration();
+		O2WConfig config = new O2WConfig();
 
 		try {
 			File[] configFiles = representativeArgs.getConfig().toArray(new File[0]);
-			config = loadConfigFiles(lod, configFiles);
-		} catch (ConfigurationException e) {
+			Map<String, ?> extraProperties = lod == null ? Map.of() : Map.of("lod", lod.ordinal());
+			config = new O2WConfig(extraProperties, configFiles);
+		} catch (Exception e) {
 			System.err.println("could not read config, ignoring it:\n" + e);
 		}
 
@@ -223,34 +216,6 @@ public class OSM2World {
 			throw new Error("Cannot recursively execute parameter files. Program mode was: " + programMode);
 
 		}
-	}
-
-	public static Configuration loadConfigFiles(@Nullable LevelOfDetail lod, File... configFiles)
-			throws ConfigurationException {
-
-		PropertiesConfiguration config = new PropertiesConfiguration();
-		config.setListDelimiter(';');
-
-		for (File it : configFiles) {
-			config.load(it);
-		}
-
-		Arrays.stream(configFiles)
-			.filter(f -> f.exists())
-			.findFirst()
-			.ifPresent(f -> {
-				config.addProperty("configPath", f.getAbsoluteFile().getParent());
-			});
-
-		if (lod != null) {
-			config.clearProperty("lod");
-			config.addProperty("lod", lod.ordinal());
-		}
-
-		ConfigUtil.parseFonts(config);
-
-		return config;
-
 	}
 
 }

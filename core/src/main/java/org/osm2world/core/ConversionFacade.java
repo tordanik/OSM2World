@@ -19,9 +19,9 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapMetadata;
@@ -41,7 +41,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Models;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.attachment.AttachmentConnector;
@@ -96,7 +95,7 @@ public class ConversionFacade {
 	/**
 	 * generates a default list of modules for the conversion
 	 */
-	static final List<WorldModule> createDefaultModuleList(Configuration config) {
+	static final List<WorldModule> createDefaultModuleList(O2WConfig config) {
 
 		List<String> excludedModules = config.getList("excludeWorldModule")
 			.stream().map(m -> m.toString()).toList();
@@ -173,7 +172,7 @@ public class ConversionFacade {
 	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(File osmFile, @Nullable MapMetadata metadata,
-			List<? extends WorldModule> worldModules, Configuration config,
+			List<? extends WorldModule> worldModules, O2WConfig config,
 			List<? extends Target> targets)
 			throws IOException {
 
@@ -188,7 +187,7 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * variant of {@link #createRepresentations(File, MapMetadata, List, Configuration, List)}
+	 * variant of {@link #createRepresentations(File, MapMetadata, List, O2WConfig, List)}
 	 * that accepts {@link OSMData} instead of a file.
 	 * Use this when all data is already
 	 * in memory, for example with editor applications.
@@ -204,7 +203,7 @@ public class ConversionFacade {
 	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(OSMData osmData, @Nullable MapMetadata metadata,
-			List<? extends WorldModule> worldModules, Configuration config,
+			List<? extends WorldModule> worldModules, O2WConfig config,
 			List<? extends Target> targets)
 			throws IOException {
 
@@ -234,14 +233,14 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * variant of {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}
+	 * variant of {@link #createRepresentations(OSMData, MapMetadata, List, O2WConfig, List)}
 	 * that takes {@link MapData} instead of {@link OSMData}
 	 *
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
 	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMData}.
 	 */
 	public Results createRepresentations(@Nullable MapProjection mapProjection, MapData mapData,
-			@Nullable List<? extends WorldModule> worldModules, @Nullable Configuration config,
+			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
 			@Nullable List<? extends Target> targets) {
 
 		/* check the inputs */
@@ -251,7 +250,7 @@ public class ConversionFacade {
 		}
 
 		if (config == null) {
-			config = new BaseConfiguration();
+			config = new O2WConfig();
 		}
 
 		/* apply world modules */
@@ -261,13 +260,13 @@ public class ConversionFacade {
 			worldModules = createDefaultModuleList(config);
 		}
 
+		ConfigUtil.parseFonts(config);
 		Materials.configureMaterials(config);
 		Models.configureModels(config);
 			//this will cause problems if multiple conversions are run
 			//at the same time, because global variables are being modified
 
-		WorldCreator moduleManager =
-			new WorldCreator(config, worldModules);
+		WorldCreator moduleManager = new WorldCreator(config, worldModules);
 		moduleManager.addRepresentationsTo(mapData);
 
 		/* determine elevations */
@@ -402,7 +401,7 @@ public class ConversionFacade {
 	 * {@link WorldObject}s
 	 */
 	private void calculateElevations(MapData mapData,
-			TerrainElevationData eleData, Configuration config) {
+			TerrainElevationData eleData, O2WConfig config) {
 
 		TerrainInterpolator interpolator = createTerrainInterpolator(config);
 
@@ -448,7 +447,7 @@ public class ConversionFacade {
 
 	}
 
-	private EleCalculator createEleCalculator(Configuration config) {
+	private EleCalculator createEleCalculator(O2WConfig config) {
 
 		if (eleCalculatorFactory != null) {
 			return eleCalculatorFactory.get();
@@ -463,7 +462,7 @@ public class ConversionFacade {
 
 	}
 
-	private TerrainInterpolator createTerrainInterpolator(Configuration config) {
+	private TerrainInterpolator createTerrainInterpolator(O2WConfig config) {
 
 		if (terrainEleInterpolatorFactory != null) {
 			return terrainEleInterpolatorFactory.get();

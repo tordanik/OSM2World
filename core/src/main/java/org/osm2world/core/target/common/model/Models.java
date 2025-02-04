@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.ConfigUtil;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.gltf.GltfModel;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -59,7 +59,7 @@ public class Models {
 
 	}
 
-	synchronized public static void configureModels(Configuration config) {
+	synchronized public static void configureModels(O2WConfig config) {
 
 		models.clear();
 

@@ -2,12 +2,11 @@ package org.osm2world.core.target;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -15,11 +14,11 @@ import org.osm2world.core.world.data.WorldObject;
  */
 public interface Target extends CommonTarget {
 
-	void setConfiguration(Configuration config);
-	Configuration getConfiguration();
+	void setConfiguration(O2WConfig config);
+	O2WConfig getConfiguration();
 
 	default LevelOfDetail getLod() {
-		return ConfigUtil.readLOD(getConfiguration());
+		return getConfiguration().getLod();
 	}
 
 	/**

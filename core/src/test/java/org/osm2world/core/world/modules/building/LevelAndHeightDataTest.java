@@ -8,8 +8,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Test;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
@@ -38,7 +38,7 @@ public class LevelAndHeightDataTest {
 				"building", "yes",
 				"building:levels", "5",
 				"height", "12.5"));
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(12.5, levelStructure.height(), 0);
@@ -76,7 +76,7 @@ public class LevelAndHeightDataTest {
 				"height", "12.5",
 				"building:min_level", "2"));
 
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(12.5, levelStructure.height(), 0);
@@ -117,7 +117,7 @@ public class LevelAndHeightDataTest {
 		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "10", "height", "5"));
 		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "11", "ref", "L11"));
 
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(19, levelStructure.height(), 0);
@@ -157,7 +157,7 @@ public class LevelAndHeightDataTest {
 				"building:levels", "1",
 				"min_level", "42",
 				"max_level", "42"));
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(1, levelStructure.levels.size());
@@ -179,7 +179,7 @@ public class LevelAndHeightDataTest {
 				"roof:levels", "2",
 				"roof:shape", "gabled",
 				"height", "8 m"));
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(8, levelStructure.height(), 0);
@@ -202,7 +202,7 @@ public class LevelAndHeightDataTest {
 				"building:levels", "0",
 				"roof:levels", "2",
 				"roof:shape", "gabled"));
-		building = new Building(buildingArea, new BaseConfiguration());
+		building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData result2 = building.getParts().get(0).levelStructure;
 
 		assertEquals(0, result2.heightWithoutRoof(), 0);
@@ -231,7 +231,7 @@ public class LevelAndHeightDataTest {
 				"building:levels", "0",
 				"building:levels:underground", "2",
 				"max_level", "-1"));
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(0, levelStructure.height(), 0);
@@ -260,7 +260,7 @@ public class LevelAndHeightDataTest {
 				"min_level", "7",
 				"non_existent_levels", "8;11"));
 
-		Building building = new Building(buildingPartArea, new BaseConfiguration());
+		Building building = new Building(buildingPartArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(1, levelStructure.levels(EnumSet.of(LevelType.UNDERGROUND)).size());
@@ -288,7 +288,7 @@ public class LevelAndHeightDataTest {
 		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "0", "height", "4"));
 		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "1", "height", "6"));
 
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(5, levelStructure.height(), 0);
@@ -315,7 +315,7 @@ public class LevelAndHeightDataTest {
 				"roof:height", "2",
 				"min_height", "4"));
 
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(5, levelStructure.height(), 5);
@@ -337,7 +337,7 @@ public class LevelAndHeightDataTest {
 				"building:min_level", "2",
 				"roof:levels", "1",
 				"roof:shape", "round"));
-		Building building = new Building(buildingArea, new BaseConfiguration());
+		Building building = new Building(buildingArea, new O2WConfig());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
 		assertEquals(2, levelStructure.levels.size());

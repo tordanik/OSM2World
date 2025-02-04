@@ -4,7 +4,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.Target;
@@ -43,7 +43,7 @@ public interface JOGLTarget extends Target {
 	public void setRenderingParameters(
 			JOGLRenderingParameters renderingParameters);
 
-	public void setConfiguration(Configuration config);
+	public void setConfiguration(O2WConfig config);
 
 	public boolean isFinished();
 

@@ -1,4 +1,4 @@
-package org.osm2world.core.util;
+package org.osm2world.core.conversion;
 
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 
@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 
@@ -27,7 +26,7 @@ final public class ConfigUtil {
 	public static final String CANVAS_LIMIT_KEY = "canvasLimit";
 
 	/** reads and parses the value of the lod property */
-	public static LevelOfDetail readLOD(Configuration config) {
+	public static LevelOfDetail readLOD(O2WConfig config) {
 		return switch (config.getInt("lod", 4)) {
 			case 0 -> LOD0;
 			case 1 -> LOD1;
@@ -106,7 +105,7 @@ final public class ConfigUtil {
 	 * by the "fontDirectory" key in the configuration file.
 	 * The respective fonts can then be used in Font object constructors.
 	 */
-	public static void parseFonts(Configuration config) {
+	public static void parseFonts(O2WConfig config) {
 
 		if(!config.containsKey("fontDirectory")) return;
 
@@ -132,7 +131,7 @@ final public class ConfigUtil {
 		}
 	}
 
-	public static <T extends Enum<T>> @Nullable T readEnum(Class<T> enumClass, Configuration config, String key) {
+	public static <T extends Enum<T>> @Nullable T readEnum(Class<T> enumClass, O2WConfig config, String key) {
 		String value = config.getString(key);
 		if (value != null) {
 			try {
@@ -146,7 +145,7 @@ final public class ConfigUtil {
 	 * If config references some files by path e.g. textures
 	 * resolve file paths relative to config location
 	 */
-	public static File resolveFileConfigProperty(Configuration config, String fileName) {
+	public static File resolveFileConfigProperty(O2WConfig config, String fileName) {
 		if (fileName == null) {
 			return null;
 		}

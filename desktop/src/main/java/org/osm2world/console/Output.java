@@ -24,7 +24,6 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
@@ -32,6 +31,7 @@ import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.geo.LatLonEle;
@@ -57,7 +57,7 @@ public final class Output {
 
 	private Output() {}
 
-	public static void output(Configuration config,
+	public static void output(O2WConfig config,
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
 
@@ -264,7 +264,7 @@ public final class Output {
 	}
 
 	private static void writeLogFiles(File logDir, String fileNameBase, PerformanceListener perfListener,
-			Configuration config) {
+			O2WConfig config) {
 
 		double totalTime = Duration.between(perfListener.startTime, now()).toMillis() / 1000.0;
 

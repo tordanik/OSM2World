@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.material.*;
@@ -64,7 +64,7 @@ public class TrafficSignModel implements Model {
 		this.defaultHeight = height;
 	}
 
-	public static TrafficSignModel create(TrafficSignIdentifier signId, TagSet tagsOfElement, Configuration config) {
+	public static TrafficSignModel create(TrafficSignIdentifier signId, TagSet tagsOfElement, O2WConfig config) {
 
 		/* prepare map with subtype and/or brackettext values */
 

@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.util.List;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -39,7 +39,7 @@ public class ExternalModelModule implements WorldModule {
 	}
 
 	@Override
-	public void setConfiguration(Configuration config) {}
+	public void setConfiguration(O2WConfig config) {}
 
 	/** temporary placeholder, to be replaced with an actual 3dmr model by the Target */
 	private abstract static class ExternalModelPlaceholder<T extends MapElement> implements WorldObject {

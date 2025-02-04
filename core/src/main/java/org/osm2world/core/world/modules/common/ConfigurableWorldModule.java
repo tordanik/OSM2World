@@ -2,20 +2,19 @@ package org.osm2world.core.world.modules.common;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
  * simple superclass for {@link WorldModule}s that stores a configuration set by
- * {@link #setConfiguration(org.apache.commons.configuration.Configuration)}
+ * {@link #setConfiguration(O2WConfig)}
  */
 public abstract class ConfigurableWorldModule implements WorldModule {
 
-	protected @Nonnull Configuration config = new PropertiesConfiguration();
+	protected @Nonnull O2WConfig config = new O2WConfig();
 
 	@Override
-	public void setConfiguration(@Nonnull Configuration config) {
+	public void setConfiguration(@Nonnull O2WConfig config) {
 		this.config = config;
 	}
 

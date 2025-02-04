@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -58,7 +58,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 	final MapArea area;
 	private final PolygonWithHolesXZ polygon;
 
-	final Configuration config;
+	final O2WConfig config;
 
 	/** the tags for this part, including tags inherited from the parent */
 	final TagSet tags;
@@ -72,7 +72,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	private final @Nullable BuildingPartInterior buildingPartInterior;
 
-	public BuildingPart(Building building, MapArea area, Configuration config) {
+	public BuildingPart(Building building, MapArea area, O2WConfig config) {
 
 		area.addRepresentation(this);
 
@@ -510,7 +510,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	public Building getBuilding() { return building; }
 
-	public Configuration getConfig() { return config; }
+	public O2WConfig getConfig() { return config; }
 
 	public TagSet getTags() { return tags; }
 
@@ -533,7 +533,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		return buildingPartInterior;
 	}
 
-	static Material createWallMaterial(TagSet tags, Configuration config) {
+	static Material createWallMaterial(TagSet tags, O2WConfig config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -550,7 +550,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	}
 
-	private static Material createRoofMaterial(TagSet tags, Configuration config) {
+	private static Material createRoofMaterial(TagSet tags, O2WConfig config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 

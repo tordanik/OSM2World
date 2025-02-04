@@ -7,10 +7,10 @@ import java.util.Observer;
 import javax.swing.*;
 
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.conversion.ConfigUtil;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.statistics.StatisticsTarget;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.view.StatisticsDialog;
 import org.osm2world.viewer.view.ViewerFrame;

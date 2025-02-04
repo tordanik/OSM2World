@@ -4,16 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.osm2world.console.OSM2World;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.osm.creation.GeodeskReader;
@@ -21,31 +20,28 @@ import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
 
 	private final @Nonnull List<File> configFiles;
-	private Configuration config;
+	private O2WConfig config;
 	private File osmFile = null;
 	private Results conversionResults = null;
 
-	public Data(List<File> configFiles, Configuration config) {
+	public Data(List<File> configFiles, O2WConfig config) {
 		this.configFiles = configFiles;
 		this.config = config;
 	}
 
-	public Configuration getConfig() {
+	public O2WConfig getConfig() {
 		return config;
 	}
 
 	/** updates the configuration */
-	public void setConfig(Configuration config) {
+	public void setConfig(O2WConfig config) {
 
 		this.config = config;
-
-		ConfigUtil.parseFonts(config);
 
 		if (conversionResults != null) {
 			this.setChanged();
@@ -55,8 +51,8 @@ public class Data extends Observable {
 	}
 
 	/** reloads the configuration from the config file */
-	public void reloadConfig(RenderOptions options) throws ConfigurationException {
-		Configuration config = OSM2World.loadConfigFiles(options.lod, configFiles.toArray(new File[0]));
+	public void reloadConfig(RenderOptions options) {
+		var config = new O2WConfig(Map.of("lod", options.lod.ordinal()), configFiles.toArray(new File[0]));
 		this.setConfig(config);
 	}
 
@@ -94,8 +90,11 @@ public class Data extends Observable {
 				}
 			}
 
+			// disable LOD restrictions to make all LOD available through the LOD selector
+			O2WConfig configForLoad = config.withProperty("lod", null);
+
 			conversionResults = converter.createRepresentations(
-					osmData, null, null, config, null);
+					osmData, null, null, configForLoad, null);
 
 		} catch (IOException | BoundingBoxSizeException e) {
 

@@ -5,7 +5,7 @@ import java.io.Serial;
 
 import javax.swing.*;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
@@ -39,9 +39,7 @@ public class SetLodAction extends AbstractAction {
 
 		renderOptions.setLod(lod);
 
-		Configuration config = data.getConfig();
-		config.clearProperty("lod");
-		config.addProperty("lod", lod.ordinal());
+		O2WConfig config = data.getConfig().withProperty("lod", lod.ordinal());
 		data.setConfig(config);
 
 		putValue(SELECTED_KEY, lod == renderOptions.getLod());

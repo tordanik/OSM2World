@@ -1,7 +1,6 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
-import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.osm2world.core.world.modules.traffic_sign.TrafficSignModule.findClosestJunction;
@@ -10,9 +9,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.configuration.MapConfiguration;
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
@@ -96,7 +95,7 @@ public class TrafficSignModuleTest {
 
 		List<MapNode> wayNodes = List.of(node00, node01, node02, node03);
 		MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
+		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new O2WConfig())));
 
 		/* check that no junction is found for any starting node */
 
@@ -131,7 +130,7 @@ public class TrafficSignModuleTest {
 
 		for (List<MapNode> wayNodes : wayNodeLists) {
 			MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
+			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new O2WConfig())));
 		}
 
 		/* check that the single junction node is found for each starting node */
@@ -172,7 +171,7 @@ public class TrafficSignModuleTest {
 
 		for (List<MapNode> wayNodes : wayNodeLists) {
 			MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
+			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new O2WConfig())));
 		}
 
 		/* check that the correct junction node is found for each starting node */
@@ -203,7 +202,7 @@ public class TrafficSignModuleTest {
 
 		List<MapNode> wayNodes = List.of(node00, node01, node02, node03, node00);
 		MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
+		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new O2WConfig())));
 
 		/* check that there is no infinite loop and that no junction is reported */
 

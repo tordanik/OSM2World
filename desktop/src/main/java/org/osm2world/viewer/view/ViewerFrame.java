@@ -13,7 +13,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.swing.*;
 
-import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.viewer.control.actions.*;
@@ -49,7 +49,7 @@ public class ViewerFrame extends JFrame {
 	 * @param configFiles  properties (where config was loaded from), can be null
 	 * @param inputFile  osm data file to be loaded at viewer start, can be null
 	 */
-	public ViewerFrame(final Configuration config, @Nullable LevelOfDetail lod,
+	public ViewerFrame(final O2WConfig config, @Nullable LevelOfDetail lod,
 			final List<File> configFiles, File inputFile) {
 
 		super("OSM2World Viewer");
@@ -277,8 +277,8 @@ public class ViewerFrame extends JFrame {
 	 * Prepare OpenGL (Profile/Capabilities) and create matching canvas.
 	 * @param config config for OpenGL parameters
 	 */
-	private void createCanvas(Configuration config) {
-		// select OpengGL implementation. TODO: autodetection
+	private void createCanvas(O2WConfig config) {
+		// select OpenGL implementation. TODO: autodetection
 		GLProfile profile;
 		if ("shader".equals(config.getString("joglImplementation"))) {
 			profile = GLProfile.get(GLProfile.GL3);
@@ -319,7 +319,7 @@ public class ViewerFrame extends JFrame {
 	/**
 	 * Update with new configuration. May recreate the canvas when the OpenGL-Parameters changed
 	 */
-	public void setConfiguration(Configuration config) {
+	public void setConfiguration(O2WConfig config) {
 		if (!checkConfiguration(config)) {
 			System.out.println("OpenGL configuration changed. Recreating canvas.");
 
@@ -342,7 +342,7 @@ public class ViewerFrame extends JFrame {
 	 * Check if the current OpenGL-Parameters match the given configuration.
 	 * @return true if the configuration matches, false otherwise. In the latter case the GLCanvas needs to be recreated
 	 */
-	private boolean checkConfiguration(Configuration config) {
+	private boolean checkConfiguration(O2WConfig config) {
 		if ("shader".equals(config.getString("joglImplementation"))) {
 			if (!glCanvas.getGLProfile().isGL3())
 				return false;

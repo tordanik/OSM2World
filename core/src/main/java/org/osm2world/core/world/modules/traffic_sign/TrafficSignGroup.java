@@ -19,8 +19,8 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.tuple.Pair;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
@@ -51,13 +51,13 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 
 	private AttachmentConnector connector = null;
 
-	public TrafficSignGroup(MapNode node, Configuration config) {
+	public TrafficSignGroup(MapNode node, O2WConfig config) {
 		// TODO remove this constructor and make the class immutable
 		this(node, null, null, null, config);
 	}
 
 	public TrafficSignGroup(MapNode node, List<TrafficSignModel> signs, VectorXZ position, @Nullable Double direction,
-			Configuration config) {
+			O2WConfig config) {
 		super(node);
 		this.signs = signs;
 		this.position = position;

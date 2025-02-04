@@ -6,8 +6,8 @@ import static java.util.Collections.emptyList;
 import java.awt.*;
 import java.util.List;
 
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.conversion.O2WConfig;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.math.VectorXYZ;
@@ -29,7 +29,7 @@ import com.jogamp.opengl.GL;
  */
 public abstract class DebugView {
 
-	protected Configuration config;
+	protected O2WConfig config;
 
 	protected MapData map;
 	protected TerrainElevationData eleData;
@@ -45,7 +45,7 @@ public abstract class DebugView {
 	private JOGLTarget target = null;
 	private boolean targetNeedsReset;
 
-	public final void setConfiguration(Configuration config) {
+	public final void setConfiguration(O2WConfig config) {
 
 		this.config = config;
 
