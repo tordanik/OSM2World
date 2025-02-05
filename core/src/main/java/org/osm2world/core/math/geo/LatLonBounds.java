@@ -10,7 +10,7 @@ import java.util.List;
  * an area on the globe represented by two coordinate pairs,
  * each with latitude and longitude. Immutable.
  */
-public class LatLonBounds {
+public class LatLonBounds implements GeoBounds {
 
 	public final double minlat;
 	public final double minlon;
@@ -26,6 +26,11 @@ public class LatLonBounds {
 
 	public LatLonBounds(LatLon min, LatLon max) {
 		this(min.lat, min.lon, max.lat, max.lon);
+	}
+
+	@Override
+	public LatLonBounds latLonBounds() {
+		return this;
 	}
 
 	public double sizeLat() {

@@ -4,6 +4,7 @@ import static java.lang.Math.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +14,7 @@ import javax.annotation.Nonnull;
  * immutable tile number with zoom level.
  * Tile coords follow the common XYZ convention, with an Y axis that points southward.
  */
-public class TileNumber {
+public class TileNumber implements TileBounds {
 
 	public final int zoom;
 	public final int x;
@@ -112,7 +113,12 @@ public class TileNumber {
 		return zoom + separator + x + separator + y;
 	}
 
-	public LatLonBounds bounds() {
+	@Override
+	public Set<TileNumber> getTiles() {
+		return Set.of(this);
+	}
+
+	public LatLonBounds latLonBounds() {
 		LatLon min = new LatLon(tile2lat(y + 1, zoom), tile2lon(x, zoom));
 		LatLon max = new LatLon(tile2lat(y, zoom), tile2lon(x + 1, zoom));
 		return new LatLonBounds(min, max);

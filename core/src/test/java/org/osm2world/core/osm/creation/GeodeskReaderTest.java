@@ -44,7 +44,7 @@ public class GeodeskReaderTest {
 		assertNotNull(testFile);
 		var reader = new GeodeskReader(new File(testFile.getFile()));
 
-		OSMData data = reader.getData(new TileNumber(13, 4402, 2828).bounds());
+		OSMData data = reader.getData(new TileNumber(13, 4402, 2828).latLonBounds());
 
 		assertFalse(data.getNodes().isEmpty());
 		assertFalse(data.getWays().isEmpty());

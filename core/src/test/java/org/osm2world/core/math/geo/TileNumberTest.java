@@ -62,8 +62,8 @@ public class TileNumberTest {
 	}
 
 	@Test
-	public void testBoundsZ0() {
-		LatLonBounds bounds = new TileNumber(0, 0, 0).bounds();
+	public void testLatLonBoundsZ0() {
+		LatLonBounds bounds = new TileNumber(0, 0, 0).latLonBounds();
 		assertAlmostEquals(-180, bounds.minlon);
 		assertAlmostEquals(-85.0511, bounds.minlat);
 		assertAlmostEquals(+180, bounds.maxlon);
@@ -71,8 +71,8 @@ public class TileNumberTest {
 	}
 
 	@Test
-	public void testBoundsZ2() {
-		LatLonBounds bounds = new TileNumber(2, 3, 3).bounds();
+	public void testLatLonBoundsZ2() {
+		LatLonBounds bounds = new TileNumber(2, 3, 3).latLonBounds();
 		assertAlmostEquals(+90, bounds.minlon);
 		assertAlmostEquals(-85.0511, bounds.minlat);
 		assertAlmostEquals(+180, bounds.maxlon);

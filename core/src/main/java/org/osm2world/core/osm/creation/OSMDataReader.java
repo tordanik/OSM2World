@@ -21,7 +21,7 @@ public interface OSMDataReader {
 	}
 
 	public default OSMData getData(TileNumber tile) throws IOException {
-		return getData(tile.bounds());
+		return getData(tile.latLonBounds());
 	}
 
 	public default OSMData getData(LatLonBounds bounds) throws IOException {
