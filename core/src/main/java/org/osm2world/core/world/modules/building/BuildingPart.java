@@ -155,7 +155,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 				.map(o -> o.getOther(area))
 				.filter(o -> o.getTags().containsAny(List.of("tunnel"), asList("building_passage", "passage")))
 				.map(MapElement::getPrimaryRepresentation)
-				.filter(o -> !o.getRawGroundFootprint().isEmpty())
+				.filter(o -> o != null && !o.getRawGroundFootprint().isEmpty())
 				.filter(o -> o.getGroundState() == GroundState.ON)
 				.filter(o -> clearingAbovePassage > floorHeight)
 				.toList();
