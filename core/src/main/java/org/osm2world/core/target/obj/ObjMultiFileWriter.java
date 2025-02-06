@@ -5,7 +5,7 @@ import static java.lang.String.format;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Iterator;
 
 import org.osm2world.core.conversion.O2WConfig;
@@ -38,16 +38,16 @@ public final class ObjMultiFileWriter {
 			mtlFile.createNewFile();
 		}
 
-		final PrintStream mtlStream = new PrintStream(mtlFile);
+		final PrintWriter mtlWriter = new PrintWriter(mtlFile);
 
-		ObjTarget.writeMtlHeader(mtlStream);
+		ObjTarget.writeMtlHeader(mtlWriter);
 
 		/* create iterator which creates and wraps .obj files as needed */
 
 		Iterator<ObjTarget> objIterator = new Iterator<>() {
 
 			private int fileCounter = 0;
-			PrintStream objStream = null;
+			PrintWriter objWriter = null;
 
 			@Override
 			public boolean hasNext() {
@@ -59,8 +59,8 @@ public final class ObjMultiFileWriter {
 
 				try {
 
-					if (objStream != null) {
-						objStream.close();
+					if (objWriter != null) {
+						objWriter.close();
 						fileCounter ++;
 					}
 
@@ -71,13 +71,13 @@ public final class ObjMultiFileWriter {
 						objFile.createNewFile();
 					}
 
-					objStream = new PrintStream(objFile);
+					objWriter = new PrintWriter(objFile);
 
-					ObjTarget.writeObjHeader(objStream, mapProjection);
+					ObjTarget.writeObjHeader(objWriter, mapProjection);
 
-					objStream.println("mtllib " + mtlFile.getName() + "\n");
+					objWriter.println("mtllib " + mtlFile.getName() + "\n");
 
-					var target = new ObjTarget(objStream, mtlStream, objDirectory, "part_obj");
+					var target = new ObjTarget(objWriter, mtlWriter, objDirectory, "part_obj");
 					target.setConfiguration(config);
 					return target;
 
@@ -98,7 +98,7 @@ public final class ObjMultiFileWriter {
 
 		TargetUtil.renderWorldObjects(objIterator, mapData, primitiveThresholdPerFile);
 
-		mtlStream.close();
+		mtlWriter.close();
 
 	}
 

@@ -8,7 +8,8 @@ import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.*;
 
@@ -39,8 +40,8 @@ public class ObjTarget extends FaceTarget {
 
 	protected static final float AMBIENT_FACTOR = 0.5f;
 
-	private final PrintStream objStream;
-	private final PrintStream mtlStream;
+	private final PrintWriter objWriter;
+	private final PrintWriter mtlWriter;
 	private final @Nullable File objDirectory;
 	private final @Nullable File textureDirectory;
 
@@ -78,41 +79,43 @@ public class ObjTarget extends FaceTarget {
 			mtlFile.createNewFile();
 		}
 
-		PrintStream objStream = new PrintStream(objFile);
-		PrintStream mtlStream = new PrintStream(mtlFile);
+		PrintWriter objWriter = new PrintWriter(objFile);
+		PrintWriter mtlWriter = new PrintWriter(mtlFile);
 
 		/* write comments at the beginning of both files */
 
-		writeObjHeader(objStream, mapProjection);
+		writeObjHeader(objWriter, mapProjection);
 
-		writeMtlHeader(mtlStream);
+		writeMtlHeader(mtlWriter);
 
 		/* write path of mtl file to obj file */
 
-		objStream.println("mtllib " + mtlFile.getName() + "\n");
+		objWriter.println("mtllib " + mtlFile.getName() + "\n");
 
-		/* set up the streams to write the rest of the content to */
+		/* set up the writers to write the rest of the content to */
 
-		this.objStream = objStream;
-		this.mtlStream = mtlStream;
+		this.objWriter = objWriter;
+		this.mtlWriter = mtlWriter;
 		this.objDirectory = objFile.getAbsoluteFile().getParentFile();
 		this.textureDirectory = getTextureDirectory(objDirectory, objFile.getName());
 
 	}
 
 	/**
-	 * creates an {@link ObjTarget} which writes to streams, not necessarily {@link File}s.
+	 * creates an {@link ObjTarget} which writes to {@link Writer}s, not necessarily {@link File}s.
 	 *
+	 * @param mtlWriter  writer to write the MTL material library associated with the OBJ to.
+	 * Can be null if you only care about the geometry and not about the materials.
 	 * @param objDirectory  the directory in which the obj is located.
 	 * Other files (such as textures) may be written to this directory as well.
 	 * Can be null, but that prevents texture files from being written.
 	 * @param objName  optional name of the OBJ, used to name associated files such as textures
 	 */
-	public ObjTarget(PrintStream objStream, PrintStream mtlStream,
+	public ObjTarget(Writer objWriter, @Nullable Writer mtlWriter,
 			@Nullable File objDirectory, @Nullable String objName) {
 
-		this.objStream = objStream;
-		this.mtlStream = mtlStream;
+		this.objWriter = new PrintWriter(objWriter, true);
+		this.mtlWriter = new PrintWriter(mtlWriter != null ? mtlWriter : Writer.nullWriter(), true);
 		this.objDirectory = objDirectory;
 
 		this.textureDirectory = objDirectory == null || objName == null
@@ -126,7 +129,7 @@ public class ObjTarget extends FaceTarget {
 
 	@Override
 	public boolean reconstructFaces() {
-		return config != null && config.getBoolean("reconstructFaces", false);
+		return config.getBoolean("reconstructFaces", false);
 	}
 
 	@Override
@@ -135,8 +138,8 @@ public class ObjTarget extends FaceTarget {
 		if (object == null) {
 
 			currentWOGroup = null;
-			objStream.println("g null");
-			objStream.println("o null");
+			objWriter.println("g null");
+			objWriter.println("o null");
 
 		} else {
 
@@ -144,7 +147,7 @@ public class ObjTarget extends FaceTarget {
 
 			if (!object.getClass().equals(currentWOGroup)) {
 				currentWOGroup = object.getClass();
-				objStream.println("g " + currentWOGroup.getSimpleName());
+				objWriter.println("g " + currentWOGroup.getSimpleName());
 			}
 
 			/* start an object with the object's class
@@ -153,11 +156,11 @@ public class ObjTarget extends FaceTarget {
 			TagSet tags = object.getPrimaryMapElement().getTags();
 
 			if (tags.containsKey("name")) {
-				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("name"));
+				objWriter.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("name"));
 			} else if (tags.containsKey("ref")) {
-				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("ref"));
+				objWriter.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("ref"));
 			} else {
-				objStream.println("o " + object.getClass().getSimpleName() + anonymousWOCounter ++);
+				objWriter.println("o " + object.getClass().getSimpleName() + anonymousWOCounter ++);
 			}
 
 		}
@@ -187,6 +190,10 @@ public class ObjTarget extends FaceTarget {
 			writeFace(verticesToIndices((layer == 0)? vs : offsetVertices(vs, nCopies(vs.size(), faceNormal), layer * SMALL_OFFSET)),
 					normalIndices, texCoordIndices);
 		}
+
+		objWriter.flush();
+		mtlWriter.flush();
+
 	}
 
 	private void useMaterial(Material material, int layer) {
@@ -203,7 +210,7 @@ public class ObjTarget extends FaceTarget {
 				writeMaterial(material, name);
 			}
 
-			objStream.println("usemtl " + name + "_" + layer);
+			objWriter.println("usemtl " + name + "_" + layer);
 
 			currentMaterial = material;
 			currentMaterialLayer = layer;
@@ -243,7 +250,7 @@ public class ObjTarget extends FaceTarget {
 			Integer index = indexMap.get(v);
 			if (index == null) {
 				index = indexMap.size();
-				objStream.println(objLineStart + " " + formatVector(v));
+				objWriter.println(objLineStart + " " + formatVector(v));
 				indexMap.put(v, index);
 			}
 			indices[i] = index;
@@ -255,8 +262,7 @@ public class ObjTarget extends FaceTarget {
 
 	private String formatVector(Object v) {
 
-		if (v instanceof VectorXYZ) {
-			VectorXYZ vXYZ = (VectorXYZ)v;
+		if (v instanceof VectorXYZ vXYZ) {
 			return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
 		} else {
 			VectorXZ vXZ = (VectorXZ)v;
@@ -302,24 +308,24 @@ public class ObjTarget extends FaceTarget {
 			}
 		}
 
-		objStream.print("f");
+		objWriter.print("f");
 
 		for (int i = 0; i < vertexIndices.length; i++) {
 
-			objStream.print(" " + (vertexIndices[i]+1));
+			objWriter.print(" " + (vertexIndices[i]+1));
 
 			if (texCoordIndices != null && normalIndices == null) {
-				objStream.print("/" + (texCoordIndices[i]+1));
+				objWriter.print("/" + (texCoordIndices[i]+1));
 			} else if (texCoordIndices == null && normalIndices != null) {
-				objStream.print("//" + (normalIndices[i]+1));
+				objWriter.print("//" + (normalIndices[i]+1));
 			} else if (texCoordIndices != null && normalIndices != null) {
-				objStream.print("/" + (texCoordIndices[i]+1)
+				objWriter.print("/" + (texCoordIndices[i]+1)
 						+ "/" + (normalIndices[i]+1));
 			}
 
 		}
 
-		objStream.println();
+		objWriter.println();
 	}
 
 	private void writeMaterial(Material material, String name) {
@@ -331,8 +337,8 @@ public class ObjTarget extends FaceTarget {
 				textureLayer = material.getTextureLayers().get(i);
 			}
 
-			mtlStream.println("newmtl " + name + "_" + i);
-			mtlStream.println("Ns 92.156863");
+			mtlWriter.println("newmtl " + name + "_" + i);
+			mtlWriter.println("Ns 92.156863");
 
 			if (textureLayer == null || textureLayer.colorable) {
 				writeColorLine("Ka", multiplyColor(material.getColor(), AMBIENT_FACTOR));
@@ -343,19 +349,19 @@ public class ObjTarget extends FaceTarget {
 			}
 
 			float specularFactor = 0f;
-			mtlStream.println(String.format(Locale.US ,"Ks %f %f %f", specularFactor, specularFactor, specularFactor));
-			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
+			mtlWriter.println(String.format(Locale.US ,"Ks %f %f %f", specularFactor, specularFactor, specularFactor));
+			mtlWriter.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 
 			if (textureLayer != null) {
 				try {
 
 					String clamp = (textureLayer.baseColorTexture.wrap == Wrap.REPEAT) ? "" : "-clamp on ";
 
-					mtlStream.println("map_Ka " + clamp + textureToPath(textureLayer.baseColorTexture));
-					mtlStream.println("map_Kd " + clamp + textureToPath(textureLayer.baseColorTexture));
+					mtlWriter.println("map_Ka " + clamp + textureToPath(textureLayer.baseColorTexture));
+					mtlWriter.println("map_Kd " + clamp + textureToPath(textureLayer.baseColorTexture));
 
 					if (material.getTransparency() != Transparency.FALSE) {
-						mtlStream.println("map_d " + clamp + textureToPath(textureLayer.baseColorTexture));
+						mtlWriter.println("map_d " + clamp + textureToPath(textureLayer.baseColorTexture));
 					}
 
 				} catch (IOException e) {
@@ -364,43 +370,43 @@ public class ObjTarget extends FaceTarget {
 			}
 
 			int shininess = 1;
-			mtlStream.println(String.format("Ni %d", shininess));
-			mtlStream.println("illum 2");
+			mtlWriter.println(String.format("Ni %d", shininess));
+			mtlWriter.println("illum 2");
 
-			mtlStream.println();
+			mtlWriter.println();
 		}
 	}
 
 	private void writeColorLine(String lineStart, Color color) {
 
-		mtlStream.println(lineStart
+		mtlWriter.println(lineStart
 				+ " " + color.getRed() / 255f
 				+ " " + color.getGreen() / 255f
 				+ " " + color.getBlue() / 255f);
 
 	}
 
-	static void writeObjHeader(PrintStream objStream,
+	static void writeObjHeader(PrintWriter objWriter,
 			@Nullable MapProjection mapProjection) {
 
-		objStream.println("# This file was created by OSM2World "
+		objWriter.println("# This file was created by OSM2World "
 				+ GlobalValues.VERSION_STRING + " - "
 				+ GlobalValues.OSM2WORLD_URI + "\n");
-		objStream.println("# Projection information:");
+		objWriter.println("# Projection information:");
 		if (mapProjection != null) {
-			objStream.println("# Coordinate origin (0,0,0): "
+			objWriter.println("# Coordinate origin (0,0,0): "
 					+ "lat " + mapProjection.getOrigin().lat + ", "
 					+ "lon " + mapProjection.getOrigin().lon + ", "
 					+ "ele 0");
 		}
-		objStream.println("# North direction: " + new VectorXYZ(0, 0, -1));
-		objStream.println("# 1 coordinate unit corresponds to roughly 1 m in reality\n");
+		objWriter.println("# North direction: " + new VectorXYZ(0, 0, -1));
+		objWriter.println("# 1 coordinate unit corresponds to roughly 1 m in reality\n");
 
 	}
 
-	static void writeMtlHeader(PrintStream mtlStream) {
+	static void writeMtlHeader(PrintWriter mtlWriter) {
 
-		mtlStream.println("# This file was created by OSM2World "
+		mtlWriter.println("# This file was created by OSM2World "
 				+ GlobalValues.VERSION_STRING + " - "
 				+ GlobalValues.OSM2WORLD_URI + "\n\n");
 
