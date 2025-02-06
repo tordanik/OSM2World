@@ -46,7 +46,8 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
-import org.osm2world.core.target.obj.ObjWriter;
+import org.osm2world.core.target.obj.ObjMultiFileWriter;
+import org.osm2world.core.target.obj.ObjTarget;
 import org.osm2world.core.target.povray.POVRayWriter;
 import org.osm2world.core.util.Resolution;
 
@@ -165,15 +166,14 @@ public final class Output {
 							Integer primitiveThresholdOBJ =
 									config.getInteger("primitiveThresholdOBJ", null);
 							if (primitiveThresholdOBJ == null) {
+								ObjTarget target = new ObjTarget(outputFile, results.getMapProjection());
+								target.setConfiguration(config);
 								boolean underground = config.getBoolean("renderUnderground", true);
-
-								ObjWriter.writeObjFile(outputFile,
-										results.getMapData(), results.getMapProjection(), config,
-										camera, projection, underground);
+								TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
 							} else {
-								ObjWriter.writeObjFiles(outputFile,
+								ObjMultiFileWriter.writeObjFiles(outputFile,
 										results.getMapData(), results.getMapProjection(), config,
-										camera, projection, primitiveThresholdOBJ);
+										primitiveThresholdOBJ);
 							}
 							break;
 

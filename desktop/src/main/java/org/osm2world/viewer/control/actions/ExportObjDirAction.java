@@ -7,7 +7,7 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.obj.ObjWriter;
+import org.osm2world.core.target.obj.ObjMultiFileWriter;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
@@ -46,11 +46,11 @@ public class ExportObjDirAction extends AbstractExportAction {
 
 			/* write the file */
 
-			ObjWriter.writeObjFiles(
+			ObjMultiFileWriter.writeObjFiles(
 					file,
 					data.getConversionResults().getMapData(),
 					data.getConversionResults().getMapProjection(),
-					data.getConfig(), null, renderOptions.projection,
+					data.getConfig(),
 					primitiveThresholdPerFile);
 
 			messageManager.addMessage("exported Wavefront .obj file " + file);

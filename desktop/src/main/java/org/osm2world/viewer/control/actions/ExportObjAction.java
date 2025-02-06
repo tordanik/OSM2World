@@ -8,7 +8,9 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.obj.ObjWriter;
+import org.osm2world.core.conversion.O2WConfig;
+import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.obj.ObjTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
@@ -36,14 +38,14 @@ public class ExportObjAction extends AbstractExportAction {
 
 		try {
 
-			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
-
 			/* write the file */
-			ObjWriter.writeObjFile(
-					file,
-					data.getConversionResults().getMapData(),
-					data.getConversionResults().getMapProjection(),
-					data.getConfig(),null, renderOptions.projection, underground);
+			O2WConfig config = data.getConfig();
+
+			ObjTarget target = new ObjTarget(file, data.getConversionResults().getMapProjection());
+			target.setConfiguration(config);
+
+			boolean underground = config == null || config.getBoolean("renderUnderground", true);
+			TargetUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
 
 			messageManager.addMessage("exported Wavefront .obj file " + file);
 

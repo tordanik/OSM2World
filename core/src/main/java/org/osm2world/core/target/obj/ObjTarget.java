@@ -12,10 +12,14 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.*;
 
+import javax.annotation.Nullable;
+
+import org.osm2world.core.GlobalValues;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.geo.MapProjection;
 import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.ResourceOutputSettings;
@@ -27,14 +31,18 @@ import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.WorldObject;
 
+/**
+ * Output models in the Wavefront OBJ format.
+ * Also creates the .mtl files which go along with .obj files.
+ */
 public class ObjTarget extends FaceTarget {
 
 	protected static final float AMBIENT_FACTOR = 0.5f;
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
-	private final File objDirectory;
-	private final File textureDirectory;
+	private final @Nullable File objDirectory;
+	private final @Nullable File textureDirectory;
 
 	private final Map<VectorXYZ, Integer> vertexIndexMap = new HashMap<>();
 	private final Map<VectorXYZ, Integer> normalsIndexMap = new HashMap<>();
@@ -53,18 +61,67 @@ public class ObjTarget extends FaceTarget {
 	private static final double SMALL_OFFSET = 1e-3;
 
 	/**
+	 * creates an {@link ObjTarget} which writes to files on the disk.
+	 * Associated files, such as the .mtl definition and any texture files will be written as well.
+	 *
+	 * @param mapProjection  optional information about the map projection used to create the scene,
+	 * can be used to add information to the output file
+	 */
+	public ObjTarget(File objFile, @Nullable MapProjection mapProjection) throws IOException {
+
+		if (!objFile.exists()) {
+			objFile.createNewFile();
+		}
+
+		File mtlFile = new File(objFile.getAbsoluteFile() + ".mtl");
+		if (!mtlFile.exists()) {
+			mtlFile.createNewFile();
+		}
+
+		PrintStream objStream = new PrintStream(objFile);
+		PrintStream mtlStream = new PrintStream(mtlFile);
+
+		/* write comments at the beginning of both files */
+
+		writeObjHeader(objStream, mapProjection);
+
+		writeMtlHeader(mtlStream);
+
+		/* write path of mtl file to obj file */
+
+		objStream.println("mtllib " + mtlFile.getName() + "\n");
+
+		/* set up the streams to write the rest of the content to */
+
+		this.objStream = objStream;
+		this.mtlStream = mtlStream;
+		this.objDirectory = objFile.getAbsoluteFile().getParentFile();
+		this.textureDirectory = getTextureDirectory(objDirectory, objFile.getName());
+
+	}
+
+	/**
+	 * creates an {@link ObjTarget} which writes to streams, not necessarily {@link File}s.
 	 *
 	 * @param objDirectory  the directory in which the obj is located.
 	 * Other files (such as textures) may be written to this directory as well.
+	 * Can be null, but that prevents texture files from being written.
+	 * @param objName  optional name of the OBJ, used to name associated files such as textures
 	 */
-	public ObjTarget(PrintStream objStream, PrintStream mtlStream, File objDirectory, String objName) {
+	public ObjTarget(PrintStream objStream, PrintStream mtlStream,
+			@Nullable File objDirectory, @Nullable String objName) {
 
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
 		this.objDirectory = objDirectory;
 
-		this.textureDirectory = new File(objDirectory, objName + "_textures");
+		this.textureDirectory = objDirectory == null || objName == null
+			? null : getTextureDirectory(objDirectory, objName);
 
+	}
+
+	private static File getTextureDirectory(File objDirectory, String objName) {
+		return new File(objDirectory, objName + "_textures");
 	}
 
 	@Override
@@ -320,6 +377,32 @@ public class ObjTarget extends FaceTarget {
 				+ " " + color.getRed() / 255f
 				+ " " + color.getGreen() / 255f
 				+ " " + color.getBlue() / 255f);
+
+	}
+
+	static void writeObjHeader(PrintStream objStream,
+			@Nullable MapProjection mapProjection) {
+
+		objStream.println("# This file was created by OSM2World "
+				+ GlobalValues.VERSION_STRING + " - "
+				+ GlobalValues.OSM2WORLD_URI + "\n");
+		objStream.println("# Projection information:");
+		if (mapProjection != null) {
+			objStream.println("# Coordinate origin (0,0,0): "
+					+ "lat " + mapProjection.getOrigin().lat + ", "
+					+ "lon " + mapProjection.getOrigin().lon + ", "
+					+ "ele 0");
+		}
+		objStream.println("# North direction: " + new VectorXYZ(0, 0, -1));
+		objStream.println("# 1 coordinate unit corresponds to roughly 1 m in reality\n");
+
+	}
+
+	static void writeMtlHeader(PrintStream mtlStream) {
+
+		mtlStream.println("# This file was created by OSM2World "
+				+ GlobalValues.VERSION_STRING + " - "
+				+ GlobalValues.OSM2WORLD_URI + "\n\n");
 
 	}
 
