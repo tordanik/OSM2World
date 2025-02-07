@@ -38,6 +38,7 @@ import org.osm2world.core.math.geo.LatLonEle;
 import org.osm2world.core.math.geo.MapProjection;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.osm.data.OSMData;
+import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -46,7 +47,7 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
-import org.osm2world.core.target.obj.ObjMultiFileWriter;
+import org.osm2world.core.target.obj.ObjMultiFileTarget;
 import org.osm2world.core.target.obj.ObjTarget;
 import org.osm2world.core.target.povray.POVRayWriter;
 import org.osm2world.core.util.Resolution;
@@ -162,20 +163,17 @@ public final class Output {
 
 					switch (outputMode) {
 
-						case OBJ:
-							Integer primitiveThresholdOBJ =
-									config.getInteger("primitiveThresholdOBJ", null);
-							if (primitiveThresholdOBJ == null) {
-								ObjTarget target = new ObjTarget(outputFile, results.getMapProjection());
-								target.setConfiguration(config);
-								boolean underground = config.getBoolean("renderUnderground", true);
-								TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
-							} else {
-								ObjMultiFileWriter.writeObjFiles(outputFile,
-										results.getMapData(), results.getMapProjection(), config,
-										primitiveThresholdOBJ);
-							}
-							break;
+						case OBJ: {
+							Integer primitiveThresholdOBJ = config.getInteger("primitiveThresholdOBJ", null);
+							Target target = (primitiveThresholdOBJ == null)
+									? new ObjTarget(outputFile, results.getMapProjection())
+									: new ObjMultiFileTarget(outputFile, results.getMapProjection(), primitiveThresholdOBJ);
+							target.setConfiguration(config);
+							boolean underground = config.getBoolean("renderUnderground", true);
+							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
+							target.finish();
+						}
+						break;
 
 						case GLTF, GLB, GLTF_GZ, GLB_GZ: {
 							AxisAlignedRectangleXZ bounds = null;

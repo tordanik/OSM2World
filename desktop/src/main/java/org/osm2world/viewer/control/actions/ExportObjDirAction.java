@@ -7,7 +7,9 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.obj.ObjMultiFileWriter;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.obj.ObjMultiFileTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
@@ -46,12 +48,12 @@ public class ExportObjDirAction extends AbstractExportAction {
 
 			/* write the file */
 
-			ObjMultiFileWriter.writeObjFiles(
-					file,
-					data.getConversionResults().getMapData(),
-					data.getConversionResults().getMapProjection(),
-					data.getConfig(),
+			Target target = new ObjMultiFileTarget(file, data.getConversionResults().getMapProjection(),
 					primitiveThresholdPerFile);
+			target.setConfiguration(data.getConfig());
+			boolean underground = data.getConfig().getBoolean("renderUnderground", true);
+			TargetUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
+			target.finish();
 
 			messageManager.addMessage("exported Wavefront .obj file " + file);
 
@@ -66,7 +68,6 @@ public class ExportObjDirAction extends AbstractExportAction {
 					e.toString(),
 					"please enter a valid number of primitives per file",
 					JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
 		}
 	}
 
