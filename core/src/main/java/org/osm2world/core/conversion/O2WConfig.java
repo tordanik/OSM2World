@@ -220,6 +220,16 @@ public class O2WConfig {
 	}
 
 	/**
+	 * Limit for the size of the canvas used for rendering an exported image.
+	 * The width and height each must not exceed this value.
+	 * If the requested image is larger, it may be rendered in multiple passes and combined afterward.
+	 * This is intended to avoid overwhelmingly large canvases (which would lead to crashes).
+	 */
+	public int canvasLimit() {
+		return getInt("canvasLimit", 1024);
+	}
+
+	/**
 	 * if this config references some files by path, e.g. textures,
 	 * resolve file paths relative to the location of the config file used to load this config (if any)
 	 */

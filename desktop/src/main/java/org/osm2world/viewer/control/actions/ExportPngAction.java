@@ -4,13 +4,13 @@ import static java.lang.Math.floor;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.console.CLIArgumentsUtil;
-import org.osm2world.console.ImageExporter;
+import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.image.ImageOutputFormat;
+import org.osm2world.core.target.image.ImageTarget;
 import org.osm2world.core.util.Resolution;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
@@ -39,20 +39,21 @@ public class ExportPngAction extends AbstractExportAction {
 			int width = 2048;
 			int height = (int) floor(viewerFrame.glCanvas.getHeight() / (float)viewerFrame.glCanvas.getWidth() * width);
 
+			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
+
 			/* write the file */
 
-			ImageExporter exporter = ImageExporter.create(
-					data.getConfig(),
-					data.getConversionResults(),
-					new Resolution(width, height));
+			var target = new ImageTarget(file, ImageOutputFormat.PNG, new Resolution(width, height),
+					renderOptions.camera, renderOptions.projection,
+					data.getConversionResults().getMapData().getBoundary());
 
-			exporter.writeImageFile(file, CLIArgumentsUtil.OutputMode.PNG,
-					width, height,
-					renderOptions.camera, renderOptions.projection);
+			target.setConfiguration(data.getConfig());
+			TargetUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
+			target.finish();
 
 			messageManager.addMessage("exported .png image file " + file);
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			JOptionPane.showMessageDialog(viewerFrame,
 					e.toString(),
 					"Could not export PNG image",

@@ -1,9 +1,5 @@
-package org.osm2world.console;
+package org.osm2world.core.target.image;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
-import static org.osm2world.console.CLIArgumentsUtil.getResolution;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 
 import java.awt.*;
@@ -17,11 +13,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.function.Consumer;
 
-import org.osm2world.console.CLIArgumentsUtil.OutputMode;
-import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.conversion.O2WConfig;
-import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
@@ -39,17 +34,8 @@ import ar.com.hjg.pngj.chunks.PngMetadata;
 
 public class ImageExporter {
 
-	/**
-	 * the width and height of the canvas used for rendering the exported image
-	 * each must not exceed the canvas limit. If the requested image is larger,
-	 * it will be rendered in multiple passes and combined afterwards.
-	 * This is intended to avoid overwhelmingly large canvases
-	 * (which would lead to crashes)
-	 */
-	private static final int DEFAULT_CANVAS_LIMIT = 1024;
-	private static final String CANVAS_LIMIT_KEY = "canvasLimit";
-
-	private final Results results;
+	private final AxisAlignedRectangleXZ dataBbox;
+	private final Consumer<JOGLTarget> renderToTarget;
 	private final O2WConfig config;
 
 	private File backgroundImage;
@@ -73,19 +59,20 @@ public class ImageExporter {
 	 * Creates an {@link ImageExporter} for later use.
 	 * Already performs calculations that only need to be done once for a group of files.
 	 */
-	private ImageExporter(O2WConfig config, Results results,
-						  int pBufferSizeX, int pBufferSizeY, boolean unbufferedRendering) {
+	private ImageExporter(O2WConfig config, AxisAlignedRectangleXZ dataBbox, Consumer<JOGLTarget> renderToTarget,
+						  Resolution canvasResolution, boolean unbufferedRendering) {
 
-		this.results = results;
+		this.dataBbox = dataBbox;
 		this.config = config;
+		this.renderToTarget = renderToTarget;
 
-		this.pBufferSizeX = pBufferSizeX;
-		this.pBufferSizeY = pBufferSizeY;
+		this.pBufferSizeX = canvasResolution.width;
+		this.pBufferSizeY = canvasResolution.height;
 		this.unbufferedRendering = unbufferedRendering;
 
-		/* warn about potentially oversized canvas dimensions */
+		/* warn about potentially oversize canvas dimensions */
 
-		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
+		int canvasLimit = config.canvasLimit();
 
 		if (pBufferSizeX > canvasLimit || pBufferSizeY > canvasLimit) {
 			System.err.println("Warning: Canvas for image export may be too large for the system's capabilities");
@@ -157,82 +144,26 @@ public class ImageExporter {
 
 	/**
 	 * Creates an {@link ImageExporter} for later use.
-	 * Also performs calculations that only need to be done once for a group
-	 * of files, based on a {@link CLIArgumentsGroup}.
 	 *
-	 * @param expectedGroup  group that should contain at least the arguments
-	 *                       for the files that will later be requested.
-	 *                       Basis for optimization preparations.
-	 */
-	public static ImageExporter create(O2WConfig config, Results results,
-			CLIArgumentsGroup expectedGroup) {
-
-		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
-
-		/* find out what number and size of image file requests to expect */
-
-		int expectedFileCalls = 0;
-		int expectedMaxSizeX = 1;
-		int expectedMaxSizeY = 1;
-		boolean perspectiveProjection = false;
-
-		for (CLIArguments args : expectedGroup.getCLIArgumentsList()) {
-
-			for (File outputFile : args.getOutput()) {
-				OutputMode outputMode = getOutputMode(outputFile);
-				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM || outputMode == OutputMode.GD) {
-					expectedFileCalls += 1;
-					expectedMaxSizeX = max(expectedMaxSizeX, getResolution(args).width);
-					expectedMaxSizeY = max(expectedMaxSizeY, getResolution(args).height);
-					perspectiveProjection |= args.isPviewPos();
-				}
-			}
-
-		}
-
-		boolean onlyOneRenderPass = (expectedFileCalls <= 1
-				&& expectedMaxSizeX <= canvasLimit
-				&& expectedMaxSizeY <= canvasLimit);
-
-		/* call the constructor */
-
-		boolean unbufferedRendering = onlyOneRenderPass
-				|| config.getBoolean("forceUnbufferedPNGRendering", false);
-
-		int pBufferSizeX, pBufferSizeY;
-
-		if (perspectiveProjection) {
-			pBufferSizeX = expectedMaxSizeX;
-			pBufferSizeY = expectedMaxSizeY;
-		} else {
-			pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
-			pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
-		}
-
-		return new ImageExporter(config, results, pBufferSizeX, pBufferSizeY, unbufferedRendering);
-
-	}
-
-	/**
-	 * Creates an {@link ImageExporter} for later use.
-	 * Performance-related parameters are set such that they work best for rendering a single image.
-	 *
+	 * @param renderToTarget  function which will render the geometry that should be visible on the created images
 	 * @param canvasResolution  the maximum resolution of the internal rendering canvas.
 	 *   This is the maximum size of images that can be rendered in a single pass.
 	 *   (Images with an orthographic projection can be automatically split and rendered in multiple passes,
 	 *   but those with a perspective projection need to be rendered all at once.)
 	 *   If the value is too high for the system's capabilities, OSM2World may crash.
 	 */
-	public static ImageExporter create(O2WConfig config, Results results,
-									   Resolution canvasResolution) {
+	public static ImageExporter create(O2WConfig config, AxisAlignedRectangleXZ dataBbox,
+			Consumer<JOGLTarget> renderToTarget, Resolution canvasResolution, boolean unbufferedRendering) {
+		return new ImageExporter(config, dataBbox, renderToTarget, canvasResolution, unbufferedRendering);
+	}
 
-		boolean unbufferedRendering = true;
-
-		int pBufferSizeX = canvasResolution.width;
-		int pBufferSizeY = canvasResolution.height;
-
-		return new ImageExporter(config, results, pBufferSizeX, pBufferSizeY, unbufferedRendering);
-
+	/**
+	 * Creates an {@link ImageExporter} for later use.
+	 * Performance-related parameters are set such that they work best for rendering a single image.
+	 */
+	public static ImageExporter create(O2WConfig config, AxisAlignedRectangleXZ dataBbox,
+			Consumer<JOGLTarget> renderToTarget, Resolution canvasResolution) {
+		return create(config, dataBbox, renderToTarget, canvasResolution, true);
 	}
 
 	@Override
@@ -243,8 +174,8 @@ public class ImageExporter {
 	/**
 	 * manually frees resources that would otherwise remain used
 	 * until the finalize call. It is no longer possible to use
-	 * {@link #writeImageFile(File, CLIArgumentsUtil.OutputMode, int, int, Camera, Projection)}
-	 * afterwards.
+	 * {@link #writeImageFile(File, ImageOutputFormat, int, int, Camera, Projection)}
+	 * afterward.
 	 */
 	public void freeResources() {
 
@@ -268,12 +199,12 @@ public class ImageExporter {
 	/**
 	 * renders this ImageExporter's content to a file
 	 *
-	 * @param outputMode   one of the image output modes
+	 * @param imageFormat  image format
 	 * @param x            horizontal resolution
 	 * @param y            vertical resolution
 	 */
 	public void writeImageFile(
-			File outputFile, OutputMode outputMode,
+			File outputFile, ImageOutputFormat imageFormat,
 			int x, int y,
 			final Camera camera,
 			final Projection projection) throws IOException {
@@ -292,16 +223,12 @@ public class ImageExporter {
 		int yParts = 1 + ((y-1) / pBufferSizeY);
 
 		/* generate ImageWriter */
-		ImageWriter imageWriter;
 
-		switch (outputMode) {
-		case PNG: imageWriter = new PNGWriter(outputFile, x, y, exportAlpha); break;
-		case PPM: imageWriter = new PPMWriter(outputFile, x, y); break;
-		case GD: imageWriter = new GDWriter(outputFile, x, y); break;
-
-		default: throw new IllegalArgumentException(
-				"output mode not supported " + outputMode);
-		}
+		ImageWriter imageWriter = switch (imageFormat) {
+			case PNG -> new PNGWriter(outputFile, x, y, exportAlpha);
+			case PPM -> new PPMWriter(outputFile, x, y);
+			case GD -> new GDWriter(outputFile, x, y);
+		};
 
 		/* create image (maybe in multiple parts) */
 
@@ -347,8 +274,8 @@ public class ImageExporter {
         imageWriter.close();
 	}
 
-	private static JOGLTarget createJOGLTarget(GL gl, Results results,
-			O2WConfig config) {
+	private static JOGLTarget createJOGLTarget(GL gl, AxisAlignedRectangleXZ dataBbox,
+			Consumer<JOGLTarget> renderToTarget, O2WConfig config) {
 
 		JOGLTarget target;
 		if ("shader".equals(config.getString("joglImplementation"))) {
@@ -377,10 +304,8 @@ public class ImageExporter {
 
 		target.setConfiguration(config);
 
-		boolean underground = config.getBoolean("renderUnderground", true);
-
-		target.setXZBoundary(results.getMapData().getBoundary());
-		TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
+		target.setXZBoundary(dataBbox);
+		renderToTarget.accept(target);
 
 		target.finish();
 
@@ -634,8 +559,8 @@ public class ImageExporter {
 		public void init(GLAutoDrawable drawable) {
 
 			/* render map data into buffer if it needs to be rendered multiple times */
-			if (!unbufferedRendering ) {
-				bufferTarget = createJOGLTarget(drawable.getGL(), results, config);
+			if (!unbufferedRendering) {
+				bufferTarget = createJOGLTarget(drawable.getGL(), dataBbox, renderToTarget, config);
 			}
 		}
 
@@ -682,7 +607,7 @@ public class ImageExporter {
 			/* render to pBuffer */
 
 			JOGLTarget target = (bufferTarget == null)?
-					createJOGLTarget(drawable.getGL(), results, config) : bufferTarget;
+					createJOGLTarget(drawable.getGL(), dataBbox, renderToTarget, config) : bufferTarget;
 
 					if (backgroundImage != null) {
 						target.drawBackgoundImage(backgroundImage,

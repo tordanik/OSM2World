@@ -1,9 +1,11 @@
 package org.osm2world.console;
 
-import static java.lang.Math.ceil;
+import static java.lang.Math.*;
 import static java.time.Instant.now;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
+import static org.osm2world.console.CLIArgumentsUtil.getResolution;
 import static org.osm2world.core.ConversionFacade.Phase.*;
 import static org.osm2world.core.conversion.ConversionLog.LogLevel.FATAL;
 import static org.osm2world.core.math.shapes.AxisAlignedRectangleXZ.bbox;
@@ -47,6 +49,8 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
+import org.osm2world.core.target.image.ImageExporter;
+import org.osm2world.core.target.image.ImageOutputFormat;
 import org.osm2world.core.target.obj.ObjMultiFileTarget;
 import org.osm2world.core.target.obj.ObjTarget;
 import org.osm2world.core.target.povray.POVRayTarget;
@@ -155,6 +159,8 @@ public final class Output {
 
 				/* perform the actual output */
 
+				boolean underground = config.getBoolean("renderUnderground", true);
+
 				for (File outputFile : args.getOutput()) {
 
 					outputFile.getAbsoluteFile().getParentFile().mkdirs();
@@ -169,7 +175,6 @@ public final class Output {
 									? new ObjTarget(outputFile, results.getMapProjection())
 									: new ObjMultiFileTarget(outputFile, results.getMapProjection(), primitiveThresholdOBJ);
 							target.setConfiguration(config);
-							boolean underground = config.getBoolean("renderUnderground", true);
 							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
 							target.finish();
 						}
@@ -188,7 +193,6 @@ public final class Output {
 									? Compression.GZ : Compression.NONE;
 							GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
 							gltfTarget.setConfiguration(config);
-							boolean underground = config.getBoolean("renderUnderground", true);
 							TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
 							gltfTarget.finish();
 						}
@@ -197,7 +201,6 @@ public final class Output {
 						case POV: {
 							Target target = new POVRayTarget(outputFile, camera, projection);
 							target.setConfiguration(config);
-							boolean underground = config.getBoolean("renderUnderground", true);
 							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
 							target.finish();
 						}
@@ -213,7 +216,6 @@ public final class Output {
 							Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
 							Target target = new FrontendPbfTarget(outputFile, compression, bbox);
 							target.setConfiguration(config);
-							boolean underground = config.getBoolean("renderUnderground", true);
 							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
 							target.finish();
 						}
@@ -226,11 +228,19 @@ public final class Output {
 								System.err.println("camera or projection missing");
 							}
 							if (exporter == null) {
-								exporter = ImageExporter.create(
-										config, results, argumentsGroup);
+								PerformanceParams performanceParams = determinePerformanceParams(config, argumentsGroup);
+								exporter = ImageExporter.create(config, results.getMapData().getBoundary(),
+										target -> TargetUtil.renderWorldObjects(target, results.getMapData(), true),
+										performanceParams.resolution(), performanceParams.unbufferedRendering());
 							}
 							Resolution resolution = CLIArgumentsUtil.getResolution(args);
-							exporter.writeImageFile(outputFile, outputMode,
+							ImageOutputFormat imageFormat = switch (outputMode) {
+								case PNG -> ImageOutputFormat.PNG;
+								case PPM -> ImageOutputFormat.PPM;
+								case GD -> ImageOutputFormat.GD;
+								default -> throw new IllegalStateException("Not an image format: " + outputMode);
+							};
+							exporter.writeImageFile(outputFile, imageFormat,
 									resolution.width, resolution.height,
 									camera, projection);
 							break;
@@ -267,6 +277,71 @@ public final class Output {
 			}
 
 		}
+
+	}
+
+	/** parameters for optimizing the performance of an {@link ImageExporter} */
+	private record PerformanceParams(Resolution resolution, boolean unbufferedRendering) {
+
+		public PerformanceParams (int pBufferSizeX, int pBufferSizeY, boolean unbufferedRendering) {
+			this(new Resolution(pBufferSizeX, pBufferSizeY), unbufferedRendering);
+		}
+
+	}
+
+	/**
+	 * Optimizes an {@link ImageExporter}'s performance settings for use with a particular config
+	 * and a particular group of files, based on a {@link CLIArgumentsGroup}.
+	 *
+	 * @param expectedGroup  group that should contain at least the arguments
+	 *                       for the files that will later be requested.
+	 *                       Basis for optimization preparations.
+	 */
+	private static PerformanceParams determinePerformanceParams(O2WConfig config, CLIArgumentsGroup expectedGroup) {
+
+		int canvasLimit = config.canvasLimit();
+
+		/* find out what number and size of image file requests to expect */
+
+		int expectedFileCalls = 0;
+		int expectedMaxSizeX = 1;
+		int expectedMaxSizeY = 1;
+		boolean perspectiveProjection = false;
+
+		for (CLIArguments args : expectedGroup.getCLIArgumentsList()) {
+
+			for (File outputFile : args.getOutput()) {
+				CLIArgumentsUtil.OutputMode outputMode = getOutputMode(outputFile);
+				if (outputMode == CLIArgumentsUtil.OutputMode.PNG || outputMode == CLIArgumentsUtil.OutputMode.PPM || outputMode == CLIArgumentsUtil.OutputMode.GD) {
+					expectedFileCalls += 1;
+					expectedMaxSizeX = max(expectedMaxSizeX, getResolution(args).width);
+					expectedMaxSizeY = max(expectedMaxSizeY, getResolution(args).height);
+					perspectiveProjection |= args.isPviewPos();
+				}
+			}
+
+		}
+
+		boolean onlyOneRenderPass = (expectedFileCalls <= 1
+				&& expectedMaxSizeX <= canvasLimit
+				&& expectedMaxSizeY <= canvasLimit);
+
+		/* call the constructor */
+
+		boolean unbufferedRendering = onlyOneRenderPass
+				|| config.getBoolean("forceUnbufferedPNGRendering", false);
+
+		int pBufferSizeX, pBufferSizeY;
+
+		if (perspectiveProjection) {
+			pBufferSizeX = expectedMaxSizeX;
+			pBufferSizeY = expectedMaxSizeY;
+		} else {
+			pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
+			pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
+		}
+
+		return new PerformanceParams(pBufferSizeX, pBufferSizeY, unbufferedRendering);
 
 	}
 
