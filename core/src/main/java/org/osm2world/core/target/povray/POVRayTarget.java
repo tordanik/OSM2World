@@ -3,6 +3,7 @@ package org.osm2world.core.target.povray;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
@@ -11,11 +12,15 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
+import org.osm2world.core.GlobalValues;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.TriangleXYZ;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.*;
+import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 
 public class POVRayTarget extends AbstractTarget {
 
@@ -23,18 +28,71 @@ public class POVRayTarget extends AbstractTarget {
 
 	private static final String INDENT = "  ";
 
-	// this is approximatly one millimeter
+	// this is approximately one millimeter
 	private static final double SMALL_OFFSET = 1e-3;
 
 	private final PrintStream output;
 
 	private Map<TextureData, String> textureNames = new HashMap<TextureData, String>();
 
-	public POVRayTarget(PrintStream output) {
-		this.output = output;
+	public POVRayTarget(File file, Camera camera, Projection projection) throws FileNotFoundException {
+		this(new PrintStream(file), camera, projection);
 	}
 
-//	int openBrackets = 0;
+	public POVRayTarget(PrintStream output, Camera camera, Projection projection) {
+
+		this.output = output;
+
+		appendCommentHeader();
+
+		append("\n#include \"textures.inc\"\n#include \"colors.inc\"\n");
+		append("#include \"osm2world_definitions.inc\"\n\n");
+
+		if (camera != null && projection != null) {
+			appendCameraDefinition(camera, projection);
+		}
+
+		append("//\n// global scene parameters\n//\n\n");
+
+		appendLightingDefinition( GlobalLightingParameters.DEFAULT);
+
+		appendDefaultParameterValue("season", "summer");
+		appendDefaultParameterValue("time", "day");
+
+		append("//\n// material and object definitions\n//\n\n");
+
+		appendDefaultParameterValue("sky_sphere_def",
+				"sky_sphere {\n pigment { Blue_Sky3 }\n} ");
+		append("sky_sphere {sky_sphere_def}\n\n");
+
+		appendMaterialDefinitions();
+
+		//TODO get terrain boundary elsewhere
+//		if (terrain != null) {
+//
+//			append("//\n// empty ground around the scene\n//\n\n");
+//
+//			append("difference {\n");
+//			append("  plane { y, -0.001 }\n  ");
+//			VectorXZ[] boundary = eleData.getBoundaryPolygon().getXZPolygon()
+//				.getVertexLoop().toArray(new VectorXZ[0]);
+//			appendPrism( -100, 1, boundary);
+//			append("\n");
+//			appendMaterialOrName(Materials.TERRAIN_DEFAULT);
+//			append("\n}\n\n");
+//
+//		}
+
+		append("\n\n//\n//Map data\n//\n\n");
+
+	}
+
+	@Override
+	public void finish() {
+		output.close();
+	}
+
+	//	int openBrackets = 0;
 //
 //	/**
 //	 * appends indentation based on {@link #INDENT} and {@link #openBrackets}
@@ -106,7 +164,79 @@ public class POVRayTarget extends AbstractTarget {
 
 	}
 
-	public void appendMaterialDefinitions() {
+	private void appendCommentHeader() {
+
+		append("/*\n"
+				+ " * This file was created by OSM2World "
+				+ GlobalValues.VERSION_STRING + " - "
+				+ GlobalValues.OSM2WORLD_URI + "\n"
+				+ " * \n"
+				+ " * Make sure that a \"osm2world_definitions.inc\" file exists!\n"
+				+ " * You can start with the one in the \"resources\" folder from your\n"
+				+ " * OSM2World installation or even just create an empty file.\n"
+				+ " */\n");
+
+	}
+
+	private void appendLightingDefinition(GlobalLightingParameters parameters) {
+
+		append(String.format(Locale.ENGLISH,
+				"global_settings { ambient_light rgb <%f,%f,%f> }\n",
+				parameters.globalAmbientColor.getRed() / 255f,
+				parameters.globalAmbientColor.getGreen() / 255f,
+				parameters.globalAmbientColor.getBlue() / 255f));
+
+		append(String.format(Locale.ENGLISH,
+				"light_source{ <%f,%f,%f> color rgb <%f,%f,%f> parallel point_at <0,0,0> fade_power 0 }\n\n",
+				parameters.lightFromDirection.x * 100000,
+				parameters.lightFromDirection.y * 100000,
+				parameters.lightFromDirection.z * 100000,
+				parameters.lightColorDiffuse.getRed() / 255f,
+				parameters.lightColorDiffuse.getGreen() / 255f,
+				parameters.lightColorDiffuse.getBlue() / 255f));
+
+	}
+
+	private void appendCameraDefinition(Camera camera, Projection projection) {
+
+		append("camera {");
+
+		if (projection.isOrthographic()) {
+			append("\n  orthographic");
+		}
+
+		append("\n  location ");
+		appendVector(camera.getPos());
+
+		if (projection.isOrthographic()) {
+
+			append("\n  right ");
+			double width = projection.getVolumeHeight()
+					* projection.getAspectRatio();
+			appendVector(camera.getRight().mult(width).invert()); //invert compensates for left-handed vs. right handed coordinates
+
+			append("\n  up ");
+			VectorXYZ up = camera.getUp();
+			appendVector(up.mult(projection.getVolumeHeight()));
+
+			append("\n  look_at ");
+			appendVector(camera.getLookAt());
+
+		} else {
+
+			append("\n  look_at  ");
+			appendVector(camera.getLookAt());
+
+			append("\n  sky ");
+			appendVector(camera.getUp());
+
+		}
+
+		append("\n}\n\n");
+
+	}
+
+	private void appendMaterialDefinitions() {
 
 		for (Material material : Materials.getMaterials()) {
 
@@ -396,12 +526,12 @@ public class POVRayTarget extends AbstractTarget {
 		return (triangles.size() >= 0);
 	}
 
-	public void appendTriangle(VectorXYZ a, VectorXYZ b, VectorXYZ c) {
+	private void appendTriangle(VectorXYZ a, VectorXYZ b, VectorXYZ c) {
 
 		appendTriangle(a, b, c, null, null, null, false);
 	}
 
-	public void appendTriangle(
+	private void appendTriangle(
 			VectorXYZ a, VectorXYZ b, VectorXYZ c,
 			VectorXYZ na, VectorXYZ nb, VectorXYZ nc,
 			boolean smooth) {
@@ -409,7 +539,7 @@ public class POVRayTarget extends AbstractTarget {
 		appendTriangle(a, b, c, na, nb, nc, null, null, null, smooth, false);
 	}
 
-	public void appendTriangle(
+	private void appendTriangle(
 			VectorXYZ a, VectorXYZ b, VectorXYZ c,
 			VectorXYZ na, VectorXYZ nb, VectorXYZ nc,
 			VectorXZ ta, VectorXZ tb, VectorXZ tc,
@@ -462,7 +592,7 @@ public class POVRayTarget extends AbstractTarget {
 	/**
 	 * adds a color. Syntax is "color rgb &lt;x, y, z&gt;".
 	 */
-	public void appendRGBColor(Color color) {
+	private void appendRGBColor(Color color) {
 
 		append("color rgb ");
 		appendVector(
@@ -472,7 +602,7 @@ public class POVRayTarget extends AbstractTarget {
 
 	}
 
-	public void appendMaterialOrName(Material material) {
+	private void appendMaterialOrName(Material material) {
 
 		String materialName = Materials.getUniqueName(material);
 
@@ -567,7 +697,7 @@ public class POVRayTarget extends AbstractTarget {
 	 * adds a vector to the String built by a StringBuilder.
 	 * Syntax is "&lt;x, y, z&gt;".
 	 */
-	public void appendVector(float x, float y, float z) {
+	private void appendVector(float x, float y, float z) {
 
 		if (Float.isNaN(x) || Float.isNaN(y) || Float.isNaN(z)) {
 			throw new IllegalArgumentException("NaN vector " + x + ", " + y + ", " + z);
@@ -583,7 +713,7 @@ public class POVRayTarget extends AbstractTarget {
 
 	}
 
-	public void appendVector(double x, double y, double z) {
+	private void appendVector(double x, double y, double z) {
 
 		if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
 			throw new IllegalArgumentException("NaN vector " + x + ", " + y + ", " + z);
@@ -603,7 +733,7 @@ public class POVRayTarget extends AbstractTarget {
 	 * alternative to {@link #appendVector(double, double)}
 	 * using a vector object as parameter instead of individual coordinates
 	 */
-	public void appendVector(VectorXYZ vector) {
+	private void appendVector(VectorXYZ vector) {
 		appendVector(vector.getX(), vector.getY(), vector.getZ());
 	}
 
@@ -611,7 +741,7 @@ public class POVRayTarget extends AbstractTarget {
 	 * adds a vector to the String built by a StringBuilder.
 	 * Syntax is "&lt;v1, v2&gt;".
 	 */
-	public void appendVector(double x, double z) {
+	private void appendVector(double x, double z) {
 
 		append("<");
 		append(x);
@@ -625,14 +755,14 @@ public class POVRayTarget extends AbstractTarget {
 	 * alternative to {@link #appendVector(double, double)}
 	 * using a vector object as parameter instead of individual coordinates
 	 */
-	public void appendVector(VectorXZ vector) {
+	private void appendVector(VectorXZ vector) {
 		appendVector(vector.x, vector.z);
 	}
 
 	/**
 	 * append a vector with inverted coordinates
 	 */
-	public void appendInverseVector(VectorXZ vector) {
+	private void appendInverseVector(VectorXZ vector) {
 		appendVector(-vector.x, -vector.z);
 	}
 
@@ -640,7 +770,7 @@ public class POVRayTarget extends AbstractTarget {
 	 *
 	 * @param vs  polygon vertices; first and last should be equal
 	 */
-	public void appendPolygon(VectorXYZ... vs) {
+	private void appendPolygon(VectorXYZ... vs) {
 
 		assert !vs[0].equals(vs[vs.length-1]) : "polygon not closed";
 
@@ -654,7 +784,7 @@ public class POVRayTarget extends AbstractTarget {
 
 	}
 
-	public void appendPrism(float y1, float y2, VectorXZ... vs) {
+	private void appendPrism(float y1, float y2, VectorXZ... vs) {
 
 		append("prism {\n  ");
 		append(y1);

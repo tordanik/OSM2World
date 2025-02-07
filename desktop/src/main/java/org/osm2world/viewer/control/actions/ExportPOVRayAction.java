@@ -1,17 +1,18 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.HeadlessException;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.povray.POVRayWriter;
+import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
@@ -57,12 +58,13 @@ public class ExportPOVRayAction extends AbstractExportAction {
 					renderOptions.camera.getUp().y,
 					renderOptions.camera.getUp().z);
 
-			/* write the file */
+			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
 
-			POVRayWriter.writePOVInstructionFile(
-					file,
-					data.getConversionResults().getMapData(),
-					povRayCamera, renderOptions.projection);
+			/* write the file */
+			Target gltfTarget = new POVRayTarget(file, povRayCamera, renderOptions.projection);
+			gltfTarget.setConfiguration(data.getConfig());
+			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
+			gltfTarget.finish();
 
 			messageManager.addMessage("exported POVRay file " + file);
 

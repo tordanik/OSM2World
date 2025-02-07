@@ -49,7 +49,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjMultiFileTarget;
 import org.osm2world.core.target.obj.ObjTarget;
-import org.osm2world.core.target.povray.POVRayWriter;
+import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.util.Resolution;
 
 import com.google.gson.GsonBuilder;
@@ -194,10 +194,14 @@ public final class Output {
 						}
 						break;
 
-						case POV:
-							POVRayWriter.writePOVInstructionFile(outputFile,
-									results.getMapData(), camera, projection);
-							break;
+						case POV: {
+							Target target = new POVRayTarget(outputFile, camera, projection);
+							target.setConfiguration(config);
+							boolean underground = config.getBoolean("renderUnderground", true);
+							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
+							target.finish();
+						}
+						break;
 
 						case WEB_PBF, WEB_PBF_GZ: {
 							AxisAlignedRectangleXZ bbox;
