@@ -14,9 +14,7 @@ import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GL
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 
 import javax.annotation.Nullable;
@@ -24,11 +22,13 @@ import javax.annotation.Nullable;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.map_data.data.*;
+import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapRelationElement;
+import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.geo.MapProjection;
 import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;
@@ -85,14 +85,13 @@ public class FrontendPbfTarget extends MeshTarget {
 	 * For {@link RuntimeTexture}s, this isn't a problem because they cannot be shared between tiles anyway.
 	 */
 	private static final TextureAtlasMode USE_TEXTURE_ATLAS = TextureAtlasMode.RUNTIME_ONLY;
-	private enum TextureAtlasMode { ALWAYS, RUNTIME_ONLY, NEVER };
+	private enum TextureAtlasMode { ALWAYS, RUNTIME_ONLY, NEVER }
 
 	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, WasteBasket.class,
 			VendingMachine.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
 
 	/**
-	 * materials which default to being shadowless
-	 *
+	 * materials which default to being shadowless.
 	 * These can only be treated as shadowless because the disabled terrain makes them (almost) always face straight up,
 	 * i.e. triangle's normal is roughly equal to Y_UNIT. With terrain enabled, this wouldn't necessarily be the case.
 	 * TODO: find a solution (e.g. check triangle normal) that works with terrain and can be used for all targets
@@ -127,7 +126,7 @@ public class FrontendPbfTarget extends MeshTarget {
 	 */
 	static class SimpleBlock<T> implements Block<T> {
 
-		List<T> elements = new ArrayList<T>();
+		List<T> elements = new ArrayList<>();
 
 		@Override
 		public List<T> getElements() {
@@ -177,8 +176,8 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		}
 
-		List<T> elements = new ArrayList<T>();
-		List<Entry<T>> sortedEntrys = new ArrayList<Entry<T>>();
+		List<T> elements = new ArrayList<>();
+		List<Entry<T>> sortedEntrys = new ArrayList<>();
 
 		@Override
 		public List<T> getElements() {
@@ -189,7 +188,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		@Override
 		public int toIndex(T element) {
 
-			int index = binarySearch(sortedEntrys, new Entry<T>(element, -1));
+			int index = binarySearch(sortedEntrys, new Entry<>(element, -1));
 
 			if (index >= 0) {
 				return sortedEntrys.get(index).index;
@@ -197,7 +196,7 @@ public class FrontendPbfTarget extends MeshTarget {
 
 				elements.add(element);
 
-				Entry<T> entry = new Entry<T>(element, elements.size() - 1);
+				Entry<T> entry = new Entry<>(element, elements.size() - 1);
 				sortedEntrys.add(-(index + 1), entry);
 
 				return entry.index;
@@ -214,9 +213,10 @@ public class FrontendPbfTarget extends MeshTarget {
 	/** factor applied to coordinate values before rounding to integers */
 	private final int COORD_PRECISION_FACTOR = 1000;
 
+	private final @Nullable File outputFile;
 	private final OutputStream outputStream;
+	private final Compression compression;
 	private final AxisAlignedRectangleXZ bbox;
-	private final MapProjection projection;
 
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<>();
 	private final Block<VectorXZ> vector2dBlock = new VectorBlock<>();
@@ -230,15 +230,32 @@ public class FrontendPbfTarget extends MeshTarget {
 	/**
 	 * Creates a {@link FrontendPbfTarget}. Writing only completes once {@link #finish()} is called.
 	 *
-	 * @param outputStream  the stream to write protobuf data to
+	 * @param outputFile  the file to write protobuf data to
 	 * @param bbox  the desired bounding box for the output.
 	 *              Objects are part of the output if their center is inside this box.
 	 */
-	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedRectangleXZ bbox, MapProjection projection) {
+	public FrontendPbfTarget(File outputFile, @Nullable Compression compression, AxisAlignedRectangleXZ bbox)
+			throws FileNotFoundException {
+		this(outputFile, new FileOutputStream(outputFile), compression, bbox);
+	}
 
+	/**
+	 * variant of {@link #FrontendPbfTarget(File, Compression, AxisAlignedRectangleXZ)}
+	 * which accepts arbitrary {@link OutputStream}s
+	 *
+	 * @param outputStream  the stream to write protobuf data to
+	 */
+	public FrontendPbfTarget(OutputStream outputStream, @Nullable Compression compression, AxisAlignedRectangleXZ bbox) {
+		this(null, outputStream, compression, bbox);
+	}
+
+	private FrontendPbfTarget(@Nullable File outputFile, OutputStream outputStream, @Nullable Compression compression,
+			AxisAlignedRectangleXZ bbox) {
+
+		this.outputFile = outputFile;
 		this.outputStream = outputStream;
+		this.compression = compression != null ? compression : Compression.NONE;
 		this.bbox = bbox;
-		this.projection = projection;
 
 		/* reserve index 0 for optional strings */
 
@@ -269,13 +286,13 @@ public class FrontendPbfTarget extends MeshTarget {
 	}
 
 	private static VectorXZ getCenter(MapRelationElement element) {
-		if (element instanceof MapNode) {
-			return ((MapNode) element).getPos();
-		} else if (element instanceof MapWay) {
-			PolylineXZ polyline = ((MapWay) element).getPolylineXZ();
+		if (element instanceof MapNode mapNode) {
+			return mapNode.getPos();
+		} else if (element instanceof MapWay mapWay) {
+			PolylineXZ polyline = mapWay.getPolylineXZ();
 			return polyline.pointAtOffset(polyline.getLength() / 2);
-		} else if (element instanceof MapArea) {
-			return ((MapArea) element).getOuterPolygon().getCenter();
+		} else if (element instanceof MapArea mapArea) {
+			return mapArea.getOuterPolygon().getCenter();
 		} else {
 			throw new Error("Unknown element type " + element.getClass());
 		}
@@ -285,9 +302,7 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		Shape.Builder shapeBuilder = Shape.newBuilder();
 
-		if (s instanceof CircleXZ) {
-
-			CircleXZ circle = (CircleXZ) s;
+		if (s instanceof CircleXZ circle) {
 
 			shapeBuilder.setType(ShapeType.CIRCLE);
 
@@ -513,7 +528,7 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		/* build the object's instance geometries */
 
-		List<InstanceGeometry> instanceGeometries = new ArrayList<InstanceGeometry>();
+		List<InstanceGeometry> instanceGeometries = new ArrayList<>();
 
 		for (Model model : modelInstances.keySet()) {
 
@@ -784,35 +799,15 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		/* write the protobuf */
 
-		try {
-			tileBuilder.build().writeTo(outputStream);
-		} catch (IOException e) {
-			//TODO proper error handling
-			throw new Error(e);
-		}
-
-	}
-
-	public static void writePbfFile(File outputFile, MapData mapData,
-			AxisAlignedRectangleXZ bbox, MapProjection projection, Compression compression) throws IOException {
-
-		TargetUtil.writeFileWithCompression(outputFile, compression,
-			it -> writePbfStream(it, mapData, bbox, projection));
-
-	}
-
-	public static void writePbfStream(OutputStream output, MapData mapData,
-			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
-
-		if (bbox == null) {
-			bbox = mapData.getBoundary();
-		}
-
-		FrontendPbfTarget target = new FrontendPbfTarget(output, bbox, projection);
-
-		TargetUtil.renderWorldObjects(target, mapData, false);
-
-		target.finish();
+		String archiveName = outputFile == null ? null : outputFile.getName();
+		TargetUtil.writeWithCompression(outputStream, compression, archiveName, os -> {
+			try {
+				tileBuilder.build().writeTo(outputStream);
+			} catch (IOException e) {
+				//TODO proper error handling
+				throw new Error(e);
+			}
+		});
 
 	}
 

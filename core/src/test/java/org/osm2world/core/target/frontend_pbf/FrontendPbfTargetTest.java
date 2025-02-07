@@ -20,6 +20,7 @@ import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
@@ -72,7 +73,10 @@ public class FrontendPbfTargetTest {
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
-		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null, Compression.NONE);
+
+		FrontendPbfTarget target = new FrontendPbfTarget(outputFile, Compression.NONE, bbox);
+		TargetUtil.renderWorldObjects(target, results.getMapData(), true);
+		target.finish();
 
 	}
 
@@ -89,7 +93,10 @@ public class FrontendPbfTargetTest {
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
-		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null, Compression.NONE);
+
+		FrontendPbfTarget target = new FrontendPbfTarget(outputFile, Compression.NONE, bbox);
+		TargetUtil.renderWorldObjects(target, results.getMapData(), true);
+		target.finish();
 
 		try (FileInputStream is = new FileInputStream(outputFile)) {
 

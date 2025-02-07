@@ -13,6 +13,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -70,23 +72,44 @@ public final class TargetUtil {
 	public static <E extends Exception> void writeFileWithCompression(File outputFile,
 				Compression compression, CheckedConsumer<OutputStream, E> writeToStream) throws E {
 
+		try (var fileOutputStream = new FileOutputStream(outputFile)) {
+
+			writeWithCompression(fileOutputStream, compression, outputFile.getName(), writeToStream);
+
+		} catch (JsonIOException | IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	/**
+	 * optionally applies a compression while writing data to an output stream
+	 *
+	 * @param outputStream  the stream to write to
+	 * @param compression  the compression to use, can be {@link Compression#NONE}
+	 * @param archiveName  the name of the entry inside the archive, used to name entries inside, optional
+	 * @param writeToStream  the function which produces the content that should be written to the file
+	 */
+	public static <E extends Exception> void writeWithCompression(OutputStream outputStream,
+			Compression compression, @Nullable String archiveName, CheckedConsumer<OutputStream, E> writeToStream) throws E {
+
+		archiveName = archiveName != null ? archiveName : "content";
+
 		try {
 
-			var fileOutputStream = new FileOutputStream(outputFile);
-
-			OutputStream outputStream = switch (compression) {
-				case NONE -> fileOutputStream;
-				case GZ -> new GZIPOutputStream(fileOutputStream);
+			OutputStream contentOutputStream = switch (compression) {
+				case NONE -> outputStream;
+				case GZ -> new GZIPOutputStream(outputStream);
 				case ZIP -> {
-					var zipOS = new ZipOutputStream(fileOutputStream);
-					zipOS.putNextEntry(new ZipEntry(outputFile.getName().replace(".gz", "")));
+					var zipOS = new ZipOutputStream(outputStream);
+					zipOS.putNextEntry(new ZipEntry(archiveName.replace(".gz", "")));
 					yield zipOS;
 				}
 			};
 
-			try (outputStream) {
+			try (contentOutputStream) {
 
-				writeToStream.accept(outputStream);
+				writeToStream.accept(contentOutputStream);
 
 				if (outputStream instanceof ZipOutputStream zipOutputStream) {
 					try {

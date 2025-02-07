@@ -176,7 +176,7 @@ public final class Output {
 						break;
 
 						case GLTF, GLB, GLTF_GZ, GLB_GZ: {
-							AxisAlignedRectangleXZ bounds = null;
+							AxisAlignedRectangleXZ bounds;
 							if (args.isTile()) {
 								bounds = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
 							} else {
@@ -200,13 +200,18 @@ public final class Output {
 							break;
 
 						case WEB_PBF, WEB_PBF_GZ: {
-							AxisAlignedRectangleXZ bbox = null;
+							AxisAlignedRectangleXZ bbox;
 							if (args.isTile()) {
 								bbox = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
+							} else {
+								bbox = results.getMapData().getBoundary();
 							}
 							Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
-							FrontendPbfTarget.writePbfFile(
-									outputFile, results.getMapData(), bbox, results.getMapProjection(), compression);
+							Target target = new FrontendPbfTarget(outputFile, compression, bbox);
+							target.setConfiguration(config);
+							boolean underground = config.getBoolean("renderUnderground", true);
+							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
+							target.finish();
 						}
 						break;
 
