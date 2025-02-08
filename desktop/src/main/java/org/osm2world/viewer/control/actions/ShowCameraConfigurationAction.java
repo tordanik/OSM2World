@@ -41,17 +41,21 @@ public class ShowCameraConfigurationAction
 		}
 
 		MapProjection mapProjection = data.getConversionResults().getMapProjection();
+		assert mapProjection != null; // this action is disabled before data is loaded
 
 		VectorXYZ pos = renderOptions.camera.getPos();
 		VectorXYZ lookAt = renderOptions.camera.getLookAt();
 
-		JOptionPane.showMessageDialog(null,
+		var text = new JTextArea(
 				"posLat = " + mapProjection.toLat(pos.xz())
 				+ "\nposLon = " + mapProjection.toLon(pos.xz())
 				+ "\nposEle = " + pos.y
 				+ "\nlookAtLat = " + mapProjection.toLat(lookAt.xz())
 				+ "\nlookAtLon = " + mapProjection.toLon(lookAt.xz())
-				+ "\nlookAtEle = " + lookAt.y,
+				+ "\nlookAtEle = " + lookAt.y);
+		text.setEditable(false);
+		text.setOpaque(false);
+		JOptionPane.showMessageDialog(null, text,
 				"Current camera configuration", JOptionPane.INFORMATION_MESSAGE);
 	}
 
