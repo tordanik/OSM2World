@@ -1,19 +1,20 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.lang.Math.min;
-import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.math.Vector3D.distance;
+import static org.osm2world.math.VectorXZ.listXYZ;
 
-import java.awt.Color;
+import java.awt.*;
 
-import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.MapQuadtree;
-import org.osm2world.core.math.datastructures.MapQuadtree.QuadLeaf;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.ConversionFacade.Results;
+import org.osm2world.map_data.data.MapArea;
+import org.osm2world.map_data.data.MapElement;
+import org.osm2world.map_data.data.MapNode;
+import org.osm2world.map_data.data.MapWaySegment;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.math.datastructures.MapQuadtree;
+import org.osm2world.math.datastructures.MapQuadtree.QuadLeaf;
+import org.osm2world.target.jogl.JOGLTarget;
 
 public class QuadtreeDebugView extends DebugView {
 
@@ -64,21 +65,19 @@ public class QuadtreeDebugView extends DebugView {
 
 				for (MapElement e : leaf) {
 
-					if (e instanceof MapNode) {
+					if (e instanceof MapNode node) {
 
-						VectorXZ nodePos = ((MapNode)e).getPos();
+						VectorXZ nodePos = node.getPos();
 
 						drawArrow(target, NODE_ARROW_COLOR,
 								(float) min(1,
 										distance(leafCenter, nodePos) * 0.3),
 								leafCenter.xyz(0), nodePos.xyz(0));
 
-					} else if (e instanceof MapWaySegment) {
+					} else if (e instanceof MapWaySegment segment) {
 
-						VectorXZ lineStart =
-							((MapWaySegment)e).getStartNode().getPos();
-						VectorXZ lineEnd =
-							((MapWaySegment)e).getEndNode().getPos();
+						VectorXZ lineStart = segment.getStartNode().getPos();
+						VectorXZ lineEnd = segment.getEndNode().getPos();
 
 						VectorXZ lineCenter = lineStart.add(lineEnd).mult(0.5f);
 

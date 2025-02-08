@@ -1,6 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
+import org.osm2world.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 

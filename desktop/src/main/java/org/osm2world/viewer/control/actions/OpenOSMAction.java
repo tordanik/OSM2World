@@ -7,8 +7,8 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.math.geo.TileNumber;
-import org.osm2world.core.osm.creation.*;
+import org.osm2world.math.geo.TileNumber;
+import org.osm2world.osm.creation.*;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.RecentFilesUpdater;

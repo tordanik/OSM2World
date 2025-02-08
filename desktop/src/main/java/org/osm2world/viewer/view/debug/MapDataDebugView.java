@@ -1,27 +1,27 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
+import static org.osm2world.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 
 import java.awt.*;
 import java.util.Collection;
 import java.util.function.Predicate;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.LineSegmentXZ;
-import org.osm2world.core.math.shapes.TriangleXZ;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.map_data.data.MapArea;
+import org.osm2world.map_data.data.MapData;
+import org.osm2world.map_data.data.MapNode;
+import org.osm2world.map_data.data.MapWaySegment;
+import org.osm2world.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.map_data.data.overlaps.MapOverlap;
+import org.osm2world.map_data.data.overlaps.MapOverlapAA;
+import org.osm2world.map_data.data.overlaps.MapOverlapWA;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.math.algorithms.TriangulationUtil;
+import org.osm2world.math.shapes.LineSegmentXZ;
+import org.osm2world.math.shapes.TriangleXZ;
+import org.osm2world.target.common.material.ImmutableMaterial;
+import org.osm2world.target.common.material.Material.Interpolation;
+import org.osm2world.target.jogl.JOGLTarget;
 
 /**
  * shows the plain {@link MapData} as a network of nodes, lines and areas

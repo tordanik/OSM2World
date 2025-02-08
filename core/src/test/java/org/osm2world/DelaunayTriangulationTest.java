@@ -2,18 +2,18 @@ package org.osm2world;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
-import org.osm2world.core.map_elevation.creation.DelaunayTriangulation;
-import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.map_elevation.creation.DelaunayTriangulation;
+import org.osm2world.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 
 
 public class DelaunayTriangulationTest {

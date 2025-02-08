@@ -4,9 +4,9 @@ import static java.awt.Color.BLUE;
 
 import java.awt.Color;
 
-import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * shows all {@link EleConnector}s

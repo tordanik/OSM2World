@@ -8,14 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.shapes.FlatSimplePolygonShapeXYZ;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
+import org.osm2world.target.common.material.ImmutableMaterial;
+import org.osm2world.target.common.material.Material;
+import org.osm2world.target.common.material.Material.Interpolation;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.data.WorldObject;
 
 public class AttachmentSurfaceDebugView extends DebugView {
 

@@ -1,7 +1,7 @@
 package org.osm2world.viewer.view;
 
 import static java.util.Map.entry;
-import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.*;
+import static org.osm2world.target.statistics.StatisticsTarget.Stat.*;
 
 import java.awt.event.KeyEvent;
 import java.io.Serial;
@@ -14,10 +14,10 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.statistics.StatisticsTarget;
-import org.osm2world.core.target.statistics.StatisticsTarget.Stat;
+import org.osm2world.target.common.material.Material;
+import org.osm2world.target.common.material.Materials;
+import org.osm2world.target.statistics.StatisticsTarget;
+import org.osm2world.target.statistics.StatisticsTarget.Stat;
 
 
 public class StatisticsDialog extends JDialog {

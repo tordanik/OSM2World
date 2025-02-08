@@ -1,16 +1,16 @@
 package org.osm2world.viewer.view.debug;
 
-import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
+import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
 import java.awt.Color;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.PrimitiveBuffer;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.common.Primitive;
+import org.osm2world.target.common.material.Material;
+import org.osm2world.target.common.material.Material.Interpolation;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.target.jogl.PrimitiveBuffer;
 
 public class WorldObjectNormalsDebugView extends DebugView {
 

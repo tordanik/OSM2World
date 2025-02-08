@@ -2,11 +2,11 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.datastructures.Map2dTree;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.ConversionFacade.Results;
+import org.osm2world.map_data.data.MapElement;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.datastructures.Map2dTree;
+import org.osm2world.target.jogl.JOGLTarget;
 
 public class Map2dTreeDebugView extends DebugView {
 

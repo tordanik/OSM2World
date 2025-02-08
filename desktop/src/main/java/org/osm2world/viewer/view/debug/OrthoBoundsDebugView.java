@@ -3,11 +3,11 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 import java.util.List;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.OrthoTilesUtil;
+import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.target.jogl.JOGLTarget;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 
 /**

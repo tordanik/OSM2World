@@ -6,9 +6,9 @@ import java.util.Observer;
 
 import javax.swing.AbstractAction;
 
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.map_data.data.MapData;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.target.common.rendering.Camera;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.Defaults;
 import org.osm2world.viewer.model.RenderOptions;

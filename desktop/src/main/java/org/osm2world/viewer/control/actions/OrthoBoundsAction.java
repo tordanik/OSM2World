@@ -6,9 +6,9 @@ import java.util.Observer;
 
 import javax.swing.*;
 
-import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.target.common.rendering.OrthoTilesUtil;
+import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;

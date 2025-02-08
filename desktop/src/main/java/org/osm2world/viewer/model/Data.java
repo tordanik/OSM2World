@@ -9,18 +9,18 @@ import java.util.Observable;
 
 import javax.annotation.Nonnull;
 
-import org.osm2world.core.ConversionFacade;
-import org.osm2world.core.ConversionFacade.ProgressListener;
-import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.conversion.O2WConfig;
-import org.osm2world.core.map_elevation.creation.EleCalculator;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.osm.creation.GeodeskReader;
-import org.osm2world.core.osm.creation.MbtilesReader;
-import org.osm2world.core.osm.creation.OSMDataReaderView;
-import org.osm2world.core.osm.creation.OSMFileReader;
-import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.util.functions.Factory;
+import org.osm2world.ConversionFacade;
+import org.osm2world.ConversionFacade.ProgressListener;
+import org.osm2world.ConversionFacade.Results;
+import org.osm2world.conversion.O2WConfig;
+import org.osm2world.map_elevation.creation.EleCalculator;
+import org.osm2world.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.osm.creation.GeodeskReader;
+import org.osm2world.osm.creation.MbtilesReader;
+import org.osm2world.osm.creation.OSMDataReaderView;
+import org.osm2world.osm.creation.OSMFileReader;
+import org.osm2world.osm.data.OSMData;
+import org.osm2world.util.functions.Factory;
 
 public class Data extends Observable {
 

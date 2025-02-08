@@ -2,7 +2,7 @@ package org.osm2world.viewer;
 
 import javax.swing.*;
 
-import org.osm2world.core.conversion.O2WConfig;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.viewer.view.ViewerFrame;
 
 public class Viewer {

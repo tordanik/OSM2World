@@ -6,7 +6,7 @@ import java.awt.*;
 
 import javax.swing.*;
 
-import org.osm2world.core.target.jogl.AbstractJOGLTarget;
+import org.osm2world.target.jogl.AbstractJOGLTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.MessageManager.Message;

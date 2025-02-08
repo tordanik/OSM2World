@@ -1,6 +1,6 @@
 package org.osm2world.viewer.control.actions;
 
-import static org.osm2world.core.GlobalValues.*;
+import static org.osm2world.GlobalValues.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

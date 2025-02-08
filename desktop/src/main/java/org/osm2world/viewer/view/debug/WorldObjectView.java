@@ -1,11 +1,11 @@
 package org.osm2world.viewer.view.debug;
 
-import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
+import static org.osm2world.target.jogl.JOGLRenderingParameters.Winding.CCW;
 
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.core.target.jogl.JOGLRenderingParameters;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.target.jogl.JOGLRenderingParameters;
+import org.osm2world.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.RenderOptions;
 
 public class WorldObjectView extends DebugView {

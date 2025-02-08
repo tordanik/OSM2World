@@ -1,0 +1,337 @@
+syntax = "proto2";
+
+package frontend_pbf;
+
+option java_package = "org.osm2world.target.frontend_pbf";
+option java_outer_classname = "FrontendPbf";
+
+/* a block containing all three-dimensional vectors used in the tile.
+ * Vectors are referenced via their position in this block.
+ * Values are in millimeters relative to the center of the tile.
+ * The first 3 values are x, y, and z coordinates of the first vector, etc.
+ * Therefore, the number of coordinates must be divisible by 3. */
+message Vector3dBlock {
+
+	repeated sint64 coords = 1 [packed=true];
+
+}
+
+/* a block containing all two-dimensional vectors used in the tile.
+ * See Vector3dBlock for more details.
+ * All values are multiplied with 1000. */
+message Vector2dBlock {
+
+	repeated sint64 coords = 1 [packed=true];
+
+}
+
+/* a block containing strings referenced elsewhere in the tile. */
+message StringBlock {
+
+	repeated string strings = 1;
+
+}
+
+/* a block containing all 2d shapes used in the tile. */
+message ShapeBlock {
+
+	repeated Shape shapes = 1;
+
+}
+
+/* a 2d shape */
+message Shape {
+
+	enum ShapeType {
+
+		/*
+		 * a circle. There are only two parameters:
+		 * - the center, as a reference to the vector2dBlock
+		 * - the radius, in millimeters.
+		 */
+		CIRCLE = 1;
+
+		/* a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. */
+		POLYGON = 2;
+
+		/* a polyline. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. */
+		POLYLINE = 3;
+
+	}
+
+	required ShapeType type = 1;
+
+	/* parameters for the shape, such as the radius of a circle.
+	   The precise meaning depends on the shape type! */
+	repeated sint64 parameters = 2 [packed = true];
+
+}
+
+/* a block containing all materials used in the tile. */
+message MaterialBlock {
+
+	repeated Material materials = 1;
+
+}
+
+/* a set of material properties, using RGB colors.
+ * Color components are in the range [0, 255]. */
+message Material {
+
+	enum Transparency {
+
+		/* arbitrary transparency, including partially transparent pixels */
+		TRUE = 1;
+
+		/* only allow pixels to be either fully transparent or fully opaque */
+		BINARY = 2;
+
+		/* all pixels are opaque */
+		FALSE = 3;
+
+	}
+
+	/** a set of PBR textures representing one layer of the material. All textures in the layer use the same texture coordinates. */
+	message TextureLayer {
+
+		enum Wrap {
+			REPEAT = 1;
+			CLAMP = 2;
+		}
+
+		enum TexCoordFunction {
+
+			/* No standard function is used. Texture coordinates for this layer will be provided alongside the geometry. */
+			CUSTOM = 1;
+
+			/* uses x and z vertex coords together with the texture's width and height to place a texture */
+			GLOBAL_X_Z = 2;
+
+		}
+
+		/* URI of the base color + alpha texture image, can be relative, can be a data URI */
+		optional string baseColorTextureURI = 1;
+
+		/* URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI */
+		optional string ormTextureURI = 7;
+
+		/* URI of the normal map texture image, can be relative, can be a data URI */
+		optional string normalTextureURI = 8;
+
+		/* URI of the displacement map texture image, can be relative, can be a data URI */
+		optional string displacementTextureURI = 9;
+
+		/* URI of the emissive texture image, can be relative, can be a data URI */
+		optional string emissiveTextureURI = 10;
+
+		/* URI of the reflectivity texture image, can be relative, can be a data URI */
+		optional string reflectivityTextureURI = 11;
+
+		/* how the texture behaves for texture coordinates
+		 * less than 0 or greater than 1 */
+		optional Wrap wrap = 2 [default = REPEAT];
+
+		/* whether the base color texture should be multiplied with the material's base color value */
+		required bool colorable = 3;
+
+		/* width of the texture in millimeters. */
+		required uint32 textureWidth = 4;
+
+		/* height of the texture in millimeters. */
+		required uint32 textureHeight = 5;
+
+		optional TexCoordFunction texCoordFunction = 6 [default = CUSTOM];
+
+	}
+
+	required uint32 baseColorR = 1;
+	required uint32 baseColorG = 2;
+	required uint32 baseColorB = 3;
+
+	/* texture layers, ordered from bottom to top */
+	repeated TextureLayer textureLayer = 11;
+
+	/* the type of transparency */
+	optional Transparency transparency = 16 [default = FALSE];
+
+	/* whether this material casts shadows */
+	optional bool castShadow = 17 [default = true];
+
+	/* whether this material is double-sided.
+	 * If true, backface culling should be disabled,
+	 * and two-sided lighting should be enabled. */
+	optional bool doubleSided = 18 [default = false];
+
+}
+
+/* a block containing all template models used in this file.
+ * Each model is represented as a WorldObject with no id or type.
+ * A template model must not use InstanceGeometry itself. */
+message ModelBlock {
+
+	/* the template models that can be copied (with slight variations) in multiple locations */
+	repeated WorldObject models = 1;
+
+}
+
+/* geometry consisting of a set of triangles */
+message TriangleGeometry {
+
+	/* the geometry's material, referencing materialBlock */
+	required uint32 material = 1;
+
+	/* vertices of the triangles, represented as
+	 * 3 references to the Vector3d block each.
+	 * At least 1 triangle (i.e. 3 vertex references) required. */
+	repeated uint64 vertices = 2 [packed = true];
+
+	/* texture coordinates for each vertex of the triangles,
+	 * referencing the Vector2d block.
+	 * Texture coordinates are only provided for those layers
+	 * which are using the CUSTOM texture coordinate function (see Material).
+	 * The length of this list is that of
+         * vertices, times the number of CUSTOM-coordinated texture layers.
+	 * Starts with all vertices' tex coords for layer 0, then 1 etc. */
+	repeated uint64 texCoords = 3 [packed = true];
+
+}
+
+/* geometry produced by extruding a 2d shape.
+   See OSM2World's Target.drawExtrudedShape method for documentation of the parameters. */
+message ExtrusionGeometry {
+
+	/* the geometry's material, referencing materialBlock */
+	required uint32 material = 1;
+
+	/* the shape to be extruded, referencing shapeBlock */
+	required uint32 shape = 2;
+
+	/* referencing vector3dBlock */
+	repeated uint64 path = 3;
+
+	/* referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. */
+	repeated uint64 upVectors = 4;
+
+	/* multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. */
+	repeated uint64 scaleFactors = 5;
+
+	optional bool startCap = 7 [default = false];
+	optional bool endCap = 8 [default = false];
+
+}
+
+/* copies of some prototype model, possibly rotated and scaled */
+message InstanceGeometry {
+
+	/* the prototype model, referencing the modelBlock.
+	   Alternatively, an external resource can be referenced using resourceIdentifier. */
+	optional uint32 model = 1;
+
+	/* string identifying an external model in some way, e.g. as an URI or a string constant.
+	   Alternatively, a prototype model included in this file can be referenced using the model field. */
+	optional string resourceIdentifier = 5;
+
+	/* position of each instance.
+	   Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+	   Each position is represented as an x, y, z triple of values. */
+	repeated sint64 position = 2 [packed=true];
+
+	/* rotation angle around the y axis for each instance in milliradians, clockwise.
+	   Either one third of the length of 'position' or empty (for a default of 0). */
+	repeated int32 direction = 3 [packed=true];
+
+	/* scale factor for each instance in 1/1000.
+	   Either one third of the length of 'position' or empty (for a default of 1). */
+	repeated uint32 scale = 4 [packed=true];
+
+	/* this message is present if this geometry is animated */
+	optional Animation animation = 6;
+
+}
+
+/* The parameters defining an animation.
+   At the moment, this does not support keys yet.
+   Instead, there's an assumption based on the type of animation,
+   e.g. rotations assume that each run of the animation means one full (360°) rotation. */
+message Animation {
+
+	/* the property that is being modified */
+	enum AnimationType {
+
+		/* clockwise rotation around the model's local x axis
+		   (before InstanceGeometry's transformations are applied) */ 
+		ROTATION_X = 1;
+
+	}
+
+	/* what happens after the animation completes */
+	enum LoopMode {
+
+		/* restart the animation from the beginning.
+		   Remaining progress should be used in the next cycle (i.e. modulo-style wrap). */ 
+		CYCLE = 1;
+
+	}
+
+	/* the source of the animation timer.
+	   May eventually be extended to include local time in the simulated location,
+	   animations triggered by user interaction, or factors such as wind direction. */
+	enum TimerType {
+
+		/* A clock counting seconds with arbitrary starting point.
+		   Can even be started at different values for different models to prevent synced animations. */ 
+		MODEL_TIME = 1;
+
+	}
+
+	required AnimationType type = 1;
+
+	optional LoopMode loopMode = 2 [default = CYCLE];
+
+	optional TimerType timerType = 3 [default = MODEL_TIME];
+
+	/* the fraction of the entire animation that is completed each second. */
+	required double runsPerSecond = 4;
+
+}
+
+/* a three-dimensional object */
+message WorldObject {
+
+	/* the OSM id of the primary element this object is created from, if any */
+	optional string osmId = 1;
+
+	/* the type of this WorldObject, in broad terms. References stringBlock. */
+	optional uint32 typeName = 2;
+
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated TriangleGeometry triangleGeometries = 3;
+
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated ExtrusionGeometry extrusionGeometries = 4;
+
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated InstanceGeometry instanceGeometries = 5;
+
+	/** defines a level of detail (0 to 4) as the lower end of the range where this is visible */
+	optional uint32 minLod = 6 [default = 0];
+
+	/** defines a level of detail (0 to 4) as the upper end of the range where this is visible */
+	optional uint32 maxLod = 7 [default = 4];
+
+}
+
+/* a tile with 3d data */
+message Tile {
+
+	required Vector3dBlock vector3dBlock = 1;
+	required Vector2dBlock vector2dBlock = 2;
+	required StringBlock stringBlock = 3;
+	required ShapeBlock shapeBlock = 4;
+	required MaterialBlock materialBlock = 5;
+	required ModelBlock modelBlock = 6;
+
+	repeated WorldObject objects = 7;
+
+}
+

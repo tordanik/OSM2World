@@ -15,8 +15,8 @@ import java.util.Set;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.target.common.rendering.Camera;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 

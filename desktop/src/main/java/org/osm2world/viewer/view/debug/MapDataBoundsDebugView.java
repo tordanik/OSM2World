@@ -3,8 +3,8 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 import java.util.List;
 
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.target.jogl.JOGLTarget;
 
 /**
  * shows the bounding boxes of map data

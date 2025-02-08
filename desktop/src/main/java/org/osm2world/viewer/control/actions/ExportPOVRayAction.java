@@ -9,10 +9,10 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.povray.POVRayTarget;
+import org.osm2world.target.Target;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.povray.POVRayTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;

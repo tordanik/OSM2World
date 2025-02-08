@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
-import org.osm2world.core.map_elevation.creation.EleCalculator;
+import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;

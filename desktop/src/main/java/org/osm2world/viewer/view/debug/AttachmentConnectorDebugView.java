@@ -1,16 +1,16 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.awt.Color.*;
-import static org.osm2world.core.math.VectorXZ.Z_UNIT;
+import static org.osm2world.math.VectorXZ.Z_UNIT;
 
 import java.awt.Color;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.attachment.AttachmentConnector;
-import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.target.common.material.ImmutableMaterial;
+import org.osm2world.target.common.material.Material.Interpolation;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.data.WorldObject;
 
 public class AttachmentConnectorDebugView extends DebugView {
 

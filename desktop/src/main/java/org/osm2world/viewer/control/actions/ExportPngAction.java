@@ -8,10 +8,10 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.image.ImageOutputFormat;
-import org.osm2world.core.target.image.ImageTarget;
-import org.osm2world.core.util.Resolution;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.image.ImageOutputFormat;
+import org.osm2world.target.image.ImageTarget;
+import org.osm2world.util.Resolution;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;

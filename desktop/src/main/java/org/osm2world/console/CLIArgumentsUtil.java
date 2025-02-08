@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.geo.LatLonBounds;
-import org.osm2world.core.osm.creation.*;
-import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.util.Resolution;
+import org.osm2world.math.geo.LatLonBounds;
+import org.osm2world.osm.creation.*;
+import org.osm2world.osm.data.OSMData;
+import org.osm2world.util.Resolution;
 
 import com.lexicalscope.jewel.cli.CliFactory;
 

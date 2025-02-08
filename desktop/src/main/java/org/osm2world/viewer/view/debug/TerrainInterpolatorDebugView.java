@@ -7,18 +7,18 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.datastructures.VectorGridXZ;
-import org.osm2world.core.math.geo.MapProjection;
-import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.jogl.JOGLRenderingParameters;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.ConversionFacade.Results;
+import org.osm2world.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.datastructures.VectorGridXZ;
+import org.osm2world.math.geo.MapProjection;
+import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.target.common.material.ImmutableMaterial;
+import org.osm2world.target.common.material.Material;
+import org.osm2world.target.common.material.Material.Interpolation;
+import org.osm2world.target.jogl.JOGLRenderingParameters;
+import org.osm2world.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.RenderOptions;
 
 public abstract class TerrainInterpolatorDebugView extends DebugView {

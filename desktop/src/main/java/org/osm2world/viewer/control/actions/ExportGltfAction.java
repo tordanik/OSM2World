@@ -9,10 +9,10 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.TargetUtil.Compression;
-import org.osm2world.core.target.gltf.GltfTarget;
-import org.osm2world.core.target.gltf.GltfTarget.GltfFlavor;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.TargetUtil.Compression;
+import org.osm2world.target.gltf.GltfTarget;
+import org.osm2world.target.gltf.GltfTarget.GltfFlavor;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;

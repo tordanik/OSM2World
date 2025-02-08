@@ -6,21 +6,21 @@ import static java.util.Collections.emptyList;
 import java.awt.*;
 import java.util.List;
 
-import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.conversion.O2WConfig;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_elevation.creation.TerrainElevationData;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.TriangleXYZ;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.jogl.JOGLRenderingParameters;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
-import org.osm2world.core.target.jogl.JOGLTargetShader;
+import org.osm2world.ConversionFacade.Results;
+import org.osm2world.conversion.O2WConfig;
+import org.osm2world.map_data.data.MapData;
+import org.osm2world.map_elevation.creation.TerrainElevationData;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.target.common.material.ImmutableMaterial;
+import org.osm2world.target.common.material.Material.Interpolation;
+import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.Projection;
+import org.osm2world.target.jogl.JOGLRenderingParameters;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.target.jogl.JOGLTargetFixedFunction;
+import org.osm2world.target.jogl.JOGLTargetShader;
 
 import com.jogamp.opengl.GL;
 

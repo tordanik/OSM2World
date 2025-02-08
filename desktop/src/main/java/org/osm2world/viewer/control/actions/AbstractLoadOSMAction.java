@@ -8,13 +8,13 @@ import java.io.Serial;
 
 import javax.swing.*;
 
-import org.osm2world.core.ConversionFacade.Phase;
-import org.osm2world.core.ConversionFacade.ProgressListener;
-import org.osm2world.core.map_elevation.creation.EleCalculator;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.osm.creation.OSMDataReaderView;
-import org.osm2world.core.util.exception.InvalidGeometryException;
-import org.osm2world.core.util.functions.DefaultFactory;
+import org.osm2world.ConversionFacade.Phase;
+import org.osm2world.ConversionFacade.ProgressListener;
+import org.osm2world.map_elevation.creation.EleCalculator;
+import org.osm2world.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.osm.creation.OSMDataReaderView;
+import org.osm2world.util.exception.InvalidGeometryException;
+import org.osm2world.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;

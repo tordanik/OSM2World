@@ -6,9 +6,9 @@ import java.util.Observer;
 
 import javax.swing.*;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.geo.MapProjection;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.math.geo.MapProjection;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;

@@ -7,9 +7,9 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.obj.ObjMultiFileTarget;
+import org.osm2world.target.Target;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.obj.ObjMultiFileTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;

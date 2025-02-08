@@ -1,6 +1,6 @@
 package org.osm2world.viewer.model;
 
-import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.target.common.rendering.Projection;
 
 public final class Defaults {
 

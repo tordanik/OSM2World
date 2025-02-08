@@ -5,8 +5,8 @@ import java.io.Serial;
 
 import javax.swing.*;
 
-import org.osm2world.core.conversion.O2WConfig;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.conversion.O2WConfig;
+import org.osm2world.target.common.mesh.LevelOfDetail;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;

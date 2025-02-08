@@ -1,16 +1,16 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.awt.Color.*;
-import static org.osm2world.core.math.algorithms.GeometryUtil.interpolateBetween;
+import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.awt.*;
 import java.util.List;
 
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * shows elevation constraints

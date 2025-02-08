@@ -6,9 +6,9 @@ import static java.lang.Math.floor;
 
 import java.awt.*;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.target.jogl.JOGLTarget;
 
 /**
  * shows the internal world coordinate grid

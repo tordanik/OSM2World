@@ -1,7 +1,7 @@
 package org.osm2world.console;
 
 import static java.util.Arrays.sort;
-import static org.osm2world.core.conversion.ConversionLog.LogLevel.FATAL;
+import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.conversion.ConversionLog;
 
 /**
  * implementation of the mode triggered by {@link CLIArguments#isParameterFileDir()}.

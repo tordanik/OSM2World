@@ -5,13 +5,13 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_elevation.creation.BridgeTunnelEleCalculator;
-import org.osm2world.core.map_elevation.creation.EleCalculator;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.map_elevation.creation.BridgeTunnelEleCalculator;
+import org.osm2world.map_elevation.creation.EleCalculator;
+import org.osm2world.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.target.common.mesh.LevelOfDetail;
+import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;
 
 public class RenderOptions {

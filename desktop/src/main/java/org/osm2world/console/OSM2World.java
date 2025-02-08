@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.GUI;
 import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
-import static org.osm2world.core.GlobalValues.VERSION_STRING;
+import static org.osm2world.GlobalValues.VERSION_STRING;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 import javax.swing.*;
 
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
-import org.osm2world.core.GlobalValues;
-import org.osm2world.core.conversion.O2WConfig;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.GlobalValues;
+import org.osm2world.conversion.O2WConfig;
+import org.osm2world.target.common.mesh.LevelOfDetail;
 import org.osm2world.viewer.view.ViewerFrame;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;

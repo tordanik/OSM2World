@@ -1,16 +1,16 @@
 package org.osm2world.viewer.view.debug;
 
-import static org.osm2world.core.math.VectorXZ.listXYZ;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
+import static org.osm2world.math.VectorXZ.listXYZ;
+import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
 import java.awt.*;
 
-import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.map_elevation.data.GroundState;
+import org.osm2world.math.shapes.PolygonShapeXZ;
+import org.osm2world.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.world.data.AreaWorldObject;
+import org.osm2world.world.data.WaySegmentWorldObject;
 
 /**
  * draws ground footprints defined by world objects

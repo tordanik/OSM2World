@@ -4,13 +4,13 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.target.TargetUtil;
+import org.osm2world.target.common.FaceTarget;
+import org.osm2world.target.common.material.Material;
+import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * shows decomposition of {@link WorldObject}s into faces
