@@ -7,8 +7,9 @@ import static java.util.Collections.emptyList;
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.target.common.ExtrudeOption.START_CAP;
-import static org.osm2world.target.common.MeshTarget.MergeMeshes.MergeOption.*;
-import static org.osm2world.target.common.MeshTarget.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
+import static org.osm2world.target.common.MeshStore.*;
+import static org.osm2world.target.common.MeshStore.MergeMeshes.MergeOption.*;
+import static org.osm2world.target.common.MeshStore.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
 import static org.osm2world.target.common.material.Materials.*;
 import static org.osm2world.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -33,9 +34,8 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.target.TargetUtil;
 import org.osm2world.target.TargetUtil.Compression;
 import org.osm2world.target.common.MeshStore;
-import org.osm2world.target.common.MeshStore.MeshMetadata;
+import org.osm2world.target.common.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
 import org.osm2world.target.common.MeshTarget;
-import org.osm2world.target.common.MeshTarget.ReplaceTexturesWithAtlas.TextureAtlasGroup;
 import org.osm2world.target.common.material.ImageFileTexture;
 import org.osm2world.target.common.material.Material;
 import org.osm2world.target.common.material.Material.Shadow;
@@ -709,7 +709,7 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		/* pre-process meshes */
 
-		List<MeshStore.MeshProcessingStep> processingSteps = new ArrayList<>(List.of(
+		List<MeshProcessingStep> processingSteps = new ArrayList<>(List.of(
 				new ClipToBounds(bbox, true),
 				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
 		));

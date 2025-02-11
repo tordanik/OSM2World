@@ -1,8 +1,8 @@
 package org.osm2world.target.common;
 
 import static org.junit.Assert.assertEquals;
-import static org.osm2world.target.common.MeshTarget.ClipToBounds.clipToBounds;
-import static org.osm2world.target.common.MeshTarget.ClipToBounds.getSegmentsCCW;
+import static org.osm2world.target.common.MeshStore.ClipToBounds.clipToBounds;
+import static org.osm2world.target.common.MeshStore.ClipToBounds.getSegmentsCCW;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
@@ -12,7 +12,7 @@ import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 
-public class MeshTargetTest {
+public class MeshStoreTest {
 
 	@Test
 	public void testClipToBounds() {
