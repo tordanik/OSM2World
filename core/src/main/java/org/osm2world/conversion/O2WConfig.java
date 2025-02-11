@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,11 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.osm2world.map_elevation.creation.*;
+import org.osm2world.math.geo.LatLon;
+import org.osm2world.math.geo.MapProjection;
+import org.osm2world.math.geo.MetricMapProjection;
+import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.target.common.mesh.LevelOfDetail;
 
 /**
@@ -215,6 +222,9 @@ public class O2WConfig {
 		};
 	}
 
+	/**
+	 * the background color for rendered images
+	 */
 	public Color backgroundColor() {
 		return getColor("backgroundColor", Color.BLACK);
 	}
@@ -227,6 +237,45 @@ public class O2WConfig {
 	 */
 	public int canvasLimit() {
 		return getInt("canvasLimit", 1024);
+	}
+
+	/**
+	 * the algorithm to use for calculating elevations
+	 * @return  a function to create an instance of the calculation algorithm
+	 */
+	public Supplier<EleCalculator> eleCalculator() {
+		return switch (getString("eleCalculator", "")) {
+			case "NoOpEleCalculator" -> NoOpEleCalculator::new;
+			case "EleTagEleCalculator" -> EleTagEleCalculator::new;
+			case "ConstraintEleCalculator" -> () -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer());
+			default -> BridgeTunnelEleCalculator::new;
+		};
+	}
+
+	/**
+	 * the algorithm to use for interpolating terrain elevation between sites of known elevation
+	 * @return  a function to create an instance of the algorithm
+	 */
+	public Supplier<TerrainInterpolator> terrainInterpolator() {
+		return switch (config.getString("terrainInterpolator", "")) {
+			case "LinearInterpolator" -> LinearInterpolator::new;
+			case "LeastSquaresInterpolator" -> LeastSquaresInterpolator::new;
+			case "NaturalNeighborInterpolator" -> NaturalNeighborInterpolator::new;
+			case "InverseDistanceWeightingInterpolator" -> InverseDistanceWeightingInterpolator::new;
+			default -> ZeroInterpolator::new;
+		};
+	}
+
+	/**
+	 * The type of map projection to use during conversion.
+	 *
+	 * @return  a factory method to create a MapProjection instance from an origin
+	 */
+	public Function<LatLon,? extends MapProjection> mapProjection() {
+		return switch (getString("mapProjection", "")) {
+			case "OrthographicAzimuthalMapProjection" -> OrthographicAzimuthalMapProjection::new;
+			default -> MetricMapProjection::new;
+		};
 	}
 
 	/**

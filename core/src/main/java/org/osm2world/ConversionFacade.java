@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
+import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
@@ -32,7 +33,6 @@ import org.osm2world.math.datastructures.IndexGrid;
 import org.osm2world.math.datastructures.SpatialIndex;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
-import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.creation.OSMFileReader;
@@ -128,15 +128,16 @@ public class ConversionFacade {
 		.toList();
 	}
 
-	private Function<LatLon, ? extends MapProjection> mapProjectionFactory = MetricMapProjection::new;
+	private @Nullable Function<LatLon, ? extends MapProjection> mapProjectionFactory = null;
 
 	private @Nullable Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = null;
 	private @Nullable Factory<? extends EleCalculator> eleCalculatorFactory = null;
 
 	/**
 	 * sets the factory that will make {@link MapProjection} instances during subsequent uses.
+	 * Can be set to null, in which case there will be an attempt to parse the configuration for this.
 	 */
-	public void setMapProjectionFactory(Function<LatLon, ? extends MapProjection> mapProjectionFactory) {
+	public void setMapProjectionFactory(@Nullable Function<LatLon, ? extends MapProjection> mapProjectionFactory) {
 		this.mapProjectionFactory = mapProjectionFactory;
 	}
 
@@ -213,10 +214,15 @@ public class ConversionFacade {
 			throw new IllegalArgumentException("osmData must not be null");
 		}
 
+		if (config == null) {
+			config = new O2WConfig();
+		}
+
 		/* create map data from OSM data */
 		updatePhase(Phase.MAP_DATA);
 
-		MapProjection mapProjection = mapProjectionFactory.apply(osmData.getCenter());
+		var mpFactory = requireNonNullElse(this.mapProjectionFactory, config.mapProjection());
+		MapProjection mapProjection = mpFactory.apply(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData mapData;
@@ -403,7 +409,7 @@ public class ConversionFacade {
 	private void calculateElevations(MapData mapData,
 			TerrainElevationData eleData, O2WConfig config) {
 
-		TerrainInterpolator interpolator = createTerrainInterpolator(config);
+		TerrainInterpolator interpolator = requireNonNullElse(terrainEleInterpolatorFactory, config.terrainInterpolator()).get();
 
 		if (eleData == null) {
 			interpolator = new ZeroInterpolator();
@@ -442,39 +448,8 @@ public class ConversionFacade {
 
 		/* refine terrain-based elevation with information from map data */
 
-		EleCalculator eleCalculator = createEleCalculator(config);
+		EleCalculator eleCalculator = requireNonNullElse(eleCalculatorFactory, config.eleCalculator()).get();
 		eleCalculator.calculateElevations(mapData);
-
-	}
-
-	private EleCalculator createEleCalculator(O2WConfig config) {
-
-		if (eleCalculatorFactory != null) {
-			return eleCalculatorFactory.get();
-		} else {
-			return switch (config.getString("eleCalculator", "")) {
-				case "NoOpEleCalculator" -> new NoOpEleCalculator();
-				case "EleTagEleCalculator" -> new EleTagEleCalculator();
-				case "ConstraintEleCalculator" -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer());
-				default -> new BridgeTunnelEleCalculator();
-			};
-		}
-
-	}
-
-	private TerrainInterpolator createTerrainInterpolator(O2WConfig config) {
-
-		if (terrainEleInterpolatorFactory != null) {
-			return terrainEleInterpolatorFactory.get();
-		} else {
-			return switch (config.getString("terrainInterpolator", "")) {
-				case "LinearInterpolator" -> new LinearInterpolator();
-				case "LeastSquaresInterpolator" -> new LeastSquaresInterpolator();
-				case "NaturalNeighborInterpolator" -> new NaturalNeighborInterpolator();
-				case "InverseDistanceWeightingInterpolator" -> new InverseDistanceWeightingInterpolator();
-				default -> new ZeroInterpolator();
-			};
-		}
 
 	}
 
