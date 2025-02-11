@@ -20,6 +20,7 @@ import org.osm2world.target.common.AbstractTarget;
 import org.osm2world.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.target.common.material.*;
 import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.OrthographicProjection;
 import org.osm2world.target.common.rendering.Projection;
 
 public class POVRayTarget extends AbstractTarget {
@@ -201,34 +202,33 @@ public class POVRayTarget extends AbstractTarget {
 
 		append("camera {");
 
-		if (projection.isOrthographic()) {
+		if (projection.orthographic()) {
 			append("\n  orthographic");
 		}
 
 		append("\n  location ");
-		appendVector(camera.getPos());
+		appendVector(camera.pos());
 
-		if (projection.isOrthographic()) {
+		if (projection instanceof OrthographicProjection proj) {
 
 			append("\n  right ");
-			double width = projection.getVolumeHeight()
-					* projection.getAspectRatio();
+			double width = proj.volumeWidth();
 			appendVector(camera.getRight().mult(width).invert()); //invert compensates for left-handed vs. right handed coordinates
 
 			append("\n  up ");
-			VectorXYZ up = camera.getUp();
-			appendVector(up.mult(projection.getVolumeHeight()));
+			VectorXYZ up = camera.up();
+			appendVector(up.mult(proj.volumeHeight()));
 
 			append("\n  look_at ");
-			appendVector(camera.getLookAt());
+			appendVector(camera.lookAt());
 
 		} else {
 
 			append("\n  look_at  ");
-			appendVector(camera.getLookAt());
+			appendVector(camera.lookAt());
 
 			append("\n  sky ");
-			appendVector(camera.getUp());
+			appendVector(camera.up());
 
 		}
 

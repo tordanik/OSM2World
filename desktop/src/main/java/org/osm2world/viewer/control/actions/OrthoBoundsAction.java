@@ -6,9 +6,9 @@ import java.util.Observer;
 
 import javax.swing.*;
 
+import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.target.common.rendering.OrthoTilesUtil;
-import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.target.common.rendering.OrthographicUtil;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
@@ -48,10 +48,10 @@ public class OrthoBoundsAction extends AbstractAction implements Observer {
 			data.getConversionResults().getMapData().getDataBoundary();
 
 		renderOptions.camera =
-			OrthoTilesUtil.cameraForBounds(bounds, 30, CardinalDirection.S);
+			OrthographicUtil.cameraForBounds(bounds, 30, CardinalDirection.S);
 
 		renderOptions.projection =
-			OrthoTilesUtil.projectionForBounds(bounds, 30, CardinalDirection.S);
+			OrthographicUtil.projectionForBounds(bounds, 30, CardinalDirection.S);
 
 	}
 

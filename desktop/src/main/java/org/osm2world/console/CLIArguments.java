@@ -6,11 +6,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.console.CLIArgumentsUtil.InputMode;
+import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.osm.creation.OverpassReader;
-import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.util.Resolution;
 
 import com.lexicalscope.jewel.cli.Option;

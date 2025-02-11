@@ -30,10 +30,10 @@ public class SkyboxView extends DebugView {
 				new JOGLRenderingParameters(null, false, true));
 
 		// draw the skybox close to the limits of the viewing distance
-		double skyboxSize = 1.95 * projection.getFarClippingDistance() / sqrt(3);
+		double skyboxSize = 1.95 * projection.farClippingDistance() / sqrt(3);
 
 		target.drawBox(Materials.SKYBOX,
-				camera.getPos().add(0, -skyboxSize / 2, 0),
+				camera.pos().add(0, -skyboxSize / 2, 0),
 				VectorXZ.Z_UNIT, skyboxSize, skyboxSize, skyboxSize);
 
 		target.finish();

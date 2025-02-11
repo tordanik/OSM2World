@@ -55,8 +55,7 @@ public interface JOGLTarget extends Target {
 	 * For example, with xStart=0, xEnd=0.5, yStart=0 and yEnd=1,
 	 * only the left half of the full image will be rendered,
 	 * but it will be stretched to cover the available space.
-	 *
-	 * Only supported for orthographic projections!
+	 * Values other than start at 0 and end at 1 are only supported for orthographic projections!
 	 */
 	public void renderPart(Camera camera, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd);

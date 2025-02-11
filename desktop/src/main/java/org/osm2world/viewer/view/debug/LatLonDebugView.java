@@ -50,7 +50,7 @@ public class LatLonDebugView extends DebugView {
 				int widthLat = (z % 3600 == 0) ? 6
 						: (z % 60 == 0) ? 3 : 1;
 
-				if (widthLat > 1 || camera.getPos().y < 1000) {
+				if (widthLat > 1 || camera.pos().y < 1000) {
 					target.drawLineStrip(WHITE, widthLat,
 							mapProjection.toXZ(z * LINE_DIST, x * LINE_DIST).xyz(0),
 							mapProjection.toXZ(z * LINE_DIST, (x+1) * LINE_DIST).xyz(0));
@@ -59,7 +59,7 @@ public class LatLonDebugView extends DebugView {
 				int widthLon = (x % 3600 == 0) ? 6
 						: (x % 60 == 0) ? 3 : 1;
 
-				if (widthLon > 1 || camera.getPos().y < 1000) {
+				if (widthLon > 1 || camera.pos().y < 1000) {
 					target.drawLineStrip(WHITE, widthLon,
 							mapProjection.toXZ(z * LINE_DIST, x * LINE_DIST).xyz(0),
 							mapProjection.toXZ((z+1) * LINE_DIST, x * LINE_DIST).xyz(0));

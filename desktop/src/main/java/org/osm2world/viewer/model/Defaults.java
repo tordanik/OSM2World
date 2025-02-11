@@ -1,15 +1,16 @@
 package org.osm2world.viewer.model;
 
-import org.osm2world.target.common.rendering.Projection;
+import org.osm2world.target.common.rendering.OrthographicProjection;
+import org.osm2world.target.common.rendering.PerspectiveProjection;
 
 public final class Defaults {
 
 	private Defaults() { }
 
-	public static final Projection PERSPECTIVE_PROJECTION
-		= new Projection(false, 4/3.0, 45, 50, 1, 100000);
+	public static final PerspectiveProjection PERSPECTIVE_PROJECTION
+		= new PerspectiveProjection(4/3.0, 50, 1, 100000);
 
-	public static final Projection ORTHOGRAPHIC_PROJECTION
-		= new Projection(true, 4/3.0, 45, 50, -100000, 100000);
+	public static final OrthographicProjection ORTHOGRAPHIC_PROJECTION
+		= new OrthographicProjection(4/3.0, 45, -10000, 10000);
 
 }

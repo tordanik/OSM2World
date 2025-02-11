@@ -1,22 +1,15 @@
 package org.osm2world.viewer.control.navigation;
 
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.MutableCamera;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 
@@ -76,7 +69,7 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 		float movementX = currentMousePoint.x - previousMousePoint.x;
 		float movementY = currentMousePoint.y - previousMousePoint.y;
 
-		Camera camera = renderOptions.camera;
+		MutableCamera camera = renderOptions.camera;
 
 		if (camera != null) {
 
@@ -137,13 +130,13 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 	}
 
 	private void zoom(boolean zoomIn, double scale) {
-		Camera c = renderOptions.camera;
+		MutableCamera c = renderOptions.camera;
 
 		if (c != null) {
 
-			VectorXYZ toLookAt = c.getLookAt().subtract(c.getPos());
+			VectorXYZ toLookAt = c.lookAt().subtract(c.pos());
 			VectorXYZ move = toLookAt.mult(scale * (zoomIn ? 0.2f : -0.25f));
-			VectorXYZ newPos = c.getPos().add(move);
+			VectorXYZ newPos = c.pos().add(move);
 
 			c.setPos(newPos);
 		}
@@ -154,7 +147,7 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			Camera c = renderOptions.camera;
+			MutableCamera c = renderOptions.camera;
 
 			boolean shiftDown = pressedKeys.contains(KeyEvent.VK_SHIFT);
 			double movementIncrement = shiftDown ? SLOW_MOVEMENT_INCREMENT :  MOVEMENT_INCREMENT;

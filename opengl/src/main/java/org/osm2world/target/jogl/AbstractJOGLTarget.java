@@ -6,7 +6,7 @@ import static java.util.Arrays.asList;
 import static org.osm2world.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.target.jogl.NonAreaPrimitive.Type.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;

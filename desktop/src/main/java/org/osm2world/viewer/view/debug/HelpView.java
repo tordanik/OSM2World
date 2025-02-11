@@ -1,6 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.osm2world.GlobalValues;
 import org.osm2world.target.common.rendering.Camera;

@@ -19,7 +19,7 @@ import org.osm2world.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.target.common.material.Material;
 import org.osm2world.target.common.material.Material.Shadow;
 import org.osm2world.target.common.material.Material.Transparency;
-import org.osm2world.target.common.rendering.Projection;
+import org.osm2world.target.common.rendering.PerspectiveProjection;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
@@ -34,8 +34,8 @@ public class ShadowMapShader extends DepthBufferShader {
 	protected int shadowMapWidth = 1024;
 	protected int shadowMapHeight = 1024;
 
-	private static final Projection DEFAULT_PERSPECTIVE_PROJECTION
-			= new Projection(false, 4/3.0, 45, 50, 1, 100000);
+	private static final PerspectiveProjection DEFAULT_PERSPECTIVE_PROJECTION
+			= new PerspectiveProjection(4/3.0, 45, 1, 100000);
 
 	/**
 	 * Padding for the calculated bounding box around the camera frustum.
@@ -322,12 +322,12 @@ public class ShadowMapShader extends DepthBufferShader {
 
 		pmvMatL.glMatrixMode(GL_PROJECTION);
 		pmvMatL.glLoadIdentity();
-		Projection projection = DEFAULT_PERSPECTIVE_PROJECTION;
+		PerspectiveProjection projection = DEFAULT_PERSPECTIVE_PROJECTION;
 		pmvMatL.gluPerspective(
-				(float)(projection.getVertAngle()),
-				(float)(projection.getAspectRatio()),
-				(float)(projection.getNearClippingDistance()),
-				(float)(projection.getFarClippingDistance()));
+				(float)(projection.vertAngle()),
+				(float)(projection.aspectRatio()),
+				(float)(projection.nearClippingDistance()),
+				(float)(projection.farClippingDistance()));
 		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
 
 		//float[] frustum;

@@ -10,7 +10,7 @@ import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.target.common.mesh.LevelOfDetail;
-import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.MutableCamera;
 import org.osm2world.target.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;
 
@@ -18,7 +18,7 @@ public class RenderOptions {
 
 	public LevelOfDetail lod = LevelOfDetail.LOD4;
 
-	public Camera camera = null;
+	public MutableCamera camera = null;
 	public Projection projection = Defaults.PERSPECTIVE_PROJECTION;
 
 	public Set<DebugView> activeDebugViews = new HashSet<>();

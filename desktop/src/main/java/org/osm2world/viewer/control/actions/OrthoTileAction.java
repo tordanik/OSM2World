@@ -6,10 +6,10 @@ import java.util.Observer;
 
 import javax.swing.*;
 
+import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.target.common.rendering.OrthoTilesUtil;
-import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.target.common.rendering.OrthographicUtil;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
@@ -59,11 +59,11 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 			AxisAlignedRectangleXZ tileBounds =
 				data.getConversionResults().getMapData().getDataBoundary();
 
-			renderOptions.camera = OrthoTilesUtil.cameraForTile(
+			renderOptions.camera = OrthographicUtil.cameraForBounds(
 					data.getConversionResults().getMapProjection(),
 					new TileNumber(zoom, tileX, tileY), angle, from);
 
-			renderOptions.projection = OrthoTilesUtil.projectionForTile(
+			renderOptions.projection = OrthographicUtil.projectionForBounds(
 					data.getConversionResults().getMapProjection(),
 					new TileNumber(zoom, tileX, tileY), angle, from);
 

@@ -3,7 +3,7 @@ package org.osm2world.viewer.control.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.Defaults;
@@ -24,7 +24,7 @@ public class ToggleOrthographicProjectionAction extends AbstractAction {
 		super("Orthographic projection");
 		putValue(SHORT_DESCRIPTION, "Switches between orthographic and perspective projection");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_C);
-		putValue(SELECTED_KEY, renderOptions.projection.isOrthographic());
+		putValue(SELECTED_KEY, renderOptions.projection.orthographic());
 
 		this.viewerFrame = viewerFrame;
 		this.data = data;
@@ -35,13 +35,13 @@ public class ToggleOrthographicProjectionAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		if (renderOptions.projection.isOrthographic()) {
+		if (renderOptions.projection.orthographic()) {
 			renderOptions.projection = Defaults.PERSPECTIVE_PROJECTION;
 		} else {
 			renderOptions.projection = Defaults.ORTHOGRAPHIC_PROJECTION;
 		}
 
-		putValue(SELECTED_KEY, renderOptions.projection.isOrthographic());
+		putValue(SELECTED_KEY, renderOptions.projection.orthographic());
 
 	}
 

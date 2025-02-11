@@ -1,6 +1,7 @@
 package org.osm2world.target.jogl;
 
-import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL2GL3.GL_DOUBLE;
 import static com.jogamp.opengl.fixedfunc.GLPointerFunc.*;
 import static org.osm2world.target.jogl.JOGLTargetFixedFunction.drawPrimitive;

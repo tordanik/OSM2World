@@ -11,7 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.target.Target;
 import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.MutableCamera;
 import org.osm2world.target.povray.POVRayTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
@@ -46,17 +46,11 @@ public class ExportPOVRayAction extends AbstractExportAction {
 			/* create camera and perspective
 			   compensating for left- vs. right-handed coords */
 
-			Camera povRayCamera = new Camera();
+			MutableCamera povRayCamera = new MutableCamera();
 			povRayCamera.setCamera(
-					renderOptions.camera.getPos().x,
-					renderOptions.camera.getPos().y,
-					renderOptions.camera.getPos().z,
-					renderOptions.camera.getLookAt().x,
-					renderOptions.camera.getLookAt().y,
-					renderOptions.camera.getLookAt().z,
-					renderOptions.camera.getUp().x,
-					renderOptions.camera.getUp().y,
-					renderOptions.camera.getUp().z);
+					renderOptions.camera.pos(),
+					renderOptions.camera.lookAt(),
+					renderOptions.camera.up());
 
 			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
 

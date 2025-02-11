@@ -14,8 +14,8 @@ import org.osm2world.target.common.MeshTarget;
 import org.osm2world.target.common.mesh.Mesh;
 import org.osm2world.target.common.rendering.Camera;
 import org.osm2world.target.common.rendering.Projection;
-import org.osm2world.util.Resolution;
 import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.util.Resolution;
 
 /**
  * renders the 3D scene to a raster image.

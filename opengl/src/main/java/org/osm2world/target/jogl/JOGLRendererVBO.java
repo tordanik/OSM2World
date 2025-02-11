@@ -3,16 +3,16 @@ package org.osm2world.target.jogl;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
+import static org.osm2world.math.geo.CardinalDirection.closestCardinal;
 
 import java.util.*;
 
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.target.common.Primitive;
 import org.osm2world.target.common.material.Material;
 import org.osm2world.target.common.material.Material.Transparency;
 import org.osm2world.target.common.rendering.Camera;
-import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.target.common.rendering.Projection;
 
 /**
@@ -117,7 +117,7 @@ public abstract class JOGLRendererVBO {
 	protected void sortPrimitivesBackToFront(final Camera camera,
 			final Projection projection) {
 
-		if (projection.isOrthographic() &&
+		if (projection.orthographic() &&
 				abs(camera.getViewDirection().xz().angle() % (PI/2)) < 0.01 ) {
 
 			/* faster sorting for cardinal directions */
@@ -191,7 +191,7 @@ public abstract class JOGLRendererVBO {
 	}
 
 	private double distanceToCameraSq(Camera camera, PrimitiveWithMaterial p) {
-		return primitivePos(p).distanceToSquared(camera.getPos());
+		return primitivePos(p).distanceToSquared(camera.pos());
 	}
 
 	private VectorXYZ primitivePos(PrimitiveWithMaterial p) {

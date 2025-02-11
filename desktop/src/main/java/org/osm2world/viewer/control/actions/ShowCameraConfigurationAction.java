@@ -43,8 +43,8 @@ public class ShowCameraConfigurationAction
 		MapProjection mapProjection = data.getConversionResults().getMapProjection();
 		assert mapProjection != null; // this action is disabled before data is loaded
 
-		VectorXYZ pos = renderOptions.camera.getPos();
-		VectorXYZ lookAt = renderOptions.camera.getLookAt();
+		VectorXYZ pos = renderOptions.camera.pos();
+		VectorXYZ lookAt = renderOptions.camera.lookAt();
 
 		var text = new JTextArea(
 				"posLat = " + mapProjection.toLat(pos.xz())

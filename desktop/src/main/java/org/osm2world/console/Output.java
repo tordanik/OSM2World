@@ -36,6 +36,7 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapMetadata;
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
@@ -43,9 +44,9 @@ import org.osm2world.osm.data.OSMData;
 import org.osm2world.target.Target;
 import org.osm2world.target.TargetUtil;
 import org.osm2world.target.TargetUtil.Compression;
-import org.osm2world.target.common.rendering.Camera;
-import org.osm2world.target.common.rendering.OrthoTilesUtil;
-import org.osm2world.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.target.common.rendering.MutableCamera;
+import org.osm2world.target.common.rendering.OrthographicUtil;
+import org.osm2world.target.common.rendering.PerspectiveProjection;
 import org.osm2world.target.common.rendering.Projection;
 import org.osm2world.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.target.gltf.GltfTarget;
@@ -106,8 +107,8 @@ public final class Output {
 
 				/* set camera and projection */
 
-				Camera camera = null;
-				Projection projection = null;
+				MutableCamera camera;
+				Projection projection;
 
 				if (args.isPviewPos()) {
 
@@ -118,17 +119,16 @@ public final class Output {
 					LatLonEle pos = args.getPviewPos();
 					LatLonEle lookAt = args.getPviewLookat();
 
-					camera = new Camera();
-					VectorXYZ posV = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
-					VectorXYZ laV = proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
-					camera.setCamera(posV.x, posV.y, posV.z, laV.x, laV.y, laV.z);
+					camera = new MutableCamera();
+					VectorXYZ posXYZ = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
+					VectorXYZ lookAtXYZ = proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
+					camera.setCamera(posXYZ, lookAtXYZ);
 
-					projection = new Projection(false,
+					projection = new PerspectiveProjection(
 							args.isPviewAspect() ? args.getPviewAspect() :
 									args.isResolution() ? (double) args.getResolution().getAspectRatio()
 											: CLIArgumentsUtil.DEFAULT_ASPECT_RATIO,
 							args.getPviewFovy(),
-							0,
 							1, 50000);
 
 				} else {
@@ -145,15 +145,15 @@ public final class Output {
 								.map(results.getMapProjection()::toXZ)
 								.collect(toList()));
 					} else if (args.isOviewTiles()) {
-						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
+						bounds = OrthographicUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
 					} else if (args.isTile()) {
-						bounds = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
+						bounds = OrthographicUtil.boundsForTile(results.getMapProjection(), args.getTile());
 					} else {
 						bounds = results.getMapData().getBoundary();
 					}
 
-					camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
-					projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
+					camera = OrthographicUtil.cameraForBounds(bounds, angle, from);
+					projection = OrthographicUtil.projectionForBounds(bounds, angle, from);
 
 				}
 
@@ -183,7 +183,7 @@ public final class Output {
 						case GLTF, GLB, GLTF_GZ, GLB_GZ: {
 							AxisAlignedRectangleXZ bounds;
 							if (args.isTile()) {
-								bounds = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
+								bounds = OrthographicUtil.boundsForTile(results.getMapProjection(), args.getTile());
 							} else {
 								bounds = results.getMapData().getBoundary();
 							}
@@ -209,7 +209,7 @@ public final class Output {
 						case WEB_PBF, WEB_PBF_GZ: {
 							AxisAlignedRectangleXZ bbox;
 							if (args.isTile()) {
-								bbox = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
+								bbox = OrthographicUtil.boundsForTile(results.getMapProjection(), args.getTile());
 							} else {
 								bbox = results.getMapData().getBoundary();
 							}

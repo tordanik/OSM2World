@@ -26,6 +26,8 @@ import org.osm2world.target.common.material.TextureData;
 import org.osm2world.target.common.material.TextureData.Wrap;
 import org.osm2world.target.common.material.TextureDataDimensions;
 import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.OrthographicProjection;
+import org.osm2world.target.common.rendering.PerspectiveProjection;
 import org.osm2world.target.common.rendering.Projection;
 import org.osm2world.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.target.jogl.JOGLRenderingParameters.Winding;
@@ -114,15 +116,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 	}
 
-	/**
-	 * similar to {@link #render(Camera, Projection)},
-	 * but allows rendering only a part of the "normal" image.
-	 * For example, with xStart=0, xEnd=0.5, yStart=0 and yEnd=1,
-	 * only the left half of the full image will be rendered,
-	 * but it will be stretched to cover the available space.
-	 *
-	 * Only supported for orthographic projections!
-	 */
 	@Override
 	public void renderPart(Camera camera, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {
@@ -141,7 +134,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		/* apply global rendering parameters */
 
 		applyRenderingParameters(gl, renderingParameters);
-		applyLightingParameters(gl, globalLightingParameters, projection.isOrthographic());
+		applyLightingParameters(gl, globalLightingParameters, projection.orthographic());
 
 		/* render primitives */
 
@@ -184,9 +177,9 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
     	gl.glLoadIdentity();
 
-		VectorXYZ pos = camera.getPos();
-		VectorXYZ lookAt = camera.getLookAt();
-		VectorXYZ up = camera.getUp();
+		VectorXYZ pos = camera.pos();
+		VectorXYZ lookAt = camera.lookAt();
+		VectorXYZ up = camera.up();
 		new GLU().gluLookAt(
 				pos.x, pos.y, -pos.z,
 				lookAt.x, lookAt.y, -lookAt.z,
@@ -206,7 +199,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			double xStart, double xEnd, double yStart, double yEnd) {
 
 		if ((xStart != 0 || xEnd != 1 || yStart != 0 || yEnd != 1)
-				&& !projection.isOrthographic()) {
+				&& !projection.orthographic()) {
 			throw new IllegalArgumentException("section rendering only supported "
 					+ "for orthographic projections");
 		}
@@ -214,25 +207,25 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		gl.glMatrixMode(GL_PROJECTION);
 		gl.glLoadIdentity();
 
-		if (projection.isOrthographic()) {
-
-			double volumeWidth = projection.getAspectRatio() * projection.getVolumeHeight();
+		if (projection instanceof OrthographicProjection proj) {
 
 			gl.glOrtho(
-					(-0.5 + xStart) * volumeWidth,
-					(-0.5 + xEnd  ) * volumeWidth,
-					(-0.5 + yStart) * projection.getVolumeHeight(),
-					(-0.5 + yEnd  ) * projection.getVolumeHeight(),
-					projection.getNearClippingDistance(),
-					projection.getFarClippingDistance());
+					(-0.5 + xStart) * proj.volumeWidth(),
+					(-0.5 + xEnd  ) * proj.volumeWidth(),
+					(-0.5 + yStart) * proj.volumeHeight(),
+					(-0.5 + yEnd  ) * proj.volumeHeight(),
+					proj.nearClippingDistance(),
+					proj.farClippingDistance());
 
 		} else { //perspective
 
+			PerspectiveProjection proj = (PerspectiveProjection)projection;
+
 			new GLU().gluPerspective(
-					projection.getVertAngle(),
-					projection.getAspectRatio(),
-					projection.getNearClippingDistance(),
-					projection.getFarClippingDistance());
+					proj.vertAngle(),
+					proj.aspectRatio(),
+					proj.nearClippingDistance(),
+					proj.farClippingDistance());
 
 		}
 

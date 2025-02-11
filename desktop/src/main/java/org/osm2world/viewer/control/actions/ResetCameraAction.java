@@ -4,11 +4,12 @@ import java.awt.event.ActionEvent;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 
 import org.osm2world.map_data.data.MapData;
+import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.MutableCamera;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.Defaults;
 import org.osm2world.viewer.model.RenderOptions;
@@ -48,9 +49,9 @@ public class ResetCameraAction extends AbstractAction implements Observer {
 
 		VectorXZ camLookAt = mapData.getBoundary().center();
 
-		renderOptions.camera = new Camera();
-		renderOptions.camera.setCamera(camLookAt.x, 1000, camLookAt.z-1000,
-                                       camLookAt.x, 0, camLookAt.z);
+		renderOptions.camera = new MutableCamera();
+		renderOptions.camera.setCamera(new VectorXYZ(camLookAt.x, 1000, camLookAt.z-1000),
+                                       new VectorXYZ(camLookAt.x, 0, camLookAt.z));
 
 		renderOptions.projection = Defaults.PERSPECTIVE_PROJECTION;
 

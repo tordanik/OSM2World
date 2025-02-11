@@ -20,6 +20,8 @@ import org.osm2world.target.common.material.ImageFileTexture;
 import org.osm2world.target.common.material.TextureData.Wrap;
 import org.osm2world.target.common.material.TextureDataDimensions;
 import org.osm2world.target.common.rendering.Camera;
+import org.osm2world.target.common.rendering.OrthographicProjection;
+import org.osm2world.target.common.rendering.PerspectiveProjection;
 import org.osm2world.target.common.rendering.Projection;
 import org.osm2world.target.common.texcoord.NamedTexCoordFunction;
 
@@ -181,9 +183,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		double nearPlane = Double.POSITIVE_INFINITY, farPlane = 0;
 
 		PMVMatrix camMat = new PMVMatrix();
-		VectorXYZ pos = camera.getPos();
-		VectorXYZ lookAt = camera.getLookAt();
-		VectorXYZ up = camera.getUp();
+		VectorXYZ pos = camera.pos();
+		VectorXYZ lookAt = camera.lookAt();
+		VectorXYZ up = camera.up();
 		camMat.gluLookAt(
 				(float)pos.x, (float)pos.y, (float)-pos.z,
 				(float)lookAt.x, (float)lookAt.y, (float)-lookAt.z,
@@ -201,16 +203,15 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		}
 
 		if (nearPlane == Double.POSITIVE_INFINITY)
-			nearPlane = projection.getNearClippingDistance();
+			nearPlane = projection.nearClippingDistance();
 		else
-			nearPlane = Math.max(projection.getNearClippingDistance(), nearPlane);
+			nearPlane = Math.max(projection.nearClippingDistance(), nearPlane);
 		if (farPlane == 0)
-			farPlane = projection.getFarClippingDistance();
+			farPlane = projection.farClippingDistance();
 		else
-			farPlane = Math.min(projection.getFarClippingDistance(), farPlane);
+			farPlane = Math.min(projection.farClippingDistance(), farPlane);
 
-		return new Projection(projection.isOrthographic(), projection.getAspectRatio(),
-				projection.getVertAngle(), projection.getVolumeHeight(), nearPlane, farPlane);
+		return projection.withClippingDistances(nearPlane, farPlane);
 	}
 
 	@Override
@@ -475,9 +476,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		pmvMatrix.glMatrixMode(GL_MODELVIEW);
 		pmvMatrix.glLoadIdentity();
 
-		VectorXYZ pos = camera.getPos();
-		VectorXYZ lookAt = camera.getLookAt();
-		VectorXYZ up = camera.getUp();
+		VectorXYZ pos = camera.pos();
+		VectorXYZ lookAt = camera.lookAt();
+		VectorXYZ up = camera.up();
 		pmvMatrix.gluLookAt(
 				(float)pos.x, (float)pos.y, (float)-pos.z,
 				(float)lookAt.x, (float)lookAt.y, (float)-lookAt.z,
@@ -497,7 +498,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			double xStart, double xEnd, double yStart, double yEnd) {
 
 		if ((xStart != 0 || xEnd != 1 || yStart != 0 || yEnd != 1)
-				&& !projection.isOrthographic()) {
+				&& !projection.orthographic()) {
 			throw new IllegalArgumentException("section rendering only supported "
 					+ "for orthographic projections");
 		}
@@ -505,25 +506,25 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		pmvMatrix.glMatrixMode(GL_PROJECTION);
 		pmvMatrix.glLoadIdentity();
 
-		if (projection.isOrthographic()) {
-
-			double volumeWidth = projection.getAspectRatio() * projection.getVolumeHeight();
+		if (projection instanceof OrthographicProjection proj) {
 
 			pmvMatrix.glOrthof(
-					(float)((-0.5 + xStart) * volumeWidth),
-					(float)((-0.5 + xEnd  ) * volumeWidth),
-					(float)((-0.5 + yStart) * projection.getVolumeHeight()),
-					(float)((-0.5 + yEnd  ) * projection.getVolumeHeight()),
-					(float)(projection.getNearClippingDistance()),
-					(float)(projection.getFarClippingDistance()));
+					(float)((-0.5 + xStart) * proj.volumeWidth()),
+					(float)((-0.5 + xEnd  ) * proj.volumeWidth()),
+					(float)((-0.5 + yStart) * proj.volumeHeight()),
+					(float)((-0.5 + yEnd  ) * proj.volumeHeight()),
+					(float)(proj.nearClippingDistance()),
+					(float)(proj.farClippingDistance()));
 
 		} else { //perspective
 
+			PerspectiveProjection proj = (PerspectiveProjection)projection;
+
 			pmvMatrix.gluPerspective(
-					(float)(projection.getVertAngle()),
-					(float)(projection.getAspectRatio()),
-					(float)(projection.getNearClippingDistance()),
-					(float)(projection.getFarClippingDistance()));
+					(float)(proj.vertAngle()),
+					(float)(proj.aspectRatio()),
+					(float)(proj.nearClippingDistance()),
+					(float)(proj.farClippingDistance()));
 
 		}
 

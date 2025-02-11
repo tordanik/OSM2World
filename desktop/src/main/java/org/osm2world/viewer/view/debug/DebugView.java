@@ -110,15 +110,15 @@ public abstract class DebugView {
 			}
 			targetNeedsReset = false;
 
-			boolean viewChanged = !camera.getPos().equals(this.cameraPos)
-					|| !camera.getUp().equals(this.cameraUp)
-					|| !camera.getLookAt().equals(this.cameraLookAt)
+			boolean viewChanged = !camera.pos().equals(this.cameraPos)
+					|| !camera.up().equals(this.cameraUp)
+					|| !camera.lookAt().equals(this.cameraLookAt)
 					|| !projection.equals(this.projection);
 
 			this.camera = camera;
-			this.cameraPos = camera.getPos();
-			this.cameraUp = camera.getUp();
-			this.cameraLookAt = camera.getLookAt();
+			this.cameraPos = camera.pos();
+			this.cameraUp = camera.up();
+			this.cameraLookAt = camera.lookAt();
 			this.projection = projection;
 
 			if (!target.isFinished()) {
