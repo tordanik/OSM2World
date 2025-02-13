@@ -53,6 +53,11 @@ public class O2WConverter {
 			: osmDataReader.getAllData();
 
 		var cf = new ConversionFacade();
+
+		if (mapProjection != null) {
+			cf.setMapProjectionFactory(origin -> mapProjection);
+		}
+
 		cf.createRepresentations(osmData, null, config, asList(outputs));
 
 	}
