@@ -2,8 +2,8 @@ package org.osm2world.world.modules.building.indoor;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
-import static org.osm2world.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.output.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +13,7 @@ import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.target.common.material.Material;
+import org.osm2world.output.common.material.Material;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.ProceduralWorldObject;

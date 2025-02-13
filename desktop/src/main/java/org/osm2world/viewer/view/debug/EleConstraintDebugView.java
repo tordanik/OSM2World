@@ -9,7 +9,7 @@ import java.util.List;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -32,7 +32,7 @@ public class EleConstraintDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 
 		ConstraintSink sink = new ConstraintSink(target);
 
@@ -44,9 +44,9 @@ public class EleConstraintDebugView extends DebugView {
 
 	private static class ConstraintSink implements EleConstraintEnforcer {
 
-		private final JOGLTarget target;
+		private final JOGLOutput target;
 
-		private ConstraintSink(JOGLTarget target) {
+		private ConstraintSink(JOGLOutput target) {
 			this.target = target;
 		}
 

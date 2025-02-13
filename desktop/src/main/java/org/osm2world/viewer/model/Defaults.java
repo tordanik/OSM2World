@@ -1,7 +1,7 @@
 package org.osm2world.viewer.model;
 
-import org.osm2world.target.common.rendering.OrthographicProjection;
-import org.osm2world.target.common.rendering.PerspectiveProjection;
+import org.osm2world.output.common.rendering.OrthographicProjection;
+import org.osm2world.output.common.rendering.PerspectiveProjection;
 
 public final class Defaults {
 

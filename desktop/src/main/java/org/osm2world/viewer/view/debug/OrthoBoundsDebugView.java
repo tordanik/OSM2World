@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.CardinalDirection;
-import org.osm2world.target.common.rendering.MutableCamera;
-import org.osm2world.target.common.rendering.OrthographicUtil;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.common.rendering.MutableCamera;
+import org.osm2world.output.common.rendering.OrthographicUtil;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 
 /**
@@ -32,7 +32,7 @@ public class OrthoBoundsDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		MutableCamera orthoCam = OrthographicUtil.cameraForBounds(
 				map.getDataBoundary(), 30, CardinalDirection.S);

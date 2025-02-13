@@ -41,26 +41,25 @@ import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.osm.data.OSMData;
-import org.osm2world.target.Target;
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.TargetUtil.Compression;
-import org.osm2world.target.common.rendering.MutableCamera;
-import org.osm2world.target.common.rendering.OrthographicUtil;
-import org.osm2world.target.common.rendering.PerspectiveProjection;
-import org.osm2world.target.common.rendering.Projection;
-import org.osm2world.target.frontend_pbf.FrontendPbfTarget;
-import org.osm2world.target.gltf.GltfTarget;
-import org.osm2world.target.image.ImageExporter;
-import org.osm2world.target.image.ImageOutputFormat;
-import org.osm2world.target.obj.ObjMultiFileTarget;
-import org.osm2world.target.obj.ObjTarget;
-import org.osm2world.target.povray.POVRayTarget;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.OutputUtil.Compression;
+import org.osm2world.output.common.rendering.MutableCamera;
+import org.osm2world.output.common.rendering.OrthographicUtil;
+import org.osm2world.output.common.rendering.PerspectiveProjection;
+import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.output.frontend_pbf.FrontendPbfOutput;
+import org.osm2world.output.gltf.GltfOutput;
+import org.osm2world.output.image.ImageExporter;
+import org.osm2world.output.image.ImageOutputFormat;
+import org.osm2world.output.obj.ObjMultiFileOutput;
+import org.osm2world.output.obj.ObjOutput;
+import org.osm2world.output.povray.POVRayOutput;
 import org.osm2world.util.Resolution;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 
-public final class Output {
+final class Output {
 
 	private Output() {}
 
@@ -175,12 +174,12 @@ public final class Output {
 
 						case OBJ: {
 							Integer primitiveThresholdOBJ = config.getInteger("primitiveThresholdOBJ", null);
-							Target target = (primitiveThresholdOBJ == null)
-									? new ObjTarget(outputFile, results.getMapProjection())
-									: new ObjMultiFileTarget(outputFile, results.getMapProjection(), primitiveThresholdOBJ);
-							target.setConfiguration(config);
-							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
-							target.finish();
+							org.osm2world.output.Output output = (primitiveThresholdOBJ == null)
+									? new ObjOutput(outputFile, results.getMapProjection())
+									: new ObjMultiFileOutput(outputFile, results.getMapProjection(), primitiveThresholdOBJ);
+							output.setConfiguration(config);
+							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
+							output.finish();
 						}
 						break;
 
@@ -191,22 +190,22 @@ public final class Output {
 							} else {
 								bounds = results.getMapData().getBoundary();
 							}
-							GltfTarget.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
-									? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
+							GltfOutput.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
+									? GltfOutput.GltfFlavor.GLB : GltfOutput.GltfFlavor.GLTF;
 							Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
 									? Compression.GZ : Compression.NONE;
-							GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
-							gltfTarget.setConfiguration(config);
-							TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
-							gltfTarget.finish();
+							GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression, bounds);
+							output.setConfiguration(config);
+							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
+							output.finish();
 						}
 						break;
 
 						case POV: {
-							Target target = new POVRayTarget(outputFile, camera, projection);
-							target.setConfiguration(config);
-							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
-							target.finish();
+							org.osm2world.output.Output output = new POVRayOutput(outputFile, camera, projection);
+							output.setConfiguration(config);
+							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
+							output.finish();
 						}
 						break;
 
@@ -218,10 +217,10 @@ public final class Output {
 								bbox = results.getMapData().getBoundary();
 							}
 							Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
-							Target target = new FrontendPbfTarget(outputFile, compression, bbox);
-							target.setConfiguration(config);
-							TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
-							target.finish();
+							org.osm2world.output.Output output = new FrontendPbfOutput(outputFile, compression, bbox);
+							output.setConfiguration(config);
+							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
+							output.finish();
 						}
 						break;
 
@@ -234,7 +233,7 @@ public final class Output {
 							if (exporter == null) {
 								PerformanceParams performanceParams = determinePerformanceParams(config, argumentsGroup);
 								exporter = ImageExporter.create(config, results.getMapData().getBoundary(),
-										target -> TargetUtil.renderWorldObjects(target, results.getMapData(), true),
+										target -> OutputUtil.renderWorldObjects(target, results.getMapData(), true),
 										performanceParams.resolution(), performanceParams.unbufferedRendering());
 							}
 							Resolution resolution = CLIArgumentsUtil.getResolution(args);
@@ -361,7 +360,7 @@ public final class Output {
 					entry(REPRESENTATION, perfListener.getPhaseDuration(REPRESENTATION).toMillis() / 1000.0),
 					entry(ELEVATION, perfListener.getPhaseDuration(ELEVATION).toMillis() / 1000.0),
 					entry(TERRAIN, perfListener.getPhaseDuration(TERRAIN).toMillis() / 1000.0),
-					entry(TARGET, Duration.between(perfListener.getPhaseEnd(TERRAIN), now()).toMillis() / 1000.0)
+					entry(OUTPUT, Duration.between(perfListener.getPhaseEnd(TERRAIN), now()).toMillis() / 1000.0)
 			);
 		} else {
 			timePerPhase = Map.of();
@@ -387,7 +386,7 @@ public final class Output {
 
 		Compression compression = Compression.GZ;
 		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
-		TargetUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
+		OutputUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
 			try (var printStream = new PrintStream(outputStream)) {
 
 				printStream.println("Runtime (seconds):\nTotal: " + totalTime);

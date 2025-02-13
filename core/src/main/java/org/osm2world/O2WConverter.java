@@ -15,7 +15,7 @@ import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.data.OSMData;
-import org.osm2world.target.Target;
+import org.osm2world.output.Output;
 
 /**
  * This is the main class for using OSM2World as a library.
@@ -43,17 +43,17 @@ public class O2WConverter {
 	 *                       be used, e.g. if the data source is a small local .osm file.
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
 	 *                       May be null, in which case a default map projection will be used.
-	 * @param targets        receivers of the conversion results
+	 * @param outputs        receivers of the conversion results
 	 */
 	public void convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
-			Target... targets) throws IOException {
+			Output... outputs) throws IOException {
 
 		OSMData osmData = (bounds != null)
 			? osmDataReader.getData(bounds.latLonBounds())
 			: osmDataReader.getAllData();
 
 		var cf = new ConversionFacade();
-		cf.createRepresentations(osmData, null, config, asList(targets));
+		cf.createRepresentations(osmData, null, config, asList(outputs));
 
 	}
 
@@ -64,12 +64,12 @@ public class O2WConverter {
 	 *                       or created with {@link MapDataBuilder}.
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
 	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMData}.
-	 * @param targets        receivers of the conversion results
+	 * @param outputs        receivers of the conversion results
 	 */
-	public void convert(MapData mapData, @Nullable MapProjection mapProjection, Target... targets) throws IOException {
+	public void convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) throws IOException {
 
 		var cf = new ConversionFacade();
-		cf.createRepresentations(mapProjection, mapData, null, config, asList(targets));
+		cf.createRepresentations(mapProjection, mapData, null, config, asList(outputs));
 
 	}
 

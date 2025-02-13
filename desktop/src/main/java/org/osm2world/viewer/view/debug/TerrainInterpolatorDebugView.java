@@ -13,12 +13,12 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.target.common.material.ImmutableMaterial;
-import org.osm2world.target.common.material.Material;
-import org.osm2world.target.common.material.Material.Interpolation;
-import org.osm2world.target.jogl.JOGLRenderingParameters;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.common.material.ImmutableMaterial;
+import org.osm2world.output.common.material.Material;
+import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.viewer.model.RenderOptions;
 
 public abstract class TerrainInterpolatorDebugView extends DebugView {
@@ -56,7 +56,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		target.setRenderingParameters(new JOGLRenderingParameters(null,
     			renderOptions.isWireframe(), true));

@@ -1,11 +1,11 @@
 package org.osm2world.viewer.view.debug;
 
-import static org.osm2world.target.jogl.JOGLRenderingParameters.Winding.CCW;
+import static org.osm2world.output.jogl.JOGLRenderingParameters.Winding.CCW;
 
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.target.jogl.JOGLRenderingParameters;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.viewer.model.RenderOptions;
 
 public class WorldObjectView extends DebugView {
@@ -27,23 +27,23 @@ public class WorldObjectView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(final JOGLTarget target) {
+	protected void fillTarget(final JOGLOutput target) {
 
 		setParameters(target);
 		target.setXZBoundary(map.getBoundary());
 
 		boolean underground = config.getBoolean("renderUnderground", true);
 
-		TargetUtil.renderWorldObjects(target, map, underground);
+		OutputUtil.renderWorldObjects(target, map, underground);
 
 	}
 
 	@Override
-	protected void updateTarget(JOGLTarget target, boolean viewChanged) {
+	protected void updateTarget(JOGLOutput target, boolean viewChanged) {
 		setParameters(target);
 	}
 
-	private void setParameters(final JOGLTarget target) {
+	private void setParameters(final JOGLOutput target) {
 
 		boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
 		boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"))

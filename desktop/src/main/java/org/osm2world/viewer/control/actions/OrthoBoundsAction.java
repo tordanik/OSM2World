@@ -8,7 +8,7 @@ import javax.swing.*;
 
 import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.target.common.rendering.OrthographicUtil;
+import org.osm2world.output.common.rendering.OrthographicUtil;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;

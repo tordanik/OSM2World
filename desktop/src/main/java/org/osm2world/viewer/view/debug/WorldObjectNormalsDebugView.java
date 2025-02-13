@@ -2,15 +2,15 @@ package org.osm2world.viewer.view.debug;
 
 import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.Primitive;
-import org.osm2world.target.common.material.Material;
-import org.osm2world.target.common.material.Material.Interpolation;
-import org.osm2world.target.jogl.JOGLTarget;
-import org.osm2world.target.jogl.PrimitiveBuffer;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.common.Primitive;
+import org.osm2world.output.common.material.Material;
+import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.output.jogl.PrimitiveBuffer;
 
 public class WorldObjectNormalsDebugView extends DebugView {
 
@@ -28,11 +28,11 @@ public class WorldObjectNormalsDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 
 		final PrimitiveBuffer primitiveBuffer = new PrimitiveBuffer();
 
-		forEach(map.getWorldObjects(), w -> TargetUtil.renderObject(primitiveBuffer, w));
+		forEach(map.getWorldObjects(), w -> OutputUtil.renderObject(primitiveBuffer, w));
 
 		for (Material material : primitiveBuffer .getMaterials()) {
 

@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.target.common.rendering.MutableCamera;
+import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 

@@ -1,9 +1,9 @@
 package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.target.common.material.Materials.SINGLE_WINDOW;
-import static org.osm2world.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.output.common.material.Materials.SINGLE_WINDOW;
+import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.output.common.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.target.CommonTarget;
+import org.osm2world.output.CommonTarget;
 
 class TexturedWindow implements Window {
 

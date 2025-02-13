@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.data.GroundState;
-import org.osm2world.target.common.mesh.Mesh;
+import org.osm2world.output.common.mesh.Mesh;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NoOutlineWaySegmentWorldObject;

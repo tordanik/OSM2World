@@ -15,8 +15,8 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
-import org.osm2world.target.common.material.Material;
-import org.osm2world.target.common.material.Materials;
+import org.osm2world.output.common.material.Material;
+import org.osm2world.output.common.material.Materials;
 import org.osm2world.util.enums.LeftRightBoth;
 
 /**

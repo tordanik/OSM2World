@@ -18,10 +18,10 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.target.Target;
-import org.osm2world.target.common.material.TextureDataDimensions;
-import org.osm2world.target.statistics.StatisticsTarget;
-import org.osm2world.target.statistics.StatisticsTarget.Stat;
+import org.osm2world.output.Output;
+import org.osm2world.output.common.material.TextureDataDimensions;
+import org.osm2world.output.statistics.StatisticsOutput;
+import org.osm2world.output.statistics.StatisticsOutput.Stat;
 import org.osm2world.world.creation.WorldModule;
 import org.osm2world.world.modules.PowerModule.RooftopSolarPanels.PanelTexCoordFunction;
 
@@ -42,13 +42,13 @@ public class PowerModuleTest {
 
 		ConversionFacade cf = new ConversionFacade();
 
-		StatisticsTarget t1 = new StatisticsTarget();
-		StatisticsTarget t2 = new StatisticsTarget();
+		StatisticsOutput t1 = new StatisticsOutput();
+		StatisticsOutput t2 = new StatisticsOutput();
 
-		List<Target> targets = asList(t1, t2);
+		List<Output> outputs = asList(t1, t2);
 		List<WorldModule> modules = singletonList(new PowerModule());
 
-		cf.createRepresentations(null, mapDataBuilder.build(), modules, null, targets);
+		cf.createRepresentations(null, mapDataBuilder.build(), modules, null, outputs);
 
 		/* check whether the results are the same each time */
 

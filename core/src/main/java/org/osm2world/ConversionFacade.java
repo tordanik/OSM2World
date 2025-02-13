@@ -36,10 +36,10 @@ import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.osm.data.OSMData;
-import org.osm2world.target.Target;
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.material.Materials;
-import org.osm2world.target.common.model.Models;
+import org.osm2world.output.Output;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.common.material.Materials;
+import org.osm2world.output.common.model.Models;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.functions.Factory;
 import org.osm2world.world.attachment.AttachmentConnector;
@@ -167,12 +167,12 @@ public class ConversionFacade {
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
 	 *                      of the modules' behavior; null to use defaults
-	 * @param targets       receivers of the conversion results; can be null if
+	 * @param outputs       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(File osmFile,
 			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
-			@Nullable List<? extends Target> targets)
+			@Nullable List<? extends Output> outputs)
 			throws IOException {
 
 		if (osmFile == null) {
@@ -181,7 +181,7 @@ public class ConversionFacade {
 
 		OSMData osmData = new OSMFileReader(osmFile).getAllData();
 
-		return createRepresentations(osmData, worldModules, config, targets);
+		return createRepresentations(osmData, worldModules, config, outputs);
 
 	}
 
@@ -197,12 +197,12 @@ public class ConversionFacade {
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
 	 *                      of the modules' behavior; null to use defaults
-	 * @param targets       receivers of the conversion results; can be null if
+	 * @param outputs       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(OSMData osmData,
 			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
-			@Nullable List<? extends Target> targets)
+			@Nullable List<? extends Output> outputs)
 			throws IOException {
 
 		/* check the inputs */
@@ -231,7 +231,7 @@ public class ConversionFacade {
 
 		/* perform the rest of the conversion */
 
-		return createRepresentations(mapProjection, mapData, worldModules, config, targets);
+		return createRepresentations(mapProjection, mapData, worldModules, config, outputs);
 
 	}
 
@@ -244,7 +244,7 @@ public class ConversionFacade {
 	 */
 	public Results createRepresentations(@Nullable MapProjection mapProjection, MapData mapData,
 			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
-			@Nullable List<? extends Target> targets) {
+			@Nullable List<? extends Output> outputs) {
 
 		/* check the inputs */
 
@@ -292,19 +292,19 @@ public class ConversionFacade {
 		attachConnectors(mapData);
 
 		/* convert 3d scene to target representation */
-		updatePhase(Phase.TARGET);
+		updatePhase(Phase.OUTPUT);
 
 		boolean underground = config.getBoolean("renderUnderground", true);
 
-		if (targets != null) {
-			for (Target target : targets) {
-				target.setConfiguration(config);
-				TargetUtil.renderWorldObjects(target, mapData, underground);
-				target.finish();
+		if (outputs != null) {
+			for (Output output : outputs) {
+				output.setConfiguration(config);
+				OutputUtil.renderWorldObjects(output, mapData, underground);
+				output.finish();
 			}
 		}
 
-		/* supply results to targets */
+		/* supply results to outputs */
 		updatePhase(Phase.FINISHED);
 
 		return new Results(mapProjection, mapData, eleData);
@@ -456,7 +456,7 @@ public class ConversionFacade {
 		REPRESENTATION,
 		ELEVATION,
 		TERRAIN,
-		TARGET,
+		OUTPUT,
 		FINISHED
 	}
 

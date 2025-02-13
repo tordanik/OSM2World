@@ -10,10 +10,10 @@ import java.util.Random;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
-import org.osm2world.target.common.material.ImmutableMaterial;
-import org.osm2world.target.common.material.Material;
-import org.osm2world.target.common.material.Material.Interpolation;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.common.material.ImmutableMaterial;
+import org.osm2world.output.common.material.Material;
+import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.WorldObject;
 
@@ -43,7 +43,7 @@ public class AttachmentSurfaceDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 
 		for (WorldObject object : map.getWorldObjects()) {
 			for (AttachmentSurface surface : object.getAttachmentSurfaces()) {

@@ -2,10 +2,10 @@ package org.osm2world.viewer.view.debug;
 
 import static java.awt.Color.BLUE;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -27,7 +27,7 @@ public class EleConnectorDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 
 		for (WorldObject worldObject : map.getWorldObjects()) {
 			for (EleConnector eleConnector : worldObject.getEleConnectors()) {

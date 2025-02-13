@@ -4,7 +4,7 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.osm2world.target.common.material.Materials.*;
+import static org.osm2world.output.common.material.Materials.*;
 import static org.osm2world.world.modules.RoadModule.findMatchingLanes;
 import static org.osm2world.world.modules.RoadModule.getSurfaceForNode;
 

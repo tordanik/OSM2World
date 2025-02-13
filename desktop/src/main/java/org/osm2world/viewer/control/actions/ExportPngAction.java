@@ -8,9 +8,9 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.image.ImageOutputFormat;
-import org.osm2world.target.image.ImageTarget;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.image.ImageOutput;
+import org.osm2world.output.image.ImageOutputFormat;
 import org.osm2world.util.Resolution;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
@@ -43,12 +43,12 @@ public class ExportPngAction extends AbstractExportAction {
 
 			/* write the file */
 
-			var target = new ImageTarget(file, ImageOutputFormat.PNG, new Resolution(width, height),
+			var target = new ImageOutput(file, ImageOutputFormat.PNG, new Resolution(width, height),
 					renderOptions.camera, renderOptions.projection,
 					data.getConversionResults().getMapData().getBoundary());
 
 			target.setConfiguration(data.getConfig());
-			TargetUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
+			OutputUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
 			target.finish();
 
 			messageManager.addMessage("exported .png image file " + file);

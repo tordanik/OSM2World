@@ -3,10 +3,10 @@ package org.osm2world.viewer.view.debug;
 import static java.lang.Math.sqrt;
 
 import org.osm2world.math.VectorXZ;
-import org.osm2world.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.target.common.material.Materials;
-import org.osm2world.target.jogl.JOGLRenderingParameters;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.common.material.Materials;
+import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.output.jogl.JOGLRenderingParameters;
 
 public class SkyboxView extends DebugView {
 
@@ -21,7 +21,7 @@ public class SkyboxView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 
@@ -41,7 +41,7 @@ public class SkyboxView extends DebugView {
 	}
 
 	@Override
-	protected void updateTarget(JOGLTarget target, boolean viewChanged) {
+	protected void updateTarget(JOGLOutput target, boolean viewChanged) {
 		if (viewChanged) {
 			target.reset();
 			fillTarget(target);

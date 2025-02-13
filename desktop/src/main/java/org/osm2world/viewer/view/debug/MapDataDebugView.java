@@ -19,9 +19,9 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.target.common.material.ImmutableMaterial;
-import org.osm2world.target.common.material.Material.Interpolation;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.common.material.ImmutableMaterial;
+import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.output.jogl.JOGLOutput;
 
 /**
  * shows the plain {@link MapData} as a network of nodes, lines and areas
@@ -47,7 +47,7 @@ public class MapDataDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		Predicate<MapArea> isEmptyTerrain = it -> it.getTags().contains("surface", EMPTY_SURFACE_VALUE);
 

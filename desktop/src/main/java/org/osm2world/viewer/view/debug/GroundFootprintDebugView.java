@@ -8,7 +8,7 @@ import java.awt.*;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
 
@@ -32,7 +32,7 @@ public class GroundFootprintDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		/* draw terrain boundaries */
 

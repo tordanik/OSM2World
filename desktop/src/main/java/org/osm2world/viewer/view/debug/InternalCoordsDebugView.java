@@ -8,7 +8,7 @@ import java.awt.*;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 
 /**
  * shows the internal world coordinate grid
@@ -28,7 +28,7 @@ public class InternalCoordsDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		AxisAlignedRectangleXZ bound = map.getDataBoundary();
 

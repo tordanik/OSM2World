@@ -7,7 +7,7 @@ import org.osm2world.ConversionFacade.Results;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 
 /**
  * shows the latitude and longitude grid.
@@ -35,7 +35,7 @@ public class LatLonDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		AxisAlignedRectangleXZ bound = map.getDataBoundary();
 

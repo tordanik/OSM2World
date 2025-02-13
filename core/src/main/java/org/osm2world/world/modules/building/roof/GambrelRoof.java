@@ -11,7 +11,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.target.common.material.Material;
+import org.osm2world.output.common.material.Material;
 
 public class GambrelRoof extends RoofWithRidge {
 

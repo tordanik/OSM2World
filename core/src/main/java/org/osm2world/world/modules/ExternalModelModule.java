@@ -9,7 +9,7 @@ import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
-import org.osm2world.target.common.mesh.Mesh;
+import org.osm2world.output.common.mesh.Mesh;
 import org.osm2world.world.creation.WorldModule;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.NodeWorldObject;

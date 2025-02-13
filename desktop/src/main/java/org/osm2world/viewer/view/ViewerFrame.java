@@ -2,8 +2,8 @@ package org.osm2world.viewer.view;
 
 import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
-import static org.osm2world.target.gltf.GltfTarget.GltfFlavor.GLB;
-import static org.osm2world.target.gltf.GltfTarget.GltfFlavor.GLTF;
+import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
+import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 
 import java.awt.*;
 import java.io.File;
@@ -17,7 +17,7 @@ import javax.swing.*;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_elevation.creation.*;
-import org.osm2world.target.common.mesh.LevelOfDetail;
+import org.osm2world.output.common.mesh.LevelOfDetail;
 import org.osm2world.viewer.control.actions.*;
 import org.osm2world.viewer.control.navigation.DefaultNavigation;
 import org.osm2world.viewer.model.Data;

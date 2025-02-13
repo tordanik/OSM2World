@@ -5,10 +5,10 @@ import static java.lang.Math.PI;
 import java.util.List;
 
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.target.common.mesh.Mesh;
-import org.osm2world.target.common.model.InstanceParameters;
-import org.osm2world.target.common.model.Model;
-import org.osm2world.target.common.model.ModelInstance;
+import org.osm2world.output.common.mesh.Mesh;
+import org.osm2world.output.common.model.InstanceParameters;
+import org.osm2world.output.common.model.Model;
+import org.osm2world.output.common.model.ModelInstance;
 
 public class NodeModelInstance extends NoOutlineNodeWorldObject {
 

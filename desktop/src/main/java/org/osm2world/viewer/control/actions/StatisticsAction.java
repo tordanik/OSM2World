@@ -7,9 +7,9 @@ import java.util.Observer;
 import javax.swing.*;
 
 import org.osm2world.ConversionFacade.Results;
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.mesh.LevelOfDetail;
-import org.osm2world.target.statistics.StatisticsTarget;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.view.StatisticsDialog;
 import org.osm2world.viewer.view.ViewerFrame;
@@ -45,9 +45,9 @@ public class StatisticsAction extends AbstractAction implements Observer {
 		Results conversionResults = data.getConversionResults();
 
 		LevelOfDetail lod = data.getConfig().getLod();
-		StatisticsTarget stats = new StatisticsTarget(lod);
+		StatisticsOutput stats = new StatisticsOutput(lod);
 
-		TargetUtil.renderWorldObjects(stats, conversionResults.getMapData(), true);
+		OutputUtil.renderWorldObjects(stats, conversionResults.getMapData(), true);
 		new StatisticsDialog(viewerFrame, stats).setVisible(true);
 
 	}

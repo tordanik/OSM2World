@@ -6,7 +6,7 @@ import java.awt.*;
 
 import javax.swing.*;
 
-import org.osm2world.target.jogl.AbstractJOGLTarget;
+import org.osm2world.output.jogl.AbstractJOGLOutput;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.MessageManager.Message;
@@ -67,7 +67,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        final GL gl = glDrawable.getGL();
 
 			Color clearColor = data.getConfig().backgroundColor();
-			AbstractJOGLTarget.clearGL(gl, clearColor);
+			AbstractJOGLOutput.clearGL(gl, clearColor);
 
 	        if (renderOptions.camera == null) {
 	        	helpView.renderTo(gl, null, null);

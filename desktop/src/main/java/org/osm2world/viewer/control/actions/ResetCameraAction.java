@@ -9,7 +9,7 @@ import javax.swing.*;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.target.common.rendering.MutableCamera;
+import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.Defaults;
 import org.osm2world.viewer.model.RenderOptions;

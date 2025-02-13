@@ -14,7 +14,7 @@ import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.datastructures.MapQuadtree;
 import org.osm2world.math.datastructures.MapQuadtree.QuadLeaf;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 
 public class QuadtreeDebugView extends DebugView {
 
@@ -42,7 +42,7 @@ public class QuadtreeDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		if (mapQuadtree == null) {
 			mapQuadtree = new MapQuadtree(map.getDataBoundary());

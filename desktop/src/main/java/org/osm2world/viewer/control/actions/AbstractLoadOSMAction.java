@@ -189,7 +189,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 					progressDialog.setProgress(60);
 					progressDialog.setText("4/5: Generate terrain...");
 				}
-				case TARGET -> {
+				case OUTPUT -> {
 					progressDialog.setProgress(80);
 					progressDialog.setText("5/5: Represent objects by 3D primitives...");
 				}

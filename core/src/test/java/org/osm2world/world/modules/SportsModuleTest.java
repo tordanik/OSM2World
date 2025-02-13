@@ -7,7 +7,7 @@ import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.target.common.material.TextureDataDimensions;
+import org.osm2world.output.common.material.TextureDataDimensions;
 import org.osm2world.world.modules.SportsModule.Pitch.PitchTexFunction;
 
 

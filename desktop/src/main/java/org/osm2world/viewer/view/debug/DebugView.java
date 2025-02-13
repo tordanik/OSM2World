@@ -13,14 +13,14 @@ import org.osm2world.map_elevation.creation.TerrainElevationData;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.target.common.material.ImmutableMaterial;
-import org.osm2world.target.common.material.Material.Interpolation;
-import org.osm2world.target.common.rendering.Camera;
-import org.osm2world.target.common.rendering.Projection;
-import org.osm2world.target.jogl.JOGLRenderingParameters;
-import org.osm2world.target.jogl.JOGLTarget;
-import org.osm2world.target.jogl.JOGLTargetFixedFunction;
-import org.osm2world.target.jogl.JOGLTargetShader;
+import org.osm2world.output.common.material.ImmutableMaterial;
+import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.output.jogl.JOGLOutputFixedFunction;
+import org.osm2world.output.jogl.JOGLOutputShader;
+import org.osm2world.output.jogl.JOGLRenderingParameters;
 
 import com.jogamp.opengl.GL;
 
@@ -42,7 +42,7 @@ public abstract class DebugView {
 	private VectorXYZ cameraUp;
 	private VectorXYZ cameraLookAt;
 
-	private JOGLTarget target = null;
+	private JOGLOutput target = null;
 	private boolean targetNeedsReset;
 
 	public final void setConfiguration(O2WConfig config) {
@@ -89,7 +89,7 @@ public abstract class DebugView {
 	}
 
 	/**
-	 * renders the content added by {@link #fillTarget(JOGLTarget)}.
+	 * renders the content added by {@link #fillTarget(JOGLOutput)}.
 	 * Only has an effect if {@link #canBeUsed()} is true.
 	 *
 	 * @param gl  needs to be the same gl as in previous calls
@@ -100,9 +100,9 @@ public abstract class DebugView {
 
 			if (target == null) {
 				if ("shader".equals(config.getString("joglImplementation"))) {
-					target = new JOGLTargetShader(gl.getGL3(), new JOGLRenderingParameters(), null);
+					target = new JOGLOutputShader(gl.getGL3(), new JOGLRenderingParameters(), null);
 				} else {
-					target = new JOGLTargetFixedFunction(gl.getGL2(), new JOGLRenderingParameters(), null);
+					target = new JOGLOutputFixedFunction(gl.getGL2(), new JOGLRenderingParameters(), null);
 				}
 				target.setConfiguration(config);
 			} else if (targetNeedsReset){
@@ -144,22 +144,22 @@ public abstract class DebugView {
 	 * lets the subclass add all content and settings for rendering.
 	 * Will only be called if {@link #canBeUsed()} is true.
 	 */
-	protected abstract void fillTarget(JOGLTarget target);
+	protected abstract void fillTarget(JOGLOutput target);
 
 	/**
 	 * lets the subclass update the target after the initial
-	 * {@link #fillTarget(JOGLTarget)}.
+	 * {@link #fillTarget(JOGLOutput)}.
 	 *
 	 * @param viewChanged  true if camera or projection have changed
 	 */
-	protected void updateTarget(JOGLTarget target, boolean viewChanged) {}
+	protected void updateTarget(JOGLOutput target, boolean viewChanged) {}
 
-	protected static final void drawBoxAround(JOGLTarget target,
+	protected static final void drawBoxAround(JOGLOutput target,
 			VectorXZ center, Color color, float halfWidth) {
 		drawBoxAround(target, center.xyz(0), color, halfWidth);
 	}
 
-	protected static final void drawBoxAround(JOGLTarget target,
+	protected static final void drawBoxAround(JOGLOutput target,
 			VectorXYZ center, Color color, float halfWidth) {
 		drawBox(target, color,
 			new VectorXYZ(center.x - halfWidth,
@@ -176,12 +176,12 @@ public abstract class DebugView {
 				center.z - halfWidth));
 	}
 
-	protected static final void drawBox(JOGLTarget target, Color color,
+	protected static final void drawBox(JOGLOutput target, Color color,
 			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {
 		target.drawLineLoop(color, 1, asList(v1, v2, v3, v4));
 	}
 
-	protected static final void drawArrow(JOGLTarget target, Color color,
+	protected static final void drawArrow(JOGLOutput target, Color color,
 			float headLength, VectorXYZ... vs) {
 
 		target.drawLineStrip(color, 1, vs);

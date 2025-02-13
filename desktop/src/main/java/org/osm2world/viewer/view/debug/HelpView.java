@@ -3,9 +3,9 @@ package org.osm2world.viewer.view.debug;
 import java.awt.*;
 
 import org.osm2world.GlobalValues;
-import org.osm2world.target.common.rendering.Camera;
-import org.osm2world.target.common.rendering.Projection;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.viewer.view.TextRenderer;
 import org.osm2world.viewer.view.TextRendererFixedFunction;
 import org.osm2world.viewer.view.TextRendererShader;
@@ -95,7 +95,7 @@ public class HelpView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 		//do nothing, has its own renderTo implementation
 	}
 

@@ -7,8 +7,8 @@ import static org.junit.Assert.assertTrue;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
-import static org.osm2world.target.TargetUtil.Compression.NONE;
-import static org.osm2world.target.gltf.GltfTarget.GltfFlavor.GLTF;
+import static org.osm2world.output.OutputUtil.Compression.NONE;
+import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
 import java.io.File;
@@ -25,8 +25,8 @@ import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.shapes.FaceXYZ;
-import org.osm2world.target.Target;
-import org.osm2world.target.gltf.GltfTarget;
+import org.osm2world.output.Output;
+import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 
@@ -131,11 +131,11 @@ public class ConversionFacadeTest {
 			try {
 
 				File outputFile = Files.createTempFile("o2w-test-", ".gltf").toFile();
-				Target testTarget = new GltfTarget(outputFile, GLTF, NONE, null);
+				Output testOutput = new GltfOutput(outputFile, GLTF, NONE, null);
 				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
 				ConversionFacade cf = new ConversionFacade();
 
-				cf.createRepresentations(mapProjection, mapData, null, null, asList(testTarget));
+				cf.createRepresentations(mapProjection, mapData, null, null, asList(testOutput));
 
 			} catch (Exception e) {
 				throw new AssertionError("Conversion failed for tags: " +  tagSet, e);

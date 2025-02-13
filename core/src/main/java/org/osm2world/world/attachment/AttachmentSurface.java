@@ -16,8 +16,8 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.FaceXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
-import org.osm2world.target.common.mesh.Geometry;
-import org.osm2world.target.common.mesh.Mesh;
+import org.osm2world.output.common.mesh.Geometry;
+import org.osm2world.output.common.mesh.Mesh;
 
 /**
  * a surface (consisting of one or more {@link FaceXYZ}s) that {@link AttachmentConnector} can attach to

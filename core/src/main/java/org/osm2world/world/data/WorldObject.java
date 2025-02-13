@@ -18,9 +18,9 @@ import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.target.common.mesh.Mesh;
-import org.osm2world.target.common.model.Model;
-import org.osm2world.target.common.model.ModelInstance;
+import org.osm2world.output.common.mesh.Mesh;
+import org.osm2world.output.common.model.Model;
+import org.osm2world.output.common.model.ModelInstance;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 

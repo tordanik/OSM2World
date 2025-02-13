@@ -1,7 +1,7 @@
 package org.osm2world.viewer.view;
 
 import static java.util.Map.entry;
-import static org.osm2world.target.statistics.StatisticsTarget.Stat.*;
+import static org.osm2world.output.statistics.StatisticsOutput.Stat.*;
 
 import java.awt.event.KeyEvent;
 import java.io.Serial;
@@ -14,10 +14,10 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.osm2world.target.common.material.Material;
-import org.osm2world.target.common.material.Materials;
-import org.osm2world.target.statistics.StatisticsTarget;
-import org.osm2world.target.statistics.StatisticsTarget.Stat;
+import org.osm2world.output.common.material.Material;
+import org.osm2world.output.common.material.Materials;
+import org.osm2world.output.statistics.StatisticsOutput;
+import org.osm2world.output.statistics.StatisticsOutput.Stat;
 
 
 public class StatisticsDialog extends JDialog {
@@ -36,7 +36,7 @@ public class StatisticsDialog extends JDialog {
 //			entry(VBO_VALUE_COUNT, "vbo values")
 	);
 
-	public StatisticsDialog(JFrame owner, StatisticsTarget stats) {
+	public StatisticsDialog(JFrame owner, StatisticsOutput stats) {
 		super(owner, "Statistics");
 
 		/* collect content for tables */

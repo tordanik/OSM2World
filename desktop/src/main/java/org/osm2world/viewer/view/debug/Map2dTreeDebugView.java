@@ -1,12 +1,12 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.osm2world.ConversionFacade.Results;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.Map2dTree;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 
 public class Map2dTreeDebugView extends DebugView {
 
@@ -24,7 +24,7 @@ public class Map2dTreeDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		if (map2dTree == null) {
 			map2dTree = new RenderableMap2dTree();
@@ -43,7 +43,7 @@ public class Map2dTreeDebugView extends DebugView {
 			super(map.getDataBoundary());
 		}
 
-		public void renderTo(JOGLTarget target) {
+		public void renderTo(JOGLOutput target) {
 
 			renderNodeTo(this.root, target,
 					map.getDataBoundary().minX - 10,
@@ -54,7 +54,7 @@ public class Map2dTreeDebugView extends DebugView {
 
 		}
 
-		private void renderNodeTo(Node node, JOGLTarget target,
+		private void renderNodeTo(Node node, JOGLOutput target,
 				double minX, double maxX,
 				double minZ, double maxZ,
 				int depth) {

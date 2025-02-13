@@ -1,20 +1,20 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.FaceTarget;
-import org.osm2world.target.common.material.Material;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.common.FaceOutput;
+import org.osm2world.output.common.material.Material;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.data.WorldObject;
 
 /**
  * shows decomposition of {@link WorldObject}s into faces
- * as they would be written to any {@link FaceTarget}
+ * as they would be written to any {@link FaceOutput}
  */
 public class FaceDebugView extends DebugView {
 
@@ -30,7 +30,7 @@ public class FaceDebugView extends DebugView {
 		return map != null;
 	}
 
-	private static class FaceSink extends FaceTarget {
+	private static class FaceSink extends FaceOutput {
 
 		public final List<List<VectorXYZ>> faces =
 				new ArrayList<List<VectorXYZ>>();
@@ -49,11 +49,11 @@ public class FaceDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLTarget target) {
+	protected void fillTarget(JOGLOutput target) {
 
 		FaceSink faceSink = new FaceSink();
 
-		TargetUtil.renderWorldObjects(faceSink, map, true);
+		OutputUtil.renderWorldObjects(faceSink, map, true);
 
 		faceSink.finish();
 

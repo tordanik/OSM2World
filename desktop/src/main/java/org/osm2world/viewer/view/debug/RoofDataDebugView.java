@@ -5,7 +5,7 @@ import java.awt.*;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.target.jogl.JOGLTarget;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.modules.building.Building;
 import org.osm2world.world.modules.building.BuildingPart;
 import org.osm2world.world.modules.building.roof.HeightfieldRoof;
@@ -22,7 +22,7 @@ public class RoofDataDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLTarget target) {
+	public void fillTarget(JOGLOutput target) {
 
 		for (Building building : map.getWorldObjects(Building.class)) {
 			for (BuildingPart part : building.getParts()) {

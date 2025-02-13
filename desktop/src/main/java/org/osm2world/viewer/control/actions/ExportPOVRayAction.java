@@ -9,10 +9,10 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.target.Target;
-import org.osm2world.target.TargetUtil;
-import org.osm2world.target.common.rendering.MutableCamera;
-import org.osm2world.target.povray.POVRayTarget;
+import org.osm2world.output.Output;
+import org.osm2world.output.OutputUtil;
+import org.osm2world.output.common.rendering.MutableCamera;
+import org.osm2world.output.povray.POVRayOutput;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
@@ -55,10 +55,10 @@ public class ExportPOVRayAction extends AbstractExportAction {
 			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
 
 			/* write the file */
-			Target gltfTarget = new POVRayTarget(file, povRayCamera, renderOptions.projection);
-			gltfTarget.setConfiguration(data.getConfig());
-			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
-			gltfTarget.finish();
+			Output output = new POVRayOutput(file, povRayCamera, renderOptions.projection);
+			output.setConfiguration(data.getConfig());
+			OutputUtil.renderWorldObjects(output, data.getConversionResults().getMapData(), underground);
+			output.finish();
 
 			messageManager.addMessage("exported POVRay file " + file);
 

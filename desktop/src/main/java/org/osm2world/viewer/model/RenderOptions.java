@@ -9,9 +9,9 @@ import org.osm2world.map_elevation.creation.BridgeTunnelEleCalculator;
 import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.map_elevation.creation.ZeroInterpolator;
-import org.osm2world.target.common.mesh.LevelOfDetail;
-import org.osm2world.target.common.rendering.MutableCamera;
-import org.osm2world.target.common.rendering.Projection;
+import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.output.common.rendering.MutableCamera;
+import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;
 
 public class RenderOptions {
