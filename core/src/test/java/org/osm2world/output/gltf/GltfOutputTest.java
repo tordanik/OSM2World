@@ -1,9 +1,6 @@
 package org.osm2world.output.gltf;
 
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.output.OutputUtil.Compression.*;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,15 +45,7 @@ public class GltfOutputTest {
 		File tempFile = File.createTempFile("osm2world-test-", fileExtension);
 		tempFile.deleteOnExit();
 
-		var target = switch (fileExtension) {
-			case ".gltf" -> new GltfOutput(tempFile, GLTF, NONE, null);
-			case ".glb" -> new GltfOutput(tempFile, GLB, NONE, null);
-			case ".gltf.gz" -> new GltfOutput(tempFile, GLTF, GZ, null);
-			case ".glb.gz" -> new GltfOutput(tempFile, GLB, GZ, null);
-			case ".gltf.zip" -> new GltfOutput(tempFile, GLTF, ZIP, null);
-			case ".glb.zip" -> new GltfOutput(tempFile, GLB, ZIP, null);
-			default -> throw new Error("unsupported extension: " + fileExtension);
-		};
+		var target = new GltfOutput(tempFile);
 
 		target.drawColumn(Materials.STEEL, null, NULL_VECTOR, 10, 2,0, true, false);
 		target.finish();

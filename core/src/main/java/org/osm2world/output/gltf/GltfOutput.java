@@ -1,13 +1,17 @@
 package org.osm2world.output.gltf;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.output.OutputUtil.*;
+import static org.osm2world.output.OutputUtil.Compression.*;
 import static org.osm2world.output.common.MeshStore.*;
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.REFERENCE;
 import static org.osm2world.output.common.material.Material.Interpolation.SMOOTH;
+import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
+import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -17,6 +21,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.GlobalValues;
 import org.osm2world.map_data.data.MapRelationElement;
 import org.osm2world.map_data.data.TagSet;
@@ -69,12 +74,39 @@ public class GltfOutput extends MeshOutput {
 	/** data for the glb BIN chunk, only used if {@link #flavor} is {@link GltfFlavor#GLB} */
 	private final List<ByteBuffer> binChunkData = new ArrayList<>();
 
-	public GltfOutput(File outputFile, GltfFlavor flavor, Compression compression,
-					  @Nullable SimpleClosedShapeXZ bounds) {
+	/**
+	 * Sets up an output to write a scene as glTF.
+	 * Uses defaults for most parameters of {@link #GltfOutput(File, GltfFlavor, Compression, SimpleClosedShapeXZ)}.
+	 */
+	public GltfOutput(File outputFile) {
+		this(outputFile, null, null, null);
+	}
+
+	/**
+	 * Sets up an output to write a scene as glTF.
+	 *
+	 * @param outputFile   file to write to. Existing content will be overwritten.
+	 * @param flavor       type of glTF file (JSON or binary); will be guessed from filename if null
+	 * @param compression  compression used for the output file; may be <code>NONE</code>;
+	 *                     will be guessed from filename if null
+	 * @param bounds       the boundary to be used for the output file.
+	 *                     Has an effect if some options such as clipping to bounds are used.
+	 */
+	public GltfOutput(File outputFile, @Nullable GltfFlavor flavor, @Nullable Compression compression,
+			  @Nullable SimpleClosedShapeXZ bounds) {
+
 		this.outputFile = outputFile;
-		this.flavor = flavor;
-		this.compression = compression;
 		this.bounds = bounds;
+
+		if (flavor != null && compression != null) {
+			this.flavor = flavor;
+			this.compression = compression;
+		} else {
+			Pair<GltfFlavor, Compression> fc = guessFlavorAndCompression(outputFile.getName());
+			this.flavor = requireNonNullElse(flavor, fc.getLeft());
+			this.compression = requireNonNullElse(compression, fc.getRight());
+		}
+
 	}
 
 	public File outputDir() {
@@ -626,6 +658,24 @@ public class GltfOutput extends MeshOutput {
 			node.name = "Multiple elements";
 		}
 
+	}
+
+	private Pair<GltfFlavor, Compression> guessFlavorAndCompression(String fileName) {
+		if (fileName.endsWith(".gltf")) {
+			return Pair.of(GLTF, NONE);
+		} else if (fileName.endsWith(".glb")) {
+			return Pair.of(GLB, NONE);
+		} else if (fileName.endsWith(".gltf.gz")) {
+			return Pair.of(GLTF, GZ);
+		} else if (fileName.endsWith(".glb.gz")) {
+			return Pair.of(GLB, GZ);
+		} else if (fileName.endsWith(".gltf.zip")) {
+			return Pair.of(GLTF, ZIP);
+		} else if (fileName.endsWith(".glb.zip")) {
+			return Pair.of(GLB, ZIP);
+		} else {
+			throw new Error("unsupported extension: " + fileName);
+		}
 	}
 
 	private ResourceOutputSettings getResourceOutputSettings() {
