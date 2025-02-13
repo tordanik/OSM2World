@@ -94,7 +94,7 @@ public class Data extends Observable {
 			O2WConfig configForLoad = config.withProperty("lod", null);
 
 			conversionResults = converter.createRepresentations(
-					osmData, null, null, configForLoad, null);
+					osmData, null, configForLoad, null);
 
 		} catch (IOException | BoundingBoxSizeException e) {
 

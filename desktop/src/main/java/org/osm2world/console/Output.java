@@ -94,12 +94,16 @@ public final class Output {
 				}
 			}
 
+			if (metadata != null && metadata.land() == Boolean.FALSE) {
+				config = config.withProperty("isAtSea", true);
+			}
+
 			ConversionFacade cf = new ConversionFacade();
 			cf.addProgressListener(perfListener);
 
 			OSMData osmData = CLIArgumentsUtil.getOsmData(sharedArgs);
 
-			Results results = cf.createRepresentations(osmData, metadata, null, config, null);
+			Results results = cf.createRepresentations(osmData, null, config, null);
 
 			ImageExporter exporter = null;
 

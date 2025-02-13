@@ -253,6 +253,16 @@ public class O2WConfig {
 	}
 
 	/**
+	 * A value which indicates whether input data should be assumed to be at sea rather than on land.
+	 * This is necessary because coastline ways will often not be within the bounds of a dataset.
+	 * @return  true if the dataset is sea on all sides (it may contain islands as long as they are
+	 * 	        entirely within the bounds); false if it's on land or unknown/mixed
+	 */
+	public boolean isAtSea() {
+		return getBoolean("isAtSea", false);
+	}
+
+	/**
 	 * the algorithm to use for interpolating terrain elevation between sites of known elevation
 	 * @return  a function to create an instance of the algorithm
 	 */

@@ -92,19 +92,17 @@ public class MapDataBuilder {
 
 	}
 
-	/** @see #build(AxisAlignedRectangleXZ, MapMetadata) */
+	/** @see #build(AxisAlignedRectangleXZ) */
 	public MapData build() {
-		return new MapData(nodes, ways, areas, relations, null, new MapMetadata(null, null));
+		return new MapData(nodes, ways, areas, relations, null);
 	}
 
 	/**
 	 * returns a {@link MapData} object containing all the elements created so far
 	 * @param boundary  a data boundary, equivalent to the &lt;bounds&gt; element of an .osm file
-	 * @param metadata  metadata that would usually be derived from information outside the data boundary
 	 */
-	public MapData build(@Nullable AxisAlignedRectangleXZ boundary, @Nullable MapMetadata metadata) {
-		metadata = (metadata == null) ? new MapMetadata(null, null) : metadata;
-		return new MapData(nodes, ways, areas, relations, boundary, metadata);
+	public MapData build(@Nullable AxisAlignedRectangleXZ boundary) {
+		return new MapData(nodes, ways, areas, relations, boundary);
 	}
 
 	/**

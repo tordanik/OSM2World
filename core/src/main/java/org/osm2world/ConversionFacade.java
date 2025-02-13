@@ -25,7 +25,6 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_data.data.MapMetadata;
 import org.osm2world.map_elevation.creation.*;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
@@ -164,7 +163,6 @@ public class ConversionFacade {
 	 * Sends updates to {@link ProgressListener}s.
 	 *
 	 * @param osmFile       file to read OSM data from; != null
-	 * @param metadata      metadata associated with the OSM dataset to process, may be null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
@@ -172,9 +170,9 @@ public class ConversionFacade {
 	 * @param targets       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
-	public Results createRepresentations(File osmFile, @Nullable MapMetadata metadata,
-			List<? extends WorldModule> worldModules, O2WConfig config,
-			List<? extends Target> targets)
+	public Results createRepresentations(File osmFile,
+			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
+			@Nullable List<? extends Target> targets)
 			throws IOException {
 
 		if (osmFile == null) {
@@ -183,19 +181,18 @@ public class ConversionFacade {
 
 		OSMData osmData = new OSMFileReader(osmFile).getAllData();
 
-		return createRepresentations(osmData, metadata, worldModules, config, targets);
+		return createRepresentations(osmData, worldModules, config, targets);
 
 	}
 
 	/**
-	 * variant of {@link #createRepresentations(File, MapMetadata, List, O2WConfig, List)}
+	 * variant of {@link #createRepresentations(File, List, O2WConfig, List)}
 	 * that accepts {@link OSMData} instead of a file.
 	 * Use this when all data is already
 	 * in memory, for example with editor applications.
 	 * To obtain the data, you can use an {@link OSMDataReader}.
 	 *
 	 * @param osmData       input data; != null
-	 * @param metadata      metadata associated with the OSM dataset to process, may be null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
@@ -203,9 +200,9 @@ public class ConversionFacade {
 	 * @param targets       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
-	public Results createRepresentations(OSMData osmData, @Nullable MapMetadata metadata,
-			List<? extends WorldModule> worldModules, O2WConfig config,
-			List<? extends Target> targets)
+	public Results createRepresentations(OSMData osmData,
+			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
+			@Nullable List<? extends Target> targets)
 			throws IOException {
 
 		/* check the inputs */
@@ -227,7 +224,7 @@ public class ConversionFacade {
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData mapData;
 		try {
-			mapData = converter.createMapData(osmData, metadata);
+			mapData = converter.createMapData(osmData, config);
 		} catch (EntityNotFoundException e) {
 			throw new IOException(e);
 		}
@@ -239,7 +236,7 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * variant of {@link #createRepresentations(OSMData, MapMetadata, List, O2WConfig, List)}
+	 * variant of {@link #createRepresentations(OSMData, List, O2WConfig, List)}
 	 * that takes {@link MapData} instead of {@link OSMData}
 	 *
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.

@@ -13,6 +13,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.ConversionLog;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.*;
 import org.osm2world.math.VectorXZ;
@@ -50,21 +51,19 @@ public class OSMToMapDataConverter {
 		this.mapProjection = mapProjection;
 	}
 
-	public MapData createMapData(OSMData osmData, @Nullable MapMetadata metadata) throws EntityNotFoundException {
+	public MapData createMapData(OSMData osmData, @Nullable O2WConfig config) throws EntityNotFoundException {
 
 		final List<MapNode> mapNodes = new ArrayList<>();
 		final List<MapWay> mapWays = new ArrayList<>();
 		final List<MapArea> mapAreas = new ArrayList<>();
 		final List<MapRelation> mapRelations = new ArrayList<>();
 
-		if (metadata == null) {
-			metadata = new MapMetadata(null, null);
-		}
+		boolean isAtSea = config != null && config.isAtSea();
 
-		createMapElements(osmData, metadata, mapNodes, mapWays, mapAreas, mapRelations);
+		createMapElements(osmData, isAtSea, mapNodes, mapWays, mapAreas, mapRelations);
 
 		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds()), metadata);
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds()));
 
 		calculateIntersectionsInMapData(mapData);
 
@@ -76,8 +75,11 @@ public class OSMToMapDataConverter {
 	 * creates {@link MapElement}s
 	 * based on OSM data from an {@link OSMData} dataset.
 	 * and adds them to collections
+	 *
+	 * @param isAtSea  true if the {@link OSMData} is sea on all sides (it may contain islands as long as they are
+	 *                 entirely within the bounds); false if it's on land or unknown/mixed
 	 */
-	private void createMapElements(final OSMData osmData, MapMetadata metadata,
+	private void createMapElements(final OSMData osmData, boolean isAtSea,
 			final List<MapNode> mapNodes, final List<MapWay> mapWays,
 			final List<MapArea> mapAreas, List<MapRelation> mapRelations) throws EntityNotFoundException {
 
@@ -137,7 +139,7 @@ public class OSMToMapDataConverter {
 		mapAreas.addAll(MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeIdMap, mapNodes,
 				calculateFileBoundary(osmData.getUnionOfExplicitBounds()),
-				metadata.land() == Boolean.FALSE));
+				isAtSea));
 
 		/* ... based on closed ways with certain tags */
 

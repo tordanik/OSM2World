@@ -340,23 +340,23 @@ final class MultipolygonAreaBuilder {
 	/**
 	 * turns all coastline ways into {@link MapArea}s
 	 * based on an artificial natural=water multipolygon relation.
-	 *
+	 * <p>
 	 * It relies on the direction-dependent drawing of coastlines.
 	 * If coastlines are incomplete, then it is attempted to connect them
 	 * to proper rings. One assumption being used is that they are complete
 	 * within the file's bounds.
-	 *
+	 * <p>
 	 * It cannot distinguish between water and land tiles if there is no
 	 * coastline at all and no explicit information is provided,
 	 * but should be able to handle all other cases.
 	 *
-	 * @param isSeaTile  true if the {@link OSMData} is sea on all sides (it may contain islands as long as they are
-	 *                   entirely within the bounds); false if it's on land or unknown/mixed
+	 * @param isAtSea  true if the {@link OSMData} is sea on all sides (it may contain islands as long as they are
+	 *                 entirely within the bounds); false if it's on land or unknown/mixed
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
 			Collection<MapNode> mapNodes, AxisAlignedRectangleXZ fileBoundary,
-			boolean isSeaTile) throws EntityNotFoundException {
+			boolean isAtSea) throws EntityNotFoundException {
 
 		long highestRelationId = 0;
 		long highestNodeId = 0;
@@ -578,7 +578,7 @@ final class MultipolygonAreaBuilder {
 						}
 					}
 
-					if (hasIsland || isSeaTile || isProbablySeaTile(osmData)) {
+					if (hasIsland || isAtSea || isProbablySeaTile(osmData)) {
 
 						NodeSequence boundaryRing = new NodeSequence();
 
