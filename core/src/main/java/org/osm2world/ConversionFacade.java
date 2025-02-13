@@ -57,8 +57,8 @@ import com.google.common.collect.Streams;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 /**
- * provides an easy way to call all steps of the conversion process
- * in the correct order
+ * provides an easy way to call all steps of the conversion process in the correct order.
+ * External users of OSM2World should prefer {@link O2WConverter}, which will eventually replace this class.
  */
 public class ConversionFacade {
 
