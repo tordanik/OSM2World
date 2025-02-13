@@ -298,6 +298,7 @@ public class ConversionFacade {
 
 		if (targets != null) {
 			for (Target target : targets) {
+				target.setConfiguration(config);
 				TargetUtil.renderWorldObjects(target, mapData, underground);
 				target.finish();
 			}
