@@ -13,7 +13,7 @@ public record OrthographicProjection(double aspectRatio, double volumeHeight,
 			double nearClippingDistance, double farClippingDistance) implements Projection {
 
 	public OrthographicProjection(double aspectRatio, double volumeHeight) {
-		this(aspectRatio, volumeHeight, -100000, 100000);
+		this(aspectRatio, volumeHeight, -10000, 10000);
 	}
 
 	public OrthographicProjection withVolumeHeight(double newVolumeHeight) {
