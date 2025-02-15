@@ -57,7 +57,7 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 					JOptionPane.showInputDialog(viewerFrame, "from cardinal direction"));
 
 			AxisAlignedRectangleXZ tileBounds =
-				data.getConversionResults().getMapData().getDataBoundary();
+				data.getConversionResults().getBoundary();
 
 			renderOptions.camera = OrthographicUtil.cameraForBounds(
 					data.getConversionResults().getMapProjection(),

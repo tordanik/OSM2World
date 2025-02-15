@@ -24,13 +24,13 @@ public class InternalCoordsDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
-		AxisAlignedRectangleXZ bound = map.getDataBoundary();
+		AxisAlignedRectangleXZ bound = scene.getBoundary();
 
 		for (int x = (int)floor(bound.minX / LINE_DIST); x < (int)ceil(bound.maxX / LINE_DIST); x++) {
 			for (int z = (int)floor(bound.minZ / LINE_DIST); z < (int)ceil(bound.maxZ / LINE_DIST); z++) {

@@ -1,8 +1,6 @@
 package org.osm2world.output;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.util.FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER;
-import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,12 +13,8 @@ import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_data.data.MapElement;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.util.functions.CheckedConsumer;
-import org.osm2world.world.data.WorldObject;
 
 import com.google.gson.JsonIOException;
 
@@ -29,33 +23,6 @@ public final class OutputUtil {
 	public enum Compression { NONE, ZIP, GZ }
 
 	private OutputUtil() {}
-
-	/**
-	 * renders all {@link WorldObject}s to an output.
-	 * Also sends {@link Output#beginObject(WorldObject)} calls.
-	 */
-	public static void renderWorldObjects(Output output, MapData mapData, boolean renderUnderground) {
-
-		for (MapElement mapElement : mapData.getMapElements()) {
-			forEach(mapElement.getRepresentations(), (WorldObject r) -> {
-				if (r.getParent() == null) {
-					if (renderUnderground || r.getGroundState() != GroundState.BELOW) {
-						renderObject(output, r);
-					}
-				}
-			}, (e, r) -> DEFAULT_EXCEPTION_HANDLER.accept(e, r.getPrimaryMapElement()));
-		}
-	}
-
-	/**
-	 * renders one {@link WorldObject} to an output.
-	 * Also sends {@link Output#beginObject(WorldObject)} calls.
-	 */
-	public static final void renderObject(Output output, WorldObject object) {
-		output.beginObject(object);
-		object.buildMeshes().forEach(output::drawMesh);
-		object.getSubModels().forEach(it -> it.render(output));
-	}
 
 	public static final List<List<VectorXZ>> flipTexCoordsVertically(List<List<VectorXZ>> texCoordLists) {
 		return texCoordLists.stream().map(list ->

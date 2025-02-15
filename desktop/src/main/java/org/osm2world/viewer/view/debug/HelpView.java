@@ -31,7 +31,7 @@ public class HelpView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map == null;
+		return scene == null;
 	}
 
 	@Override

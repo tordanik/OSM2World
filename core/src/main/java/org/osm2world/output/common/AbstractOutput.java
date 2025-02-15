@@ -28,7 +28,4 @@ public abstract class AbstractOutput implements Output {
 		}
 	}
 
-	@Override
-	public void finish() {}
-
 }

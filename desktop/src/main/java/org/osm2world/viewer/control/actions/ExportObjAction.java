@@ -9,7 +9,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.obj.ObjOutput;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
@@ -41,11 +40,9 @@ public class ExportObjAction extends AbstractExportAction {
 			/* write the file */
 			O2WConfig config = data.getConfig();
 
-			ObjOutput target = new ObjOutput(file, data.getConversionResults().getMapProjection());
-			target.setConfiguration(config);
-
-			boolean underground = config == null || config.getBoolean("renderUnderground", true);
-			OutputUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
+			var output = new ObjOutput(file, data.getConversionResults().getMapProjection());
+			output.setConfiguration(config);
+			output.outputScene(data.getConversionResults());
 
 			messageManager.addMessage("exported Wavefront .obj file " + file);
 

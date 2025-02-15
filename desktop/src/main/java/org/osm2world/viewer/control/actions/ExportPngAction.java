@@ -8,7 +8,6 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.image.ImageOutput;
 import org.osm2world.output.image.ImageOutputFormat;
 import org.osm2world.util.Resolution;
@@ -39,17 +38,13 @@ public class ExportPngAction extends AbstractExportAction {
 			int width = 2048;
 			int height = (int) floor(viewerFrame.glCanvas.getHeight() / (float)viewerFrame.glCanvas.getWidth() * width);
 
-			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
-
 			/* write the file */
 
-			var target = new ImageOutput(file, ImageOutputFormat.PNG, new Resolution(width, height),
-					renderOptions.camera, renderOptions.projection,
-					data.getConversionResults().getMapData().getBoundary());
+			var output = new ImageOutput(file, ImageOutputFormat.PNG, new Resolution(width, height),
+					renderOptions.camera, renderOptions.projection);
 
-			target.setConfiguration(data.getConfig());
-			OutputUtil.renderWorldObjects(target, data.getConversionResults().getMapData(), underground);
-			target.finish();
+			output.setConfiguration(data.getConfig());
+			output.outputScene(data.getConversionResults());
 
 			messageManager.addMessage("exported .png image file " + file);
 

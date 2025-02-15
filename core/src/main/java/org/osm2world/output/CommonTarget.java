@@ -30,7 +30,7 @@ import org.osm2world.output.common.model.ModelInstance;
 import org.osm2world.world.data.ProceduralWorldObject;
 
 /**
- * contains methods and functionality shared between {@link Output} and {@link ProceduralWorldObject.Target}.
+ * contains methods and functionality shared between {@link Output} classes and {@link ProceduralWorldObject.Target}.
  * This is a transitional solution: Classes representing output formats will move to a different solution.
  */
 public interface CommonTarget {

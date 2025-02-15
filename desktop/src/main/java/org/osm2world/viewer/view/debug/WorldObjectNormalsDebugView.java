@@ -1,11 +1,8 @@
 package org.osm2world.viewer.view.debug;
 
-import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
-
 import java.awt.*;
 
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.common.Primitive;
 import org.osm2world.output.common.material.Material;
 import org.osm2world.output.common.material.Material.Interpolation;
@@ -24,7 +21,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
@@ -32,7 +29,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 
 		final PrimitiveBuffer primitiveBuffer = new PrimitiveBuffer();
 
-		forEach(map.getWorldObjects(), w -> OutputUtil.renderObject(primitiveBuffer, w));
+		primitiveBuffer.outputScene(scene);
 
 		for (Material material : primitiveBuffer .getMaterials()) {
 

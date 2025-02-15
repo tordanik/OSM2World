@@ -6,9 +6,9 @@ import java.util.Observer;
 
 import javax.swing.*;
 
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.MapProjection;
+import org.osm2world.scene.Scene;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 
@@ -33,7 +33,7 @@ public class ShowCameraConfigurationAction
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 
-		Results r = data.getConversionResults();
+		Scene r = data.getConversionResults();
 
 		if (r == null) {
 			JOptionPane.showMessageDialog(null, "no Camera defined");

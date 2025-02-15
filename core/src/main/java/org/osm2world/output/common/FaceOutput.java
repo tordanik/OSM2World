@@ -14,6 +14,7 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.output.DrawBasedOutput;
 import org.osm2world.output.common.material.Material;
 import org.osm2world.world.data.WorldObject;
 
@@ -27,7 +28,7 @@ import com.google.common.collect.Multimap;
  *
  * TODO: this currently produces faces that are not convex
  */
-public abstract class FaceOutput extends AbstractOutput {
+public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutput {
 
 	abstract public void drawFace(Material material, List<VectorXYZ> vs,
 			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists);
@@ -271,7 +272,7 @@ public abstract class FaceOutput extends AbstractOutput {
 								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		if (reconstructFaces()) {
-			super.drawConvexPolygon(material, vs, texCoordLists);
+			DrawBasedOutput.super.drawConvexPolygon(material, vs, texCoordLists);
 		} else {
 			drawFace(material, vs, null, texCoordLists);
 		}

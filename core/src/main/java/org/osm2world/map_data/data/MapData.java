@@ -9,7 +9,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.world.data.WorldObject;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
@@ -142,22 +141,8 @@ public class MapData {
 	 */
 	public Iterable<WorldObject> getWorldObjects() {
 
-		return Iterables.concat(
-				Iterables.transform(getMapElements(),
-						new Function<MapElement, Iterable<? extends WorldObject>>() {
-					@Override public Iterable<? extends WorldObject> apply(MapElement e) {
-						return e.getRepresentations();
-					}
-				}));
+		return Iterables.concat(Iterables.transform(getMapElements(), MapElement::getRepresentations));
 
-	}
-
-	/**
-	 * returns all {@link WorldObject}s from elements in this data set
-	 * that are instances of a certain type.
-	 */
-	public <T> Iterable<T> getWorldObjects(Class<T> type) {
-		return Iterables.filter(getWorldObjects(), type);
 	}
 
 }

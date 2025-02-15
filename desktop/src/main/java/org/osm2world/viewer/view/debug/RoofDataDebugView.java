@@ -18,13 +18,13 @@ public class RoofDataDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
-		for (Building building : map.getWorldObjects(Building.class)) {
+		for (Building building : scene.getWorldObjects(Building.class)) {
 			for (BuildingPart part : building.getParts()) {
 
 				if (!(part.getRoof() instanceof HeightfieldRoof)) return;

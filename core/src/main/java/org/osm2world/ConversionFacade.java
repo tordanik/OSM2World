@@ -37,9 +37,9 @@ import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.output.Output;
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.common.material.Materials;
 import org.osm2world.output.common.model.Models;
+import org.osm2world.scene.Scene;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.functions.Factory;
 import org.osm2world.world.attachment.AttachmentConnector;
@@ -61,29 +61,6 @@ import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
  * External users of OSM2World should prefer {@link O2WConverter}, which will eventually replace this class.
  */
 public class ConversionFacade {
-
-	/**
-	 * all results of a conversion run
-	 */
-	public static final class Results {
-
-		private final @Nullable MapProjection mapProjection;
-		private final MapData mapData;
-
-		private Results(@Nullable MapProjection mapProjection, MapData mapData) {
-			this.mapProjection = mapProjection;
-			this.mapData = mapData;
-		}
-
-		public MapProjection getMapProjection() {
-			return mapProjection;
-		}
-
-		public MapData getMapData() {
-			return mapData;
-		}
-
-	}
 
 	/**
 	 * generates a default list of modules for the conversion
@@ -164,7 +141,7 @@ public class ConversionFacade {
 	 * @param outputs       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
-	public Results createRepresentations(File osmFile,
+	public Scene createRepresentations(File osmFile,
 			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
 			@Nullable List<? extends Output> outputs)
 			throws IOException {
@@ -194,7 +171,7 @@ public class ConversionFacade {
 	 * @param outputs       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
-	public Results createRepresentations(OSMData osmData,
+	public Scene createRepresentations(OSMData osmData,
 			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
 			@Nullable List<? extends Output> outputs)
 			throws IOException {
@@ -236,7 +213,7 @@ public class ConversionFacade {
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
 	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMData}.
 	 */
-	public Results createRepresentations(@Nullable MapProjection mapProjection, MapData mapData,
+	public Scene createRepresentations(@Nullable MapProjection mapProjection, MapData mapData,
 			@Nullable List<? extends WorldModule> worldModules, @Nullable O2WConfig config,
 			@Nullable List<? extends Output> outputs) {
 
@@ -287,20 +264,19 @@ public class ConversionFacade {
 		/* convert 3d scene to target representation */
 		updatePhase(Phase.OUTPUT);
 
-		boolean underground = config.getBoolean("renderUnderground", true);
+		var scene = new Scene(mapProjection, mapData);
 
 		if (outputs != null) {
 			for (Output output : outputs) {
 				output.setConfiguration(config);
-				OutputUtil.renderWorldObjects(output, mapData, underground);
-				output.finish();
+				output.outputScene(scene);
 			}
 		}
 
 		/* supply results to outputs */
 		updatePhase(Phase.FINISHED);
 
-		return new Results(mapProjection, mapData);
+		return scene;
 
 	}
 

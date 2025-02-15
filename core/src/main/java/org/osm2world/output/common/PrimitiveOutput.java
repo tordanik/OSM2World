@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.output.DrawBasedOutput;
 import org.osm2world.output.common.material.Material;
 import org.osm2world.output.common.material.Material.Interpolation;
 
@@ -20,7 +21,7 @@ import org.osm2world.output.common.material.Material.Interpolation;
  * They convert them all to a list of vertices
  * and represent the primitive type using an enum or flags.
  */
-public abstract class PrimitiveOutput extends AbstractOutput {
+public abstract class PrimitiveOutput extends AbstractOutput implements DrawBasedOutput {
 
 	/**
 	 * @param vs       vertices that form the primitive

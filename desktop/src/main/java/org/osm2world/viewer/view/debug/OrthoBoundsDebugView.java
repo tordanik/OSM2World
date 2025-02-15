@@ -28,16 +28,16 @@ public class OrthoBoundsDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
 		MutableCamera orthoCam = OrthographicUtil.cameraForBounds(
-				map.getDataBoundary(), 30, CardinalDirection.S);
+				scene.getBoundary(), 30, CardinalDirection.S);
 
-		List<VectorXYZ> boundVertices = map.getDataBoundary().polygonXZ().xyz(0).verticesNoDup();
+		List<VectorXYZ> boundVertices = scene.getBoundary().polygonXZ().xyz(0).verticesNoDup();
 		target.drawLineLoop(LINE_COLOR, 1, boundVertices);
 		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(0), boundVertices.get(2));
 		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(1), boundVertices.get(3));

@@ -2,7 +2,6 @@ package org.osm2world.viewer.view.debug;
 
 import static org.osm2world.output.jogl.JOGLRenderingParameters.Winding.CCW;
 
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
@@ -23,18 +22,15 @@ public class WorldObjectView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
-	protected void fillTarget(final JOGLOutput target) {
+	protected void fillTarget(JOGLOutput output) {
 
-		setParameters(target);
-		target.setXZBoundary(map.getBoundary());
-
-		boolean underground = config.getBoolean("renderUnderground", true);
-
-		OutputUtil.renderWorldObjects(target, map, underground);
+		setParameters(output);
+		output.setXZBoundary(scene.getBoundary());
+		output.outputScene(scene, true);
 
 	}
 

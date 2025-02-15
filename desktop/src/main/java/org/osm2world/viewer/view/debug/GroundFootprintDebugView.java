@@ -28,7 +28,7 @@ public class GroundFootprintDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class GroundFootprintDebugView extends DebugView {
 
 		/* draw terrain boundaries */
 
-		forEach(map.getWorldObjects(), o -> {
+		forEach(scene.getWorldObjects(), o -> {
 
 			if (o.getGroundState() == GroundState.ON) {
 

@@ -10,7 +10,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.output.Output;
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.output.povray.POVRayOutput;
 import org.osm2world.viewer.model.Data;
@@ -52,13 +51,10 @@ public class ExportPOVRayAction extends AbstractExportAction {
 					renderOptions.camera.lookAt(),
 					renderOptions.camera.up());
 
-			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
-
 			/* write the file */
 			Output output = new POVRayOutput(file, povRayCamera, renderOptions.projection);
 			output.setConfiguration(data.getConfig());
-			OutputUtil.renderWorldObjects(output, data.getConversionResults().getMapData(), underground);
-			output.finish();
+			output.outputScene(data.getConversionResults());
 
 			messageManager.addMessage("exported POVRay file " + file);
 

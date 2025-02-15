@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 
 import org.osm2world.ConversionFacade;
 import org.osm2world.ConversionFacade.ProgressListener;
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
@@ -20,6 +19,7 @@ import org.osm2world.osm.creation.MbtilesReader;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.osm.data.OSMData;
+import org.osm2world.scene.Scene;
 import org.osm2world.util.functions.Factory;
 
 public class Data extends Observable {
@@ -27,7 +27,7 @@ public class Data extends Observable {
 	private final @Nonnull List<File> configFiles;
 	private O2WConfig config;
 	private File osmFile = null;
-	private Results conversionResults = null;
+	private Scene conversionResults = null;
 
 	public Data(List<File> configFiles, O2WConfig config) {
 		this.configFiles = configFiles;
@@ -114,7 +114,7 @@ public class Data extends Observable {
 		return osmFile;
 	}
 
-	public Results getConversionResults() {
+	public Scene getConversionResults() {
 		return conversionResults;
 	}
 

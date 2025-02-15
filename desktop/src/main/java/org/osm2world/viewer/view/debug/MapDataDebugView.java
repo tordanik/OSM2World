@@ -43,15 +43,16 @@ public class MapDataDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
 		Predicate<MapArea> isEmptyTerrain = it -> it.getTags().contains("surface", EMPTY_SURFACE_VALUE);
+		MapData mapData = scene.getMapData();
 
-		for (MapArea area : map.getMapAreas()) {
+		for (MapArea area : mapData.getMapAreas()) {
 
 			if (isEmptyTerrain.test(area)) continue;
 
@@ -64,25 +65,25 @@ public class MapDataDebugView extends DebugView {
 
 		}
 
-		for (MapWaySegment line : map.getMapWaySegments()) {
+		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			drawArrow(target, LINE_COLOR, 0.7f,
 					line.getStartNode().getPos().xyz(0),
 					line.getEndNode().getPos().xyz(0));
 		}
 
-		for (MapNode node : map.getMapNodes()) {
+		for (MapNode node : mapData.getMapNodes()) {
 			if (node.getId() < 0 && node.getAdjacentAreas().stream().allMatch(isEmptyTerrain)) continue;
 			drawBoxAround(target, node.getPos(), NODE_COLOR, HALF_NODE_WIDTH);
 		}
 
-		for (MapWaySegment line : map.getMapWaySegments()) {
+		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			for (MapIntersectionWW intersection : line.getIntersectionsWW()) {
 				drawBoxAround(target, intersection.pos,
 						INTERSECTION_COLOR, HALF_NODE_WIDTH);
 			}
 		}
 
-		for (MapArea area : map.getMapAreas()) {
+		for (MapArea area : mapData.getMapAreas()) {
 			if (isEmptyTerrain.test(area)) continue;
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				if (overlap instanceof MapOverlapWA overlapWA) {

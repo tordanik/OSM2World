@@ -18,7 +18,7 @@ public class MapDataBoundsDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	private static final Color DATA_BB_COLOR = Color.YELLOW;
@@ -27,10 +27,10 @@ public class MapDataBoundsDebugView extends DebugView {
 	@Override
 	protected void fillTarget(JOGLOutput target) {
 
-		List<VectorXZ> vs = map.getDataBoundary().polygonXZ().vertices();
+		List<VectorXZ> vs = scene.getBoundary().polygonXZ().vertices();
 		target.drawLineLoop(DATA_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
 
-		vs = map.getBoundary().polygonXZ().vertices();
+		vs = scene.getBoundary().polygonXZ().vertices();
 		target.drawLineLoop(FILE_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
 
 	}

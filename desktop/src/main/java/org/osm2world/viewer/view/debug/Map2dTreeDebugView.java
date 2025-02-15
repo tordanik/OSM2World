@@ -2,25 +2,25 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.*;
 
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.Map2dTree;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.Scene;
 
 public class Map2dTreeDebugView extends DebugView {
 
 	private RenderableMap2dTree map2dTree;
 
 	@Override
-	public void setConversionResults(Results conversionResults) {
+	public void setConversionResults(Scene conversionResults) {
 		super.setConversionResults(conversionResults);
 		this.map2dTree = null;
 	}
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public class Map2dTreeDebugView extends DebugView {
 
 		if (map2dTree == null) {
 			map2dTree = new RenderableMap2dTree();
-			for (MapElement e : map.getMapElements()) {
+			for (MapElement e : scene.getMapData().getMapElements()) {
 				map2dTree.insert(e);
 			}
 		}
@@ -40,16 +40,16 @@ public class Map2dTreeDebugView extends DebugView {
 	private class RenderableMap2dTree extends Map2dTree {
 
 		public RenderableMap2dTree() {
-			super(map.getDataBoundary());
+			super(scene.getMapData().getDataBoundary());
 		}
 
 		public void renderTo(JOGLOutput target) {
 
 			renderNodeTo(this.root, target,
-					map.getDataBoundary().minX - 10,
-					map.getDataBoundary().maxX + 10,
-					map.getDataBoundary().minZ - 10,
-					map.getDataBoundary().maxZ + 10,
+					scene.getMapData().getDataBoundary().minX - 10,
+					scene.getMapData().getDataBoundary().maxX + 10,
+					scene.getMapData().getDataBoundary().minZ - 10,
+					scene.getMapData().getDataBoundary().maxZ + 10,
 					1);
 
 		}

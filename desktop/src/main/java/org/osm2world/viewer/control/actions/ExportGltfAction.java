@@ -9,7 +9,6 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.OutputUtil.Compression;
 import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.gltf.GltfOutput.GltfFlavor;
@@ -46,13 +45,10 @@ public class ExportGltfAction extends AbstractExportAction {
 
 		try {
 
-			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
-
 			/* write the file */
 			GltfOutput output = new GltfOutput(file, flavor, Compression.NONE,null);
 			output.setConfiguration(data.getConfig());
-			OutputUtil.renderWorldObjects(output, data.getConversionResults().getMapData(), underground);
-			output.finish();
+			output.outputScene(data.getConversionResults());
 
 			messageManager.addMessage("exported glTF file " + file);
 

@@ -28,7 +28,7 @@ public class EleConstraintDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class EleConstraintDebugView extends DebugView {
 
 		ConstraintSink sink = new ConstraintSink(target);
 
-		for (WorldObject worldObject : map.getWorldObjects()) {
+		for (WorldObject worldObject : scene.getWorldObjects()) {
 			worldObject.defineEleConstraints(sink);
 		}
 

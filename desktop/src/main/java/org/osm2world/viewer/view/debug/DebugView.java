@@ -6,9 +6,7 @@ import static java.util.Collections.emptyList;
 import java.awt.*;
 import java.util.List;
 
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.map_data.data.MapData;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
@@ -20,6 +18,7 @@ import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLOutputFixedFunction;
 import org.osm2world.output.jogl.JOGLOutputShader;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
+import org.osm2world.scene.Scene;
 
 import com.jogamp.opengl.GL;
 
@@ -30,7 +29,7 @@ public abstract class DebugView {
 
 	protected O2WConfig config;
 
-	protected MapData map;
+	protected Scene scene;
 
 	protected Camera camera;
 	protected Projection projection;
@@ -61,9 +60,9 @@ public abstract class DebugView {
 		}
 	}
 
-	public void setConversionResults(Results conversionResults) {
+	public void setConversionResults(Scene conversionResults) {
 
-		this.map = conversionResults.getMapData();
+		this.scene = conversionResults;
 
 		targetNeedsReset = true;
 	}
@@ -74,7 +73,7 @@ public abstract class DebugView {
 	 * non-null values, but subclasses can overwrite it with their own checks.
 	 */
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	/**

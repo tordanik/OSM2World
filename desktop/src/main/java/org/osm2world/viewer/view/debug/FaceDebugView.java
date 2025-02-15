@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.common.FaceOutput;
 import org.osm2world.output.common.material.Material;
 import org.osm2world.output.jogl.JOGLOutput;
@@ -27,7 +26,7 @@ public class FaceDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	private static class FaceSink extends FaceOutput {
@@ -52,10 +51,7 @@ public class FaceDebugView extends DebugView {
 	protected void fillTarget(JOGLOutput target) {
 
 		FaceSink faceSink = new FaceSink();
-
-		OutputUtil.renderWorldObjects(faceSink, map, true);
-
-		faceSink.finish();
+		faceSink.outputScene(scene);
 
 		for (List<VectorXYZ> face : faceSink.faces) {
 			target.drawLineLoop(BORDER_COLOR, 2, face);

@@ -23,13 +23,13 @@ public class EleConnectorDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	protected void fillTarget(JOGLOutput target) {
 
-		for (WorldObject worldObject : map.getWorldObjects()) {
+		for (WorldObject worldObject : scene.getWorldObjects()) {
 			for (EleConnector eleConnector : worldObject.getEleConnectors()) {
 				if (eleConnector.getPosXYZ() == null) {
 					continue; //TODO shouldn't happen

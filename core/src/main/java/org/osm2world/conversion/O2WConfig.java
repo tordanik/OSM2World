@@ -253,6 +253,13 @@ public class O2WConfig {
 	}
 
 	/**
+	 * whether underground {@link org.osm2world.world.data.WorldObject}s should be rendered
+	 */
+	public boolean renderUnderground() {
+		return config.getBoolean("renderUnderground", true);
+	}
+
+	/**
 	 * A value which indicates whether input data should be assumed to be at sea rather than on land.
 	 * This is necessary because coastline ways will often not be within the bounds of a dataset.
 	 * @return  true if the dataset is sea on all sides (it may contain islands as long as they are

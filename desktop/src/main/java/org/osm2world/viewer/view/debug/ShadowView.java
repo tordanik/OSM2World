@@ -2,7 +2,6 @@ package org.osm2world.viewer.view.debug;
 
 import static org.osm2world.output.jogl.JOGLRenderingParameters.Winding.CCW;
 
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLOutputShader;
@@ -24,19 +23,16 @@ public class ShadowView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
-	protected void fillTarget(final JOGLOutput target) {
-		if (target instanceof JOGLOutputShader) {
-			setParameters(target);
-			target.setXZBoundary(map.getBoundary());
-			((JOGLOutputShader)target).setShowShadowPerspective(true);
-
-			boolean underground = config.getBoolean("renderUnderground", true);
-
-			OutputUtil.renderWorldObjects(target, map, underground);
+	protected void fillTarget(JOGLOutput output) {
+		if (output instanceof JOGLOutputShader joglOutput) {
+			setParameters(joglOutput);
+			joglOutput.setXZBoundary(scene.getBoundary());
+			joglOutput.setShowShadowPerspective(true);
+			joglOutput.outputScene(scene, true);
 		}
 	}
 

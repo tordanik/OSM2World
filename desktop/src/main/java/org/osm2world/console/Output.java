@@ -30,7 +30,6 @@ import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.ConversionFacade;
 import org.osm2world.ConversionFacade.Phase;
 import org.osm2world.ConversionFacade.ProgressListener;
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
@@ -54,6 +53,7 @@ import org.osm2world.output.image.ImageOutputFormat;
 import org.osm2world.output.obj.ObjMultiFileOutput;
 import org.osm2world.output.obj.ObjOutput;
 import org.osm2world.output.povray.POVRayOutput;
+import org.osm2world.scene.Scene;
 import org.osm2world.util.Resolution;
 
 import com.google.gson.GsonBuilder;
@@ -102,7 +102,7 @@ final class Output {
 
 			OSMData osmData = CLIArgumentsUtil.getOsmData(sharedArgs);
 
-			Results results = cf.createRepresentations(osmData, null, config, null);
+			Scene scene = cf.createRepresentations(osmData, null, config, null);
 
 			ImageExporter exporter = null;
 
@@ -117,7 +117,7 @@ final class Output {
 
 					/* perspective projection */
 
-					MapProjection proj = results.getMapProjection();
+					MapProjection proj = scene.getMapProjection();
 
 					LatLonEle pos = args.getPviewPos();
 					LatLonEle lookAt = args.getPviewLookat();
@@ -145,14 +145,14 @@ final class Output {
 
 					if (args.isOviewBoundingBox()) {
 						bounds = bbox(args.getOviewBoundingBox().stream()
-								.map(results.getMapProjection()::toXZ)
+								.map(scene.getMapProjection()::toXZ)
 								.collect(toList()));
 					} else if (args.isOviewTiles()) {
-						bounds = OrthographicUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
+						bounds = OrthographicUtil.boundsForTiles(scene.getMapProjection(), args.getOviewTiles());
 					} else if (args.isTile()) {
-						bounds = OrthographicUtil.boundsForTile(results.getMapProjection(), args.getTile());
+						bounds = OrthographicUtil.boundsForTile(scene.getMapProjection(), args.getTile());
 					} else {
-						bounds = results.getMapData().getBoundary();
+						bounds = scene.getBoundary();
 					}
 
 					camera = OrthographicUtil.cameraForBounds(bounds, angle, from);
@@ -174,21 +174,20 @@ final class Output {
 
 						case OBJ: {
 							Integer primitiveThresholdOBJ = config.getInteger("primitiveThresholdOBJ", null);
-							org.osm2world.output.Output output = (primitiveThresholdOBJ == null)
-									? new ObjOutput(outputFile, results.getMapProjection())
-									: new ObjMultiFileOutput(outputFile, results.getMapProjection(), primitiveThresholdOBJ);
+							var output = (primitiveThresholdOBJ == null)
+									? new ObjOutput(outputFile, scene.getMapProjection())
+									: new ObjMultiFileOutput(outputFile, scene.getMapProjection(), primitiveThresholdOBJ);
 							output.setConfiguration(config);
-							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
-							output.finish();
+							output.outputScene(scene);
 						}
 						break;
 
 						case GLTF, GLB, GLTF_GZ, GLB_GZ: {
 							AxisAlignedRectangleXZ bounds;
 							if (args.isTile()) {
-								bounds = OrthographicUtil.boundsForTile(results.getMapProjection(), args.getTile());
+								bounds = OrthographicUtil.boundsForTile(scene.getMapProjection(), args.getTile());
 							} else {
-								bounds = results.getMapData().getBoundary();
+								bounds = scene.getBoundary();
 							}
 							GltfOutput.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
 									? GltfOutput.GltfFlavor.GLB : GltfOutput.GltfFlavor.GLTF;
@@ -196,31 +195,28 @@ final class Output {
 									? Compression.GZ : Compression.NONE;
 							GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression, bounds);
 							output.setConfiguration(config);
-							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
-							output.finish();
+							output.outputScene(scene);
 						}
 						break;
 
 						case POV: {
-							org.osm2world.output.Output output = new POVRayOutput(outputFile, camera, projection);
+							POVRayOutput output = new POVRayOutput(outputFile, camera, projection);
 							output.setConfiguration(config);
-							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
-							output.finish();
+							output.outputScene(scene);
 						}
 						break;
 
 						case WEB_PBF, WEB_PBF_GZ: {
 							AxisAlignedRectangleXZ bbox;
 							if (args.isTile()) {
-								bbox = OrthographicUtil.boundsForTile(results.getMapProjection(), args.getTile());
+								bbox = OrthographicUtil.boundsForTile(scene.getMapProjection(), args.getTile());
 							} else {
-								bbox = results.getMapData().getBoundary();
+								bbox = scene.getBoundary();
 							}
 							Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
-							org.osm2world.output.Output output = new FrontendPbfOutput(outputFile, compression, bbox);
+							FrontendPbfOutput output = new FrontendPbfOutput(outputFile, compression, bbox);
 							output.setConfiguration(config);
-							OutputUtil.renderWorldObjects(output, results.getMapData(), underground);
-							output.finish();
+							output.outputScene(scene);
 						}
 						break;
 
@@ -232,8 +228,8 @@ final class Output {
 							}
 							if (exporter == null) {
 								PerformanceParams performanceParams = determinePerformanceParams(config, argumentsGroup);
-								exporter = ImageExporter.create(config, results.getMapData().getBoundary(),
-										target -> OutputUtil.renderWorldObjects(target, results.getMapData(), true),
+								exporter = ImageExporter.create(config, scene.getBoundary(),
+										output -> output.outputScene(scene),
 										performanceParams.resolution(), performanceParams.unbufferedRendering());
 							}
 							Resolution resolution = CLIArgumentsUtil.getResolution(args);

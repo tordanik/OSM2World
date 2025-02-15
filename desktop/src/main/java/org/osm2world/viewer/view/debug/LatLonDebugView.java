@@ -3,11 +3,11 @@ package org.osm2world.viewer.view.debug;
 import static java.awt.Color.WHITE;
 import static java.lang.Math.*;
 
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.Scene;
 
 /**
  * shows the latitude and longitude grid.
@@ -24,20 +24,20 @@ public class LatLonDebugView extends DebugView {
 	private MapProjection mapProjection = null;
 
 	@Override
-	public void setConversionResults(Results conversionResults) {
+	public void setConversionResults(Scene conversionResults) {
 		super.setConversionResults(conversionResults);
 		mapProjection = conversionResults.getMapProjection();
 	}
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null && mapProjection != null;
+		return scene != null && mapProjection != null;
 	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
-		AxisAlignedRectangleXZ bound = map.getDataBoundary();
+		AxisAlignedRectangleXZ bound = scene.getBoundary();
 
 		double minLon = toDegrees(mapProjection.toLon(new VectorXZ(bound.minX, bound.minZ)));
 		double minLat = toDegrees(mapProjection.toLat(new VectorXZ(bound.minX, bound.minZ)));

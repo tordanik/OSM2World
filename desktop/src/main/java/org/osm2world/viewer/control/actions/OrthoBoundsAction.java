@@ -45,7 +45,7 @@ public class OrthoBoundsAction extends AbstractAction implements Observer {
 	public void actionPerformed(ActionEvent e) {
 
 		AxisAlignedRectangleXZ bounds =
-			data.getConversionResults().getMapData().getDataBoundary();
+			data.getConversionResults().getBoundary();
 
 		renderOptions.camera =
 			OrthographicUtil.cameraForBounds(bounds, 30, CardinalDirection.S);

@@ -13,9 +13,11 @@ import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
 import org.osm2world.GlobalValues;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.output.DrawBasedOutput;
 import org.osm2world.output.common.AbstractOutput;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.common.material.*;
@@ -26,7 +28,7 @@ import org.osm2world.output.common.rendering.Projection;
 /**
  * Writes models to files for the POVRay ray tracer.
  */
-public class POVRayOutput extends AbstractOutput {
+public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 	protected static final float AMBIENT_FACTOR = 0.5f;
 
@@ -38,6 +40,8 @@ public class POVRayOutput extends AbstractOutput {
 	private final PrintStream output;
 
 	private Map<TextureData, String> textureNames = new HashMap<TextureData, String>();
+
+	protected @Nonnull O2WConfig config = new O2WConfig();
 
 	public POVRayOutput(File file, Camera camera, Projection projection) throws FileNotFoundException {
 		this(new PrintStream(file), camera, projection);
@@ -89,6 +93,20 @@ public class POVRayOutput extends AbstractOutput {
 
 		append("\n\n//\n//Map data\n//\n\n");
 
+	}
+
+	@Override
+	public O2WConfig getConfiguration() {
+		return config;
+	}
+
+	@Override
+	public void setConfiguration(O2WConfig config) {
+		if (config != null) {
+			this.config = config;
+		} else {
+			this.config = new O2WConfig();
+		}
 	}
 
 	@Override
@@ -467,7 +485,7 @@ public class POVRayOutput extends AbstractOutput {
 
 		} else { // not round
 
-			super.drawColumn(material, corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop);
+			DrawBasedOutput.super.drawColumn(material, corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop);
 
 		}
 

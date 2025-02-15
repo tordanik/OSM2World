@@ -16,6 +16,7 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.output.Output;
+import org.osm2world.scene.Scene;
 
 /**
  * This is the main class for using OSM2World as a library.
@@ -44,8 +45,11 @@ public class O2WConverter {
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
 	 *                       May be null, in which case a default map projection will be used.
 	 * @param outputs        receivers of the conversion results
+	 * @return               the scene which has been produced as the result of the conversion.
+	 *                       This will already have been written to all outputs,
+	 *                       so you can ignore it unless you want to process it yourself.
 	 */
-	public void convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
+	public Scene convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
 			Output... outputs) throws IOException {
 
 		OSMData osmData = (bounds != null)
@@ -58,7 +62,7 @@ public class O2WConverter {
 			cf.setMapProjectionFactory(origin -> mapProjection);
 		}
 
-		cf.createRepresentations(osmData, null, config, asList(outputs));
+		return cf.createRepresentations(osmData, null, config, asList(outputs));
 
 	}
 
@@ -70,11 +74,14 @@ public class O2WConverter {
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
 	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMData}.
 	 * @param outputs        receivers of the conversion results
+	 * @return               the scene which has been produced as the result of the conversion.
+	 *                       This will already have been written to all outputs,
+	 *                       so you can ignore it unless you want to process it yourself.
 	 */
-	public void convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) throws IOException {
+	public Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) throws IOException {
 
 		var cf = new ConversionFacade();
-		cf.createRepresentations(mapProjection, mapData, null, config, asList(outputs));
+		return cf.createRepresentations(mapProjection, mapData, null, config, asList(outputs));
 
 	}
 

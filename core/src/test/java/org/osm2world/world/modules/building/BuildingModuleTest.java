@@ -10,12 +10,12 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.osm2world.ConversionFacade;
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.scene.Scene;
 
 public class BuildingModuleTest {
 
@@ -26,7 +26,7 @@ public class BuildingModuleTest {
 		File testFile = new File(classLoader.getResource("issue-203.osm").getFile());
 
 		ConversionFacade facade = new ConversionFacade();
-		Results results = facade.createRepresentations(testFile, null, null, null);
+		Scene results = facade.createRepresentations(testFile, null, null, null);
 
 		Collection<MapArea> areas = results.getMapData().getMapAreas();
 		assertEquals(5, areas.size());

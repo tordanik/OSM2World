@@ -15,17 +15,16 @@ import java.util.Optional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.osm2world.ConversionFacade;
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.output.OutputUtil;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.output.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput.Block;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput.SimpleBlock;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput.VectorBlock;
+import org.osm2world.scene.Scene;
 import org.osm2world.test.TestWorldModule;
 
 public class FrontendPbfOutputTest {
@@ -69,14 +68,13 @@ public class FrontendPbfOutputTest {
 		mapDataBuilder.createNode(0, 0);
 
 		ConversionFacade cf = new ConversionFacade();
-		Results results = cf.createRepresentations(null, mapDataBuilder.build(), List.of(new TestWorldModule()), null, null);
+		Scene results = cf.createRepresentations(null, mapDataBuilder.build(), List.of(new TestWorldModule()), null, null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
 
-		FrontendPbfOutput target = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
-		OutputUtil.renderWorldObjects(target, results.getMapData(), true);
-		target.finish();
+		var output = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
+		output.outputScene(results);
 
 	}
 
@@ -89,14 +87,13 @@ public class FrontendPbfOutputTest {
 		mapDataBuilder.createNode(0, 0, TagSet.of("highway", "street_lamp"));
 
 		ConversionFacade cf = new ConversionFacade();
-		Results results = cf.createRepresentations(null, mapDataBuilder.build(), null, null, null);
+		Scene results = cf.createRepresentations(null, mapDataBuilder.build(), null, null, null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
 
-		FrontendPbfOutput target = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
-		OutputUtil.renderWorldObjects(target, results.getMapData(), true);
-		target.finish();
+		var output = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
+		output.outputScene(results);
 
 		try (FileInputStream is = new FileInputStream(outputFile)) {
 

@@ -6,7 +6,6 @@ import java.util.Observer;
 
 import javax.swing.*;
 
-import org.osm2world.map_data.data.MapData;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.rendering.MutableCamera;
@@ -45,9 +44,7 @@ public class ResetCameraAction extends AbstractAction implements Observer {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		MapData mapData = data.getConversionResults().getMapData();
-
-		VectorXZ camLookAt = mapData.getBoundary().center();
+		VectorXZ camLookAt = data.getConversionResults().getBoundary().center();
 
 		renderOptions.camera = new MutableCamera();
 		renderOptions.camera.setCamera(new VectorXYZ(camLookAt.x, 1000, camLookAt.z-1000),

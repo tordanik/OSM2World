@@ -6,7 +6,6 @@ import static org.osm2world.math.VectorXZ.listXYZ;
 
 import java.awt.*;
 
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.MapNode;
@@ -15,6 +14,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.datastructures.MapQuadtree;
 import org.osm2world.math.datastructures.MapQuadtree.QuadLeaf;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.Scene;
 
 public class QuadtreeDebugView extends DebugView {
 
@@ -27,7 +27,7 @@ public class QuadtreeDebugView extends DebugView {
 	private boolean arrowsEnabled = true;
 
 	@Override
-	public void setConversionResults(Results conversionResults) {
+	public void setConversionResults(Scene conversionResults) {
 		super.setConversionResults(conversionResults);
 		this.mapQuadtree = null;
 	}
@@ -38,15 +38,15 @@ public class QuadtreeDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
 		if (mapQuadtree == null) {
-			mapQuadtree = new MapQuadtree(map.getDataBoundary());
-			for (MapElement e : map.getMapElements()) {
+			mapQuadtree = new MapQuadtree(scene.getMapData().getDataBoundary());
+			for (MapElement e : scene.getMapData().getMapElements()) {
 				mapQuadtree.insert(e);
 			}
 		}

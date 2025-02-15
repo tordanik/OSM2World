@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.ConversionFacade.Results;
 import org.osm2world.map_elevation.creation.SRTMData;
 import org.osm2world.map_elevation.creation.TerrainElevationData;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
@@ -21,6 +20,7 @@ import org.osm2world.output.common.material.Material;
 import org.osm2world.output.common.material.Material.Interpolation;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
+import org.osm2world.scene.Scene;
 import org.osm2world.viewer.model.RenderOptions;
 
 public abstract class TerrainInterpolatorDebugView extends DebugView {
@@ -48,11 +48,11 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null && mapProjection != null && config != null && config.srtmDir() != null;
+		return scene != null && mapProjection != null && config != null && config.srtmDir() != null;
 	}
 
 	@Override
-	public void setConversionResults(Results conversionResults) {
+	public void setConversionResults(Scene conversionResults) {
 		super.setConversionResults(conversionResults);
 		mapProjection = conversionResults.getMapProjection();
 	}
@@ -69,9 +69,9 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 			TerrainElevationData eleData = new SRTMData(config.srtmDir(), mapProjection);
 
-			AxisAlignedRectangleXZ bound = map.getDataBoundary();
+			AxisAlignedRectangleXZ bound = scene.getBoundary();
 
-			Collection<VectorXYZ> sites = eleData.getSites(map.getDataBoundary().pad(10));
+			Collection<VectorXYZ> sites = eleData.getSites(scene.getBoundary().pad(10));
 
 			TerrainInterpolator strategy = buildInterpolator();
 			strategy.setKnownSites(sites);

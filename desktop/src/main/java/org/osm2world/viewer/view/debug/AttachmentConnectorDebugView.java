@@ -25,13 +25,13 @@ public class AttachmentConnectorDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null;
+		return scene != null;
 	}
 
 	@Override
 	protected void fillTarget(JOGLOutput target) {
 
-		for (WorldObject object : map.getWorldObjects()) {
+		for (WorldObject object : scene.getWorldObjects()) {
 			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
 
 				if (connector.isAttached()) {
