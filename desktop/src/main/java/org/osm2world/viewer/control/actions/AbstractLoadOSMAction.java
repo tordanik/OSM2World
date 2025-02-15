@@ -6,15 +6,13 @@ import static org.osm2world.viewer.model.Data.BoundingBoxSizeException;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serial;
+import java.util.Map;
 
 import javax.swing.*;
 
 import org.osm2world.conversion.ProgressListener;
-import org.osm2world.map_elevation.creation.EleCalculator;
-import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
@@ -115,12 +113,10 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 
 				try {
 
-					data.loadOSMData(dataReader, failOnLargeBBox,
-							new DefaultFactory<TerrainInterpolator>(
-									renderOptions.getInterpolatorClass()),
-							new DefaultFactory<EleCalculator>(
-									renderOptions.getEleCalculatorClass()),
-							this);
+					data.loadOSMData(dataReader, failOnLargeBBox, this, Map.of(
+							"terrainInterpolator", renderOptions.getInterpolatorClass().getSimpleName(),
+							"eleCalculator", renderOptions.getEleCalculatorClass().getSimpleName()
+					));
 
 					if (resetCamera) {
 						new ResetCameraAction(viewerFrame, data, renderOptions).actionPerformed(null);

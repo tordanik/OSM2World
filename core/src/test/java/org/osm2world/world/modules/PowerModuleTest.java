@@ -1,16 +1,16 @@
 package org.osm2world.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import static org.osm2world.world.modules.PowerModule.RooftopSolarPanels.roughCommonDivisor;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.ConversionFacade;
+import org.osm2world.O2WConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.Tag;
@@ -18,17 +18,15 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.output.Output;
 import org.osm2world.output.common.material.TextureDataDimensions;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.output.statistics.StatisticsOutput.Stat;
-import org.osm2world.world.creation.WorldModule;
 import org.osm2world.world.modules.PowerModule.RooftopSolarPanels.PanelTexCoordFunction;
 
 public class PowerModuleTest {
 
 	@Test
-	public void testRepeatedRendering() {
+	public void testRepeatedRendering() throws IOException {
 
 		/* create fake data */
 
@@ -40,15 +38,10 @@ public class PowerModuleTest {
 
 		/* render to multiple targets */
 
-		ConversionFacade cf = new ConversionFacade();
-
 		StatisticsOutput t1 = new StatisticsOutput();
 		StatisticsOutput t2 = new StatisticsOutput();
 
-		List<Output> outputs = asList(t1, t2);
-		List<WorldModule> modules = singletonList(new PowerModule());
-
-		cf.createRepresentations(null, mapDataBuilder.build(), modules, null, outputs);
+		new O2WConverter().convert(mapDataBuilder.build(), null, t1, t2);
 
 		/* check whether the results are the same each time */
 

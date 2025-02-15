@@ -12,15 +12,12 @@ import javax.annotation.Nonnull;
 import org.osm2world.ConversionFacade;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.conversion.ProgressListener;
-import org.osm2world.map_elevation.creation.EleCalculator;
-import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.osm.creation.GeodeskReader;
 import org.osm2world.osm.creation.MbtilesReader;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.scene.Scene;
-import org.osm2world.util.functions.Factory;
 
 public class Data extends Observable {
 
@@ -56,11 +53,8 @@ public class Data extends Observable {
 		this.setConfig(config);
 	}
 
-	public void loadOSMData(OSMDataReaderView reader, boolean failOnLargeBBox,
-			Factory<? extends TerrainInterpolator> interpolatorFactory,
-			Factory<? extends EleCalculator> eleCalculatorFactory,
-			ProgressListener listener)
-					throws IOException {
+	public void loadOSMData(OSMDataReaderView reader, boolean failOnLargeBBox, ProgressListener listener,
+			Map<String, Object> extraOptions) throws IOException {
 
 		try {
 
@@ -75,8 +69,6 @@ public class Data extends Observable {
 			}
 
 			ConversionFacade converter = new ConversionFacade();
-			converter.setTerrainEleInterpolatorFactory(interpolatorFactory);
-			converter.setEleCalculatorFactory(eleCalculatorFactory);
 
 			converter.addProgressListener(listener);
 
@@ -90,8 +82,13 @@ public class Data extends Observable {
 				}
 			}
 
+			O2WConfig configForLoad = config;
+			for (var entry : extraOptions.entrySet()) {
+				configForLoad = configForLoad.withProperty(entry.getKey(), entry.getValue());
+			}
+
 			// disable LOD restrictions to make all LOD available through the LOD selector
-			O2WConfig configForLoad = config.withProperty("lod", null);
+			configForLoad.withProperty("lod", null);
 
 			conversionResults = converter.createRepresentations(
 					osmData, null, configForLoad, null);

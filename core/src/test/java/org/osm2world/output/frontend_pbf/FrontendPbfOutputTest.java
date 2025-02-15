@@ -13,8 +13,10 @@ import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
-import org.osm2world.ConversionFacade;
+import org.osm2world.O2WConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
+import org.osm2world.map_data.data.MapData;
+import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
@@ -65,16 +67,16 @@ public class FrontendPbfOutputTest {
 		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
 		var mapDataBuilder = new MapDataBuilder();
-		mapDataBuilder.createNode(0, 0);
-
-		ConversionFacade cf = new ConversionFacade();
-		Scene results = cf.createRepresentations(null, mapDataBuilder.build(), List.of(new TestWorldModule()), null, null);
+		MapNode node = mapDataBuilder.createNode(0, 0);
+		MapData mapData = mapDataBuilder.build();
+		node.addRepresentation(new TestWorldModule.TestNodeWorldObject(node));
+		Scene testScene = new Scene(null, mapData);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
 
 		var output = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
-		output.outputScene(results);
+		output.outputScene(testScene);
 
 	}
 
@@ -86,8 +88,7 @@ public class FrontendPbfOutputTest {
 		var mapDataBuilder = new MapDataBuilder();
 		mapDataBuilder.createNode(0, 0, TagSet.of("highway", "street_lamp"));
 
-		ConversionFacade cf = new ConversionFacade();
-		Scene results = cf.createRepresentations(null, mapDataBuilder.build(), null, null, null);
+		Scene results = new O2WConverter().convert(mapDataBuilder.build(), null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();

@@ -7,26 +7,11 @@ import static org.junit.Assert.assertTrue;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
-import static org.osm2world.output.common.compression.Compression.NONE;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.util.List;
-
 import org.junit.Test;
-import org.osm2world.map_data.creation.MapDataBuilder;
-import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.math.geo.LatLon;
-import org.osm2world.math.geo.MapProjection;
-import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.shapes.FaceXYZ;
-import org.osm2world.output.Output;
-import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 
@@ -102,43 +87,6 @@ public class ConversionFacadeTest {
 				assertAlmostEquals(0, 15, 15, connector.getAttachedPos());
 			} else {
 				assertAlmostEquals(0, 10, 10, connector.getAttachedPos());
-			}
-
-		}
-
-	}
-
-	@Test
-	public void testAreasWithDuplicateNodes() {
-
-		List<TagSet> tagSets = List.of(TagSet.of("building", "yes"));
-
-		for (TagSet tagSet : tagSets) {
-
-			var builder = new MapDataBuilder();
-
-			List<MapNode> nodes = List.of(
-					builder.createNode(0, 0),
-					builder.createNode(10, 0),
-					builder.createNode(10, 5),
-					builder.createNode(10, 5),
-					builder.createNode(10, 10),
-					builder.createNode(0, 10));
-			builder.createWayArea(nodes, tagSet);
-
-			MapData mapData = builder.build();
-
-			try {
-
-				File outputFile = Files.createTempFile("o2w-test-", ".gltf").toFile();
-				Output testOutput = new GltfOutput(outputFile, GLTF, NONE, null);
-				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
-				ConversionFacade cf = new ConversionFacade();
-
-				cf.createRepresentations(mapProjection, mapData, null, null, asList(testOutput));
-
-			} catch (Exception e) {
-				throw new AssertionError("Conversion failed for tags: " +  tagSet, e);
 			}
 
 		}

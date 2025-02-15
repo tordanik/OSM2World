@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.osm2world.ConversionFacade;
+import org.osm2world.O2WConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.scene.Scene;
 
 public class BuildingModuleTest {
@@ -25,8 +26,7 @@ public class BuildingModuleTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource("issue-203.osm").getFile());
 
-		ConversionFacade facade = new ConversionFacade();
-		Scene results = facade.createRepresentations(testFile, null, null, null);
+		Scene results = new O2WConverter().convert(new OSMFileReader(testFile), null, null);
 
 		Collection<MapArea> areas = results.getMapData().getMapAreas();
 		assertEquals(5, areas.size());
@@ -74,7 +74,7 @@ public class BuildingModuleTest {
 		), TagSet.of("type", "building"));
 
 		MapData mapData = builder.build();
-		new ConversionFacade().createRepresentations(null, mapData, null, null, null);
+		new O2WConverter().convert(mapData, null);
 
 		if (!(buildingArea.getPrimaryRepresentation() instanceof Building building)) {
 			fail();
@@ -122,7 +122,7 @@ public class BuildingModuleTest {
 		), TagSet.of("type", "building"));
 
 		MapData mapData = builder.build();
-		new ConversionFacade().createRepresentations(null, mapData, null, null, null);
+		new O2WConverter().convert(mapData, null);
 
 		if (!(buildingArea.getPrimaryRepresentation() instanceof Building building)) {
 			fail();
