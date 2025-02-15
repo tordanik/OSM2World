@@ -108,11 +108,16 @@ public final class TexCoordUtil {
 
 	}
 
+	public static final List<List<VectorXZ>> mirroredVertically(List<List<VectorXZ>> texCoordLists) {
+		return texCoordLists.stream().map(list ->
+				list.stream().map(v -> new VectorXZ(v.x, 1.0 - v.z)).toList()).toList();
+	}
+
 	/** returns a horizontally flipped version of a {@link TexCoordFunction} */
 	public static final TexCoordFunction mirroredHorizontally(TexCoordFunction texCoordFunction) {
 		return (List<VectorXYZ> vs) -> {
 			List<VectorXZ> result = texCoordFunction.apply(vs);
-			return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).collect(toList());
+			return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).toList();
 		};
 	}
 

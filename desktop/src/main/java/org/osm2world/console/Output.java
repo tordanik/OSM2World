@@ -40,8 +40,8 @@ import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.osm.data.OSMData;
-import org.osm2world.output.OutputUtil;
-import org.osm2world.output.OutputUtil.Compression;
+import org.osm2world.output.common.compression.Compression;
+import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.output.common.rendering.OrthographicUtil;
 import org.osm2world.output.common.rendering.PerspectiveProjection;
@@ -382,7 +382,7 @@ final class Output {
 
 		Compression compression = Compression.GZ;
 		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
-		OutputUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
+		CompressionUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
 			try (var printStream = new PrintStream(outputStream)) {
 
 				printStream.println("Runtime (seconds):\nTotal: " + totalTime);

@@ -1,33 +1,22 @@
-package org.osm2world.output;
-
-import static java.util.stream.Collectors.toList;
+package org.osm2world.output.common.compression;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.math.VectorXZ;
 import org.osm2world.util.functions.CheckedConsumer;
 
 import com.google.gson.JsonIOException;
 
-public final class OutputUtil {
+public final class CompressionUtil {
 
-	public enum Compression { NONE, ZIP, GZ }
-
-	private OutputUtil() {}
-
-	public static final List<List<VectorXZ>> flipTexCoordsVertically(List<List<VectorXZ>> texCoordLists) {
-		return texCoordLists.stream().map(list ->
-				list.stream().map(v -> new VectorXZ(v.x, 1.0 - v.z)).collect(toList())).collect(toList());
-	}
+	private CompressionUtil() {}
 
 	/**
 	 * writes content to a file and optionally applies a compression

@@ -4,12 +4,13 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
-import static org.osm2world.output.OutputUtil.*;
-import static org.osm2world.output.OutputUtil.Compression.*;
 import static org.osm2world.output.common.MeshStore.*;
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.REFERENCE;
+import static org.osm2world.output.common.compression.Compression.*;
+import static org.osm2world.output.common.compression.CompressionUtil.writeFileWithCompression;
 import static org.osm2world.output.common.material.Material.Interpolation.SMOOTH;
+import static org.osm2world.output.common.texcoord.TexCoordUtil.mirroredVertically;
 import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
 import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 
@@ -34,6 +35,7 @@ import org.osm2world.output.common.MeshOutput;
 import org.osm2world.output.common.MeshStore;
 import org.osm2world.output.common.MeshStore.MergeMeshes.MergeOption;
 import org.osm2world.output.common.ResourceOutputSettings;
+import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.material.Material;
 import org.osm2world.output.common.material.Materials;
 import org.osm2world.output.common.material.TextureData;
@@ -169,7 +171,7 @@ public class GltfOutput extends MeshOutput {
 		List<LColor> colors = triangleGeometry.colors == null ? null
 				: triangleGeometry.colors.stream().map(LColor::fromAWT).toList();
 
-		texCoordLists = flipTexCoordsVertically(texCoordLists); // move texture coordinate origin to the top left
+		texCoordLists = mirroredVertically(texCoordLists); // move texture coordinate origin to the top left
 
 		GltfMesh.Primitive primitive = new GltfMesh.Primitive();
 		gltfMesh.primitives.add(primitive);

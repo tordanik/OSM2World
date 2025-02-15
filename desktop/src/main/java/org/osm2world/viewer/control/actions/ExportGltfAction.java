@@ -9,7 +9,7 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.output.OutputUtil.Compression;
+import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.gltf.GltfOutput.GltfFlavor;
 import org.osm2world.viewer.model.Data;

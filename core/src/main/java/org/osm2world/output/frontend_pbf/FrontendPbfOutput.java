@@ -31,11 +31,11 @@ import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
-import org.osm2world.output.OutputUtil;
-import org.osm2world.output.OutputUtil.Compression;
 import org.osm2world.output.common.MeshOutput;
 import org.osm2world.output.common.MeshStore;
 import org.osm2world.output.common.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
+import org.osm2world.output.common.compression.Compression;
+import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.output.common.material.ImageFileTexture;
 import org.osm2world.output.common.material.Material;
 import org.osm2world.output.common.material.Material.Shadow;
@@ -803,7 +803,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		/* write the protobuf */
 
 		String archiveName = outputFile == null ? null : outputFile.getName();
-		OutputUtil.writeWithCompression(outputStream, compression, archiveName, os -> {
+		CompressionUtil.writeWithCompression(outputStream, compression, archiveName, os -> {
 			try {
 				tileBuilder.build().writeTo(outputStream);
 			} catch (IOException e) {

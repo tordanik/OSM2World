@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.osm2world.math.VectorXZ.*;
-import static org.osm2world.output.OutputUtil.Compression;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,6 +18,7 @@ import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.output.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput.Block;
