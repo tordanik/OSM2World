@@ -69,12 +69,10 @@ public class ConversionFacade {
 
 		private final @Nullable MapProjection mapProjection;
 		private final MapData mapData;
-		private final TerrainElevationData eleData;
 
-		private Results(@Nullable MapProjection mapProjection, MapData mapData, TerrainElevationData eleData) {
+		private Results(@Nullable MapProjection mapProjection, MapData mapData) {
 			this.mapProjection = mapProjection;
 			this.mapData = mapData;
-			this.eleData = eleData;
 		}
 
 		public MapProjection getMapProjection() {
@@ -83,10 +81,6 @@ public class ConversionFacade {
 
 		public MapData getMapData() {
 			return mapData;
-		}
-
-		public TerrainElevationData getEleData() {
-			return eleData;
 		}
 
 	}
@@ -275,14 +269,13 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 
-		File srtmDir = config.resolveFileConfigProperty(config.getString("srtmDir", null));
 		TerrainElevationData eleData = null;
 
-		if (srtmDir != null) {
+		if (config.srtmDir() != null) {
 			if (mapProjection == null) {
 				throw new IllegalArgumentException("Using SRTM data requires a map projection");
 			}
-			eleData = new SRTMData(srtmDir, mapProjection);
+			eleData = new SRTMData(config.srtmDir(), mapProjection);
 		}
 
 		/* create terrain and attach connectors */
@@ -307,7 +300,7 @@ public class ConversionFacade {
 		/* supply results to outputs */
 		updatePhase(Phase.FINISHED);
 
-		return new Results(mapProjection, mapData, eleData);
+		return new Results(mapProjection, mapData);
 
 	}
 

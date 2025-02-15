@@ -9,7 +9,6 @@ import java.util.List;
 import org.osm2world.ConversionFacade.Results;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_elevation.creation.TerrainElevationData;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
@@ -32,7 +31,6 @@ public abstract class DebugView {
 	protected O2WConfig config;
 
 	protected MapData map;
-	protected TerrainElevationData eleData;
 
 	protected Camera camera;
 	protected Projection projection;
@@ -66,7 +64,6 @@ public abstract class DebugView {
 	public void setConversionResults(Results conversionResults) {
 
 		this.map = conversionResults.getMapData();
-		this.eleData = conversionResults.getEleData();
 
 		targetNeedsReset = true;
 	}
@@ -77,8 +74,7 @@ public abstract class DebugView {
 	 * non-null values, but subclasses can overwrite it with their own checks.
 	 */
 	public boolean canBeUsed() {
-		return map != null
-			&& eleData != null;
+		return map != null;
 	}
 
 	/**

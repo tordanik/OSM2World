@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.ConversionFacade.Results;
+import org.osm2world.map_elevation.creation.SRTMData;
+import org.osm2world.map_elevation.creation.TerrainElevationData;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.VectorGridXZ;
@@ -46,7 +48,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null && mapProjection != null && eleData != null;
+		return map != null && mapProjection != null && config != null && config.srtmDir() != null;
 	}
 
 	@Override
@@ -64,6 +66,8 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 
 		try {
+
+			TerrainElevationData eleData = new SRTMData(config.srtmDir(), mapProjection);
 
 			AxisAlignedRectangleXZ bound = map.getDataBoundary();
 

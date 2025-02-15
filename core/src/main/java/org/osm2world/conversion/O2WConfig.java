@@ -262,6 +262,11 @@ public class O2WConfig {
 		return getBoolean("isAtSea", false);
 	}
 
+	/** a directory with SRTM data in .hgt or .hgt.zip format */
+	public @Nullable File srtmDir() {
+		return resolveFileConfigProperty(config.getString("srtmDir", null));
+	}
+
 	/**
 	 * the algorithm to use for interpolating terrain elevation between sites of known elevation
 	 * @return  a function to create an instance of the algorithm
