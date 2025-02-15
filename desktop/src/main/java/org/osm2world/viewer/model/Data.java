@@ -10,8 +10,8 @@ import java.util.Observable;
 import javax.annotation.Nonnull;
 
 import org.osm2world.ConversionFacade;
-import org.osm2world.ConversionFacade.ProgressListener;
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.osm.creation.GeodeskReader;

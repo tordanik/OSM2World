@@ -1,5 +1,6 @@
 package org.osm2world.viewer.control.actions;
 
+import static java.lang.Math.ceil;
 import static org.osm2world.viewer.model.Data.BoundingBoxSizeException;
 
 import java.awt.*;
@@ -8,8 +9,7 @@ import java.io.Serial;
 
 import javax.swing.*;
 
-import org.osm2world.ConversionFacade.Phase;
-import org.osm2world.ConversionFacade.ProgressListener;
+import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.osm.creation.OSMDataReaderView;
@@ -171,33 +171,20 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 		}
 
 		@Override
-		public void updatePhase(Phase newPhase) {
-			switch (newPhase) {
-				case MAP_DATA -> {
-					progressDialog.setProgress(0);
-					progressDialog.setText("1/5: Organize information from .osm file...");
-				}
-				case REPRESENTATION -> {
-					progressDialog.setProgress(20);
-					progressDialog.setText("2/5: Choose visual representations for OSM objects...");
-				}
-				case ELEVATION -> {
-					progressDialog.setProgress(40);
-					progressDialog.setText("3/5: Guess elevations from available information...");
-				}
-				case TERRAIN -> {
-					progressDialog.setProgress(60);
-					progressDialog.setText("4/5: Generate terrain...");
-				}
-				case OUTPUT -> {
-					progressDialog.setProgress(80);
-					progressDialog.setText("5/5: Represent objects by 3D primitives...");
-				}
-				case FINISHED -> {
-					progressDialog.setProgress(99);
-					progressDialog.setText("Conversion complete");
-				}
-			}
+		public void updateProgress(Phase currentPhase, double progress) {
+
+			String text = switch (currentPhase) {
+				case MAP_DATA -> "1/5: Organize information from .osm file...";
+				case REPRESENTATION -> "2/5: Choose visual representations for OSM objects...";
+				case ELEVATION -> "3/5: Guess elevations from available information...";
+				case TERRAIN -> "4/5: Generate terrain...";
+				case OUTPUT -> "5/5: Represent objects by 3D primitives...";
+				case FINISHED -> "Conversion complete";
+			};
+
+			progressDialog.setProgress((int) ceil(progress * 100));
+			progressDialog.setText(text);
+
 		}
 
 	}

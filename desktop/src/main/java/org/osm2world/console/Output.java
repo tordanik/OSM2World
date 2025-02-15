@@ -4,10 +4,10 @@ import static java.lang.Math.*;
 import static java.time.Instant.now;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.ConversionFacade.Phase.*;
 import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
 import static org.osm2world.console.CLIArgumentsUtil.getResolution;
 import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
+import static org.osm2world.conversion.ProgressListener.Phase.*;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
@@ -28,11 +28,11 @@ import javax.annotation.Nullable;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.ConversionFacade;
-import org.osm2world.ConversionFacade.Phase;
-import org.osm2world.ConversionFacade.ProgressListener;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.conversion.ProgressListener;
+import org.osm2world.conversion.ProgressListener.Phase;
 import org.osm2world.map_data.data.MapMetadata;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.CardinalDirection;
@@ -388,7 +388,7 @@ final class Output {
 				printStream.println("Runtime (seconds):\nTotal: " + totalTime);
 
 				if (!timePerPhase.isEmpty()) {
-					for (Phase phase : Phase.values()) {
+					for (Phase phase : ProgressListener.Phase.values()) {
 						if (timePerPhase.containsKey(phase)) {
 							printStream.println(phase + ": " + timePerPhase.get(phase));
 						}
@@ -439,15 +439,17 @@ final class Output {
 		}
 
 		@Override
-		public void updatePhase(Phase newPhase) {
+		public void updateProgress(Phase phase, double progress) {
 
-			phaseStarts.put(newPhase, now());
+			if (phase == currentPhase) return;
+
+			phaseStarts.put(phase, now());
 
 			if (currentPhase != null) {
 				phaseEnds.put(currentPhase, now());
 			}
 
-			currentPhase = newPhase;
+			currentPhase = phase;
 
 		}
 

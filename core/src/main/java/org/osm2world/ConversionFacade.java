@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.ConfigUtil;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_elevation.creation.*;
@@ -187,7 +188,7 @@ public class ConversionFacade {
 		}
 
 		/* create map data from OSM data */
-		updatePhase(Phase.MAP_DATA);
+		updatePhase(ProgressListener.Phase.MAP_DATA);
 
 		var mpFactory = requireNonNullElse(this.mapProjectionFactory, config.mapProjection());
 		MapProjection mapProjection = mpFactory.apply(osmData.getCenter());
@@ -228,7 +229,7 @@ public class ConversionFacade {
 		}
 
 		/* apply world modules */
-		updatePhase(Phase.REPRESENTATION);
+		updatePhase(ProgressListener.Phase.REPRESENTATION);
 
 		if (worldModules == null) {
 			worldModules = createDefaultModuleList(config);
@@ -244,7 +245,7 @@ public class ConversionFacade {
 		moduleManager.addRepresentationsTo(mapData);
 
 		/* determine elevations */
-		updatePhase(Phase.ELEVATION);
+		updatePhase(ProgressListener.Phase.ELEVATION);
 
 		TerrainElevationData eleData = null;
 
@@ -256,13 +257,13 @@ public class ConversionFacade {
 		}
 
 		/* create terrain and attach connectors */
-		updatePhase(Phase.TERRAIN);
+		updatePhase(ProgressListener.Phase.TERRAIN);
 
 		calculateElevations(mapData, eleData, config);
 		attachConnectors(mapData);
 
 		/* convert 3d scene to target representation */
-		updatePhase(Phase.OUTPUT);
+		updatePhase(ProgressListener.Phase.OUTPUT);
 
 		var scene = new Scene(mapProjection, mapData);
 
@@ -274,7 +275,7 @@ public class ConversionFacade {
 		}
 
 		/* supply results to outputs */
-		updatePhase(Phase.FINISHED);
+		updatePhase(ProgressListener.Phase.FINISHED);
 
 		return scene;
 
@@ -420,45 +421,17 @@ public class ConversionFacade {
 
 	}
 
-	public enum Phase {
-		MAP_DATA,
-		REPRESENTATION,
-		ELEVATION,
-		TERRAIN,
-		OUTPUT,
-		FINISHED
-	}
-
-	/**
-	 * implemented by classes that want to be informed about
-	 * a conversion run's progress
-	 */
-	public static interface ProgressListener {
-
-		/** announces the start of a new phase */
-		public void updatePhase(Phase newPhase);
-
-//		/** announces the fraction of the current phase that is completed */
-//		public void updatePhaseProgress(float phaseProgress);
-
-	}
-
-	private List<ProgressListener> listeners = new ArrayList<ProgressListener>();
+	private final List<ProgressListener> listeners = new ArrayList<>();
 
 	public void addProgressListener(ProgressListener listener) {
 		listeners.add(listener);
 	}
 
-	private void updatePhase(Phase newPhase) {
+	private void updatePhase(ProgressListener.Phase newPhase) {
 		for (ProgressListener listener : listeners) {
-			listener.updatePhase(newPhase);
+			double progress = newPhase.ordinal() * 1.0 / (ProgressListener.Phase.values().length - 1);
+			listener.updateProgress(newPhase, progress);
 		}
 	}
-
-//	private void updatePhaseProgress(float phaseProgress) {
-//		for (ProgressListener listener : listeners) {
-//			listener.updatePhaseProgress(phaseProgress);
-//		}
-//	}
 
 }

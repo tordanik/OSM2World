@@ -3,10 +3,13 @@ package org.osm2world;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_elevation.creation.SRTMData;
@@ -27,6 +30,7 @@ import org.osm2world.scene.Scene;
 public class O2WConverter {
 
 	private O2WConfig config = new O2WConfig();
+	private final List<ProgressListener> listeners = new ArrayList<>();
 
 	/**
 	 * sets an {@link O2WConfig} object with settings that controls various aspects of OSM2World.
@@ -34,6 +38,13 @@ public class O2WConverter {
 	 */
 	public void setConfig(O2WConfig config) {
 		this.config = config;
+	}
+
+	/**
+	 * registers a progress listener which will receive updates about the progress of a <code>convert</code> call
+	 */
+	public void addProgressListener(ProgressListener listener) {
+		listeners.add(listener);
 	}
 
 	/**
@@ -57,6 +68,7 @@ public class O2WConverter {
 			: osmDataReader.getAllData();
 
 		var cf = new ConversionFacade();
+		listeners.forEach(cf::addProgressListener);
 
 		if (mapProjection != null) {
 			cf.setMapProjectionFactory(origin -> mapProjection);
@@ -81,6 +93,8 @@ public class O2WConverter {
 	public Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) throws IOException {
 
 		var cf = new ConversionFacade();
+		listeners.forEach(cf::addProgressListener);
+
 		return cf.createRepresentations(mapProjection, mapData, null, config, asList(outputs));
 
 	}
