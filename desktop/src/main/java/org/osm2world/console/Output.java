@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
-import org.osm2world.ConversionFacade;
+import org.osm2world.O2WConverter;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
@@ -39,7 +39,7 @@ import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.osm.data.OSMData;
+import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.output.common.rendering.MutableCamera;
@@ -97,12 +97,13 @@ final class Output {
 				config = config.withProperty("isAtSea", true);
 			}
 
-			ConversionFacade cf = new ConversionFacade();
-			cf.addProgressListener(perfListener);
+			var converter = new O2WConverter();
+			converter.setConfig(config);
+			converter.addProgressListener(perfListener);
 
-			OSMData osmData = CLIArgumentsUtil.getOsmData(sharedArgs);
+			OSMDataReaderView osmReaderView = CLIArgumentsUtil.getOsmDataView(sharedArgs);
 
-			Scene scene = cf.createRepresentations(osmData, null, config, null);
+			Scene scene = converter.convert(osmReaderView, null, null);
 
 			ImageExporter exporter = null;
 

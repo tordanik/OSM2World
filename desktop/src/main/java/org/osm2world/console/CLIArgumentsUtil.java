@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.osm.creation.*;
-import org.osm2world.osm.data.OSMData;
 import org.osm2world.util.Resolution;
 
 import com.lexicalscope.jewel.cli.CliFactory;
@@ -252,18 +251,18 @@ public final class CLIArgumentsUtil {
 
 	}
 
-	public static OSMData getOsmData(CLIArguments args) throws IOException {
+	public static OSMDataReaderView getOsmDataView(CLIArguments args) throws IOException {
 
 		OSMDataReader dataReader = CLIArgumentsUtil.getOsmDataReader(args);
 
 		if (args.isInputBoundingBox()) {
-			return dataReader.getData(LatLonBounds.ofPoints(args.getInputBoundingBox()));
+			return new OSMDataReaderView(dataReader, LatLonBounds.ofPoints(args.getInputBoundingBox()));
 		} else if (args.isTile()) {
-			return dataReader.getData(args.getTile());
+			return new OSMDataReaderView(dataReader, args.getTile());
 		} else if (args.isInputQuery() && dataReader instanceof OverpassReader overpassReader) {
-			return overpassReader.getData(args.getInputQuery());
+			return new OSMDataReaderView(overpassReader, args.getInputQuery());
 		} else {
-			return dataReader.getAllData();
+			return new OSMDataReaderView(dataReader);
 		}
 
 	}

@@ -9,14 +9,14 @@ import java.util.Observable;
 
 import javax.annotation.Nonnull;
 
-import org.osm2world.ConversionFacade;
+import org.osm2world.O2WConverter;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.conversion.ProgressListener;
+import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.osm.creation.GeodeskReader;
 import org.osm2world.osm.creation.MbtilesReader;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.osm.creation.OSMFileReader;
-import org.osm2world.osm.data.OSMData;
 import org.osm2world.scene.Scene;
 
 public class Data extends Observable {
@@ -68,16 +68,15 @@ public class Data extends Observable {
 				this.osmFile = null;
 			}
 
-			ConversionFacade converter = new ConversionFacade();
+			var converter = new O2WConverter();
 
 			converter.addProgressListener(listener);
 
-			OSMData osmData = reader.getAllData();
-
 			if (failOnLargeBBox) {
 				double maxBoundingBoxDegrees = 1;
-				if (osmData.getLatLonBounds().sizeLat() > maxBoundingBoxDegrees
-						|| osmData.getLatLonBounds().sizeLon() > maxBoundingBoxDegrees) {
+				LatLonBounds bounds = reader.getBounds();
+				if (bounds.sizeLat() > maxBoundingBoxDegrees
+						|| bounds.sizeLon() > maxBoundingBoxDegrees) {
 					throw new BoundingBoxSizeException();
 				}
 			}
@@ -90,8 +89,9 @@ public class Data extends Observable {
 			// disable LOD restrictions to make all LOD available through the LOD selector
 			configForLoad.withProperty("lod", null);
 
-			conversionResults = converter.createRepresentations(
-					osmData, null, configForLoad, null);
+			converter.setConfig(configForLoad);
+
+			conversionResults = converter.convert(reader, null, null);
 
 		} catch (IOException | BoundingBoxSizeException e) {
 
