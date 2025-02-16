@@ -15,7 +15,7 @@ import org.osm2world.math.shapes.FaceXYZ;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 
-public class ConversionFacadeTest {
+public class O2WConverterImplTest {
 
 	@Test
 	public void testAttachConnectorToHorizontalSurface() {
@@ -29,7 +29,7 @@ public class ConversionFacadeTest {
 				new VectorXYZ(0, 2, 1),
 				null, 0, false);
 
-		ConversionFacade.attachConnectorIfValid(connector, surface);
+		O2WConverterImpl.attachConnectorIfValid(connector, surface);
 
 		assertTrue(connector.isAttached());
 		assertSame(surface, connector.getAttachedSurface());
@@ -52,7 +52,7 @@ public class ConversionFacadeTest {
 					new VectorXYZ(0, 10, 1),
 					null, preferredHeight, true);
 
-			ConversionFacade.attachConnectorIfValid(connector, surface);
+			O2WConverterImpl.attachConnectorIfValid(connector, surface);
 
 			assertTrue(connector.isAttached());
 			assertSame(surface, connector.getAttachedSurface());
@@ -77,7 +77,7 @@ public class ConversionFacadeTest {
 					new VectorXYZ(0, 20, 10),
 					null, 20, changeXZ);
 
-			ConversionFacade.attachConnectorIfValid(connector, surface);
+			O2WConverterImpl.attachConnectorIfValid(connector, surface);
 
 			assertTrue(connector.isAttached());
 			assertSame(surface, connector.getAttachedSurface());

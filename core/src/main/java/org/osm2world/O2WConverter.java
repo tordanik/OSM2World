@@ -1,7 +1,5 @@
 package org.osm2world;
 
-import static java.util.Arrays.asList;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +15,6 @@ import org.osm2world.math.geo.GeoBounds;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.osm.creation.OSMDataReader;
-import org.osm2world.osm.data.OSMData;
 import org.osm2world.output.Output;
 import org.osm2world.scene.Scene;
 
@@ -49,6 +46,7 @@ public class O2WConverter {
 
 	/**
 	 * converts data from an {@link OSMDataReader} into a 3D scene
+	 * and optionally writes it to one or more {@link Output}s.
 	 *
 	 * @param osmDataReader  input data source
 	 * @param bounds         the geographic region to convert. This can be null if all data from the data source should
@@ -63,23 +61,17 @@ public class O2WConverter {
 	public Scene convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
 			Output... outputs) throws IOException {
 
-		OSMData osmData = (bounds != null)
-			? osmDataReader.getData(bounds.latLonBounds())
-			: osmDataReader.getAllData();
-
-		var cf = new ConversionFacade();
-		listeners.forEach(cf::addProgressListener);
-
-		if (mapProjection != null) {
-			cf.setMapProjectionFactory(origin -> mapProjection);
+		if (osmDataReader == null) {
+			throw new IllegalArgumentException("osmDataReader is required");
 		}
 
-		return cf.createRepresentations(osmData, null, config, asList(outputs));
+		return new O2WConverterImpl(config, listeners).convert(osmDataReader, bounds, mapProjection, outputs);
 
 	}
 
 	/**
-	 * converts {@link MapData} into a 3D scene.
+	 * converts {@link MapData} into a 3D scene
+	 * and optionally writes it to one or more {@link Output}s.
 	 *
 	 * @param mapData        input data. Usually converted from some input data source
 	 *                       or created with {@link MapDataBuilder}.
@@ -92,10 +84,11 @@ public class O2WConverter {
 	 */
 	public Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) throws IOException {
 
-		var cf = new ConversionFacade();
-		listeners.forEach(cf::addProgressListener);
+		if (mapData == null) {
+			throw new IllegalArgumentException("mapData is required");
+		}
 
-		return cf.createRepresentations(mapProjection, mapData, null, config, asList(outputs));
+		return new O2WConverterImpl(config, listeners).convert(mapData, mapProjection, outputs);
 
 	}
 
