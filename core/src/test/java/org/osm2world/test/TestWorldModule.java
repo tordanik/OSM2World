@@ -4,10 +4,15 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.osm2world.output.common.material.Materials.PLASTIC;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.output.common.mesh.Mesh;
 import org.osm2world.output.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -25,8 +30,15 @@ public class TestWorldModule extends AbstractModule {
 
 	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		public TestNodeWorldObject(MapNode node) {
+		private final @Nullable Mesh mesh;
+
+		public TestNodeWorldObject(MapNode node, @Nullable Mesh mesh) {
 			super(node);
+			this.mesh = mesh;
+		}
+
+		public TestNodeWorldObject(MapNode node) {
+			this(node, null);
 		}
 
 		@Override
@@ -44,6 +56,14 @@ public class TestWorldModule extends AbstractModule {
 
 		}
 
+		@Override
+		public List<Mesh> buildMeshes() {
+			if (mesh == null) {
+				return ProceduralWorldObject.super.buildMeshes();
+			} else {
+				return singletonList(mesh);
+			}
+		}
 	}
 
 }

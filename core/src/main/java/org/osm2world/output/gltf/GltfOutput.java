@@ -31,7 +31,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.output.common.MeshOutput;
+import org.osm2world.output.common.AbstractOutput;
 import org.osm2world.output.common.MeshStore;
 import org.osm2world.output.common.MeshStore.MergeMeshes.MergeOption;
 import org.osm2world.output.common.ResourceOutputSettings;
@@ -48,6 +48,7 @@ import org.osm2world.output.gltf.data.GltfMaterial.NormalTextureInfo;
 import org.osm2world.output.gltf.data.GltfMaterial.OcclusionTextureInfo;
 import org.osm2world.output.gltf.data.GltfMaterial.PbrMetallicRoughness;
 import org.osm2world.output.gltf.data.GltfMaterial.TextureInfo;
+import org.osm2world.scene.Scene;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.color.LColor;
 
@@ -58,7 +59,7 @@ import com.google.gson.JsonIOException;
 /**
  * builds a glTF or glb (binary glTF) output file
  */
-public class GltfOutput extends MeshOutput {
+public class GltfOutput extends AbstractOutput {
 
 	public enum GltfFlavor { GLTF, GLB }
 
@@ -117,20 +118,22 @@ public class GltfOutput extends MeshOutput {
 
 	@Override
 	public String toString() {
-		return "GltfTarget(" + outputFile + ")";
+		return "GltfOutput(" + outputFile + ")";
 	}
 
 	@Override
-	public void finish() {
+	public void outputScene(Scene scene) {
+
+		MeshStore meshStore = new MeshStore(scene.getMeshesWithMetadata());
 
 		writeFileWithCompression(outputFile, compression, outputStream -> {
 
 			try {
 				if (flavor == GltfFlavor.GLTF) {
-					writeJson(outputStream);
+					writeJson(meshStore, outputStream);
 				} else {
 					try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
-						writeJson(jsonChunkOutputStream);
+						writeJson(meshStore, jsonChunkOutputStream);
 						ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
 						writeGlb(outputStream, jsonChunkData, binChunkData);
 					}
@@ -404,7 +407,7 @@ public class GltfOutput extends MeshOutput {
 	 * constructs the JSON document after all parts of the glTF have been created
 	 * and outputs it to an {@link OutputStream}
 	 */
-	private void writeJson(OutputStream outputStream) throws IOException {
+	private void writeJson(MeshStore meshStore, OutputStream outputStream) throws IOException {
 
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
 		boolean clipToBounds = config.getBoolean("clipToBounds", false);

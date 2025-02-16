@@ -6,7 +6,13 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.osm2world.map_data.creation.MapDataBuilder;
+import org.osm2world.map_data.data.MapNode;
 import org.osm2world.output.common.material.Materials;
+import org.osm2world.output.common.mesh.ExtrusionGeometry;
+import org.osm2world.output.common.mesh.Mesh;
+import org.osm2world.scene.Scene;
+import org.osm2world.test.TestWorldModule;
 
 public class GltfOutputTest {
 
@@ -45,10 +51,18 @@ public class GltfOutputTest {
 		File tempFile = File.createTempFile("osm2world-test-", fileExtension);
 		tempFile.deleteOnExit();
 
-		var target = new GltfOutput(tempFile);
+		var mesh = new Mesh(ExtrusionGeometry.createColumn(
+				null, NULL_VECTOR, 10, 2, 0, true, false, null,
+						Materials.STEEL.getTextureDimensions()), Materials.STEEL);
 
-		target.drawColumn(Materials.STEEL, null, NULL_VECTOR, 10, 2,0, true, false);
-		target.finish();
+		MapDataBuilder dataBuilder = new MapDataBuilder();
+		MapNode node = dataBuilder.createNode(0, 0);
+		node.addRepresentation(new TestWorldModule.TestNodeWorldObject(node, mesh));
+
+		Scene scene = new Scene(null, dataBuilder.build());
+
+		var target = new GltfOutput(tempFile);
+		target.outputScene(scene);
 
 	}
 

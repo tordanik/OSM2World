@@ -101,11 +101,11 @@ public class MeshStore {
 	}
 
 	public List<Mesh> meshes() {
-		return meshes.stream().map(m -> m.mesh).collect(toList());
+		return meshes.stream().map(m -> m.mesh).toList();
 	}
 
 	public List<MeshWithMetadata> meshesWithMetadata() {
-		return meshes;
+		return new ArrayList<>(meshes);
 	}
 
 	public Multimap<MeshMetadata, Mesh> meshesByMetadata() {

@@ -8,6 +8,7 @@ import org.osm2world.map_data.data.MapData;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.common.MeshOutput;
+import org.osm2world.output.common.MeshStore;
 import org.osm2world.output.common.mesh.Mesh;
 import org.osm2world.world.data.WorldObject;
 
@@ -22,8 +23,8 @@ public final class Scene {
 	private final @Nullable MapProjection mapProjection;
 	private final MapData mapData;
 
-	/** caches the result of {@link #getMeshes()} */
-	private List<Mesh> meshes = null;
+	/** caches the result of {@link #getMeshes()} and {@link #getMeshesWithMetadata()} */
+	private MeshStore meshStore = null;
 
 	public Scene(@Nullable MapProjection mapProjection, MapData mapData) {
 		this.mapProjection = mapProjection;
@@ -69,12 +70,24 @@ public final class Scene {
 	 * returns the {@link Mesh}es of all world objects
 	 */
 	public List<Mesh> getMeshes() {
-		if (this.meshes == null) {
+		loadMeshStore();
+		return this.meshStore.meshes();
+	}
+
+	/**
+	 * returns the same meshes as {@link #getMeshes()}, but includes metadata
+	 */
+	public List<MeshStore.MeshWithMetadata> getMeshesWithMetadata() {
+		loadMeshStore();
+		return this.meshStore.meshesWithMetadata();
+	}
+
+	private void loadMeshStore() {
+		if (this.meshStore == null) {
 			var output = new MeshOutput();
 			output.outputScene(this);
-			this.meshes = output.getMeshes();
+			this.meshStore = new MeshStore(output.getMeshesWithMetadata());
 		}
-		return this.meshes;
 	}
 
 }

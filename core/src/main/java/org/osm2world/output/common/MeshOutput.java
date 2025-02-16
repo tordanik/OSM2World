@@ -39,4 +39,8 @@ public class MeshOutput extends AbstractOutput implements DrawBasedOutput {
 		return meshStore.meshes();
 	}
 
+	public List<MeshStore.MeshWithMetadata> getMeshesWithMetadata() {
+		return meshStore.meshesWithMetadata();
+	}
+
 }
