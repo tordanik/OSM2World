@@ -1,19 +1,29 @@
 package org.osm2world;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.ceil;
+import static java.time.Instant.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
 import static java.util.Objects.requireNonNullElse;
+import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
+import static org.osm2world.conversion.ProgressListener.Phase.FINISHED;
+import static org.osm2world.conversion.ProgressListener.Phase.values;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.io.PrintStream;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -36,6 +46,8 @@ import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.output.Output;
+import org.osm2world.output.common.compression.Compression;
+import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.output.common.material.Materials;
 import org.osm2world.output.common.model.Models;
 import org.osm2world.scene.Scene;
@@ -50,7 +62,11 @@ import org.osm2world.world.modules.building.BuildingModule;
 import org.osm2world.world.modules.building.indoor.IndoorModule;
 import org.osm2world.world.modules.traffic_sign.TrafficSignModule;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
@@ -74,34 +90,44 @@ class O2WConverterImpl {
 	Scene convert(OSMDataReader osmDataReader, GeoBounds bounds, MapProjection mapProjection, Output[] outputs)
 			throws IOException{
 
-		/* load OSM data */
-
-		updatePhase(ProgressListener.Phase.MAP_DATA);
-
-		OSMData osmData;
-
-		if (bounds instanceof TileNumber tile) {
-			osmData = osmDataReader.getData(tile);
-		} else if (bounds != null) {
-			osmData = osmDataReader.getData(bounds.latLonBounds());
-		} else {
-			osmData = osmDataReader.getAllData();
-		}
-
-		/* create map data from OSM data */
-
-		mapProjection = requireNonNullElse(mapProjection, config.mapProjection().apply(osmData.getCenter()));
-
-		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
+		setUpLogging();
+		var perfListener = new PerformanceListener();
 
 		try {
 
+			/* load OSM data */
+
+			updatePhase(perfListener, ProgressListener.Phase.MAP_DATA);
+
+			OSMData osmData;
+
+			if (bounds instanceof TileNumber tile) {
+				osmData = osmDataReader.getData(tile);
+			} else if (bounds != null) {
+				osmData = osmDataReader.getData(bounds.latLonBounds());
+			} else {
+				osmData = osmDataReader.getAllData();
+			}
+
+			/* create map data from OSM data */
+
+			mapProjection = requireNonNullElse(mapProjection, config.mapProjection().apply(osmData.getCenter()));
+
+			OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
+
 			MapData mapData = converter.createMapData(osmData, config);
 
-			return this.convert(mapData, mapProjection, outputs);
+			return this.runConversion(mapData, mapProjection, outputs, perfListener);
 
 		} catch (EntityNotFoundException e) {
+			ConversionLog.log(FATAL, "Conversion failed", e, null);
 			throw new IOException(e);
+		} catch (Exception e) {
+			ConversionLog.log(FATAL, "Conversion failed", e, null);
+			throw e;
+		} finally {
+			String fileNameSuffix = bounds instanceof TileNumber tile ? tile.toString("_") : null;
+			writeLogs(fileNameSuffix, perfListener, config);
 		}
 
 	}
@@ -111,22 +137,41 @@ class O2WConverterImpl {
 	 */
 	Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output[] outputs) {
 
+		setUpLogging();
+		var perfListener = new PerformanceListener();
+
+		try {
+
+			return runConversion(mapData, mapProjection, outputs, perfListener);
+
+		} catch (Exception e) {
+			ConversionLog.log(FATAL, "Conversion failed", e, null);
+			throw e;
+		} finally {
+			writeLogs(null, perfListener, config);
+		}
+
+	}
+
+	private Scene runConversion(MapData mapData, MapProjection mapProjection, Output[] outputs,
+			PerformanceListener perfListener) {
+
 		outputs = requireNonNullElse(outputs, new Output[0]);
 
 		/* apply world modules */
-		updatePhase(ProgressListener.Phase.REPRESENTATION);
+		updatePhase(perfListener, ProgressListener.Phase.REPRESENTATION);
 
 		ConfigUtil.parseFonts(config);
 		Materials.configureMaterials(config);
 		Models.configureModels(config);
-			//this will cause problems if multiple conversions are run
-			//at the same time, because global variables are being modified
+		//this will cause problems if multiple conversions are run
+		//at the same time, because global variables are being modified
 
 		WorldCreator moduleManager = new WorldCreator(config, createModuleList(config));
 		moduleManager.addRepresentationsTo(mapData);
 
 		/* determine elevations */
-		updatePhase(ProgressListener.Phase.ELEVATION);
+		updatePhase(perfListener, ProgressListener.Phase.ELEVATION);
 
 		TerrainElevationData eleData = null;
 
@@ -138,13 +183,13 @@ class O2WConverterImpl {
 		}
 
 		/* create terrain and attach connectors */
-		updatePhase(ProgressListener.Phase.TERRAIN);
+		updatePhase(perfListener, ProgressListener.Phase.TERRAIN);
 
 		calculateElevations(mapData, eleData, config);
 		attachConnectors(mapData);
 
 		/* convert 3d scene to target representation */
-		updatePhase(ProgressListener.Phase.OUTPUT);
+		updatePhase(perfListener, ProgressListener.Phase.OUTPUT);
 
 		var scene = new Scene(mapProjection, mapData);
 
@@ -155,7 +200,7 @@ class O2WConverterImpl {
 			output.outputScene(scene);
 		}
 
-		updatePhase(ProgressListener.Phase.FINISHED);
+		updatePhase(perfListener, ProgressListener.Phase.FINISHED);
 
 		return scene;
 
@@ -338,11 +383,149 @@ class O2WConverterImpl {
 
 	}
 
-	private void updatePhase(ProgressListener.Phase newPhase) {
-		for (ProgressListener listener : listeners) {
-			double progress = newPhase.ordinal() * 1.0 / (ProgressListener.Phase.values().length - 1);
+	private void updatePhase(PerformanceListener perfListener, ProgressListener.Phase newPhase) {
+		double progress = newPhase.ordinal() * 1.0 / (ProgressListener.Phase.values().length - 1);
+		for (ProgressListener listener : Iterables.concat(listeners, List.of(perfListener))) {
 			listener.updateProgress(newPhase, progress);
 		}
+	}
+
+	private void setUpLogging() {
+
+		// clear ConversionLog (might have entries from previous convert runs on the same thread)
+		ConversionLog.clear();
+
+		if (config.logDir() != null) {
+			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
+		} else {
+			ConversionLog.setConsoleLogLevels(EnumSet.allOf(ConversionLog.LogLevel.class));
+		}
+
+	}
+
+	private static void writeLogs(@Nullable String fileNameSuffix, PerformanceListener perfListener, O2WConfig config) {
+
+		@Nullable File logDir = config.logDir();
+
+		if (logDir == null) return;
+
+		logDir.mkdirs();
+
+		fileNameSuffix = Objects.requireNonNullElse(fileNameSuffix,
+				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm_ss")));
+		String fileNameBase = "osm2world_log_" + fileNameSuffix;
+
+		double totalTime = Duration.between(perfListener.startTime, now()).toMillis() / 1000.0;
+
+		Map<ProgressListener.Phase, Double> timePerPhase;
+		if (perfListener.currentPhase == FINISHED) {
+			var phaseDurations = perfListener.getPhaseDurations();
+			timePerPhase = Maps.transformValues(phaseDurations, it -> it.toMillis() / 1000.0);
+		} else {
+			timePerPhase = Map.of();
+		}
+
+		/* write a json file with performance stats */
+
+		try (FileWriter writer = new FileWriter(logDir.toPath().resolve(fileNameBase + ".json").toFile())) {
+
+			Map<String, Object> jsonRoot = Map.of(
+					"startTime", perfListener.startTime.toString(),
+					"totalTime", totalTime,
+					"timePerPhase", timePerPhase
+			);
+
+			new GsonBuilder().setPrettyPrinting().create().toJson(jsonRoot, writer);
+
+		} catch (JsonIOException | IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		/* write a gz-compressed text file with the error log */
+
+		Compression compression = Compression.GZ;
+		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
+		CompressionUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
+			try (var printStream = new PrintStream(outputStream)) {
+
+				printStream.println("Runtime (seconds):\nTotal: " + totalTime);
+
+				if (!timePerPhase.isEmpty()) {
+					for (ProgressListener.Phase phase : values()) {
+						if (timePerPhase.containsKey(phase)) {
+							printStream.println(phase + ": " + timePerPhase.get(phase));
+						}
+					}
+				}
+
+				printStream.println();
+
+				List<ConversionLog.Entry> entries = ConversionLog.getLog();
+				int maxLogEntries = config.getInt("maxLogEntries", 100);
+
+				if (entries.size() <= maxLogEntries) {
+					entries.forEach(printStream::println);
+				} else {
+					IntStream.range(0, maxLogEntries / 2)
+							.mapToObj(entries::get).forEach(printStream::println);
+					printStream.println("\n...\n");
+					IntStream.range(entries.size() - (int)ceil(maxLogEntries / 2.0), entries.size())
+							.mapToObj(entries::get).forEach(printStream::println);
+				}
+
+			}
+		});
+
+	}
+
+	private static class PerformanceListener implements ProgressListener {
+
+		public final Instant startTime = Instant.now();
+
+		private @Nullable Phase currentPhase = null;
+
+		private final Map<Phase, Instant> phaseStarts = new HashMap<>();
+		private final Map<Phase, Instant> phaseEnds = new HashMap<>();
+
+		public Instant getPhaseStart(Phase phase) {
+			if (!phaseStarts.containsKey(phase)) throw new IllegalStateException();
+			return phaseStarts.get(phase);
+		}
+
+		public Instant getPhaseEnd(Phase phase) {
+			if (!phaseEnds.containsKey(phase)) throw new IllegalStateException();
+			return phaseEnds.get(phase);
+		}
+
+		public Duration getPhaseDuration(Phase phase) {
+			return Duration.between(getPhaseStart(phase), getPhaseEnd(phase));
+		}
+
+		public Map<Phase, Duration> getPhaseDurations() {
+			Map<Phase, Duration> durations = new HashMap<>();
+			for (Phase phase : phaseStarts.keySet()) {
+				if (phase != FINISHED) {
+					durations.put(phase, getPhaseDuration(phase));
+				}
+			}
+			return durations;
+		}
+
+		@Override
+		public void updateProgress(Phase phase, double progress) {
+
+			if (phase == currentPhase) return;
+
+			phaseStarts.put(phase, now());
+
+			if (currentPhase != null) {
+				phaseEnds.put(currentPhase, now());
+			}
+
+			currentPhase = phase;
+
+		}
+
 	}
 
 }

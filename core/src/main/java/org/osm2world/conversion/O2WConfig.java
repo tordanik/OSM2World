@@ -269,6 +269,13 @@ public class O2WConfig {
 		return getBoolean("isAtSea", false);
 	}
 
+	/**
+	 * output directory for log files
+	 */
+	public @Nullable File logDir() {
+		return resolveFileConfigProperty(config.getString("logDir", null));
+	}
+
 	/** a directory with SRTM data in .hgt or .hgt.zip format */
 	public @Nullable File srtmDir() {
 		return resolveFileConfigProperty(config.getString("srtmDir", null));

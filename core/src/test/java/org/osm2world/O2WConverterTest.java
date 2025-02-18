@@ -1,13 +1,17 @@
 package org.osm2world;
 
+import static org.junit.Assert.assertTrue;
 import static org.osm2world.output.common.compression.Compression.NONE;
 import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
@@ -54,6 +58,24 @@ public class O2WConverterTest {
 			}
 
 		}
+
+	}
+
+	@Test
+	public void testLogging() throws IOException {
+
+		File tempDir = Files.createTempDirectory("o2w-temp-logging-").toFile();
+		tempDir.deleteOnExit();
+
+		var builder = new MapDataBuilder();
+		builder.createNode(0, 0, TagSet.of("amenity", "bench"));
+
+		O2WConverter o2w = new O2WConverter();
+		o2w.setConfig(new O2WConfig(Map.of("logDir", tempDir.getAbsolutePath())));
+		o2w.convert(builder.build(), null);
+
+		File[] logFiles = tempDir.listFiles();
+		assertTrue(logFiles != null && logFiles.length > 0);
 
 	}
 
