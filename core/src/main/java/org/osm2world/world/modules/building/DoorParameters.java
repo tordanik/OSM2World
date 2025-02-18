@@ -2,7 +2,7 @@ package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
 import static org.osm2world.util.ValueParseUtil.parseColor;
-import static org.osm2world.util.color.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseWidth;
 

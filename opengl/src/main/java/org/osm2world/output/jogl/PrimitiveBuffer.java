@@ -9,7 +9,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.Primitive;
 import org.osm2world.output.common.Primitive.Type;
 import org.osm2world.output.common.PrimitiveOutput;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

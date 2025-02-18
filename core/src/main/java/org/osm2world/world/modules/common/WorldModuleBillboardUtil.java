@@ -8,10 +8,10 @@ import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Transparency;
-import org.osm2world.output.common.mesh.Mesh;
-import org.osm2world.output.common.mesh.TriangleGeometry;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.enums.LeftRightBoth;
 
 /**

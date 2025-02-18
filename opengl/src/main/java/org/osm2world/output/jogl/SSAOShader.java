@@ -2,8 +2,8 @@ package org.osm2world.output.jogl;
 
 import static com.jogamp.opengl.GL.*;
 
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.AmbientOcclusion;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.AmbientOcclusion;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;

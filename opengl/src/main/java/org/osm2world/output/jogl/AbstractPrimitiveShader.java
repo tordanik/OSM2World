@@ -1,7 +1,7 @@
 package org.osm2world.output.jogl;
 
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Transparency;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
 
 import com.jogamp.opengl.GL3;
 

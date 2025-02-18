@@ -12,7 +12,7 @@ import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 import org.osm2world.world.modules.building.BuildingDefaults;
 import org.osm2world.world.modules.building.BuildingPart;
 

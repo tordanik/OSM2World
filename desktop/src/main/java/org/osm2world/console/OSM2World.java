@@ -16,7 +16,7 @@ import javax.swing.*;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.GlobalValues;
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.viewer.view.ViewerFrame;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;

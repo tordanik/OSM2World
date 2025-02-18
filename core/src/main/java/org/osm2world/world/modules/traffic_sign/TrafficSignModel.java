@@ -4,13 +4,13 @@ import static java.awt.Color.WHITE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.output.common.material.Material.Interpolation.FLAT;
-import static org.osm2world.output.common.material.Materials.STEEL;
-import static org.osm2world.output.common.mesh.LevelOfDetail.LOD3;
-import static org.osm2world.output.common.mesh.LevelOfDetail.LOD4;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.mirroredHorizontally;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.texCoordFunctions;
+import static org.osm2world.scene.material.Material.Interpolation.FLAT;
+import static org.osm2world.scene.material.Materials.STEEL;
+import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredHorizontally;
+import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordFunctions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,13 +19,13 @@ import java.util.Map;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.output.common.material.*;
-import org.osm2world.output.common.material.CompositeTexture.CompositeMode;
-import org.osm2world.output.common.material.Material.Transparency;
-import org.osm2world.output.common.mesh.Mesh;
-import org.osm2world.output.common.mesh.TriangleGeometry;
-import org.osm2world.output.common.model.InstanceParameters;
-import org.osm2world.output.common.model.Model;
+import org.osm2world.scene.material.*;
+import org.osm2world.scene.material.CompositeTexture.CompositeMode;
+import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.scene.model.InstanceParameters;
+import org.osm2world.scene.model.Model;
 
 /**
  * 3D model of a single traffic sign. A {@link TrafficSignGroup} has one or more of these.

@@ -3,7 +3,7 @@ package org.osm2world.util;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.osm2world.util.ValueParseUtil.*;
-import static org.osm2world.util.color.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 
 import java.awt.Color;
 

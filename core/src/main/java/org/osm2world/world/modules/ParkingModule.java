@@ -1,12 +1,12 @@
 package org.osm2world.world.modules;
 
 import static java.awt.Color.*;
-import static org.osm2world.output.common.material.Materials.ASPHALT;
-import static org.osm2world.output.common.material.Materials.getSurfaceMaterial;
-import static org.osm2world.output.common.mesh.LevelOfDetail.LOD3;
-import static org.osm2world.output.common.mesh.LevelOfDetail.LOD4;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.scene.material.Materials.ASPHALT;
+import static org.osm2world.scene.material.Materials.getSurfaceMaterial;
+import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,12 +21,12 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.mesh.LODRange;
-import org.osm2world.output.common.model.InstanceParameters;
-import org.osm2world.output.common.model.Model;
-import org.osm2world.output.common.model.ModelInstance;
-import org.osm2world.output.common.model.Models;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.mesh.LODRange;
+import org.osm2world.scene.model.InstanceParameters;
+import org.osm2world.scene.model.Model;
+import org.osm2world.scene.model.ModelInstance;
+import org.osm2world.scene.model.Models;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;

@@ -18,7 +18,7 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.output.common.material.TextureDataDimensions;
+import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.output.statistics.StatisticsOutput.Stat;
 import org.osm2world.world.modules.PowerModule.RooftopSolarPanels.PanelTexCoordFunction;

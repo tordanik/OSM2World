@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.util.color.ColorNameDefinition;
+import org.osm2world.scene.color.ColorNameDefinition;
 
 /** parses the syntax of typical OSM tag values */
 public final class ValueParseUtil {

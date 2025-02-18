@@ -14,8 +14,8 @@ import org.osm2world.math.VectorXYZW;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.Primitive;
 import org.osm2world.output.common.Primitive.Type;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
 
 import com.jogamp.opengl.GL3;
 

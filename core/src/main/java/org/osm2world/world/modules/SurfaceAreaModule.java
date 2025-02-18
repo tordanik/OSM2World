@@ -4,8 +4,8 @@ import static org.osm2world.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.map_elevation.data.GroundState.ABOVE;
 import static org.osm2world.map_elevation.data.GroundState.BELOW;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.*;
 
@@ -23,8 +23,8 @@ import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Materials;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;

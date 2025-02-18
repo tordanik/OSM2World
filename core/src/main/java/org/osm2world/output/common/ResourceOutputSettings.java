@@ -12,9 +12,9 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.output.common.material.ImageFileTexture;
-import org.osm2world.output.common.material.RasterImageFileTexture;
-import org.osm2world.output.common.material.TextureData;
+import org.osm2world.scene.material.ImageFileTexture;
+import org.osm2world.scene.material.RasterImageFileTexture;
+import org.osm2world.scene.material.TextureData;
 
 /** options for how to handle textures and other resources when exporting generated models/scenes as files */
 public record ResourceOutputSettings(

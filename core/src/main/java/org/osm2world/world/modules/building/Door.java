@@ -2,10 +2,10 @@ package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
-import static org.osm2world.output.common.material.Materials.*;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.mirroredHorizontally;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredHorizontally;
+import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.output.CommonTarget;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 
 public class Door implements WallElement {
 

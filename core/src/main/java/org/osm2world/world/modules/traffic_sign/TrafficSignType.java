@@ -1,14 +1,14 @@
 package org.osm2world.world.modules.traffic_sign;
 
 import static java.awt.Color.WHITE;
-import static org.osm2world.output.common.material.Materials.getMaterial;
+import static org.osm2world.scene.material.Materials.getMaterial;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.output.common.material.ConfMaterial;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.scene.material.ConfMaterial;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
 
 /**
  * a type of traffic sign, characterized by a name (country and id, by OSM convention) and information that might be

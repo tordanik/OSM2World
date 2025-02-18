@@ -11,8 +11,8 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.Primitive.Type;
 import org.osm2world.output.common.PrimitiveOutput;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.world.data.WorldObject;
 
 /**

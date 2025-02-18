@@ -7,10 +7,10 @@ import static org.osm2world.output.jogl.AbstractJOGLOutput.getFloatBuffer;
 import java.awt.*;
 import java.nio.FloatBuffer;
 
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Transparency;
-import org.osm2world.output.common.material.TextureData;
-import org.osm2world.output.common.material.TextureData.Wrap;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.material.TextureData.Wrap;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;

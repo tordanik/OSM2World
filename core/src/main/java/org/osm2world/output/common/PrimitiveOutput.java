@@ -11,9 +11,8 @@ import javax.annotation.Nonnull;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.output.DrawBasedOutput;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
 
 /**
  * superclass for output formats that are based on OpenGL primitives.

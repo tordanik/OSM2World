@@ -2,8 +2,8 @@ package org.osm2world.output.gltf;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.*;
-import static org.osm2world.output.common.material.TextureData.Wrap;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.scene.material.TextureData.Wrap;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
 import java.awt.*;
 import java.io.File;
@@ -26,14 +26,14 @@ import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.output.common.material.*;
-import org.osm2world.output.common.mesh.LODRange;
-import org.osm2world.output.common.mesh.Mesh;
-import org.osm2world.output.common.mesh.TriangleGeometry;
-import org.osm2world.output.common.model.InstanceParameters;
-import org.osm2world.output.common.model.Model;
 import org.osm2world.output.gltf.data.*;
-import org.osm2world.util.color.LColor;
+import org.osm2world.scene.color.LColor;
+import org.osm2world.scene.material.*;
+import org.osm2world.scene.mesh.LODRange;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.scene.model.InstanceParameters;
+import org.osm2world.scene.model.Model;
 import org.osm2world.util.exception.InvalidGeometryException;
 
 import com.google.gson.Gson;

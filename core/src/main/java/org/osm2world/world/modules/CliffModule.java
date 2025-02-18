@@ -1,8 +1,8 @@
 package org.osm2world.world.modules;
 
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseWidth;
@@ -16,8 +16,8 @@ import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Materials;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;

@@ -7,7 +7,7 @@ import java.util.List;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.output.DrawBasedOutput;
+import org.osm2world.output.common.DrawBasedOutput;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;

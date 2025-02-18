@@ -8,8 +8,8 @@ import org.osm2world.map_data.data.MapData;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.common.MeshOutput;
-import org.osm2world.output.common.MeshStore;
-import org.osm2world.output.common.mesh.Mesh;
+import org.osm2world.scene.mesh.MeshStore;
+import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.world.data.WorldObject;
 
 import com.google.common.collect.Iterables;

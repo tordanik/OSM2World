@@ -17,7 +17,7 @@ import javax.swing.*;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_elevation.creation.*;
-import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.viewer.control.actions.*;
 import org.osm2world.viewer.control.navigation.DefaultNavigation;
 import org.osm2world.viewer.model.Data;

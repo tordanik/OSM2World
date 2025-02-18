@@ -11,9 +11,9 @@ import java.util.List;
 
 import org.osm2world.math.VectorXYZW;
 import org.osm2world.output.common.Primitive;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Shadow;
-import org.osm2world.output.common.material.Material.Transparency;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Shadow;
+import org.osm2world.scene.material.Material.Transparency;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL3;

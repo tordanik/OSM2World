@@ -1,6 +1,6 @@
 package org.osm2world.conversion;
 
-import static org.osm2world.output.common.mesh.LevelOfDetail.*;
+import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
 import java.awt.*;
 import java.io.File;
@@ -24,7 +24,7 @@ import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
-import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.scene.mesh.LevelOfDetail;
 
 /**
  * a set of configuration options for OSM2World.

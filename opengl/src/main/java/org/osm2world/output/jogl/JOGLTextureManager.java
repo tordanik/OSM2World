@@ -3,7 +3,7 @@ package org.osm2world.output.jogl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osm2world.output.common.material.TextureData;
+import org.osm2world.scene.material.TextureData;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.util.texture.Texture;

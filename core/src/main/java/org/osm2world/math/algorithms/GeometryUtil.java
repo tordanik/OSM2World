@@ -22,7 +22,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXYZW;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
-import org.osm2world.util.color.LColor;
+import org.osm2world.scene.color.LColor;
 
 /**
  * utility class for some useful calculations involving geometric objects and shapes

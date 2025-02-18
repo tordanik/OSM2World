@@ -4,8 +4,8 @@ import static java.util.Collections.nCopies;
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.trianglesFromTriangleFan;
 import static org.osm2world.math.algorithms.GeometryUtil.trianglesFromTriangleStrip;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
+import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.*;
@@ -21,12 +21,12 @@ import org.osm2world.math.shapes.ShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.common.ExtrudeOption;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.mesh.ExtrusionGeometry;
-import org.osm2world.output.common.mesh.Mesh;
-import org.osm2world.output.common.mesh.MeshUtil;
-import org.osm2world.output.common.mesh.TriangleGeometry;
-import org.osm2world.output.common.model.ModelInstance;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.mesh.ExtrusionGeometry;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.mesh.MeshUtil;
+import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.world.data.ProceduralWorldObject;
 
 /**

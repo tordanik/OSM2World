@@ -15,7 +15,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.util.color.LColor;
+import org.osm2world.scene.color.LColor;
 
 public final class TestUtil {
 

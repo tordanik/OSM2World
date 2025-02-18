@@ -3,7 +3,7 @@ package org.osm2world.output.jogl;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2.GL_POLYGON;
 import static java.util.Arrays.asList;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.mirroredVertically;
+import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredVertically;
 import static org.osm2world.output.jogl.NonAreaPrimitive.Type.*;
 
 import java.awt.*;
@@ -17,8 +17,8 @@ import org.osm2world.output.common.Primitive;
 import org.osm2world.output.common.Primitive.Type;
 import org.osm2world.output.common.PrimitiveOutput;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.TextureLayer;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 

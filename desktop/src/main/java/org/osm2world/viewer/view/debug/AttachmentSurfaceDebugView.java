@@ -10,9 +10,9 @@ import java.util.Random;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
-import org.osm2world.output.common.material.ImmutableMaterial;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.WorldObject;

@@ -8,9 +8,9 @@ import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.math.VectorXYZ.X_UNIT;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXZ.angleBetween;
-import static org.osm2world.output.common.material.Materials.STEEL;
-import static org.osm2world.output.common.mesh.LevelOfDetail.LOD3;
-import static org.osm2world.output.common.mesh.LevelOfDetail.LOD4;
+import static org.osm2world.scene.material.Materials.STEEL;
+import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.util.ArrayList;
@@ -25,10 +25,10 @@ import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.output.common.mesh.ExtrusionGeometry;
-import org.osm2world.output.common.mesh.Mesh;
-import org.osm2world.output.common.model.InstanceParameters;
-import org.osm2world.output.common.model.ModelInstance;
+import org.osm2world.scene.mesh.ExtrusionGeometry;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.model.InstanceParameters;
+import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 

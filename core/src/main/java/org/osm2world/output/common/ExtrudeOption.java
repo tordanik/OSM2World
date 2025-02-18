@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.osm2world.math.shapes.ShapeXZ;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 
 /**
  * Flags describing available options for
- * {@link org.osm2world.output.DrawBasedOutput#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, Set)}.
+ * {@link DrawBasedOutput#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, Set)}.
  */
 public enum ExtrudeOption {
 

@@ -8,9 +8,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.output.common.material.Materials;
-import org.osm2world.output.common.mesh.ExtrusionGeometry;
-import org.osm2world.output.common.mesh.Mesh;
+import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.mesh.ExtrusionGeometry;
+import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.Scene;
 import org.osm2world.test.TestWorldModule;
 

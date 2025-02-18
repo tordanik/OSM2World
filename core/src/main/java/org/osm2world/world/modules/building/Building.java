@@ -21,7 +21,7 @@ import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.CachingProceduralWorldObject;

@@ -20,9 +20,9 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.ShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.output.CommonTarget;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.TextureData;
-import org.osm2world.output.common.material.TextureLayer;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.material.TextureLayer;
 
 abstract public class SpindleRoof extends Roof {
 

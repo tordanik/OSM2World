@@ -17,13 +17,13 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.output.DrawBasedOutput;
 import org.osm2world.output.common.AbstractOutput;
+import org.osm2world.output.common.DrawBasedOutput;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.output.common.material.*;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.OrthographicProjection;
 import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.scene.material.*;
 
 /**
  * Writes models to files for the POVRay ray tracer.

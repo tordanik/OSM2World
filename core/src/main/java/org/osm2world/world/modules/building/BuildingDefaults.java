@@ -1,8 +1,8 @@
 package org.osm2world.world.modules.building;
 
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Materials;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 
 /** default properties for a particular building or building:part type. Immutable. */
 public class BuildingDefaults {

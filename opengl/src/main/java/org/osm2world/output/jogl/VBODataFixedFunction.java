@@ -8,7 +8,7 @@ import java.nio.Buffer;
 import java.util.Collection;
 
 import org.osm2world.output.common.Primitive;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 
 import com.jogamp.opengl.GL2;
 

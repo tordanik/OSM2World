@@ -24,7 +24,7 @@ import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.MapRelation.Membership;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 import org.osm2world.util.enums.ForwardBackward;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.world.modules.RoadModule;

@@ -7,6 +7,7 @@ import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import java.awt.Color;
 
 import org.junit.Test;
+import org.osm2world.scene.color.LColor;
 
 public class LColorTest {
 

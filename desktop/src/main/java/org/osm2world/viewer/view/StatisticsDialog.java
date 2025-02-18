@@ -14,8 +14,8 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Materials;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.output.statistics.StatisticsOutput.Stat;
 

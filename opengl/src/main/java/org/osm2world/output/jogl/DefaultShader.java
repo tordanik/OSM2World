@@ -10,12 +10,12 @@ import java.nio.FloatBuffer;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Transparency;
-import org.osm2world.output.common.material.TextureData;
-import org.osm2world.output.common.material.TextureData.Wrap;
-import org.osm2world.output.common.material.TextureLayer;
-import org.osm2world.util.color.LColor;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.material.TextureData.Wrap;
+import org.osm2world.scene.material.TextureLayer;
+import org.osm2world.scene.color.LColor;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;

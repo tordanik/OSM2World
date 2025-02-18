@@ -16,9 +16,9 @@ import javax.imageio.ImageIO;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Shadow;
-import org.osm2world.output.common.material.Material.Transparency;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Shadow;
+import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.output.common.rendering.PerspectiveProjection;
 
 import com.jogamp.opengl.GL;

@@ -19,8 +19,8 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.output.common.material.ImmutableMaterial;
-import org.osm2world.output.common.material.Material.Interpolation;
+import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.output.jogl.JOGLOutput;
 
 /**

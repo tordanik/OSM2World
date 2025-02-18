@@ -15,7 +15,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.output.common.FaceOutput;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 import org.osm2world.world.data.WorldObject;
 
 /**

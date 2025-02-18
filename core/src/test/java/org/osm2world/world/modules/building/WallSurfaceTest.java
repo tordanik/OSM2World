@@ -2,7 +2,7 @@ package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
 import static org.osm2world.math.VectorXYZ.*;
-import static org.osm2world.output.common.material.Materials.BRICK;
+import static org.osm2world.scene.material.Materials.BRICK;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
 import java.util.List;

@@ -4,8 +4,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
-import static org.osm2world.output.common.material.Materials.VOID;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.scene.material.Materials.VOID;
+import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,11 +15,11 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.model.ExternalResourceModel;
-import org.osm2world.output.common.model.InstanceParameters;
-import org.osm2world.output.common.model.ModelInstance;
-import org.osm2world.output.common.texcoord.NamedTexCoordFunction;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.model.ExternalResourceModel;
+import org.osm2world.scene.model.InstanceParameters;
+import org.osm2world.scene.model.ModelInstance;
+import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 
 /** the top of a chimney, modeled as a special kind of "roof" */
 public class ChimneyRoof extends Roof {

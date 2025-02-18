@@ -2,10 +2,10 @@ package org.osm2world.output.common;
 
 import java.util.List;
 
-import org.osm2world.output.DrawBasedOutput;
 import org.osm2world.output.Output;
-import org.osm2world.output.common.MeshStore.MeshMetadata;
-import org.osm2world.output.common.mesh.Mesh;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.mesh.MeshStore;
+import org.osm2world.scene.mesh.MeshStore.MeshMetadata;
 import org.osm2world.world.data.WorldObject;
 
 /**

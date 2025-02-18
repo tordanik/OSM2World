@@ -7,7 +7,7 @@ import java.util.List;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.FaceOutput;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.data.WorldObject;
 

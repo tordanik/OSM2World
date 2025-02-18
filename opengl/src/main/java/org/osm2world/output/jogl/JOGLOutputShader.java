@@ -16,14 +16,14 @@ import org.osm2world.math.VectorXYZW;
 import org.osm2world.math.shapes.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.output.common.material.ImageFileTexture;
-import org.osm2world.output.common.material.TextureData.Wrap;
-import org.osm2world.output.common.material.TextureDataDimensions;
+import org.osm2world.scene.material.ImageFileTexture;
+import org.osm2world.scene.material.TextureData.Wrap;
+import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.OrthographicProjection;
 import org.osm2world.output.common.rendering.PerspectiveProjection;
 import org.osm2world.output.common.rendering.Projection;
-import org.osm2world.output.common.texcoord.NamedTexCoordFunction;
+import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;

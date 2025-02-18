@@ -4,7 +4,7 @@ import static java.lang.Math.sqrt;
 
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.output.common.material.Materials;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 

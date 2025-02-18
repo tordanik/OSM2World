@@ -10,8 +10,8 @@ import java.util.*;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.output.common.Primitive;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Transparency;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 

@@ -3,7 +3,7 @@ package org.osm2world.output.obj;
 import static java.awt.Color.WHITE;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
-import static org.osm2world.output.common.material.Material.multiplyColor;
+import static org.osm2world.scene.material.Material.multiplyColor;
 
 import java.awt.*;
 import java.io.File;
@@ -24,12 +24,12 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.common.FaceOutput;
 import org.osm2world.output.common.ResourceOutputSettings;
-import org.osm2world.output.common.material.Material;
-import org.osm2world.output.common.material.Material.Transparency;
-import org.osm2world.output.common.material.Materials;
-import org.osm2world.output.common.material.TextureData;
-import org.osm2world.output.common.material.TextureData.Wrap;
-import org.osm2world.output.common.material.TextureLayer;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.material.TextureData.Wrap;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.world.data.WorldObject;
 
 /**

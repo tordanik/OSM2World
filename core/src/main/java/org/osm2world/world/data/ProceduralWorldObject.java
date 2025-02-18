@@ -9,10 +9,10 @@ import javax.annotation.Nullable;
 
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.CommonTarget;
-import org.osm2world.output.common.mesh.LODRange;
-import org.osm2world.output.common.mesh.LevelOfDetail;
-import org.osm2world.output.common.mesh.Mesh;
-import org.osm2world.output.common.model.ModelInstance;
+import org.osm2world.scene.mesh.LODRange;
+import org.osm2world.scene.mesh.LevelOfDetail;
+import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.world.attachment.AttachmentSurface;
 
 /**

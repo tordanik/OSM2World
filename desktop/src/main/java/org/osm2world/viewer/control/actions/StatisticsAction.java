@@ -6,7 +6,7 @@ import java.util.Observer;
 
 import javax.swing.*;
 
-import org.osm2world.output.common.mesh.LevelOfDetail;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.viewer.model.Data;

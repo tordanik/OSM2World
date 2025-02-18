@@ -1,8 +1,8 @@
 package org.osm2world.world.modules.building;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.output.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.output.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.CommonTarget;
-import org.osm2world.output.common.material.Material;
+import org.osm2world.scene.material.Material;
 
 /** the underside of a {@link BuildingPart} */
 class BuildingBottom {

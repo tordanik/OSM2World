@@ -11,7 +11,7 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.output.common.model.InstanceParameters;
+import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.output.gltf.data.GltfAccessor;
 
 public class GltfModelTest {
