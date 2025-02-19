@@ -1,11 +1,11 @@
-package org.osm2world.console;
+package org.osm2world.console.legacy;
 
 import java.io.File;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.console.CLIArgumentsUtil.InputMode;
+import org.osm2world.console.commands.mixins.InputOptions.InputMode;
 import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonEle;
@@ -15,9 +15,9 @@ import org.osm2world.util.Resolution;
 
 import com.lexicalscope.jewel.cli.Option;
 
-public interface CLIArguments {
+interface CLIArguments {
 
-	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|gltf(?:.gz)?|glb(?:.gz)?|pov|o2w.pbf(?:.gz)?|png|ppm|gd)";
+	String OUTPUT_PATTERN = "(.*)\\.(?:obj|gltf(?:.gz)?|glb(?:.gz)?|pov|o2w.pbf(?:.gz)?|png|ppm|gd)";
 
 	/* input and output files */
 

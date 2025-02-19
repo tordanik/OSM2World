@@ -1,4 +1,4 @@
-package org.osm2world.console;
+package org.osm2world.console.legacy;
 
 import static java.util.Arrays.sort;
 import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.osm2world.console.OSM2World;
 import org.osm2world.conversion.ConversionLog;
 
 /**

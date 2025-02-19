@@ -1,21 +1,20 @@
-package org.osm2world.console;
+package org.osm2world.console.legacy;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
-import static org.osm2world.console.CLIArgumentsUtil.getResolution;
+import static org.osm2world.console.legacy.CLIArgumentsUtil.getOutputMode;
+import static org.osm2world.console.legacy.CLIArgumentsUtil.getResolution;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
 
-import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.O2WConverter;
-import org.osm2world.console.CLIArgumentsUtil.OutputMode;
+import org.osm2world.console.commands.mixins.CameraOptions;
+import org.osm2world.console.commands.mixins.MetadataOptions;
+import org.osm2world.console.legacy.CLIArgumentsUtil.OutputMode;
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.map_data.data.MapMetadata;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.math.geo.LatLonEle;
@@ -37,9 +36,9 @@ import org.osm2world.output.povray.POVRayOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.util.Resolution;
 
-final class Output {
+final class LegacyCLIOutput {
 
-	private Output() {}
+	private LegacyCLIOutput() {}
 
 	public static void output(O2WConfig config,
 			CLIArgumentsGroup argumentsGroup)
@@ -52,28 +51,10 @@ final class Output {
 		/* augment and set the config */
 
 		if (sharedArgs.isLogDir()) {
-			config = config.withProperty("logDir", sharedArgs.getLogDir());
+			config = config.withProperty("logDir", sharedArgs.getLogDir().toString());
 		}
 
-		MapMetadata metadata = null;
-
-		if (sharedArgs.isMetadataFile()) {
-			if (sharedArgs.getMetadataFile().getName().endsWith(".mbtiles")) {
-				if (sharedArgs.isMetadataFile() && sharedArgs.isTile()) {
-					try {
-						metadata = MapMetadata.metadataForTile(sharedArgs.getTile(), sharedArgs.getMetadataFile());
-					} catch (MBTilesReadException e) {
-						System.err.println("Cannot read tile metadata: " + e);
-					}
-				}
-			} else {
-				metadata = MapMetadata.metadataFromJson(sharedArgs.getMetadataFile());
-			}
-		}
-
-		if (metadata != null && metadata.land() == Boolean.FALSE) {
-			config = config.withProperty("isAtSea", true);
-		}
+		MetadataOptions.addMetadataToConfig(sharedArgs.getMetadataFile(), sharedArgs.getTile(), config);
 
 		converter.setConfig(config);
 
@@ -111,7 +92,7 @@ final class Output {
 				projection = new PerspectiveProjection(
 						args.isPviewAspect() ? args.getPviewAspect() :
 								args.isResolution() ? (double) args.getResolution().getAspectRatio()
-										: CLIArgumentsUtil.DEFAULT_ASPECT_RATIO,
+										: CameraOptions.DEFAULT_ASPECT_RATIO,
 						args.getPviewFovy(),
 						1, 50000);
 
@@ -127,7 +108,7 @@ final class Output {
 				if (args.isOviewBoundingBox()) {
 					bounds = bbox(args.getOviewBoundingBox().stream()
 							.map(scene.getMapProjection()::toXZ)
-							.collect(toList()));
+							.toList());
 				} else if (args.isOviewTiles()) {
 					bounds = OrthographicUtil.boundsForTiles(scene.getMapProjection(), args.getOviewTiles());
 				} else if (args.isTile()) {
@@ -142,8 +123,6 @@ final class Output {
 			}
 
 			/* perform the actual output */
-
-			boolean underground = config.getBoolean("renderUnderground", true);
 
 			for (File outputFile : args.getOutput()) {
 

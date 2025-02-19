@@ -1,7 +1,7 @@
-package org.osm2world.console;
+package org.osm2world.console.legacy;
 
 import static java.lang.Math.*;
-import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
+import static org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,20 +15,18 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.osm2world.console.commands.mixins.CameraOptions;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.osm.creation.*;
 import org.osm2world.util.Resolution;
 
 import com.lexicalscope.jewel.cli.CliFactory;
 
-public final class CLIArgumentsUtil {
+final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
 	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, WEB_PBF, WEB_PBF_GZ, PNG, PPM, GD}
-	public static enum InputMode {FILE, OVERPASS}
 	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
-
-	public static final double DEFAULT_ASPECT_RATIO = 4 / 3.0;
 
 	private CLIArgumentsUtil() { }
 
@@ -178,7 +176,7 @@ public final class CLIArgumentsUtil {
 	public static Resolution getResolution(CLIArguments args) {
 
 		double aspectRatio = hasPerspectiveArg(args)
-				? args.isPviewAspect() ? args.getPviewAspect() : DEFAULT_ASPECT_RATIO
+				? args.isPviewAspect() ? args.getPviewAspect() : CameraOptions.DEFAULT_ASPECT_RATIO
 				: 1.0 / sin(toRadians(args.getOviewAngle()));
 
 		return args.isResolution() ? args.getResolution()

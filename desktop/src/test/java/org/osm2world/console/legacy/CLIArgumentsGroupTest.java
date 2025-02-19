@@ -1,4 +1,4 @@
-package org.osm2world.console;
+package org.osm2world.console.legacy;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

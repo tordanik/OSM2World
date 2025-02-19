@@ -1,8 +1,8 @@
-package org.osm2world.console;
+package org.osm2world.console.legacy;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
+import static org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode.CONVERT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.Objects;
  * which can be performed at the same time
  * and are only distinguished by output format/parameters
  */
-public class CLIArgumentsGroup {
+class CLIArgumentsGroup {
 
 	private final CLIArguments representative;
 	private final List<CLIArguments> cliArgumentsList;
