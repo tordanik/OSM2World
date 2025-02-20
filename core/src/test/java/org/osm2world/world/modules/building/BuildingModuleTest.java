@@ -1,6 +1,7 @@
 package org.osm2world.world.modules.building;
 
 import static org.junit.Assert.*;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +24,7 @@ public class BuildingModuleTest {
 	@Test
 	public void testRoofWithoutWalls() throws IOException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource("issue-203.osm").getFile());
+		File testFile = getTestFile("issue-203.osm");
 
 		Scene results = new O2WConverter().convert(new OSMFileReader(testFile), null, null);
 

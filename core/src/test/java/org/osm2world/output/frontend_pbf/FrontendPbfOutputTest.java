@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.osm2world.math.VectorXZ.*;
+import static org.osm2world.util.test.TestFileUtil.createTempFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,8 +73,7 @@ public class FrontendPbfOutputTest {
 		node.addRepresentation(new TestWorldModule.TestNodeWorldObject(node));
 		Scene testScene = new Scene(null, mapData);
 
-		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
-		outputFile.deleteOnExit();
+		File outputFile = createTempFile(".o2w.pbf");
 
 		var output = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
 		output.outputScene(testScene);
@@ -90,8 +90,7 @@ public class FrontendPbfOutputTest {
 
 		Scene results = new O2WConverter().convert(mapDataBuilder.build(), null);
 
-		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
-		outputFile.deleteOnExit();
+		File outputFile = createTempFile(".o2w.pbf");
 
 		var output = new FrontendPbfOutput(outputFile, Compression.NONE, bbox);
 		output.outputScene(results);

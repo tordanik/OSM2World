@@ -1,11 +1,10 @@
 package org.osm2world.osm.creation;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,10 +22,8 @@ public class GeodeskReaderTest {
 	@Test
 	public void testSimpleFile() throws IOException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		URL testFile = classLoader.getResource("simpleTest01.gol");
-		assertNotNull(testFile);
-		var reader = new GeodeskReader(new File(testFile.getFile()));
+		File testFile = getTestFile("simpleTest01.gol");
+		var reader = new GeodeskReader(testFile);
 
 		OSMData data = reader.getData(globalBounds);
 
@@ -39,10 +36,8 @@ public class GeodeskReaderTest {
 	@Test
 	public void testTile() throws IOException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		URL testFile = classLoader.getResource("simpleTest01.gol");
-		assertNotNull(testFile);
-		var reader = new GeodeskReader(new File(testFile.getFile()));
+		File testFile = getTestFile("simpleTest01.gol");
+		var reader = new GeodeskReader(testFile);
 
 		OSMData data = reader.getData(new TileNumber(13, 4402, 2828).latLonBounds());
 

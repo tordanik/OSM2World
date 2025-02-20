@@ -3,6 +3,7 @@ package org.osm2world.osm.creation;
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
 import static org.junit.Assert.*;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,8 +22,7 @@ public class OSMFileReaderTest {
 	@Test
 	public void testValidFile() throws IOException, EntityNotFoundException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource("validFile.osm").getFile());
+		File testFile = getTestFile("validFile.osm");
 		OSMData osmData = new OSMFileReader(testFile).getAllData();
 
 		assertSame(4, osmData.getNodes().size());
@@ -44,8 +44,7 @@ public class OSMFileReaderTest {
 	@Test
 	public void testJosmFileWithEdits() throws IOException, EntityNotFoundException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource("josmTest01.osm").getFile());
+		File testFile = getTestFile("josmTest01.osm");
 		OSMData osmData = new OSMFileReader(testFile).getAllData();
 
 		assertSame(5, osmData.getNodes().size());
@@ -57,8 +56,7 @@ public class OSMFileReaderTest {
 	@Test
 	public void testJosmFileWithEmoji() throws IOException, EntityNotFoundException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource("josm_emoji.osm").getFile());
+		File testFile = getTestFile("josm_emoji.osm");
 		OSMData osmData = new OSMFileReader(testFile).getAllData();
 
 		assertSame(1, osmData.getNodes().size());

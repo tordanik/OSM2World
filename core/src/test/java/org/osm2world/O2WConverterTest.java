@@ -3,6 +3,7 @@ package org.osm2world;
 import static org.junit.Assert.assertTrue;
 import static org.osm2world.output.common.compression.Compression.NONE;
 import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
+import static org.osm2world.util.test.TestFileUtil.createTempFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class O2WConverterTest {
 
 			try {
 
-				File outputFile = Files.createTempFile("o2w-test-", ".gltf").toFile();
+				File outputFile = createTempFile(".gltf");
 				Output testOutput = new GltfOutput(outputFile, GLTF, NONE, null);
 				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
 

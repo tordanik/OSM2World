@@ -2,6 +2,7 @@ package org.osm2world.map_data.creation;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +31,7 @@ public class OSMToMapDataConverterTest {
 	 */
 	private static MapData loadMapData(String filename) throws IOException, EntityNotFoundException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource(filename).getFile());
+		File testFile = getTestFile(filename);
 
 		OSMData osmData = new OSMFileReader(testFile).getAllData();
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
@@ -93,8 +93,7 @@ public class OSMToMapDataConverterTest {
 
 		/* create map data */
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource(filename).getFile());
+		File testFile = getTestFile(filename);
 
 		OSMData osmData = new OSMFileReader(testFile).getAllData();
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());

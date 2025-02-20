@@ -1,5 +1,7 @@
 package org.osm2world.map_elevation.creation;
 
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -16,8 +18,7 @@ public class SRTMDataTest {
 	@Test
 	public void testGetSites() throws IOException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File srtmDir = new File(classLoader.getResource("srtm").getFile());
+		File srtmDir = getTestFile("srtm");
 
 		var projection = new OrthographicAzimuthalMapProjection(new LatLon(4, 33));
 		var srtmData = new SRTMData(srtmDir, projection);

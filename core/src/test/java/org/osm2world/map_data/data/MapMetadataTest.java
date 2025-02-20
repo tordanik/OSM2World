@@ -1,6 +1,7 @@
 package org.osm2world.map_data.data;
 
 import static org.junit.Assert.assertEquals;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +15,7 @@ public class MapMetadataTest {
 	@Test
 	public void testMetadataFromFile() throws IOException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File jsonFile = new File(classLoader.getResource("metadata_only_locale.json").getFile());
+		File jsonFile = getTestFile("metadata_only_locale.json");
 
 		assertEquals(new MapMetadata("AT", null),
 				MapMetadata.metadataFromJson(jsonFile));
@@ -25,8 +25,7 @@ public class MapMetadataTest {
 	@Test
 	public void testMetadataForTile() throws MBTilesReadException, IOException {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File tileMetadataDb = new File(classLoader.getResource("meta.mbtiles").getFile());
+		File tileMetadataDb = getTestFile("meta.mbtiles");
 
 		assertEquals(new MapMetadata("DE", true),
 				MapMetadata.metadataForTile(new TileNumber(13, 4401, 2827), tileMetadataDb));

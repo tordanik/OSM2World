@@ -1,6 +1,7 @@
 package org.osm2world.conversion;
 
 import static org.junit.Assert.*;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.awt.*;
 import java.io.File;
@@ -17,8 +18,8 @@ public class O2WConfigTest {
 	public void testLoadConfigFiles() {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File config01 = new File(classLoader.getResource("config/testConfig_01.properties").getFile());
-		File config02 = new File(classLoader.getResource("config/testConfig_02.properties").getFile());
+		File config01 = getTestFile("config/testConfig_01.properties");
+		File config02 = getTestFile("config/testConfig_02.properties");
 
 		O2WConfig result = new O2WConfig(null, config01, config02);
 
@@ -41,8 +42,7 @@ public class O2WConfigTest {
 	@Test
 	public void testLoadIncludedConfigFiles() {
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File parentConfig = new File(classLoader.getResource("config/parentConfig.properties").getFile());
+		File parentConfig = getTestFile("config/parentConfig.properties");
 
 		O2WConfig result = new O2WConfig(null, parentConfig);
 

@@ -2,6 +2,7 @@ package org.osm2world.output.gltf;
 
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.output.gltf.GltfModel.readComponent;
+import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +12,8 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.output.gltf.data.GltfAccessor;
+import org.osm2world.scene.model.InstanceParameters;
 
 public class GltfModelTest {
 
@@ -93,8 +94,7 @@ public class GltfModelTest {
 
 		String fileName = "gltf" + File.separator + assetName + File.separator + assetName + extension;
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		File testFile = new File(classLoader.getResource(fileName).getFile());
+		File testFile = getTestFile(fileName);
 
 		return GltfModel.loadFromFile(testFile);
 

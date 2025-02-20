@@ -1,6 +1,7 @@
 package org.osm2world.output.gltf;
 
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.util.test.TestFileUtil.createTempFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,10 +9,10 @@ import java.io.IOException;
 import org.junit.Test;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
+import org.osm2world.scene.Scene;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
-import org.osm2world.scene.Scene;
 import org.osm2world.test.TestWorldModule;
 
 public class GltfOutputTest {
@@ -48,8 +49,7 @@ public class GltfOutputTest {
 
 	private static void createTemporaryTestGltf(String fileExtension) throws IOException {
 
-		File tempFile = File.createTempFile("osm2world-test-", fileExtension);
-		tempFile.deleteOnExit();
+		File tempFile = createTempFile(fileExtension);
 
 		var mesh = new Mesh(ExtrusionGeometry.createColumn(
 				null, NULL_VECTOR, 10, 2, 0, true, false, null,
