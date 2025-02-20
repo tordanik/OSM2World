@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never' generator='JOSM'>
+  <bounds minlat='48.5639199' minlon='13.4471425' maxlat='48.5655842' maxlon='13.4497191' origin='null' />
+  <node id='-137732' action='modify' lat='48.5647807897' lon='13.44714800633' />
+  <node id='-137733' action='modify' lat='48.5647807897' lon='13.44969717934' />
+  <way id='-103264' action='modify'>
+    <nd ref='-137732' />
+    <nd ref='-137733' />
+    <tag k='barrier' v='wall' />
+    <tag k='colour' v='#FF0000' />
+    <tag k='height' v='1' />
+  </way>
+</osm>

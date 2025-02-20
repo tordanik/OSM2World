@@ -29,7 +29,7 @@ interface CLIArguments {
 	List<File> getOutput();
 	boolean isOutput();
 
-	@Option(description="properties file(s) with configuration parameters", defaultValue = "{}")
+	@Option(description="properties file(s) with configuration parameters", defaultValue = {})
 	List<File> getConfig();
 
 	@Option(description="output size in pixels", pattern=Resolution.PATTERN)

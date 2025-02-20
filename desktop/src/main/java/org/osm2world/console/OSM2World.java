@@ -17,6 +17,10 @@ import picocli.CommandLine;
 public class OSM2World {
 
 	public static void main(String[] args) throws Exception {
+		main(args, true);
+	}
+
+	public static void main(String[] args, boolean exit) throws Exception {
 
 		/* deal with a missing subcommand */
 
@@ -48,7 +52,7 @@ public class OSM2World {
 
 			int exitCode = commandLine.execute(args);
 
-			if (exitCode >= 0) {
+			if (exit && exitCode >= 0) {
 				System.exit(exitCode);
 			}
 
