@@ -5,6 +5,7 @@ import org.osm2world.console.commands.RootCommand;
 import org.osm2world.console.commands.converters.LodConverter;
 import org.osm2world.console.legacy.LegacyCLI;
 import org.osm2world.math.geo.LatLon;
+import org.osm2world.math.geo.TileNumber;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.Resolution;
 
@@ -43,6 +44,7 @@ public class OSM2World {
 			commandLine.registerConverter(Resolution.class, Resolution::new);
 			commandLine.registerConverter(LevelOfDetail.class, new LodConverter());
 			commandLine.registerConverter(LatLon.class, LatLon::new);
+			commandLine.registerConverter(TileNumber.class, TileNumber::new);
 
 			int exitCode = commandLine.execute(args);
 

@@ -5,6 +5,8 @@ import static java.lang.Math.min;
 import static org.osm2world.console.legacy.CLIArgumentsUtil.getOutputMode;
 import static org.osm2world.console.legacy.CLIArgumentsUtil.getResolution;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.output.image.ImageExporter.PerformanceParams;
+import static org.osm2world.output.image.ImageExporter.create;
 
 import java.io.File;
 import java.io.IOException;
@@ -188,7 +190,7 @@ final class LegacyCLIOutput {
 						}
 						if (exporter == null) {
 							PerformanceParams performanceParams = determinePerformanceParams(config, argumentsGroup);
-							exporter = ImageExporter.create(config, scene.getBoundary(),
+							exporter = create(config, scene.getBoundary(),
 									output -> output.outputScene(scene),
 									performanceParams.resolution(), performanceParams.unbufferedRendering());
 						}
@@ -213,15 +215,6 @@ final class LegacyCLIOutput {
 		if (exporter != null) {
 			exporter.freeResources();
 			exporter = null;
-		}
-
-	}
-
-	/** parameters for optimizing the performance of an {@link ImageExporter} */
-	private record PerformanceParams(Resolution resolution, boolean unbufferedRendering) {
-
-		public PerformanceParams (int pBufferSizeX, int pBufferSizeY, boolean unbufferedRendering) {
-			this(new Resolution(pBufferSizeX, pBufferSizeY), unbufferedRendering);
 		}
 
 	}

@@ -57,6 +57,7 @@ public class O2WConverter {
 	 * @return               the scene which has been produced as the result of the conversion.
 	 *                       This will already have been written to all outputs,
 	 *                       so you can ignore it unless you want to process it yourself.
+	 *                       Regardless of input values, this scene will have a non-null {@link MapProjection}.
 	 */
 	public Scene convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
 			Output... outputs) throws IOException {

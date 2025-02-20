@@ -542,6 +542,15 @@ public class ImageExporter {
 		}
 	}
 
+	/** parameters for optimizing the performance of an {@link ImageExporter} */
+	public record PerformanceParams(Resolution resolution, boolean unbufferedRendering) {
+
+		public PerformanceParams (int pBufferSizeX, int pBufferSizeY, boolean unbufferedRendering) {
+			this(new Resolution(pBufferSizeX, pBufferSizeY), unbufferedRendering);
+		}
+
+	}
+
 	public class ImageExporterGLEventListener implements GLEventListener {
 		private int xStart;
 		private int yStart;
