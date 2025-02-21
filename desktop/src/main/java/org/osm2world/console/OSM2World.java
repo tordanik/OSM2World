@@ -1,5 +1,7 @@
 package org.osm2world.console;
 
+import java.util.List;
+
 import org.osm2world.console.commands.GuiCommand;
 import org.osm2world.console.commands.RootCommand;
 import org.osm2world.console.commands.converters.LodConverter;
@@ -32,7 +34,7 @@ public class OSM2World {
 
 			new GuiCommand().call();
 
-		} else if (args[0].startsWith("-")) {
+		} else if (args[0].startsWith("-") && !List.of("--version", "-V", "--help", "-h").contains(args[0])) {
 
 			System.out.println("The first argument is not a subcommand," +
 					" falling back to legacy command line parsing");
