@@ -32,12 +32,12 @@ public class CameraOptions {
 				paramLabel = "[NESW]")
 		public CardinalDirection from = CardinalDirection.S;
 
-		@CommandLine.Option(names = {"--oview.bbox"}, arity = "2..*",
-				description = "lat,lon pairs defining a bounding box for orthographic view")
+		@CommandLine.Option(names = {"--oview.bbox"}, arity = "2..*", paramLabel="lat,lon",
+				description = "bounding box for orthographic view")
 		public List<LatLon> bbox;
 
-		@CommandLine.Option(names = {"--oview.tiles"}, arity = "1..*",
-				description = "zoom,x,y triples of tiles defining a bounding box for orthographic view")
+		@CommandLine.Option(names = {"--oview.tiles"}, arity = "1..*", paramLabel="zoom,x,y",
+				description = "tiles defining a bounding box for orthographic view")
 		public List<TileNumber> tiles;
 
 	}

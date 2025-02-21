@@ -10,7 +10,6 @@ import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -46,8 +45,8 @@ import picocli.CommandLine;
 @Command(name = "convert", description = "Convert OSM data to 3D models and output the result.")
 public class ConvertCommand implements Callable<Integer> {
 
-	@Option(names = {"--output", "-o"}, description = "output files", arity = "1..")
-	List<File> outputFiles = null;
+	@Option(names = {"--output", "-o"}, description = "output files", arity = "1..", required = true)
+	List<File> outputFiles;
 
 	@Option(names = {"--tile"}, description = "defining the tile to convert", paramLabel = "zoom,x,y")
 	@Nullable
@@ -62,8 +61,8 @@ public class ConvertCommand implements Callable<Integer> {
 	@Nullable
 	Resolution resolution = null;
 
-	@Option(names = {"--input_bbox"}, arity = "2..*",
-			description="lat,lon pairs defining an input bounding box (does not work with all data sources)")
+	@Option(names = {"--input_bbox"}, arity = "2..*", paramLabel="lat,lon",
+			description="input bounding box (does not work with all data sources)")
 	@Nullable
 	List<LatLon> inputBbox;
 
@@ -92,6 +91,15 @@ public class ConvertCommand implements Callable<Integer> {
 	public Integer call() throws Exception {
 
 		var converter = new O2WConverter();
+
+		/* validate arguments */
+
+		String errorString = getErrorString();
+
+		if (errorString != null) {
+			System.err.println(errorString);
+			return 1;
+		}
 
 		/* augment and set the config */
 
@@ -243,6 +251,9 @@ public class ConvertCommand implements Callable<Integer> {
 								camera, projection);
 					}
 
+					default -> System.err.println(
+							"Cannot determine output type for output file, skipping it: " + outputFile);
+
 				}
 
 			}
@@ -257,7 +268,41 @@ public class ConvertCommand implements Callable<Integer> {
 
 	}
 
-	private OSMDataReaderView buildInput() throws IOException {
+	/** validates the arguments and returns an error string iff they are incorrect */
+	private @Nullable String getErrorString() {
+
+		switch (inputOptions.inputMode) {
+
+			case FILE -> {
+				if (inputOptions.input == null) {
+					return "input file parameter is required (or choose a different input mode)";
+				} else {
+					OSMDataReaderView input = buildInput();
+					if (!(input.reader instanceof OSMFileReader) && inputBbox == null && tile == null) {
+						return "a tile number or input bounding box is required for database input files";
+					}
+				}
+			}
+
+			case OVERPASS -> {
+				if (inputQuery == null && inputBbox == null && tile == null) {
+					return "either a bounding box, a tile, or a query string is required for Overpass";
+				}
+			}
+
+		}
+
+		if (getCameraViewOptions(cameraOptions) instanceof OviewOptions oView
+				&& oView.tiles != null && oView.bbox != null) {
+			return "define *either* tiles or bounding box for orthographic view";
+		}
+
+		return null;
+
+	}
+
+
+	private OSMDataReaderView buildInput() {
 
 		OSMDataReader dataReader = switch (inputOptions.inputMode) {
 
