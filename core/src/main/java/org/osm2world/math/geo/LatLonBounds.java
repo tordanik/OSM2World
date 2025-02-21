@@ -97,4 +97,22 @@ public class LatLonBounds implements GeoBounds {
 
 	}
 
+	@Override
+	public final boolean equals(Object o) {
+		return o instanceof LatLonBounds that
+				&& Double.compare(minlat, that.minlat) == 0
+				&& Double.compare(minlon, that.minlon) == 0
+				&& Double.compare(maxlat, that.maxlat) == 0
+				&& Double.compare(maxlon, that.maxlon) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Double.hashCode(minlat);
+		result = 31 * result + Double.hashCode(minlon);
+		result = 31 * result + Double.hashCode(maxlat);
+		result = 31 * result + Double.hashCode(maxlon);
+		return result;
+	}
+
 }

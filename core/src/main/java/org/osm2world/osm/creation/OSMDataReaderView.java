@@ -1,6 +1,7 @@
 package org.osm2world.osm.creation;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -76,4 +77,21 @@ public class OSMDataReaderView implements OSMDataReader {
 		}
 	}
 
+	@Override
+	public final boolean equals(Object o) {
+		return (o instanceof OSMDataReaderView that)
+				&& reader.equals(that.reader)
+				&& Objects.equals(bounds, that.bounds)
+				&& Objects.equals(tileNumber, that.tileNumber)
+				&& Objects.equals(queryString, that.queryString);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = reader.hashCode();
+		result = 31 * result + Objects.hashCode(bounds);
+		result = 31 * result + Objects.hashCode(tileNumber);
+		result = 31 * result + Objects.hashCode(queryString);
+		return result;
+	}
 }

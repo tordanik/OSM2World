@@ -48,21 +48,8 @@ public class TileNumber implements TileBounds {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		TileNumber other = (TileNumber) obj;
-		if (x != other.x)
-			return false;
-		if (y != other.y)
-			return false;
-		if (zoom != other.zoom)
-			return false;
-		return true;
+	public final boolean equals(Object o) {
+		return o instanceof TileNumber that && zoom == that.zoom && x == that.x && y == that.y;
 	}
 
 	/**

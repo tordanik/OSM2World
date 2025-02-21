@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
@@ -77,6 +78,16 @@ public record MbtilesReader(File file) implements OSMDataReader {
 	@Override
 	public OSMData getData(LatLonBounds bounds) throws IOException {
 		throw new UnsupportedOperationException("MbtilesReader does not support accessing data for arbitrary bounds");
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return o instanceof MbtilesReader that && Objects.equals(file, that.file);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(file);
 	}
 
 }
