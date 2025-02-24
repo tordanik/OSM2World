@@ -3,14 +3,9 @@ package org.osm2world.console.legacy;
 import static java.lang.Math.*;
 import static org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode.*;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -181,48 +176,6 @@ final class CLIArgumentsUtil {
 
 		return args.isResolution() ? args.getResolution()
 				: new Resolution(800, (int) round(800 / aspectRatio));
-
-	}
-
-	public static final List<String[]> getUnparsedParameterGroups(
-			File parameterFile) throws IOException {
-
-		try (BufferedReader in = new BufferedReader(new FileReader(parameterFile))) {
-
-			List<String[]> result = new ArrayList<>();
-
-			String line;
-
-			while ((line = in.readLine()) != null) {
-
-				if (line.startsWith("#")) continue;
-				if (line.trim().isEmpty()) continue;
-
-				List<String> argList = new ArrayList<>();
-
-				Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
-				Matcher matcher = regex.matcher(line);
-
-				while (matcher.find()) {
-				    if (matcher.group(1) != null) {
-				        // Add double-quoted string without the quotes
-				    	argList.add(matcher.group(1));
-				    } else if (matcher.group(2) != null) {
-				        // Add single-quoted string without the quotes
-				    	argList.add(matcher.group(2));
-				    } else {
-				        // Add unquoted word
-				    	argList.add(matcher.group());
-				    }
-				}
-
-				result.add(argList.toArray(new String[argList.size()]));
-
-			}
-
-			return result;
-
-		}
 
 	}
 

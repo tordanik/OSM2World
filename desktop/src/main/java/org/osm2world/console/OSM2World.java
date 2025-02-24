@@ -45,12 +45,7 @@ public class OSM2World {
 
 			/* run the command line normally */
 
-			CommandLine commandLine = new CommandLine(new RootCommand());
-			commandLine.setCaseInsensitiveEnumValuesAllowed(true);
-			commandLine.registerConverter(Resolution.class, Resolution::new);
-			commandLine.registerConverter(LevelOfDetail.class, new LodConverter());
-			commandLine.registerConverter(LatLon.class, LatLon::new);
-			commandLine.registerConverter(TileNumber.class, TileNumber::new);
+			CommandLine commandLine = buildCommandLine(new RootCommand());
 
 			int exitCode = commandLine.execute(args);
 
@@ -60,6 +55,16 @@ public class OSM2World {
 
 		}
 
+	}
+
+	public static CommandLine buildCommandLine(Object command) {
+		CommandLine commandLine = new CommandLine(command);
+		commandLine.setCaseInsensitiveEnumValuesAllowed(true);
+		commandLine.registerConverter(Resolution.class, Resolution::new);
+		commandLine.registerConverter(LevelOfDetail.class, new LodConverter());
+		commandLine.registerConverter(LatLon.class, LatLon::new);
+		commandLine.registerConverter(TileNumber.class, TileNumber::new);
+		return commandLine;
 	}
 
 }

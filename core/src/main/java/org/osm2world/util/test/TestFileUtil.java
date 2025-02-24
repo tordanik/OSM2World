@@ -24,7 +24,7 @@ public final class TestFileUtil {
 		try {
 			var tempFile = Files.createTempFile(prefix, suffix).toFile();
 			tempFile.deleteOnExit();
-			return tempFile;
+			return tempFile.getAbsoluteFile();
 		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
@@ -33,6 +33,17 @@ public final class TestFileUtil {
 	/** creates a temporary file for use in tests */
 	public static File createTempFile(String suffix) {
 		return createTempFile("o2w-test-", suffix);
+	}
+
+	/** creates a temporary directory for use in tests */
+	public static File createTempDirectory() {
+		try {
+			var tempDir = Files.createTempDirectory("o2w-test-").toFile();
+			tempDir.deleteOnExit();
+			return tempDir.getAbsoluteFile();
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 
 }

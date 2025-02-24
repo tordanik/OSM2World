@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import javax.swing.*;
 
 import org.osm2world.GlobalValues;
+import org.osm2world.console.commands.ParamsCommand;
 import org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.scene.mesh.LevelOfDetail;
@@ -63,7 +64,12 @@ public class LegacyCLI {
 		/* check for parameter file directory mode */
 
 		if (args.isParameterFileDir()) {
-			ParamFileDirMode.run(args.getParameterFileDir());
+			File parameterFileDir = args.getParameterFileDir();
+			if (!parameterFileDir.isDirectory()) {
+				System.err.println("parameterFileDir must be a directory!");
+			} else {
+				ParamsCommand.handleParamFileDir(parameterFileDir, true);
+			}
 			return;
 		}
 
@@ -77,7 +83,7 @@ public class LegacyCLI {
 
 			try {
 
-				List<String[]> unparsedArgsLines = CLIArgumentsUtil
+				List<String[]> unparsedArgsLines = ParamsCommand
 						.getUnparsedParameterGroups(args.getParameterFile());
 
 				for (String[] unparsedArgsLine : unparsedArgsLines) {
