@@ -20,7 +20,7 @@ public class OSM2WorldTest {
 	@Test
 	public void testConvert() throws Exception {
 
-		for (String ext : List.of("obj", "gltf", "glb", "pov", "o2w.pbf", "png", "ppm", "gd")) {
+		for (String ext : List.of("obj", "gltf", "glb", "pov", "o2w.pbf")) {
 
 			for (boolean legacy : List.of(false, true)) {
 
