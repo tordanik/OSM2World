@@ -91,6 +91,34 @@
 				</executions>
 			</plugin>
 
+			<plugin> <!-- create a Bash completion script for the command line interface -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>generate-autocompletion-script</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>java</executable>
+					<arguments>
+						<argument>-Dpicocli.autocomplete.systemExitOnError</argument>
+						<argument>-cp</argument>
+						<classpath/>
+						<argument>picocli.AutoComplete</argument>
+						<argument>--force</argument><!-- overwrite if exists -->
+						<argument>--completionScript</argument>
+						<argument>${project.build.directory}/osm2world_completion</argument>
+						<argument>org.osm2world.console.commands.RootCommand</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
