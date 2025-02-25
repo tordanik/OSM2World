@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.annotation.Nullable;
@@ -86,6 +87,9 @@ public class ConvertCommand implements Callable<Integer> {
 	@CommandLine.Mixin
 	private MetadataOptions metadataOptions;
 
+	private record SceneInputs(OSMDataReaderView osmReaderView, List<File> configFiles,
+							   Map<String, Object> extraProperties) {}
+	private final Map<SceneInputs, Scene> cachedScenes = new HashMap<>();
 
 	@Override
 	public Integer call() throws Exception {
@@ -103,27 +107,33 @@ public class ConvertCommand implements Callable<Integer> {
 
 		/* augment and set the config */
 
-		var extraProperties = new HashMap<String, Object>();
+		var extraProperties = new HashMap<>(
+				MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
 
 		if (lod != null) { extraProperties.put("lod", lod.ordinal()); }
 		if (loggingOptions.logDir != null) { extraProperties.put("logDir", loggingOptions.logDir.toString()); }
 
 		O2WConfig config = configOptions.getO2WConfig(extraProperties);
-		config = MetadataOptions.addMetadataToConfig(metadataOptions.metadataFile, tile, config);
 		converter.setConfig(config);
 
-		/* create the scene */
+		/* create the scene (or use a cached scene) */
 
 		OSMDataReaderView osmReaderView = buildInput();
 
-		Scene scene = converter.convert(osmReaderView, null, null);
+		// TODO: enable sharing (most) scene calculations across different LOD
+		var sceneKey = new SceneInputs(osmReaderView, configOptions.config, extraProperties);
+
+		Scene scene = cachedScenes.containsKey(sceneKey)
+				? cachedScenes.get(sceneKey)
+				: converter.convert(osmReaderView, null, null);
+		cachedScenes.put(sceneKey, scene);
 
 		MapProjection proj = scene.getMapProjection();
 		assert proj != null;
 
 		ImageExporter exporter = null;
 
-		{ // TODO: support iterating over multiple outputs
+		{ // TODO: support sharing ImageExporter across multiple outputs
 
 			/* set camera and projection */
 

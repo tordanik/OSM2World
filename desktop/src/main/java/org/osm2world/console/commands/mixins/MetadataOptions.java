@@ -2,11 +2,12 @@ package org.osm2world.console.commands.mixins;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
-import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapMetadata;
 import org.osm2world.math.geo.TileNumber;
 
@@ -18,8 +19,10 @@ public class MetadataOptions {
 			"or an mbtiles file with such JSON data for multiple tiles", paramLabel = "<path>")
 	public @Nullable File metadataFile;
 
-	public static O2WConfig addMetadataToConfig(@Nullable File metadataFile, @Nullable TileNumber tile,
-			O2WConfig config) throws IOException {
+	public static Map<String, Object> configOptionsFromMetadata(@Nullable File metadataFile, @Nullable TileNumber tile)
+			throws IOException {
+
+		Map<String, Object> result = new HashMap<>();
 
 		if (metadataFile != null) {
 
@@ -38,12 +41,12 @@ public class MetadataOptions {
 			}
 
 			if (metadata != null && metadata.land() == Boolean.FALSE) {
-				config = config.withProperty("isAtSea", true);
+				result.put("isAtSea", true);
 			}
 
 		}
 
-		return config;
+		return result;
 
 	}
 

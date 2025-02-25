@@ -56,7 +56,9 @@ final class LegacyCLIOutput {
 			config = config.withProperty("logDir", sharedArgs.getLogDir().toString());
 		}
 
-		MetadataOptions.addMetadataToConfig(sharedArgs.getMetadataFile(), sharedArgs.getTile(), config);
+		for (var entry : MetadataOptions.configOptionsFromMetadata(sharedArgs.getMetadataFile(), sharedArgs.getTile()).entrySet()) {
+			config.withProperty(entry.getKey(), entry.getValue());
+		}
 
 		converter.setConfig(config);
 
