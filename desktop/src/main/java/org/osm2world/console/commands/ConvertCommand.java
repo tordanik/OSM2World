@@ -123,7 +123,7 @@ public class ConvertCommand implements Callable<Integer> {
 		OSMDataReaderView osmReaderView = buildInput();
 
 		// TODO: enable sharing (most) scene calculations across different LOD
-		var sceneKey = new SceneInputs(osmReaderView, configOptions.config, extraProperties);
+		var sceneKey = new SceneInputs(osmReaderView, configOptions.getConfigFiles(), extraProperties);
 
 		Scene scene = cachedScenes.containsKey(sceneKey)
 				? cachedScenes.get(sceneKey)

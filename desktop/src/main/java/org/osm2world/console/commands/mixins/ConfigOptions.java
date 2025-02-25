@@ -11,18 +11,24 @@ import picocli.CommandLine;
 public class ConfigOptions {
 
 	@CommandLine.Option(names = {"--config"}, description = "properties file(s) with configuration parameters")
-	public List<File> config = List.of();
+	private List<File> config = List.of();
 
 	public static final File STANDARD_PROPERTIES_FILE = new File("standard.properties");
 
-	public O2WConfig getO2WConfig(Map<String, ?> extraProperties) {
-
-		File[] configFiles = config.toArray(new File[0]);
+	public List<File> getConfigFiles() {
 
 		if (config.isEmpty() && STANDARD_PROPERTIES_FILE.isFile()) {
 			System.out.println("No --config parameter, using default style (" + STANDARD_PROPERTIES_FILE + ").\n");
-			configFiles = new File[] { STANDARD_PROPERTIES_FILE };
+			return List.of(STANDARD_PROPERTIES_FILE);
+		} else {
+			return config;
 		}
+
+	}
+
+	public O2WConfig getO2WConfig(Map<String, ?> extraProperties) {
+
+		File[] configFiles = getConfigFiles().toArray(new File[0]);
 
 		try {
 			return new O2WConfig(extraProperties, configFiles);

@@ -30,7 +30,7 @@ public class GuiCommand implements Callable<Integer> {
 		File input = null; // TODO support input
 		LevelOfDetail lod = null; // TODO support lod
 
-		var viewerFrame = new ViewerFrame(configOptions.getO2WConfig(Map.of()), lod, configOptions.config, input);
+		var viewerFrame = new ViewerFrame(configOptions.getO2WConfig(Map.of()), lod, configOptions.getConfigFiles(), input);
 		viewerFrame.setVisible(true);
 
 		return -1; // tells the main method not to call System.exit
