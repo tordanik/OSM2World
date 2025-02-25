@@ -10,14 +10,16 @@ public class InputOptions {
 
 	public enum InputMode {FILE, OVERPASS}
 
-	@CommandLine.Option(names = {"--input_mode"}, description = "input mode", defaultValue = "FILE")
+	@CommandLine.Option(names = {"--input_mode"}, description = "input mode (FILE or OVERPASS)",
+			paramLabel = "<mode>", defaultValue = "FILE")
 	public InputMode inputMode;
 
-	@CommandLine.Option(names = {"--input", "-i"}, required = true, description = "input file with data in OSM format")
+	@CommandLine.Option(names = {"--input", "-i"}, required = true, description = "input file with data in OSM format",
+			paramLabel = "<path>")
 	public File input;
 
-	@CommandLine.Option(names = {"--overpass_url"}, description = "overpass instance to use",
-			defaultValue = OverpassReader.DEFAULT_API_URL)
+	@CommandLine.Option(names = {"--overpass_url"}, description = "Overpass API instance to use",
+			defaultValue = OverpassReader.DEFAULT_API_URL, paramLabel = "<url>")
 	public String overpassURL;
 
 }

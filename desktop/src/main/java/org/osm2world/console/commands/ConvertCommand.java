@@ -46,10 +46,11 @@ import picocli.CommandLine;
 @Command(name = "convert", description = "Convert OSM data to 3D models and output the result.")
 public class ConvertCommand implements Callable<Integer> {
 
-	@Option(names = {"--output", "-o"}, description = "output files", arity = "1..", required = true)
+	@Option(names = {"--output", "-o"}, description = "output files", arity = "1..", required = true,
+			paramLabel = "<path>")
 	List<File> outputFiles;
 
-	@Option(names = {"--tile"}, description = "defining the tile to convert", paramLabel = "zoom,x,y")
+	@Option(names = {"--tile"}, description = "the tile to convert", paramLabel = "zoom,x,y")
 	@Nullable
 	TileNumber tile;
 
@@ -67,7 +68,7 @@ public class ConvertCommand implements Callable<Integer> {
 	@Nullable
 	List<LatLon> inputBbox;
 
-	@Option(names = {"--input_query"}, description = "overpass query string")
+	@Option(names = {"--input_query"}, description = "Overpass API query string", paramLabel = "<query>")
 	@Nullable String inputQuery = null;
 
 	@CommandLine.ArgGroup()
