@@ -1,10 +1,10 @@
 package org.osm2world.console.legacy;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.GlobalValues.VERSION_STRING;
 import static org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode.CONVERT;
 import static org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode.GUI;
 import static org.osm2world.console.legacy.CLIArgumentsUtil.getProgramMode;
+import static org.osm2world.util.GlobalValues.VERSION_STRING;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +13,11 @@ import java.util.stream.Stream;
 
 import javax.swing.*;
 
-import org.osm2world.GlobalValues;
 import org.osm2world.console.commands.ParamsCommand;
 import org.osm2world.console.legacy.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.scene.mesh.LevelOfDetail;
+import org.osm2world.util.GlobalValues;
 import org.osm2world.viewer.view.ViewerFrame;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;

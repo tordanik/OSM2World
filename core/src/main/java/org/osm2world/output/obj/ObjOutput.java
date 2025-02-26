@@ -15,7 +15,6 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.GlobalValues;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
@@ -30,6 +29,7 @@ import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.material.TextureLayer;
+import org.osm2world.util.GlobalValues;
 import org.osm2world.world.data.WorldObject;
 
 /**

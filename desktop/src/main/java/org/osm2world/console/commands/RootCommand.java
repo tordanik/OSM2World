@@ -5,7 +5,7 @@ import static picocli.CommandLine.HelpCommand;
 
 import java.util.concurrent.Callable;
 
-import org.osm2world.GlobalValues;
+import org.osm2world.util.GlobalValues;
 
 @Command(name = "osm2world",
 		mixinStandardHelpOptions = true,

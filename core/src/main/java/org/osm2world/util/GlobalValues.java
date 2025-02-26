@@ -1,4 +1,4 @@
-package org.osm2world;
+package org.osm2world.util;
 
 /**
  * globally accessible constants
