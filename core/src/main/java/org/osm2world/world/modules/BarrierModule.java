@@ -12,6 +12,7 @@ import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePoints
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -19,7 +20,6 @@ import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
-import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
@@ -198,7 +198,7 @@ public class BarrierModule extends AbstractModule {
 
 			/* close the wall at the end if necessary */
 
-			if (getConnectedNetworkSegments(segment.getStartNode(), this.getClass(), s -> s != this).isEmpty()) {
+			if (capNeededAtNode(segment.getStartNode())) {
 				List<VectorXYZ> startCapVs = asList(
 						leftTopOutline.get(0),
 						leftBottomOutline.get(0),
@@ -207,7 +207,7 @@ public class BarrierModule extends AbstractModule {
 				target.drawTriangleStrip(material, startCapVs, texCoordLists(startCapVs, material, STRIP_WALL));
 			}
 
-			if (getConnectedNetworkSegments(segment.getEndNode(), this.getClass(), s -> s != this).isEmpty()) {
+			if (capNeededAtNode(segment.getEndNode())) {
 				List<VectorXYZ> startCapVs = asList(
 						rightTopOutline.get(rightTopOutline.size() - 1),
 						rightBottomOutline.get(rightBottomOutline.size() - 1),
@@ -242,6 +242,15 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> rightVs = createTriangleStripBetween(rightTopOutline, rightBottomOutline);
 			target.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, STRIP_WALL));
+
+		}
+
+		private boolean capNeededAtNode(MapNode node) {
+
+			List<? extends ColoredWall> others = getConnectedNetworkSegments(node, this.getClass(), s -> s != this);
+
+			return others.isEmpty()
+					|| others.stream().allMatch(it -> it.height < this.height || it.width < this.width);
 
 		}
 
