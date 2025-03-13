@@ -123,8 +123,12 @@ public class GltfOutput extends AbstractOutput {
 
 	@Override
 	public void outputScene(Scene scene) {
+		outputScene(getMeshesWithMetadata(scene));
+	}
 
-		MeshStore meshStore = new MeshStore(scene.getMeshesWithMetadata());
+	public void outputScene(List<MeshWithMetadata> meshesWithMetadata) {
+
+		MeshStore meshStore = new MeshStore(meshesWithMetadata);
 
 		writeFileWithCompression(outputFile, compression, outputStream -> {
 
@@ -144,6 +148,10 @@ public class GltfOutput extends AbstractOutput {
 
 		});
 
+	}
+
+	private static List<MeshWithMetadata> getMeshesWithMetadata(Scene scene) {
+		return scene.getMeshesWithMetadata();
 	}
 
 	/** creates a {@link GltfNode} and returns its index in {@link Gltf#nodes} */
