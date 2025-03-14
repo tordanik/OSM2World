@@ -24,7 +24,8 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.*;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.osm.creation.*;
+import org.osm2world.osm.creation.OSMDataReaderView;
+import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.output.common.rendering.OrthographicUtil;
@@ -68,9 +69,6 @@ public class ConvertCommand implements Callable<Integer> {
 			description="input bounding box (does not work with all data sources)")
 	@Nullable
 	List<LatLon> inputBbox;
-
-	@Option(names = {"--input_query"}, description = "Overpass API query string", paramLabel = "<query>")
-	@Nullable String inputQuery = null;
 
 	@CommandLine.ArgGroup()
 	@Nullable CameraOptions cameraOptions = null;
@@ -116,6 +114,7 @@ public class ConvertCommand implements Callable<Integer> {
 		if (loggingOptions.logDir != null) { extraProperties.put("logDir", loggingOptions.logDir.toString()); }
 
 		O2WConfig config = configOptions.getO2WConfig(extraProperties);
+		
 		converter.setConfig(config);
 
 		/* create the scene (or use a cached scene) */
@@ -297,7 +296,7 @@ public class ConvertCommand implements Callable<Integer> {
 			}
 
 			case OVERPASS -> {
-				if (inputQuery == null && inputBbox == null && tile == null) {
+				if (inputOptions.inputQuery == null && inputBbox == null && tile == null) {
 					return "either a bounding box, a tile, or a query string is required for Overpass";
 				}
 			}
@@ -316,33 +315,15 @@ public class ConvertCommand implements Callable<Integer> {
 
 	private OSMDataReaderView buildInput() {
 
-		OSMDataReader dataReader = switch (inputOptions.inputMode) {
-
-			case FILE -> {
-				File inputFile = inputOptions.input;
-				String inputName = inputFile.getName();
-				if (inputName.endsWith(".mbtiles")) {
-					yield new MbtilesReader(inputFile);
-				} else if (inputName.endsWith(".gol")) {
-					yield new GeodeskReader(inputFile);
-				} else {
-					yield new OSMFileReader(inputFile);
-				}
-			}
-
-			case OVERPASS -> new OverpassReader(inputOptions.overpassURL);
-
-		};
+		GeoBounds bounds = null;
 
 		if (inputBbox != null) {
-			return new OSMDataReaderView(dataReader, LatLonBounds.ofPoints(inputBbox));
+			bounds = LatLonBounds.ofPoints(inputBbox);
 		} else if (tile != null) {
-			return new OSMDataReaderView(dataReader, tile);
-		} else if (inputQuery != null && dataReader instanceof OverpassReader overpassReader) {
-			return new OSMDataReaderView(overpassReader, inputQuery);
-		} else {
-			return new OSMDataReaderView(dataReader);
+			bounds = tile;
 		}
+
+		return inputOptions.buildInput(bounds);
 
 	}
 

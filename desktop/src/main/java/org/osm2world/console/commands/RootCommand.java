@@ -11,7 +11,13 @@ import org.osm2world.util.GlobalValues;
 		mixinStandardHelpOptions = true,
 		version = GlobalValues.VERSION_STRING,
 		description = "Creates 3D models from OpenStreetMap data",
-		subcommands = {HelpCommand.class, ConvertCommand.class, GuiCommand.class, ParamsCommand.class})
+		subcommands = {
+				HelpCommand.class,
+				ConvertCommand.class,
+				GuiCommand.class,
+				ParamsCommand.class,
+				TilesetCommand.class
+		})
 public class RootCommand implements Callable<Integer> {
 
 	@Override

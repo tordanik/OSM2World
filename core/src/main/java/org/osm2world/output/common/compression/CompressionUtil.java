@@ -28,6 +28,8 @@ public final class CompressionUtil {
 	public static <E extends Exception> void writeFileWithCompression(File outputFile,
 				Compression compression, CheckedConsumer<OutputStream, E> writeToStream) throws E {
 
+		outputFile.getParentFile().mkdirs();
+
 		try (var fileOutputStream = new FileOutputStream(outputFile)) {
 
 			writeWithCompression(fileOutputStream, compression, outputFile.getName(), writeToStream);

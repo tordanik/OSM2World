@@ -61,7 +61,15 @@ import com.google.gson.JsonIOException;
  */
 public class GltfOutput extends AbstractOutput {
 
-	public enum GltfFlavor { GLTF, GLB }
+	public enum GltfFlavor {
+
+		GLTF, GLB;
+
+		public String extension() {
+			return "." + name().toLowerCase();
+		}
+
+	}
 
 	private final File outputFile;
 	private final GltfFlavor flavor;

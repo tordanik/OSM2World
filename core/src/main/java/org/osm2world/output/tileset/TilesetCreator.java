@@ -79,31 +79,31 @@ public class TilesetCreator {
 			List<MeshStore.MeshWithMetadata> meshes = meshStore.meshesWithMetadata();
 			meshes.sort(new MeshHeightAndSizeComparator());
 
-			File gltfFile0 = outputDir.resolve(baseFileName + "_0.gltf").toFile();
+			File gltfFile0 = outputDir.resolve(baseFileName + "_0" + gltfFlavor.extension()).toFile();
 			List<MeshStore.MeshWithMetadata> topMeshes = meshes.subList(0, Math.min(meshes.size(), NUM_MESHES_FOR_SUBDIVISION_TOP));
-			writeToFile(gltfFile0, topMeshes, bounds);
+			writeGltf(gltfFile0, topMeshes, bounds);
 			tileContentFiles.add(gltfFile0);
 
-			File gltfFile1 = outputDir.resolve(baseFileName + "_1.gltf").toFile();
+			File gltfFile1 = outputDir.resolve(baseFileName + "_1" + gltfFlavor.extension()).toFile();
 			List<MeshStore.MeshWithMetadata> restMeshes = meshes.subList(Math.min(meshes.size(), 100), meshes.size());
-			writeToFile(gltfFile1, restMeshes, bounds);
+			writeGltf(gltfFile1, restMeshes, bounds);
 			tileContentFiles.add(gltfFile1);
 
 		} else {
 
-			File gltfFile = outputDir.resolve(baseFileName + ".gltf").toFile();
-			writeToFile(gltfFile, meshStore.meshesWithMetadata(), bounds);
+			File gltfFile = outputDir.resolve(baseFileName + gltfFlavor.extension()).toFile();
+			writeGltf(gltfFile, meshStore.meshesWithMetadata(), bounds);
 			tileContentFiles.add(gltfFile);
 
 		}
 
 		/* write a tileset JSON referencing all written glTF files */
 
-		writeTileset(outputPath, tileContentFiles, mapProjection.getOrigin(), bounds, dataBounds.minY, dataBounds.maxY);
+		writeTilesetJson(outputPath, tileContentFiles, mapProjection.getOrigin(), bounds, dataBounds.minY, dataBounds.maxY);
 
 	}
 
-	private void writeToFile(File gltfFile, List<MeshStore.MeshWithMetadata> meshesWithMetadata,
+	private void writeGltf(File gltfFile, List<MeshStore.MeshWithMetadata> meshesWithMetadata,
 			SimpleClosedShapeXZ bounds) {
 
 		GltfOutput gltfOutput = new GltfOutput(gltfFile, gltfFlavor, gltfCompression, bounds);
@@ -145,7 +145,7 @@ public class TilesetCreator {
 			}]
 		}
 	}*/
-	private void writeTileset(File outFile, List<File> tileContentFiles, LatLon origin, SimpleClosedShapeXZ bounds, double minY, double maxY) {
+	private void writeTilesetJson(File outFile, List<File> tileContentFiles, LatLon origin, SimpleClosedShapeXZ bounds, double minY, double maxY) {
 
 		AxisAlignedRectangleXZ bbox = bounds.boundingBox();
 
