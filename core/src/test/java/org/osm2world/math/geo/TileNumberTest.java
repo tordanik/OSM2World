@@ -62,6 +62,19 @@ public class TileNumberTest {
 	}
 
 	@Test
+	public void testAncestor() {
+
+		var t00 = new TileNumber(20, 0, 0);
+		for (int zoom = 0; zoom <= t00.zoom; zoom++) {
+			assertEquals(new TileNumber(zoom, 0, 0), t00.ancestor(zoom));
+		}
+
+		assertEquals(new TileNumber(13, 4402, 2828),
+				new TileNumber(15, 17608, 11312).ancestor(13));
+
+	}
+
+	@Test
 	public void testLatLonBoundsZ0() {
 		LatLonBounds bounds = new TileNumber(0, 0, 0).latLonBounds();
 		assertAlmostEquals(-180, bounds.minlon);

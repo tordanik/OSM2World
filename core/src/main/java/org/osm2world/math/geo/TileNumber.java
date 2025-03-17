@@ -105,6 +105,13 @@ public class TileNumber implements TileBounds {
 		return Set.of(this);
 	}
 
+	public TileNumber ancestor(int zoom) {
+		if (zoom < 0) throw new IllegalArgumentException("zoom must not be negative: " + zoom);
+		if (zoom > this.zoom) throw new IllegalArgumentException("zoom is larger than current zoom: " + zoom);
+		int levels = this.zoom - zoom;
+		return new TileNumber(zoom, x >> levels, y >> levels);
+	}
+
 	public LatLonBounds latLonBounds() {
 		LatLon min = new LatLon(tile2lat(y + 1, zoom), tile2lon(x, zoom));
 		LatLon max = new LatLon(tile2lat(y, zoom), tile2lon(x + 1, zoom));
@@ -124,7 +131,7 @@ public class TileNumber implements TileBounds {
 		TileNumber min = atLatLon(zoom, bounds.getMin());
 		TileNumber max = atLatLon(zoom, bounds.getMax());
 
-		List<TileNumber> result = new ArrayList<TileNumber>();
+		List<TileNumber> result = new ArrayList<>();
 
 		for (int x = min.x; x <= max.x; x++) {
 			for (int y = max.y; y <= min.y; y++) {
