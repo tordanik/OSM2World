@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import org.cesiumjs.WGS84Util;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedBoundingBoxXYZ;
@@ -22,6 +21,7 @@ import org.osm2world.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.tileset.tiles_data.TilesetAsset;
+import org.osm2world.output.tileset.tiles_data.TilesetEntry;
 import org.osm2world.output.tileset.tiles_data.TilesetParentEntry;
 import org.osm2world.output.tileset.tiles_data.TilesetRoot;
 import org.osm2world.scene.mesh.MeshStore;
@@ -152,19 +152,10 @@ public class TilesetCreator {
 		VectorXYZ cartesianOrigin = WGS84Util.cartesianFromLatLon(origin, 0.0);
 		double[] transform = WGS84Util.eastNorthUpToFixedFrame(cartesianOrigin);
 
-		// left top
-		LatLon westNorth = this.mapProjection.toLatLon(new VectorXZ(bbox.minX, bbox.maxZ));
-		// right bottom
-		LatLon eastSouth = this.mapProjection.toLatLon(new VectorXZ(bbox.maxX, bbox.minZ));
+		LatLon westSouth = mapProjection.toLatLon(bbox.bottomLeft());
+		LatLon eastNorth = mapProjection.toLatLon(bbox.topRight());
 
-		double[] boundingRegion = new double[] {
-				Math.toRadians(westNorth.lon), // west
-				Math.toRadians(eastSouth.lat), // south
-				Math.toRadians(eastSouth.lon), // east
-				Math.toRadians(westNorth.lat), // north
-				minY,
-				maxY
-		};
+		var boundingRegion = new TilesetEntry.Region(westSouth, eastNorth, minY, maxY);
 
 		TilesetRoot tileset = new TilesetRoot();
 		tileset.setAsset(new TilesetAsset("1.0"));

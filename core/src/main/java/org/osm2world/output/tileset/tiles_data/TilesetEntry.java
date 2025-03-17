@@ -1,6 +1,10 @@
 package org.osm2world.output.tileset.tiles_data;
 
 
+import static java.lang.Math.toRadians;
+
+import org.osm2world.math.geo.LatLon;
+
 /**
  * // Example tileset
     "content": {
@@ -41,7 +45,28 @@ public class TilesetEntry {
         }
 
         public Region(double[] region) {
+            if (region.length != 6) throw new IllegalArgumentException("region array must be of length 6");
             this.region = region;
+        }
+
+        /** creates a region. Latitude and longitude values are in radians, elevations in meters. */
+        public Region(double west, double south, double east, double north, double minY, double maxY) {
+            this(new double[] {
+                    west,
+                    south,
+                    east,
+                    north,
+                    minY,
+                    maxY
+            });
+        }
+
+        public Region(LatLon westSouth, LatLon eastNorth, double minY, double maxY) {
+            this(toRadians(westSouth.lon),
+                    toRadians(westSouth.lat),
+                    toRadians(eastNorth.lon),
+                    toRadians(eastNorth.lat),
+                    minY, maxY);
         }
 
         public double[] getRegion() {
@@ -99,7 +124,7 @@ public class TilesetEntry {
         this.boundingVolume = boundingVolume;
     }
     public void setBoundingVolume(double[] region) {
-        this.boundingVolume = new Region(region);
+        this.setBoundingVolume(new Region(region));
     }
     
     public TilesetContent getContent() {
