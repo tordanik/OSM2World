@@ -158,7 +158,7 @@ public class TilesetCreator {
 		var boundingRegion = new TilesetEntry.Region(westSouth, eastNorth, minY, maxY);
 
 		TilesetRoot tileset = new TilesetRoot();
-		tileset.setAsset(new TilesetAsset("1.0"));
+		tileset.setAsset(new TilesetAsset());
 
 		TilesetParentEntry root = new TilesetParentEntry();
 		tileset.setRoot(root);
