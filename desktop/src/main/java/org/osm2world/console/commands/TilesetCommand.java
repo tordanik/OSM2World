@@ -1,5 +1,7 @@
 package org.osm2world.console.commands;
 
+import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,8 +25,6 @@ import org.osm2world.math.geo.TileNumber;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.output.common.compression.Compression;
-import org.osm2world.output.gltf.GltfOutput;
-import org.osm2world.output.tileset.TilesetCreator;
 import org.osm2world.output.tileset.TilesetOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.mesh.LevelOfDetail;
@@ -149,8 +149,7 @@ public class TilesetCommand implements Callable<Integer> {
 						mapProjection.toXZ(boundsLL.getMin()),
 						mapProjection.toXZ(boundsLL.getMax())));
 
-				var creator = new TilesetCreator(config, GltfOutput.GltfFlavor.GLB, Compression.NONE, mapProjection);
-				var output = new TilesetOutput(creator, tilesetJsonFile, boundsXZ);
+				var output = new TilesetOutput(tilesetJsonFile, GLB, Compression.NONE, mapProjection, boundsXZ);
 				output.setConfiguration(config);
 
 				output.outputScene(scene);
