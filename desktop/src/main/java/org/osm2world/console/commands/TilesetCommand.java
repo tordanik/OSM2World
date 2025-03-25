@@ -24,7 +24,9 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.osm.creation.OSMDataReaderView;
+import org.osm2world.output.Output;
 import org.osm2world.output.common.compression.Compression;
+import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.tileset.TilesetOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.mesh.LevelOfDetail;
@@ -70,6 +72,9 @@ public class TilesetCommand implements Callable<Integer> {
 			paramLabel="<number>")
 	@Nullable
 	LevelOfDetail lod = null;
+
+	@CommandLine.Option(names = {"--noJson"}, description = "skip creation of tileset.json files")
+	boolean noJson = false;
 
 	@CommandLine.ArgGroup(multiplicity = "1")
 	Bounds bounds;
@@ -127,13 +132,7 @@ public class TilesetCommand implements Callable<Integer> {
 
 				O2WConfig config = configOptions.getO2WConfig(extraProperties);
 
-				/* create glb and tileset files */
-
-				File tilesetJsonFile = baseDir
-						.resolve("" + tile.zoom)
-						.resolve("" + tile.x)
-						.resolve(tile.y + ".tileset.json")
-						.toFile();
+				/* render the scene */
 
 				OSMDataReaderView readerView = inputOptions.buildInput(tile);
 
@@ -149,9 +148,23 @@ public class TilesetCommand implements Callable<Integer> {
 						mapProjection.toXZ(boundsLL.getMin()),
 						mapProjection.toXZ(boundsLL.getMax())));
 
-				var output = new TilesetOutput(tilesetJsonFile, GLB, Compression.NONE, mapProjection, boundsXZ);
-				output.setConfiguration(config);
+				/* create glb and tileset files */
 
+				Output output;
+
+				if (noJson) {
+
+					File glbFile = getTileFilename(tile, ".glb");
+					output = new GltfOutput(glbFile, GLB, Compression.NONE, boundsXZ);
+
+				} else {
+
+					File tilesetJsonFile = getTileFilename(tile, ".tileset.json");
+					output = new TilesetOutput(tilesetJsonFile, GLB, Compression.NONE, mapProjection, boundsXZ);
+
+				}
+
+				output.setConfiguration(config);
 				output.outputScene(scene);
 
 			} catch (IOException e) {
@@ -161,6 +174,14 @@ public class TilesetCommand implements Callable<Integer> {
 
 		}
 
+	}
+
+	private File getTileFilename(TileNumber tile, String extension) {
+		return baseDir
+				.resolve("" + tile.zoom)
+				.resolve("" + tile.x)
+				.resolve(tile.y + extension)
+				.toFile();
 	}
 
 }
