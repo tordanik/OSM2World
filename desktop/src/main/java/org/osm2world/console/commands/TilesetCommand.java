@@ -5,6 +5,7 @@ import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,10 @@ import picocli.CommandLine;
 
 @CommandLine.Command(name = "tileset", description = "Create 3D Tiles for some geographic area.")
 public class TilesetCommand implements Callable<Integer> {
+
+	private enum OverwriteMode {
+		NEVER, OLDER, ALWAYS
+	}
 
 	private static class Bounds {
 
@@ -76,6 +81,10 @@ public class TilesetCommand implements Callable<Integer> {
 	@CommandLine.Option(names = {"--noJson"}, description = "skip creation of tileset.json files")
 	boolean noJson = false;
 
+	@CommandLine.Option(names = {"--overwrite"}, defaultValue = "ALWAYS",
+			description = "when to overwrite existing tiles (never, when they older than the input data, or always)")
+	OverwriteMode overwriteFiles;
+
 	@CommandLine.ArgGroup(multiplicity = "1")
 	Bounds bounds;
 
@@ -108,11 +117,33 @@ public class TilesetCommand implements Callable<Integer> {
 
 		List<TileNumber> tileNumbers = TileNumber.tilesForBounds(ZOOM, bbox);
 
-		createTiles(tileNumbers);
+		List<TileNumber> filteredTileNumbers = filterTileNumbers(tileNumbers);
+
+		int skippedTiles = tileNumbers.size() - filteredTileNumbers.size();
+		if (skippedTiles > 0) {
+			System.out.println("Skipping " + skippedTiles + " existing tiles");
+		}
+
+		createTiles(filteredTileNumbers);
 
 		// TODO merge tilesets
 
 		return 0;
+
+	}
+
+	private List<TileNumber> filterTileNumbers(List<TileNumber> tileNumbers) {
+
+		List<TileNumber> result = new ArrayList<>();
+
+		for (TileNumber tile : tileNumbers) {
+			if (fileIsMissingOrOverwritable(getTileFilename(tile, ".glb"))
+					&& fileIsMissingOrOverwritable(getTileFilename(tile, ".tileset.json"))) {
+				result.add(tile);
+			}
+		}
+
+		return result;
 
 	}
 
@@ -182,6 +213,20 @@ public class TilesetCommand implements Callable<Integer> {
 				.resolve("" + tile.x)
 				.resolve(tile.y + extension)
 				.toFile();
+	}
+
+	private boolean fileIsMissingOrOverwritable(File file) {
+
+		if (!file.exists()) { return true; }
+
+		Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
+
+		return switch (overwriteFiles) {
+			case ALWAYS -> true;
+			case NEVER -> false;
+			case OLDER -> fileTimestamp.isBefore(inputOptions.getInputTimestamp());
+		};
+
 	}
 
 }

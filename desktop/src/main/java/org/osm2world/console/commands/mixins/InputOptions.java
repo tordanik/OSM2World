@@ -1,6 +1,10 @@
 package org.osm2world.console.commands.mixins;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 
 import javax.annotation.Nullable;
 
@@ -60,6 +64,25 @@ public class InputOptions {
 			return new OSMDataReaderView(dataReader);
 		}
 
+	}
+
+	/**
+	 * returns the presumed time when the input was last updated,
+	 * e.g. the timestamp of the last modification of the input file
+	 */
+	public Instant getInputTimestamp() {
+		return switch (inputMode) {
+			case OVERPASS -> Instant.now();
+			case FILE -> {
+				try {
+					BasicFileAttributes attr = Files.readAttributes(input.toPath(), BasicFileAttributes.class);
+					// use creation instead of modification because .gol files get modified when reading
+					yield attr.creationTime().toInstant();
+				} catch (IOException e) {
+					yield Instant.ofEpochMilli(input.lastModified());
+				}
+			}
+		};
 	}
 
 }
