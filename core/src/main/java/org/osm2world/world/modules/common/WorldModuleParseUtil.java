@@ -2,8 +2,7 @@ package org.osm2world.world.modules.common;
 
 import static java.lang.Math.toRadians;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
-import static org.osm2world.util.ValueParseUtil.parseAngle;
-import static org.osm2world.util.ValueParseUtil.parseOsmDecimal;
+import static org.osm2world.util.ValueParseUtil.*;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -13,6 +12,7 @@ import javax.annotation.Nullable;
 import org.osm2world.map_data.data.Tag;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.util.ValueParseUtil;
+import org.osm2world.util.enums.UpDown;
 import org.osm2world.world.creation.WorldModule;
 
 import com.google.common.collect.Lists;
@@ -106,6 +106,17 @@ public class WorldModuleParseUtil {
 			return null;
 		}
 
+	}
+
+	public static @Nullable UpDown parseInclineDirection(TagSet tags) {
+		double incline = parseIncline(tags.getValue("incline"), 0);
+		if (tags.contains("incline", "up") || incline > 0) {
+			return UpDown.UP;
+		} else if (tags.contains("incline", "down") || incline < 0) {
+			return UpDown.DOWN;
+		} else {
+			return null;
+		}
 	}
 
 	public static final int parseInt(TagSet tags, int defaultValue, String key) {

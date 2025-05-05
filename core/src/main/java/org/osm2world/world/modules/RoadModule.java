@@ -12,6 +12,7 @@ import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.Constra
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.addYList;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
@@ -19,11 +20,9 @@ import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.POSITIVE;
 import static org.osm2world.util.ValueParseUtil.*;
-import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
-import static org.osm2world.world.modules.common.WorldModuleParseUtil.inheritTags;
-import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseWidth;
+import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.*;
 
@@ -47,6 +46,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.util.enums.LeftRight;
+import org.osm2world.util.enums.UpDown;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -1407,13 +1407,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				boolean frontIsLower = frontCenter.y < backCenter.y;
 
 				if (abs(frontCenter.y - backCenter.y) < 0.01 && tags.containsKey("incline")) {
-					if (tags.contains("incline", "up")
-							|| parseIncline(tags.getValue("incline")) != null && parseIncline(tags.getValue("incline")) > 0) {
-						frontIsLower = true;
-					} else if (tags.contains("incline", "down")
-							|| parseIncline(tags.getValue("incline")) != null && parseIncline(tags.getValue("incline")) < 0) {
-						frontIsLower = false;
-					}
+					UpDown inclineDir = parseInclineDirection(tags);
+					frontIsLower = (inclineDir == UpDown.UP);
 				}
 
 				VectorXYZ edgeLeft, edgeRight;
