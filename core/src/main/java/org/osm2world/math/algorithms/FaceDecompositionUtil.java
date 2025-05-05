@@ -4,6 +4,7 @@ import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections4.CollectionUtils.union;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
 import java.util.*;
@@ -53,7 +54,7 @@ public final class FaceDecompositionUtil {
 		if (!holes.isEmpty()) {
 
 			SpatialIndex<PolygonShapeXZ> index = (holes.size() > 40)
-					? new IndexGrid<>(bboxUnion(holes), 20.0, 20.0)
+					? new IndexGrid<>(bboxUnion(union(faces, holes)), 20.0, 20.0)
 					: null;
 
 			if (index != null) { holes.forEach(index::insert); }
