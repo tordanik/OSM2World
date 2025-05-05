@@ -3,7 +3,7 @@ package org.osm2world.world.network;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
@@ -15,6 +15,7 @@ import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateEleOfSegment;
 import static org.osm2world.util.ValueParseUtil.parseIncline;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
+import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseInclineDirection;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,10 +24,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.map_data.data.MapElement;
-import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_data.data.MapWaySegment;
-import org.osm2world.map_data.data.TagSet;
+import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapType;
@@ -43,6 +41,7 @@ import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
+import org.osm2world.util.enums.UpDown;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
@@ -606,7 +605,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	}
 
 	@Override
-	public Iterable<AttachmentConnector> getAttachmentConnectors() {
+	public List<AttachmentConnector> getAttachmentConnectors() {
 		return attachmentConnectorList;
 	}
 
@@ -619,7 +618,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		Integer firstNodeLevel = null;
 		Integer lastNodeLevel = null;
 
-		/* use level tags on the node or connected elements */
+		/* consider level tags on the node itself or connected elements */
 
 		firstNodeLevel = determineLevelOfNode(wayStartNode);
 		lastNodeLevel = determineLevelOfNode(wayEndNode);
@@ -629,14 +628,24 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		if (segment.getTags().containsKey("level")) {
 
 			List<Integer> levels = parseLevels(segment.getTags().getValue("level"));
-
 			if (levels != null) {
-				if (segment.getTags().contains("incline", "down")) {
-					firstNodeLevel = levels.get(levels.size() - 1);
+
+				if (levels.size() == 1) {
+					firstNodeLevel = levels.get(0);
 					lastNodeLevel = levels.get(0);
 				} else {
-					firstNodeLevel = levels.get(0);
-					lastNodeLevel = levels.get(levels.size() - 1);
+
+					if (this.segment.getWay().getWaySegments().size() == 1) {
+						UpDown inclineDir = parseInclineDirection(segment.getTags());
+						if (inclineDir == UpDown.UP) {
+							firstNodeLevel = levels.get(0);
+							lastNodeLevel = levels.get(levels.size() - 1);
+						} else if (inclineDir == UpDown.DOWN) {
+							firstNodeLevel = levels.get(levels.size() - 1);
+							lastNodeLevel = levels.get(0);
+						}
+					}
+
 				}
 			}
 		}
@@ -682,25 +691,70 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		if (node.getTags().containsKey("level")) {
 			List<Integer> parsedLevels = parseLevels(node.getTags().getValue("level"));
-			if (parsedLevels != null) {
+			if (parsedLevels != null && parsedLevels.size() == 1) {
 				return parsedLevels.get(0);
 			}
 		}
 
-		/* as a fallback, find level tags of connected map elements */
+		/* as a fallback, find level tags of connected areas */
 
 		Integer result = null;
 
 		for (MapElement connectedElement : node.getAdjacentAreas()) {
+
 			TagSet tags = connectedElement.getTags();
-			if (asList("room", "area", "corridor").contains(tags.getValue("indoor"))) {
-				List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
-				if (parsedLevels != null) {
-					if (result == null || parsedLevels.get(0) < result) {
-						result = parsedLevels.get(0);
+			List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
+
+			if (parsedLevels != null && parsedLevels.size() == 1) {
+				int level = parsedLevels.get(0);
+				if (result == null || level < result) {
+					result = level;
+				}
+			}
+
+		}
+
+		if (result != null) {
+			return result;
+		}
+
+		/* as another fallback, find level tags of connected ways (may have incline tags) */
+
+		for (MapWaySegment connectedSegment : node.getConnectedWaySegments()) {
+
+			MapWay connectedWay = connectedSegment.getWay();
+
+			TagSet tags = connectedSegment.getTags();
+			List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
+			if (parsedLevels == null) continue;
+
+			Integer level = null;
+
+			if (parsedLevels.size() == 1) {
+				level = parsedLevels.get(0);
+			} else if (parsedLevels.size() > 1) {
+
+				UpDown inclineDir = parseInclineDirection(tags);
+
+				if (node == connectedWay.getNodes().get(0)) {
+					if (inclineDir == UpDown.UP) {
+						level = min(parsedLevels);
+					} else if (inclineDir == UpDown.DOWN) {
+						level = max(parsedLevels);
+					}
+				} else if (node == connectedWay.getNodes().get(connectedWay.getNodes().size() - 1)) {
+					if (inclineDir == UpDown.UP) {
+						level = max(parsedLevels);
+					} else if (inclineDir == UpDown.DOWN) {
+						level = min(parsedLevels);
 					}
 				}
 			}
+
+			if (result == null || level != null && level < result) {
+				result = level;
+			}
+
 		}
 
 		return result;
