@@ -4,9 +4,13 @@ import java.util.List;
 
 import org.osm2world.console.commands.GuiCommand;
 import org.osm2world.console.commands.RootCommand;
+import org.osm2world.console.commands.converters.LatLonBoundsConverter;
 import org.osm2world.console.commands.converters.LodConverter;
+import org.osm2world.console.commands.converters.TileBoundsConverter;
 import org.osm2world.console.legacy.LegacyCLI;
 import org.osm2world.math.geo.LatLon;
+import org.osm2world.math.geo.LatLonBounds;
+import org.osm2world.math.geo.TileBounds;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.Resolution;
@@ -60,9 +64,11 @@ public class OSM2World {
 	public static CommandLine buildCommandLine(Object command) {
 		CommandLine commandLine = new CommandLine(command);
 		commandLine.setCaseInsensitiveEnumValuesAllowed(true);
-		commandLine.registerConverter(Resolution.class, Resolution::new);
-		commandLine.registerConverter(LevelOfDetail.class, new LodConverter());
 		commandLine.registerConverter(LatLon.class, LatLon::new);
+		commandLine.registerConverter(LatLonBounds.class, new LatLonBoundsConverter());
+		commandLine.registerConverter(LevelOfDetail.class, new LodConverter());
+		commandLine.registerConverter(Resolution.class, Resolution::new);
+		commandLine.registerConverter(TileBounds.class, new TileBoundsConverter());
 		commandLine.registerConverter(TileNumber.class, TileNumber::new);
 		return commandLine;
 	}

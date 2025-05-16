@@ -1,13 +1,11 @@
 package org.osm2world.console.commands.mixins;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.osm2world.math.geo.CardinalDirection;
-import org.osm2world.math.geo.LatLon;
+import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.LatLonEle;
-import org.osm2world.math.geo.TileNumber;
+import org.osm2world.math.geo.TileBounds;
 
 import picocli.CommandLine;
 
@@ -32,13 +30,13 @@ public class CameraOptions {
 				paramLabel = "[NESW]")
 		public CardinalDirection from = CardinalDirection.S;
 
-		@CommandLine.Option(names = {"--oview.bbox"}, arity = "2..*", paramLabel="lat,lon",
+		@CommandLine.Option(names = {"--oview.bbox"}, paramLabel="lat,lon lat,lon...",
 				description = "bounding box for orthographic view")
-		public List<LatLon> bbox;
+		@Nullable public LatLonBounds bbox;
 
-		@CommandLine.Option(names = {"--oview.tiles"}, arity = "1..*", paramLabel="zoom,x,y",
+		@CommandLine.Option(names = {"--oview.tiles"}, paramLabel="zoom,x,y...",
 				description = "tiles defining a bounding box for orthographic view")
-		public List<TileNumber> tiles;
+		@Nullable public TileBounds tiles;
 
 	}
 

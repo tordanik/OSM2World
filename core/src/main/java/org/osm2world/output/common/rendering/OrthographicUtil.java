@@ -112,7 +112,7 @@ public final class OrthographicUtil {
 
 	}
 
-	private static AxisAlignedRectangleXZ boundsXZ(MapProjection mapProjection, LatLonBounds bounds) {
+	public static AxisAlignedRectangleXZ boundsXZ(MapProjection mapProjection, LatLonBounds bounds) {
 		return bbox(List.of(mapProjection.toXZ(bounds.getMin()), mapProjection.toXZ(bounds.getMax())));
 	}
 

@@ -4,7 +4,6 @@ import static java.lang.Math.*;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.console.commands.mixins.CameraOptions.*;
-import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.output.gltf.GltfOutput.GltfFlavor;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
@@ -65,10 +64,10 @@ public class ConvertCommand implements Callable<Integer> {
 	@Nullable
 	Resolution resolution = null;
 
-	@Option(names = {"--input_bbox"}, arity = "2..*", paramLabel="lat,lon",
+	@Option(names = {"--input_bbox"}, paramLabel="lat,lon lat,lon...",
 			description="input bounding box (does not work with all data sources)")
 	@Nullable
-	List<LatLon> inputBbox;
+	LatLonBounds inputBbox;
 
 	@CommandLine.ArgGroup()
 	@Nullable CameraOptions cameraOptions = null;
@@ -172,10 +171,10 @@ public class ConvertCommand implements Callable<Integer> {
 
 				AxisAlignedRectangleXZ bounds;
 
-				if (oView.bbox != null && !oView.bbox.isEmpty()) {
-					bounds = bbox(oView.bbox.stream().map(proj::toXZ).toList());
-				} else if (oView.tiles != null && !oView.tiles.isEmpty()) {
-					bounds = OrthographicUtil.boundsForTiles(proj, oView.tiles);
+				if (oView.bbox != null) {
+					bounds = OrthographicUtil.boundsXZ(proj, oView.bbox);
+				} else if (oView.tiles != null) {
+					bounds = OrthographicUtil.boundsXZ(proj, oView.tiles.latLonBounds());
 				} else if (tile != null) {
 					bounds = OrthographicUtil.boundsForTile(proj, tile);
 				} else {
@@ -318,7 +317,7 @@ public class ConvertCommand implements Callable<Integer> {
 		GeoBounds bounds = null;
 
 		if (inputBbox != null) {
-			bounds = LatLonBounds.ofPoints(inputBbox);
+			bounds = inputBbox;
 		} else if (tile != null) {
 			bounds = tile;
 		}

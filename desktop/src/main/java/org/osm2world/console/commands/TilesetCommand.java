@@ -19,10 +19,7 @@ import org.osm2world.console.commands.mixins.InputOptions;
 import org.osm2world.console.commands.mixins.LoggingOptions;
 import org.osm2world.console.commands.mixins.MetadataOptions;
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.math.geo.LatLon;
-import org.osm2world.math.geo.LatLonBounds;
-import org.osm2world.math.geo.MapProjection;
-import org.osm2world.math.geo.TileNumber;
+import org.osm2world.math.geo.*;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.output.Output;
@@ -43,28 +40,22 @@ public class TilesetCommand implements Callable<Integer> {
 
 	private static class Bounds {
 
-		@CommandLine.Option(names = {"--bbox"}, arity = "2..*", paramLabel="lat,lon",
+		@CommandLine.Option(names = {"--bbox"}, paramLabel="lat,lon lat,lon...",
 				description="area to create tiles for", required = true)
-		List<LatLon> bboxPoints = List.of();
+		@Nullable LatLonBounds bboxPoints = null;
 
-		@CommandLine.Option(names = {"--bboxTiles"}, arity = "1.*", paramLabel = "zoom,x,y",
+		@CommandLine.Option(names = {"--bboxTiles"}, paramLabel = "zoom,x,y",
 				description = "area to create tiles for", required = true)
-		List<TileNumber> bboxTiles = List.of();
+		@Nullable TileBounds bboxTiles;
 
-		public LatLonBounds constructBbox() {
-
-			List<LatLonBounds> bounds = new ArrayList<>();
-
-			if (bboxPoints.size() > 1) {
-				bounds.add(LatLonBounds.ofPoints(bboxPoints));
+		public GeoBounds constructBbox() {
+			if (bboxPoints != null) {
+				return bboxPoints;
+			} else if (bboxTiles != null) {
+				return bboxTiles;
+			} else {
+				throw new Error("Neither bboxPoints nor bboxTiles is set");
 			}
-
-			if (!bboxTiles.isEmpty()) {
-				bboxTiles.forEach(tile -> bounds.add(tile.latLonBounds()));
-			}
-
-			return bounds.isEmpty() ? null : LatLonBounds.union(bounds);
-
 		}
 
 	}
@@ -104,12 +95,7 @@ public class TilesetCommand implements Callable<Integer> {
 
 	public Integer call() {
 
-		LatLonBounds bbox = bounds.constructBbox();
-
-		if (bbox == null) {
-			System.err.println("Not enough parameters to construct bbox");
-			return 1;
-		}
+		LatLonBounds bbox = bounds.constructBbox().latLonBounds();
 
 		// shrink bounds a tiny bit to prevent the neighboring tiles from being generated as well
 		bbox = new LatLonBounds(bbox.minlat + 1e-5, bbox.minlon + 1e-5,
