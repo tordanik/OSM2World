@@ -156,7 +156,7 @@ public class LevelAndHeightData {
 
 		if (roofHeight == null) {
 			if (roof instanceof DomeRoof) {
-				roofHeight = outline.getDiameter();
+				roofHeight = outline.getDiameter() / 2;
 			} else if (buildingLevels == 1) {
 				roofHeight = 1.0;
 			} else {
