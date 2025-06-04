@@ -804,6 +804,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		private LaneLayout buildBasicLaneLayout() {
 
 			boolean isOneway = isOneway(tags);
+			boolean unmarkedLanes = tags.contains("lane_markings", "no");
 
 			/* determine which special lanes and attributes exist */
 
@@ -916,6 +917,8 @@ public class RoadModule extends ConfigurableWorldModule {
 					dividerType = SOLID_LINE;
 				} else if ("no".equals(divider)) {
 					dividerType = null;
+				} else if (unmarkedLanes) {
+					dividerType = null;
 				} else {
 
 					//no explicit divider tagging, try to infer from overtaking rules
@@ -956,12 +959,12 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				for (int i = 0; i < lanesPart; ++ i) {
 
-					if (i > 0) {
+					if (i > 0 && !unmarkedLanes) {
 
 						// divider between lanes in the same direction
 
 						layout.getLanes(roadPart).add(new Lane(this,
-								DASHED_LINE, roadPart, TagSet.of()));
+								 DASHED_LINE, roadPart, TagSet.of()));
 
 					}
 
