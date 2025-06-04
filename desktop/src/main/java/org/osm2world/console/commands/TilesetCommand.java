@@ -41,11 +41,11 @@ public class TilesetCommand implements Callable<Integer> {
 	private static class Bounds {
 
 		@CommandLine.Option(names = {"--bbox"}, paramLabel="lat,lon lat,lon...",
-				description="area to create tiles for", required = true)
+				description="area to create tiles for, can be specified multiple times", required = true)
 		@Nullable LatLonBounds bboxPoints = null;
 
 		@CommandLine.Option(names = {"--bboxTiles"}, paramLabel = "zoom,x,y",
-				description = "area to create tiles for", required = true)
+				description = "area to create tiles for, can be specified multiple times", required = true)
 		@Nullable TileBounds bboxTiles;
 
 		public GeoBounds constructBbox() {
@@ -76,8 +76,8 @@ public class TilesetCommand implements Callable<Integer> {
 			description = "when to overwrite existing tiles (never, when they older than the input data, or always)")
 	OverwriteMode overwriteFiles;
 
-	@CommandLine.ArgGroup(multiplicity = "1")
-	Bounds bounds;
+	@CommandLine.ArgGroup(multiplicity = "1..")
+	List<Bounds> bounds;
 
 	@CommandLine.Mixin
 	InputOptions inputOptions;
@@ -95,13 +95,19 @@ public class TilesetCommand implements Callable<Integer> {
 
 	public Integer call() {
 
-		LatLonBounds bbox = bounds.constructBbox().latLonBounds();
+		List<TileNumber> tileNumbers = new ArrayList<>();
 
-		// shrink bounds a tiny bit to prevent the neighboring tiles from being generated as well
-		bbox = new LatLonBounds(bbox.minlat + 1e-5, bbox.minlon + 1e-5,
-				bbox.maxlat - 1e-5, bbox.maxlon - 1e-5);
+		for (var b : bounds) {
 
-		List<TileNumber> tileNumbers = TileNumber.tilesForBounds(ZOOM, bbox);
+			LatLonBounds bbox = b.constructBbox().latLonBounds();
+
+			// shrink bounds a tiny bit to prevent the neighboring tiles from being generated as well
+			bbox = new LatLonBounds(bbox.minlat + 1e-5, bbox.minlon + 1e-5,
+					bbox.maxlat - 1e-5, bbox.maxlon - 1e-5);
+
+			tileNumbers.addAll(TileNumber.tilesForBounds(ZOOM, bbox));
+
+		}
 
 		List<TileNumber> filteredTileNumbers = filterTileNumbers(tileNumbers);
 
