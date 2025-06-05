@@ -273,7 +273,7 @@ public class O2WConfig {
 	 * output directory for log files
 	 */
 	public @Nullable File logDir() {
-		return resolveFileConfigProperty(config.getString("logDir", null));
+		return resolveFileConfigProperty(config.getString("logDir", null), false);
 	}
 
 	/** a directory with SRTM data in .hgt or .hgt.zip format */
@@ -311,7 +311,14 @@ public class O2WConfig {
 	 * if this config references some files by path, e.g. textures,
 	 * resolve file paths relative to the location of the config file used to load this config (if any)
 	 */
-	public File resolveFileConfigProperty(String fileName) {
+	public @Nullable File resolveFileConfigProperty(String fileName) {
+		return resolveFileConfigProperty(fileName, true);
+	}
+
+	/**
+	 * Variant of {@link #resolveFileConfigProperty(String)} which can optionally permit non-existing files.
+	 */
+	public @Nullable File resolveFileConfigProperty(String fileName, boolean requireFileExists) {
 
 		if (fileName == null) {
 			return null;
@@ -333,7 +340,7 @@ public class O2WConfig {
 					.resolve(Path.of(fileName).normalize()).toFile();
 		}
 
-		if (!file.exists()) {
+		if (requireFileExists && !file.exists()) {
 			System.err.println("File referenced in config does not exist: " + file);
 			return null;
 		}
