@@ -40,6 +40,12 @@ public class TilesetOutput extends MeshOutput {
 	//TODO: Make configurable
 	private static final int NUM_MESHES_FOR_SUBDIVISION_TOP = 100;
 
+	/**
+	 * omit the file extension indicating a compressed file from the tileset JSON,
+	 * relying on the webserver's rewrite rules
+	 */
+	private static final boolean TRANSPARENT_COMPRESSION = true;
+
 	private final File outputFile;
 	private final GltfOutput.GltfFlavor gltfFlavor;
 	private final Compression gltfCompression;
@@ -86,6 +92,7 @@ public class TilesetOutput extends MeshOutput {
 		List<File> tileContentFiles = new ArrayList<>();
 
 		Path outputDir = outputFile.toPath().getParent();
+		String extension = gltfFlavor.extension() + gltfCompression.extension();
 		String baseFileName = outputFile.getName();
 		baseFileName = baseFileName.replaceAll("(?:\\.tileset)?\\.json$", "");
 
@@ -94,19 +101,19 @@ public class TilesetOutput extends MeshOutput {
 			List<MeshStore.MeshWithMetadata> meshes = meshStore.meshesWithMetadata();
 			meshes.sort(new MeshHeightAndSizeComparator());
 
-			File gltfFile0 = outputDir.resolve(baseFileName + "_0" + gltfFlavor.extension()).toFile();
+			File gltfFile0 = outputDir.resolve(baseFileName + "_0" + extension).toFile();
 			List<MeshStore.MeshWithMetadata> topMeshes = meshes.subList(0, Math.min(meshes.size(), NUM_MESHES_FOR_SUBDIVISION_TOP));
 			writeGltf(gltfFile0, topMeshes, bounds);
 			tileContentFiles.add(gltfFile0);
 
-			File gltfFile1 = outputDir.resolve(baseFileName + "_1" + gltfFlavor.extension()).toFile();
+			File gltfFile1 = outputDir.resolve(baseFileName + "_1" + extension).toFile();
 			List<MeshStore.MeshWithMetadata> restMeshes = meshes.subList(Math.min(meshes.size(), 100), meshes.size());
 			writeGltf(gltfFile1, restMeshes, bounds);
 			tileContentFiles.add(gltfFile1);
 
 		} else {
 
-			File gltfFile = outputDir.resolve(baseFileName + gltfFlavor.extension()).toFile();
+			File gltfFile = outputDir.resolve(baseFileName + extension).toFile();
 			writeGltf(gltfFile, meshStore.meshesWithMetadata(), bounds);
 			tileContentFiles.add(gltfFile);
 
@@ -161,6 +168,12 @@ public class TilesetOutput extends MeshOutput {
 		}
 	}*/
 	private void writeTilesetJson(File outFile, List<File> tileContentFiles, LatLon origin, SimpleClosedShapeXZ bounds, double minY, double maxY) {
+
+		if (TRANSPARENT_COMPRESSION) {
+			tileContentFiles = tileContentFiles.stream()
+					.map(f -> new File(f.getPath().replaceAll("\\.(?:gz|zip)$", "")))
+					.toList();
+		}
 
 		VectorXYZ cartesianOrigin = WGS84Util.cartesianFromLatLon(origin, 0.0);
 		double[] transform = WGS84Util.eastNorthUpToFixedFrame(cartesianOrigin);

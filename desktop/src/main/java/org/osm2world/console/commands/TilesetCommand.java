@@ -72,6 +72,10 @@ public class TilesetCommand implements Callable<Integer> {
 	@CommandLine.Option(names = {"--noJson"}, description = "skip creation of tileset.json files")
 	boolean noJson = false;
 
+	@CommandLine.Option(names = {"--precompressedTiles"},
+			description = "store tiles with .gz compression, but reference their uncompressed names in tilesets")
+	boolean precompressedTiles = false;
+
 	@CommandLine.Option(names = {"--overwrite"}, defaultValue = "ALWAYS",
 			description = "when to overwrite existing tiles (never, when they older than the input data, or always)")
 	OverwriteMode overwriteFiles;
@@ -171,19 +175,21 @@ public class TilesetCommand implements Callable<Integer> {
 						mapProjection.toXZ(boundsLL.getMin()),
 						mapProjection.toXZ(boundsLL.getMax())));
 
+				Compression compression = precompressedTiles ? Compression.GZ : Compression.NONE;
+
 				/* create glb and tileset files */
 
 				Output output;
 
 				if (noJson) {
 
-					File glbFile = getTileFilename(tile, ".glb");
-					output = new GltfOutput(glbFile, GLB, Compression.NONE, boundsXZ);
+					File glbFile = getTileFilename(tile, ".glb" + compression.extension());
+					output = new GltfOutput(glbFile, GLB, null, boundsXZ);
 
 				} else {
 
 					File tilesetJsonFile = getTileFilename(tile, ".tileset.json");
-					output = new TilesetOutput(tilesetJsonFile, GLB, Compression.NONE, mapProjection, boundsXZ);
+					output = new TilesetOutput(tilesetJsonFile, GLB, compression, mapProjection, boundsXZ);
 
 				}
 
