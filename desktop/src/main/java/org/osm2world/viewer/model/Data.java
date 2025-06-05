@@ -74,7 +74,7 @@ public class Data extends Observable {
 
 			if (failOnLargeBBox) {
 				double maxBoundingBoxDegrees = 1;
-				LatLonBounds bounds = reader.getBounds();
+				LatLonBounds bounds = reader.getBounds().latLonBounds();
 				if (bounds.sizeLat() > maxBoundingBoxDegrees
 						|| bounds.sizeLon() > maxBoundingBoxDegrees) {
 					throw new BoundingBoxSizeException();

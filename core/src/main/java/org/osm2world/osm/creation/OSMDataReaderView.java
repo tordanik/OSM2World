@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.math.geo.GeoBounds;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.osm.data.OSMData;
@@ -67,11 +68,11 @@ public class OSMDataReaderView implements OSMDataReader {
 		return this.getAllDataCache;
 	}
 
-	public LatLonBounds getBounds() throws IOException {
+	public GeoBounds getBounds() throws IOException {
 		if (bounds != null) {
 			return bounds;
 		} else if (tileNumber != null) {
-			return tileNumber.latLonBounds();
+			return tileNumber;
 		} else {
 			return getAllData().getLatLonBounds();
 		}

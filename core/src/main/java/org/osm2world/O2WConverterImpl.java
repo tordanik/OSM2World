@@ -44,13 +44,14 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.osm.creation.OSMDataReader;
+import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.output.Output;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.compression.CompressionUtil;
+import org.osm2world.scene.Scene;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.model.Models;
-import org.osm2world.scene.Scene;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -126,7 +127,9 @@ class O2WConverterImpl {
 			ConversionLog.log(FATAL, "Conversion failed", e, null);
 			throw e;
 		} finally {
-			String fileNameSuffix = bounds instanceof TileNumber tile ? tile.toString("_") : null;
+			GeoBounds b = (bounds != null) ? bounds
+					: (osmDataReader instanceof OSMDataReaderView view) ? view.getBounds() : null;
+			String fileNameSuffix = b instanceof TileNumber tile ? tile.toString("_") : null;
 			writeLogs(fileNameSuffix, perfListener, config);
 		}
 
