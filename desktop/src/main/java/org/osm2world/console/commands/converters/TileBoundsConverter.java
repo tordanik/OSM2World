@@ -22,7 +22,9 @@ public class TileBoundsConverter implements CommandLine.ITypeConverter<TileBound
 			throw new IllegalArgumentException("Not a valid tile number bounds value");
 		}
 
-		return TileBounds.around(tiles);
+		return tiles.size() == 1
+				? tiles.get(0)
+				: TileBounds.around(tiles);
 
 	}
 
