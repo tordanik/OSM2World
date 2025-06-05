@@ -141,7 +141,7 @@ public class TilesetCommand implements Callable<Integer> {
 
 	private void createTiles(List<TileNumber> tileNumbers) {
 
-		for (TileNumber tile : tileNumbers) {
+		tileNumbers.parallelStream().forEach(tile -> {
 
 			try {
 
@@ -195,7 +195,7 @@ public class TilesetCommand implements Callable<Integer> {
 				e.printStackTrace();
 			}
 
-		}
+		});
 
 	}
 
