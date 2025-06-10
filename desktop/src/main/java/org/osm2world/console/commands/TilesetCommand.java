@@ -158,6 +158,15 @@ public class TilesetCommand implements Callable<Integer> {
 
 				O2WConfig config = configOptions.getO2WConfig(extraProperties);
 
+				/* Set some default values specific to the tileset command */
+
+				if (!config.containsKey("keepOsmElements")) {
+					config = config.withProperty("keepOsmElements", "false");
+				}
+				if (!config.containsKey("clipToBounds")) {
+					config = config.withProperty("clipToBounds", "true");
+				}
+
 				/* render the scene */
 
 				OSMDataReaderView readerView = inputOptions.buildInput(tile);
