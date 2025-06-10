@@ -15,8 +15,8 @@ import org.osm2world.osm.data.OSMData;
 import org.osm2world.osm.ruleset.HardcodedRuleset;
 
 import com.clarisma.common.store.StoreException;
-import com.geodesk.core.Box;
 import com.geodesk.feature.*;
+import com.geodesk.geom.Box;
 import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
 import com.slimjars.dist.gnu.trove.map.TLongObjectMap;
 import com.slimjars.dist.gnu.trove.map.hash.TLongObjectHashMap;
@@ -56,7 +56,7 @@ public record GeodeskReader(File file) implements OSMDataReader {
 			try (FeatureLibrary library = new FeatureLibrary(file.getPath())) {
 
 				Box bbox = Box.ofWSEN(bounds.minlon, bounds.minlat, bounds.maxlon, bounds.maxlat);
-				Features<Feature> features = library.in(bbox);
+				Features features = library.in(bbox);
 
 				InMemoryMapDataSet data = geodeskToOsm4j(features, bounds);
 
@@ -71,15 +71,15 @@ public record GeodeskReader(File file) implements OSMDataReader {
 	}
 
 	/** converts OSM data in GeoDesk's representation to osm4j's */
-	private InMemoryMapDataSet geodeskToOsm4j(Features<Feature> features, LatLonBounds bounds) {
+	private InMemoryMapDataSet geodeskToOsm4j(Features features, LatLonBounds bounds) {
 
 		NodeIdProvider nodeIdProvider = new NodeIdProvider();
 
 		/* collect all features to convert (including way nodes and relation members) */
 
-		TLongObjectMap<Node> golNodeMap = new TLongObjectHashMap<>();
-		TLongObjectMap<Way> golWayMap = new TLongObjectHashMap<>();
-		TLongObjectMap<Relation> golRelationMap = new TLongObjectHashMap<>();
+		TLongObjectMap<Feature> golNodeMap = new TLongObjectHashMap<>();
+		TLongObjectMap<Feature> golWayMap = new TLongObjectHashMap<>();
+		TLongObjectMap<Feature> golRelationMap = new TLongObjectHashMap<>();
 
 		features.nodes().forEach(it -> golNodeMap.put(it.id(), it));
 		features.ways().forEach(it -> golWayMap.put(it.id(), it));
@@ -87,10 +87,10 @@ public record GeodeskReader(File file) implements OSMDataReader {
 
 		int maxRelationNestingDepth = 3;
 		for (int i = 0; i < maxRelationNestingDepth; i++) {
-			Set<Relation> newRelations = new HashSet<>();
-			for (Relation relation : golRelationMap.valueCollection()) {
+			Set<Feature> newRelations = new HashSet<>();
+			for (Feature relation : golRelationMap.valueCollection()) {
 				if (!membersShouldBeIncluded(relation)) continue;
-				for (Relation memberRelation : relation.memberRelations()) {
+				for (Feature memberRelation : relation.members().relations()) {
 					if (!golRelationMap.containsKey(memberRelation.id())) {
 						newRelations.add(memberRelation);
 					}
@@ -99,15 +99,15 @@ public record GeodeskReader(File file) implements OSMDataReader {
 			newRelations.forEach(it -> golRelationMap.put(it.id(), it));
 		}
 
-		for (Relation relation : golRelationMap.valueCollection()) {
+		for (Feature relation : golRelationMap.valueCollection()) {
 			if (membersShouldBeIncluded(relation)) {
-				relation.memberNodes().forEach(it -> golNodeMap.put(it.id(), it));
-				relation.memberWays().forEach(it -> golWayMap.put(it.id(), it));
+				relation.members().nodes().forEach(it -> golNodeMap.put(it.id(), it));
+				relation.members().ways().forEach(it -> golWayMap.put(it.id(), it));
 			}
 		}
 
-		for (Way way : golWayMap.valueCollection()) {
-			for (Node wayNode : way.nodes()) {
+		for (Feature way : golWayMap.valueCollection()) {
+			for (Feature wayNode : way.nodes()) {
 				golNodeMap.put(nodeIdProvider.nodeId(wayNode), wayNode);
 			}
 		}
@@ -119,13 +119,13 @@ public record GeodeskReader(File file) implements OSMDataReader {
 		TLongObjectMap<OsmRelation> osm4jRelationMap = new TLongObjectHashMap<>();
 
 		for (long nodeId : golNodeMap.keys()) {
-			Node node = golNodeMap.get(nodeId);
+			Feature node = golNodeMap.get(nodeId);
 			var golNode = new de.topobyte.osm4j.core.model.impl.Node(nodeId, node.lon(), node.lat());
 			golNode.setTags(geodeskTagsToOsm4j(node.tags()));
 			osm4jNodeMap.put(nodeId, golNode);
 		}
 
-		for (Way way : golWayMap.valueCollection()) {
+		for (Feature way : golWayMap.valueCollection()) {
 			TLongArrayList nodeIds = new TLongArrayList();
 			way.nodes().forEach(n -> nodeIds.add(nodeIdProvider.nodeId(n)));
 			assert(stream(nodeIds.toArray()).allMatch(osm4jNodeMap::containsKey));
@@ -134,7 +134,7 @@ public record GeodeskReader(File file) implements OSMDataReader {
 			osm4jWayMap.put(way.id(), golWay);
 		}
 
-		for (Relation relation : golRelationMap.valueCollection()) {
+		for (Feature relation : golRelationMap.valueCollection()) {
 			List<OsmRelationMember> members = new ArrayList<>();
 			for (Feature m : relation.members()) {
 				EntityType mType;
@@ -161,7 +161,7 @@ public record GeodeskReader(File file) implements OSMDataReader {
 
 	}
 
-	private boolean membersShouldBeIncluded(Relation relation) {
+	private boolean membersShouldBeIncluded(Feature relation) {
 		return relation.hasTag("type", "multipolygon")
 				&& new HardcodedRuleset().isRelevantRelation(geodeskTagsToTagSet(relation.tags()));
 	}
@@ -188,7 +188,7 @@ public record GeodeskReader(File file) implements OSMDataReader {
 		private final TObjectLongMap<LatLon> anonymousNodeIdMap = new TObjectLongHashMap<>();
 
 		/** returns the id non-anonymous nodes, or else a fake id based on the coords */
-		private long nodeId(Node node) {
+		private long nodeId(Feature node) {
 			if (node.id() >= ANONYMOUS_NODE_ID_OFFSET) {
 				throw new Error("Node id too large: " + node.id());
 			} else if (node.id() != 0) {

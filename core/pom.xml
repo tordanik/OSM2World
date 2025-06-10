@@ -124,7 +124,7 @@
 		<dependency>
 			<groupId>com.geodesk</groupId>
 			<artifactId>geodesk</artifactId>
-			<version>0.1.9</version>
+			<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
