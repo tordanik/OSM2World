@@ -54,8 +54,7 @@ public class ConvertCommand implements Callable<Integer> {
 	@Nullable
 	TileNumber tile;
 
-	@Option(names = {"--lod"}, description = "level of detail of the output, given as a number between 0 and 4",
-			paramLabel="<number>")
+	@Option(names = {"--lod"}, description = "level of detail of the output", paramLabel="[01234]")
 	@Nullable
 	LevelOfDetail lod = null;
 

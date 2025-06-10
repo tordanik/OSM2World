@@ -64,8 +64,7 @@ public class TilesetCommand implements Callable<Integer> {
 			paramLabel = "<path>")
 	Path baseDir;
 
-	@CommandLine.Option(names = {"--lod"}, description = "level of detail of the output, given as a number between 0 and 4",
-			paramLabel="<number>")
+	@CommandLine.Option(names = {"--lod"}, description = "level of detail of the output", paramLabel="[01234]")
 	@Nullable
 	LevelOfDetail lod = null;
 
