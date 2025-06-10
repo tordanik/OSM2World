@@ -105,7 +105,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 		if (element instanceof MapArea area
 				&& parts.stream().mapToDouble(p -> p.area.getPolygon().getArea()).sum() < 0.9 * area.getPolygon().getArea()) {
 			var remainder = subtractPolygons(area.getPolygon(), parts.stream().map(p -> p.area.getPolygon()).toList());
-			if (remainder.stream().mapToDouble(PolygonShapeXZ::getArea).sum() < 0.9 * area.getPolygon().getArea()) {
+			if (remainder.stream().mapToDouble(PolygonShapeXZ::getArea).sum() > 0.1 * area.getPolygon().getArea()) {
 				// less than 90% of the building polygon is covered by building parts (non-standard mapping)
 				useBuildingAsPart = true;
 			}
