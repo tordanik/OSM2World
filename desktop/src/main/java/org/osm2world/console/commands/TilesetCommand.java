@@ -64,9 +64,9 @@ public class TilesetCommand implements Callable<Integer> {
 			paramLabel = "<path>")
 	Path baseDir;
 
-	@CommandLine.Option(names = {"--lod"}, description = "level of detail of the output", paramLabel="[01234]")
-	@Nullable
-	LevelOfDetail lod = null;
+	@CommandLine.Option(names = {"--lod"}, description = "level of detail of the output",
+			paramLabel="[01234]", arity="1..")
+	List<LevelOfDetail> lod = List.of(LevelOfDetail.LOD4);
 
 	@CommandLine.Option(names = {"--noJson"}, description = "skip creation of tileset.json files")
 	boolean noJson = false;
@@ -98,6 +98,12 @@ public class TilesetCommand implements Callable<Integer> {
 
 	public Integer call() {
 
+		if (!noJson && lod.size() > 1) {
+			System.err.println("Multiple LOD are currently only supported in --noJson mode");
+		}
+
+		/* determine the list of tiles which should exist in this tileset */
+
 		List<TileNumber> tileNumbers = new ArrayList<>();
 
 		for (var b : bounds) {
@@ -111,6 +117,8 @@ public class TilesetCommand implements Callable<Integer> {
 			tileNumbers.addAll(TileNumber.tilesForBounds(ZOOM, bbox));
 
 		}
+
+		/* create the tiles for this tileset (unless they already exist and should not be overwritten */
 
 		List<TileNumber> filteredTileNumbers = filterTileNumbers(tileNumbers);
 
@@ -132,9 +140,12 @@ public class TilesetCommand implements Callable<Integer> {
 		List<TileNumber> result = new ArrayList<>();
 
 		for (TileNumber tile : tileNumbers) {
-			if (fileIsMissingOrOverwritable(getTileFilename(tile, ".glb"))
-					&& fileIsMissingOrOverwritable(getTileFilename(tile, ".tileset.json"))) {
-				result.add(tile);
+			for (LevelOfDetail lod : this.lod) {
+				if (fileIsMissingOrOverwritable(getTileFilename(tile, lod, ".glb"))
+						&& fileIsMissingOrOverwritable(getTileFilename(tile, lod, ".tileset.json"))) {
+					result.add(tile);
+					break;
+				}
 			}
 		}
 
@@ -146,75 +157,83 @@ public class TilesetCommand implements Callable<Integer> {
 
 		tileNumbers.parallelStream().forEach(tile -> {
 
-			try {
+			for (LevelOfDetail lod : this.lod) {
 
-				/* construct config - TODO: deduplicate with ConvertCommand */
+				try {
 
-				var extraProperties = new HashMap<>(
-						MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
+					/* construct config - TODO: deduplicate with ConvertCommand */
 
-				if (lod != null) { extraProperties.put("lod", lod.ordinal()); }
-				if (loggingOptions.logDir != null) { extraProperties.put("logDir", loggingOptions.logDir.toString()); }
+					var extraProperties = new HashMap<>(
+							MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
 
-				O2WConfig config = configOptions.getO2WConfig(extraProperties);
+					extraProperties.put("lod", lod.ordinal());
 
-				/* Set some default values specific to the tileset command */
+					if (loggingOptions.logDir != null) {
+						extraProperties.put("logDir", loggingOptions.logDir.toString());
+					}
 
-				if (!config.containsKey("keepOsmElements")) {
-					config = config.withProperty("keepOsmElements", "false");
+					O2WConfig config = configOptions.getO2WConfig(extraProperties);
+
+					/* Set some default values specific to the tileset command */
+
+					if (!config.containsKey("keepOsmElements")) {
+						config = config.withProperty("keepOsmElements", "false");
+					}
+					if (!config.containsKey("clipToBounds")) {
+						config = config.withProperty("clipToBounds", "true");
+					}
+
+					/* render the scene */
+
+					OSMDataReaderView readerView = inputOptions.buildInput(tile);
+
+					var o2w = new O2WConverter();
+					o2w.setConfig(config);
+					Scene scene = o2w.convert(readerView, null, null);
+
+					MapProjection mapProjection = scene.getMapProjection();
+					assert mapProjection != null;
+
+					var boundsLL = tile.latLonBounds();
+					var boundsXZ = AxisAlignedRectangleXZ.bbox(List.of(
+							mapProjection.toXZ(boundsLL.getMin()),
+							mapProjection.toXZ(boundsLL.getMax())));
+
+					Compression compression = precompressedTiles ? Compression.GZ : Compression.NONE;
+
+					/* create glb and tileset files */
+
+					Output output;
+
+					if (noJson) {
+
+						File glbFile = getTileFilename(tile, lod, ".glb" + compression.extension());
+						output = new GltfOutput(glbFile, GLB, null, boundsXZ);
+
+					} else {
+
+						File tilesetJsonFile = getTileFilename(tile, lod, ".tileset.json");
+						output = new TilesetOutput(tilesetJsonFile, GLB, compression, mapProjection, boundsXZ);
+
+					}
+
+					output.setConfiguration(config);
+					output.outputScene(scene);
+
+				} catch (IOException e) {
+					// TODO handle exception
+					e.printStackTrace();
 				}
-				if (!config.containsKey("clipToBounds")) {
-					config = config.withProperty("clipToBounds", "true");
-				}
 
-				/* render the scene */
-
-				OSMDataReaderView readerView = inputOptions.buildInput(tile);
-
-				var o2w = new O2WConverter();
-				o2w.setConfig(config);
-				Scene scene = o2w.convert(readerView, null, null);
-
-				MapProjection mapProjection = scene.getMapProjection();
-				assert mapProjection != null;
-
-				var boundsLL = tile.latLonBounds();
-				var boundsXZ = AxisAlignedRectangleXZ.bbox(List.of(
-						mapProjection.toXZ(boundsLL.getMin()),
-						mapProjection.toXZ(boundsLL.getMax())));
-
-				Compression compression = precompressedTiles ? Compression.GZ : Compression.NONE;
-
-				/* create glb and tileset files */
-
-				Output output;
-
-				if (noJson) {
-
-					File glbFile = getTileFilename(tile, ".glb" + compression.extension());
-					output = new GltfOutput(glbFile, GLB, null, boundsXZ);
-
-				} else {
-
-					File tilesetJsonFile = getTileFilename(tile, ".tileset.json");
-					output = new TilesetOutput(tilesetJsonFile, GLB, compression, mapProjection, boundsXZ);
-
-				}
-
-				output.setConfiguration(config);
-				output.outputScene(scene);
-
-			} catch (IOException e) {
-				// TODO handle exception
-				e.printStackTrace();
 			}
 
 		});
 
 	}
 
-	private File getTileFilename(TileNumber tile, String extension) {
+	private File getTileFilename(TileNumber tile, LevelOfDetail lod, String extension) {
 		return baseDir
+				.resolve("lod" + lod.ordinal())
 				.resolve("" + tile.zoom)
 				.resolve("" + tile.x)
 				.resolve(tile.y + extension)
