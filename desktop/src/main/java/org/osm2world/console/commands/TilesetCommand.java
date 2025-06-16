@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +30,7 @@ import org.osm2world.output.tileset.TilesetOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.mesh.LevelOfDetail;
 
+import me.tongfei.progressbar.ProgressBar;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "tileset", description = "Create 3D Tiles for some geographic area.")
@@ -155,78 +157,86 @@ public class TilesetCommand implements Callable<Integer> {
 
 	private void createTiles(List<TileNumber> tileNumbers) {
 
-		tileNumbers.parallelStream().forEach(tile -> {
+		if (tileNumbers.isEmpty()) { return; }
 
-			for (LevelOfDetail lod : this.lod) {
+		var completedTiles = new AtomicInteger(0);
+		try (var pb = new ProgressBar("Generate tiles", tileNumbers.size())) {
 
-				try {
+			tileNumbers.parallelStream().forEach(tile -> {
 
-					/* construct config - TODO: deduplicate with ConvertCommand */
+				for (LevelOfDetail lod : this.lod) {
 
-					var extraProperties = new HashMap<>(
-							MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
+					try {
 
-					extraProperties.put("lod", lod.ordinal());
+						/* construct config - TODO: deduplicate with ConvertCommand */
 
-					if (loggingOptions.logDir != null) {
-						extraProperties.put("logDir", loggingOptions.logDir.toString());
+						var extraProperties = new HashMap<>(
+								MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
+
+						extraProperties.put("lod", lod.ordinal());
+
+						if (loggingOptions.logDir != null) {
+							extraProperties.put("logDir", loggingOptions.logDir.toString());
+						}
+
+						O2WConfig config = configOptions.getO2WConfig(extraProperties);
+
+						/* Set some default values specific to the tileset command */
+
+						if (!config.containsKey("keepOsmElements")) {
+							config = config.withProperty("keepOsmElements", "false");
+						}
+						if (!config.containsKey("clipToBounds")) {
+							config = config.withProperty("clipToBounds", "true");
+						}
+
+						/* render the scene */
+
+						OSMDataReaderView readerView = inputOptions.buildInput(tile);
+
+						var o2w = new O2WConverter();
+						o2w.setConfig(config);
+						Scene scene = o2w.convert(readerView, null, null);
+
+						MapProjection mapProjection = scene.getMapProjection();
+						assert mapProjection != null;
+
+						var boundsLL = tile.latLonBounds();
+						var boundsXZ = AxisAlignedRectangleXZ.bbox(List.of(
+								mapProjection.toXZ(boundsLL.getMin()),
+								mapProjection.toXZ(boundsLL.getMax())));
+
+						/* create glb and tileset files */
+
+						Output output;
+
+						if (noJson) {
+
+							File glbFile = getTileFilename(tile, lod, ".glb" + getCompression().extension());
+							output = new GltfOutput(glbFile, GLB, null, boundsXZ);
+
+						} else {
+
+							File tilesetJsonFile = getTileFilename(tile, lod, ".tileset.json");
+							output = new TilesetOutput(tilesetJsonFile, GLB, getCompression(), mapProjection, boundsXZ);
+
+						}
+
+						output.setConfiguration(config);
+						output.outputScene(scene);
+
+					} catch (IOException e) {
+						// TODO handle exception
+						e.printStackTrace();
 					}
 
-					O2WConfig config = configOptions.getO2WConfig(extraProperties);
-
-					/* Set some default values specific to the tileset command */
-
-					if (!config.containsKey("keepOsmElements")) {
-						config = config.withProperty("keepOsmElements", "false");
-					}
-					if (!config.containsKey("clipToBounds")) {
-						config = config.withProperty("clipToBounds", "true");
-					}
-
-					/* render the scene */
-
-					OSMDataReaderView readerView = inputOptions.buildInput(tile);
-
-					var o2w = new O2WConverter();
-					o2w.setConfig(config);
-					Scene scene = o2w.convert(readerView, null, null);
-
-					MapProjection mapProjection = scene.getMapProjection();
-					assert mapProjection != null;
-
-					var boundsLL = tile.latLonBounds();
-					var boundsXZ = AxisAlignedRectangleXZ.bbox(List.of(
-							mapProjection.toXZ(boundsLL.getMin()),
-							mapProjection.toXZ(boundsLL.getMax())));
-
-					/* create glb and tileset files */
-
-					Output output;
-
-					if (noJson) {
-
-						File glbFile = getTileFilename(tile, lod, ".glb" + getCompression().extension());
-						output = new GltfOutput(glbFile, GLB, null, boundsXZ);
-
-					} else {
-
-						File tilesetJsonFile = getTileFilename(tile, lod, ".tileset.json");
-						output = new TilesetOutput(tilesetJsonFile, GLB, getCompression(), mapProjection, boundsXZ);
-
-					}
-
-					output.setConfiguration(config);
-					output.outputScene(scene);
-
-				} catch (IOException e) {
-					// TODO handle exception
-					e.printStackTrace();
 				}
 
-			}
+				pb.stepTo(completedTiles.incrementAndGet());
 
-		});
+			});
 
+		}
 	}
 
 	private Compression getCompression() {
