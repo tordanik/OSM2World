@@ -141,7 +141,7 @@ public class TilesetCommand implements Callable<Integer> {
 
 		for (TileNumber tile : tileNumbers) {
 			for (LevelOfDetail lod : this.lod) {
-				if (fileIsMissingOrOverwritable(getTileFilename(tile, lod, ".glb"))
+				if (fileIsMissingOrOverwritable(getTileFilename(tile, lod, ".glb" + getCompression().extension()))
 						&& fileIsMissingOrOverwritable(getTileFilename(tile, lod, ".tileset.json"))) {
 					result.add(tile);
 					break;
@@ -199,21 +199,19 @@ public class TilesetCommand implements Callable<Integer> {
 							mapProjection.toXZ(boundsLL.getMin()),
 							mapProjection.toXZ(boundsLL.getMax())));
 
-					Compression compression = precompressedTiles ? Compression.GZ : Compression.NONE;
-
 					/* create glb and tileset files */
 
 					Output output;
 
 					if (noJson) {
 
-						File glbFile = getTileFilename(tile, lod, ".glb" + compression.extension());
+						File glbFile = getTileFilename(tile, lod, ".glb" + getCompression().extension());
 						output = new GltfOutput(glbFile, GLB, null, boundsXZ);
 
 					} else {
 
 						File tilesetJsonFile = getTileFilename(tile, lod, ".tileset.json");
-						output = new TilesetOutput(tilesetJsonFile, GLB, compression, mapProjection, boundsXZ);
+						output = new TilesetOutput(tilesetJsonFile, GLB, getCompression(), mapProjection, boundsXZ);
 
 					}
 
@@ -229,6 +227,10 @@ public class TilesetCommand implements Callable<Integer> {
 
 		});
 
+	}
+
+	private Compression getCompression() {
+		return precompressedTiles ? Compression.GZ : Compression.NONE;
 	}
 
 	private File getTileFilename(TileNumber tile, LevelOfDetail lod, String extension) {
