@@ -218,6 +218,7 @@ class O2WConverterImpl {
 				.stream().map(Object::toString).toList();
 
 		return Stream.of((WorldModule)
+						new ExternalModelModule(),
 						new RoadModule(),
 						new RailwayModule(),
 						new AerowayModule(),

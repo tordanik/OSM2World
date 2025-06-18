@@ -1,11 +1,6 @@
 package org.osm2world.world.modules.common;
 
-import org.osm2world.map_data.data.MapArea;
-import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_data.data.MapElement;
-import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_data.data.MapWay;
-import org.osm2world.map_data.data.MapWaySegment;
+import org.osm2world.map_data.data.*;
 import org.osm2world.world.creation.WorldModule;
 import org.osm2world.world.data.WorldObject;
 
@@ -22,7 +17,9 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	public final void applyTo(MapData mapData) {
 
 		for (MapNode node : mapData.getMapNodes()) {
-			applyToNode(node);
+			if (node.getRepresentations().isEmpty()) {
+				applyToNode(node);
+			}
 		}
 
 		for (MapWay way : mapData.getMapWays()) {
@@ -30,11 +27,15 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 		}
 
 		for (MapWaySegment waySegment : mapData.getMapWaySegments()) {
-			applyToWaySegment(waySegment);
+			if (waySegment.getRepresentations().isEmpty()) {
+				applyToWaySegment(waySegment);
+			}
 		}
 
 		for (MapArea area : mapData.getMapAreas()) {
-			applyToArea(area);
+			if (area.getRepresentations().isEmpty()) {
+				applyToArea(area);
+			}
 		}
 
 	}
