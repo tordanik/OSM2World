@@ -4,17 +4,21 @@ import static java.lang.Math.PI;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
+import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolylineXZ;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.*;
-import org.osm2world.world.data.AbstractAreaWorldObject;
-import org.osm2world.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.data.AreaWorldObject;
+import org.osm2world.world.data.NodeWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
@@ -61,97 +65,106 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class ExternalModelNodeWorldObject extends NoOutlineNodeWorldObject {
+	private static abstract class ExternalModelWorldObject<E extends MapElement> implements WorldObject {
 
+		private final E element;
 		private final Model model;
 
-		protected ExternalModelNodeWorldObject(MapNode node, Model model) {
-			super(node);
+		private final EleConnector eleConnector;
+		private final @Nullable AttachmentConnector attachmentConnector;
+
+		protected ExternalModelWorldObject(E element, Model model) {
+
+			this.element = element;
 			this.model = model;
-		}
 
-		@Override
-		public List<Mesh> buildMeshes() {
-			double direction = WorldModuleParseUtil.parseDirection(node.getTags(), PI);
-			var i = new ModelInstance(model, new InstanceParameters(getBase(), direction));
-			return i.getMeshes();
-		}
+			VectorXZ pos = null;
 
-	}
-
-	private static class ExternalModelAreaWorldObject extends AbstractAreaWorldObject {
-
-		private final Model model;
-		private EleConnector connector = null;
-
-		protected ExternalModelAreaWorldObject(MapArea area, Model model) {
-			super(area);
-			this.model = model;
-		}
-
-		@Override
-		public EleConnectorGroup getEleConnectors() {
-
-			if (connector == null) {
-				connector = new EleConnector(area.getOuterPolygon().getCentroid(), this, getGroundState());
+			if (element instanceof MapNode n) {
+				pos = n.getPos();
+			} else if (element instanceof MapArea a) {
+				pos = a.getOuterPolygon().getCentroid();
+			} else if (element instanceof MapWaySegment s) {
+				PolylineXZ polylineXZ = s.getWay().getPolylineXZ();
+				pos = polylineXZ.pointAtOffset(0.5 * polylineXZ.getLength());
 			}
 
-			var result = new EleConnectorGroup();
-			result.add(connector);
-			return result;
+			eleConnector = new EleConnector(pos, this, getGroundState());
+
+			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(element);
+
+			if (attachmentTypes.isEmpty()) {
+				attachmentConnector = null;
+			} else {
+				attachmentConnector = new AttachmentConnector(attachmentTypes,
+						pos.xyz(0), this, 0, true);
+			}
 
 		}
 
 		@Override
-		public List<Mesh> buildMeshes() {
-
-			VectorXYZ pos = getConnectorIfAttached() != null
-					? getConnectorIfAttached().getAttachedPos()
-					: connector.getPosXYZ();
-
-			var i = new ModelInstance(model, new InstanceParameters(pos, 0));
-			return i.getMeshes();
-
-		}
-
-	}
-
-	private static class ExternalModelWayWorldObject implements WaySegmentWorldObject {
-
-		private final MapWaySegment segment;
-		private final Model model;
-
-		private EleConnector connector = null;
-
-		public ExternalModelWayWorldObject(MapWaySegment segment, Model model) {
-			this.segment = segment;
-			this.model = model;
-		}
-
-		@Override
-		public MapWaySegment getPrimaryMapElement() {
-			return segment;
+		public E getPrimaryMapElement() {
+			return element;
 		}
 
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
-
-			if (connector == null) {
-				PolylineXZ polylineXZ = segment.getWay().getPolylineXZ();
-				VectorXZ middlePoint = polylineXZ.pointAtOffset(0.5 * polylineXZ.getLength());
-				connector = new EleConnector(middlePoint, this, getGroundState());
-			}
-
-			return List.of(connector);
-
+			return List.of(eleConnector);
 		}
 
 		@Override
-		public List<Mesh> buildMeshes() {
-			var i = new ModelInstance(model, new InstanceParameters(connector.getPosXYZ(), 0));
-			return i.getMeshes();
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			return attachmentConnector != null ? List.of(attachmentConnector) : List.of();
 		}
 
+		@Override
+		public GroundState getGroundState() {
+			if (attachmentConnector != null && attachmentConnector.isAttached()) {
+				return GroundState.ATTACHED;
+			} else {
+				return GroundState.ON;
+			}
+		}
+
+
+		@Override
+		public List<Mesh> buildMeshes() {
+
+			VectorXYZ pos = eleConnector.getPosXYZ();
+			if (attachmentConnector != null && attachmentConnector.isAttached()) {
+				pos = attachmentConnector.getAttachedPos();
+			}
+
+			double direction = element instanceof MapNode
+					? WorldModuleParseUtil.parseDirection(element.getTags(), PI)
+					: 0;
+
+			var i = new ModelInstance(model, new InstanceParameters(pos, direction));
+			return i.getMeshes();
+
+		}
+
+	}
+
+	private static class ExternalModelNodeWorldObject extends ExternalModelWorldObject<MapNode>
+			implements NodeWorldObject {
+		protected ExternalModelNodeWorldObject(MapNode node, Model model) {
+			super(node, model);
+		}
+	}
+
+	private static class ExternalModelAreaWorldObject extends ExternalModelWorldObject<MapArea>
+			implements AreaWorldObject {
+		protected ExternalModelAreaWorldObject(MapArea area, Model model) {
+			super(area, model);
+		}
+	}
+
+	private static class ExternalModelWayWorldObject extends ExternalModelWorldObject<MapWaySegment>
+			implements WaySegmentWorldObject {
+		protected ExternalModelWayWorldObject(MapWaySegment element, Model model) {
+			super(element, model);
+		}
 	}
 
 	/**
