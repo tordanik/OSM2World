@@ -30,6 +30,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.attachment.AttachmentUtil;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 
 /**
@@ -77,9 +78,9 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 	@Override
 	public Iterable<AttachmentConnector> getAttachmentConnectors() {
 
-		String supportValue = node.getTags().getValue("support");
+		List<String> types = AttachmentUtil.getCompatibleSurfaceTypes(node);
 
-		if (supportValue == null) {
+		if (types.isEmpty()) {
 			return emptyList();
 		} else {
 
@@ -87,7 +88,6 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 
 				if (position == null) throw new IllegalStateException();
 
-				List<String> types = List.of(supportValue);
 				double height = parseHeight(node.getTags(), (float) signs.get(0).defaultHeight);
 
 				Predicate<VectorXYZ> isAcceptableNormal = null;

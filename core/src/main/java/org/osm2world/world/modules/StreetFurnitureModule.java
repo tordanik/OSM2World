@@ -1,8 +1,8 @@
 package org.osm2world.world.modules;
 
 import static java.awt.Color.*;
-import static java.lang.Math.min;
 import static java.lang.Math.*;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -15,21 +15,21 @@ import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.mesh.ExtrusionGeometry.createColumn;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.mesh.MeshUtil.createBox;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.util.ValueParseUtil.*;
-import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseInt;
+import static org.osm2world.util.ValueParseUtil.parseColor;
+import static org.osm2world.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.*;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
@@ -56,6 +56,7 @@ import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.attachment.AttachmentUtil;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NodeModelInstance;
 import org.osm2world.world.data.NodeWorldObject;
@@ -600,11 +601,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			minHeight = height / 5;
 			trueHeight = height - minHeight;
 
-			if (node.getTags().contains("support", "wall") && node.getTags().containsKey("level")) {
-				connector = new AttachmentConnector(asList("wall" + parseLevels(node.getTags().getValue("level")).get(0)),
-						node.getPos().xyz(0), this, minHeight + trueHeight / 2, true);
-			} else if (node.getTags().contains("support", "wall")) {
-				connector = new AttachmentConnector(asList("wall"),
+			List<String> attachmentSurfaceTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
+
+			if (!attachmentSurfaceTypes.isEmpty()) {
+				connector = new AttachmentConnector(attachmentSurfaceTypes,
 						node.getPos().xyz(0), this, minHeight + trueHeight / 2, true);
 			} else {
 				connector = null;
@@ -835,9 +835,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		public Bench(MapNode node) {
 			super(node);
 
-			if (node.getTags().containsKey("level")) {
-				connector = new AttachmentConnector(singletonList("floor" +  parseLevels(node.getTags().getValue("level")).get(0).toString()),
-						node.getPos().xyz(0), this, 0.6, false);
+			List<String> attachmentSurfaceTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
+
+			if (!attachmentSurfaceTypes.isEmpty()) {
+				connector = new AttachmentConnector(attachmentSurfaceTypes,
+						node.getPos().xyz(0), this, 0, false);
 			} else {
 				connector = null;
 			}
@@ -1346,13 +1348,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			super(node);
 
-			String support = node.getTags().getValue("support");
+			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
 
-			if (support != null && !"ground".equals(support)) {
-				connector = new AttachmentConnector(List.of(support),
+			if (AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)) {
+				connector = new AttachmentConnector(attachmentTypes,
 						node.getPos().xyz(0), this, 0.6, true);
-			} else if (node.getTags().containsKey("level")) {
-				connector = new AttachmentConnector(List.of("floor" + node.getTags().getValue("level")),
+			} else if (!attachmentTypes.isEmpty()) {
+				connector = new AttachmentConnector(attachmentTypes,
 						node.getPos().xyz(0), this, 0, false);
 			} else {
 				connector = null;
@@ -1402,20 +1404,20 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXYZ pos = getBase();
 			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
 
-			boolean onGround = true;
+			boolean onHorizontalSurface = true;
 
 			if (connector != null && connector.isAttached()) {
 
 				pos = connector.getAttachedPos();
 
-				if (!connector.compatibleSurfaceTypes.get(0).startsWith("floor")) {
-					onGround = false;
+				if (connector.getAttachedSurfaceNormal().y < 0.8) {
+					onHorizontalSurface = false;
 					direction = connector.getAttachedSurfaceNormal();
 				}
 
 			}
 
-			if (onGround) {
+			if (onHorizontalSurface) {
 
 				/* draw pole */
 				target.drawColumn(material, null, pos, 1.2, 0.06, 0.06, false, true);
@@ -1602,21 +1604,20 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			super(node);
 
-			String support = node.getTags().getValue("support");
+			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
 
-			List<String> attachmentTypes = List.of();
-
-			if (support != null && !"ground".equals(support)) {
-				attachmentTypes = List.of(support);
-			} else if (isInWall(node) && !"ground".equals(support)) {
+			if (attachmentTypes.isEmpty() && isInWall(node)) {
 				attachmentTypes = List.of("wall");
 			}
 
 			if (attachmentTypes.isEmpty()) {
 				connector = null;
-			} else {
+			} else if (AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)) {
 				connector = new AttachmentConnector(attachmentTypes,
 						node.getPos().xyz(0), this, 0.83, true);
+			} else {
+				connector = new AttachmentConnector(attachmentTypes,
+						node.getPos().xyz(0), this, 0, false);
 			}
 
 		}
@@ -1661,20 +1662,28 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			double height = parseHeight(node.getTags(), 1.8f);
 
-			VectorXYZ pos;
+			VectorXYZ pos = getBase();
 			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
+
+			boolean onHorizontalSurface = true;
 
 			if (connector != null && connector.isAttached()) {
 
 				pos = connector.getAttachedPos();
-				direction = connector.getAttachedSurfaceNormal();
 
-			} else {
+				if (connector.getAttachedSurfaceNormal().y < 0.8) {
+					onHorizontalSurface = false;
+					direction = connector.getAttachedSurfaceNormal();
+				}
 
-				pos = getBase().addY(0.8).add(direction.mult(0.05));
+			}
+
+			if (onHorizontalSurface) {
 
 				/* draw pole */
-				target.drawBox(STEEL, getBase(), direction.xz(), height - 0.3, 0.1, 0.1);
+				target.drawBox(STEEL, pos, direction.xz(), height - 0.3, 0.1, 0.1);
+
+				pos = pos.addY(0.8).add(direction.mult(0.05));
 
 			}
 

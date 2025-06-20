@@ -25,6 +25,7 @@ public class AttachmentConnector {
 	 */
 	private static final double DEFAULT_IMMOBILE_MAX_DISTANCE_XZ = 0.01;
 
+	/** acceptable surface types in order of preference */
 	public final List<String> compatibleSurfaceTypes;
 
 	public final VectorXYZ originalPos;

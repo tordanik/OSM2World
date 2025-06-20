@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateOnTriangle;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -21,9 +20,9 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.util.ValueParseUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.attachment.AttachmentUtil;
 
 
 /**
@@ -50,23 +49,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 		this.area = area;
 
-		List<String> types = new ArrayList<>();
-
-		if (area.getTags().contains("location", "roof") || area.getTags().contains("parking", "rooftop")) {
-			if (area.getTags().containsKey("level")) {
-				List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
-				if (levels != null) {
-					types.add("roof" + levels.get(0));
-				}
-			}
-			types.add("roof");
-		} else if (area.getTags().containsKey("level")) {
-			List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
-			if (levels != null) {
-				types.add("floor" + levels.get(0));
-			}
-		}
-
+		List<String> types = AttachmentUtil.getCompatibleSurfaceTypes(area);
 
 		if (!types.isEmpty()) {
 			VectorXYZ pos;
