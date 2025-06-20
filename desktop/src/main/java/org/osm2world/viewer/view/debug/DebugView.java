@@ -6,12 +6,11 @@ import static java.util.Collections.emptyList;
 import java.awt.*;
 import java.util.List;
 
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.scene.material.ImmutableMaterial;
-import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
@@ -19,6 +18,8 @@ import org.osm2world.output.jogl.JOGLOutputFixedFunction;
 import org.osm2world.output.jogl.JOGLOutputShader;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material.Interpolation;
 
 import com.jogamp.opengl.GL;
 
@@ -131,6 +132,9 @@ public abstract class DebugView {
 			}
 
 			target.render(camera, projection);
+
+			// flush log messages
+			ConversionLog.getLog();
 
 		}
 	}

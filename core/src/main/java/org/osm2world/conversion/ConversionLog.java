@@ -27,8 +27,9 @@ public class ConversionLog {
 			@Nullable Throwable e,
 			@Nullable MapRelationElement element
 	) {
+
 		@Override
-		public String toString() {
+		public @Nonnull String toString() {
 			var sb = new StringBuilder(level.toString());
 			if (element != null) {
 				sb.append("[").append(element).append("]");
@@ -41,17 +42,26 @@ public class ConversionLog {
 			}
 			return sb.toString();
 		}
+
+		boolean isAlmostIdenticalTo(Entry otherEntry) {
+			return this.level == otherEntry.level
+					&& this.message.equals(otherEntry.message)
+					&& this.element == otherEntry.element();
+		}
+
 	}
 
 	private static final ThreadLocal<List<Entry>> log = ThreadLocal.withInitial(ArrayList::new);
 	private static final ThreadLocal<EnumSet<LogLevel>> consoleLogLevels =
 			ThreadLocal.withInitial(() -> EnumSet.allOf(LogLevel.class));
+	private static final ThreadLocal<Integer> suppressedCopiesOfLastEntry = ThreadLocal.withInitial(() -> 0);
 
 	public static void setConsoleLogLevels(EnumSet<LogLevel> consoleLogLevels) {
 		ConversionLog.consoleLogLevels.set(consoleLogLevels);
 	}
 
 	public static List<Entry> getLog() {
+		flushSuppressedCopies();
 		return Collections.unmodifiableList(log.get());
 	}
 
@@ -60,6 +70,26 @@ public class ConversionLog {
 	}
 
 	public static void log(Entry entry) {
+
+		List<Entry> log = ConversionLog.log.get();
+
+		/* handle suppression of almost identical entries */
+		if (!log.isEmpty()) {
+			Entry previousEntry = log.get(log.size() - 1);
+			if (previousEntry.isAlmostIdenticalTo(entry)) {
+				suppressedCopiesOfLastEntry.set(suppressedCopiesOfLastEntry.get() + 1);
+				return;
+			} else {
+				flushSuppressedCopies();
+			}
+		}
+
+		/* log the entry */
+		logAndPrint(entry);
+
+	}
+
+	private static void logAndPrint(Entry entry) {
 		log.get().add(entry);
 		if (consoleLogLevels.get().contains(entry.level)) {
 			System.err.println(entry);
@@ -116,6 +146,17 @@ public class ConversionLog {
 
 	public static void warn(Throwable e) {
 		log(LogLevel.WARNING, e.getMessage(), e, null);
+	}
+
+	private static void flushSuppressedCopies() {
+		Integer copies = suppressedCopiesOfLastEntry.get();
+		if (copies > 0) {
+			List<Entry> log = ConversionLog.log.get();
+			Entry previousEntry = log.get(log.size() - 1);
+			String message = copies + " similar log entr" + (copies > 1 ? "ies" : "y") + " suppressed";
+			logAndPrint(new Entry(previousEntry.level, Instant.now(), message, null, previousEntry.element));
+			suppressedCopiesOfLastEntry.set(0);
+		}
 	}
 
 }
