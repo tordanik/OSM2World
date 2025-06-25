@@ -3,10 +3,7 @@ package org.osm2world.conversion;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,7 +42,7 @@ public class ConversionLog {
 
 		boolean isAlmostIdenticalTo(Entry otherEntry) {
 			return this.level == otherEntry.level
-					&& this.message.equals(otherEntry.message)
+					&& Objects.equals(this.message, otherEntry.message)
 					&& this.element == otherEntry.element();
 		}
 
@@ -117,11 +114,11 @@ public class ConversionLog {
 	}
 
 	public static void error(Throwable e, MapRelationElement element) {
-		log(LogLevel.ERROR, e.getMessage(), e, element);
+		log(LogLevel.ERROR, messageFor(e), e, element);
 	}
 
 	public static void error(Throwable e) {
-		log(LogLevel.ERROR, e.getMessage(), e, null);
+		log(LogLevel.ERROR, messageFor(e), e, null);
 	}
 
 	public static void warn(String message, Throwable e, MapRelationElement element) {
@@ -141,11 +138,15 @@ public class ConversionLog {
 	}
 
 	public static void warn(Throwable e, MapRelationElement element) {
-		log(LogLevel.WARNING, e.getMessage(), e, element);
+		log(LogLevel.WARNING, messageFor(e), e, element);
 	}
 
 	public static void warn(Throwable e) {
-		log(LogLevel.WARNING, e.getMessage(), e, null);
+		log(LogLevel.WARNING, messageFor(e), e, null);
+	}
+
+	private static String messageFor(Throwable e) {
+		return (e.getMessage() != null) ? e.getMessage() : e.getClass().getSimpleName();
 	}
 
 	private static void flushSuppressedCopies() {
