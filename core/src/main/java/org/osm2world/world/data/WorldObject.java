@@ -134,8 +134,9 @@ public interface WorldObject {
 	 * - MAX_VALUE: will always be left intact (e.g. linear roads); this is the default
 	 * - 50: highway polygons
 	 * - 30: surface areas with a distinct physical representation (e.g. car parking)
-	 * - 20: areas with explicitly mapped surface, landcover and similar features (
+	 * - 20: areas with explicitly mapped surface, landcover and similar features
 	 * - 10: areas with implied surface (e.g. parks)
+	 * -  5: implied surface around other features (e.g. ballast around rails)
 	 * - MIN_VALUE: default terrain that is used to fill gaps where nothing has been mapped
 	 */
 	public default int getOverlapPriority() {
