@@ -43,7 +43,7 @@ public class GltfModelTest {
 	@Test
 	public void testLoadFromFile_BoxVertexColors() throws IOException {
 
-		for (String extension : List.of(".gltf", "_embedded.gltf")) {
+		for (String extension : List.of(".gltf", "_embedded.gltf", ".glb")) {
 
 			var model = loadGltfTestModel("BoxVertexColors", extension);
 			var meshes = model.getMeshes();
@@ -59,7 +59,7 @@ public class GltfModelTest {
 	public void testLoadFromFile_Triangle() throws IOException {
 
 		for (String assetName : List.of("Triangle", "TriangleWithoutIndices")) {
-			for (String extension : List.of(".gltf", "_embedded.gltf")) {
+			for (String extension : List.of(".gltf", "_embedded.gltf", ".glb")) {
 
 				var model = loadGltfTestModel(assetName, extension);
 				var meshes = model.getMeshes();

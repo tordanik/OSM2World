@@ -6,14 +6,12 @@ import static org.osm2world.scene.material.TextureData.Wrap;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -358,7 +356,10 @@ public class GltfModel implements Model {
 		ByteBuffer result;
 
 		if (buffer.uri == null) {
-			throw new UnsupportedOperationException("No uri present in bufferView");
+			// In GLB files, the buffer data should have been processed in loadFromGlbFile
+			// and converted to a data URI. If we get here, something went wrong.
+			throw new UnsupportedOperationException("No uri present in bufferView." +
+					" Any GLB buffers were not properly processed.");
 		}
 
 		var pattern = Pattern.compile("data:application/(?:gltf-buffer|octet-stream);base64,(.+)");
@@ -517,13 +518,11 @@ public class GltfModel implements Model {
 
 			var dimensions = new TextureDataDimensions(1, 1);
 
-			requireOrUnsupported(image.uri != null);
-
 			TextureData textureData;
 
-			if (image.uri.startsWith("data:")) {
+			if (image.uri != null && image.uri.startsWith("data:")) {
 				textureData = new DataUriTexture(image.uri, dimensions, wrap, GLOBAL_X_Z);
-			} else {
+			} else if (image.uri != null) {
 				try {
 					URI imageUri = new URI(image.uri);
 					if (source != null) {
@@ -534,6 +533,20 @@ public class GltfModel implements Model {
 				} catch (URISyntaxException e) {
 					throw new IOException(e);
 				}
+			} else {
+
+				// Handle image with bufferView
+				GltfBufferView bufferView = gltf.bufferViews.get(image.bufferView);
+				ByteBuffer imageData = readBufferView(bufferView);
+
+				// Create a data URI from the buffer view data
+				byte[] imageBytes = new byte[imageData.remaining()];
+				imageData.get(imageBytes);
+				String base64Data = Base64.getEncoder().encodeToString(imageBytes);
+				String dataUri = "data:" + image.mimeType + ";base64," + base64Data;
+
+				textureData = new DataUriTexture(dataUri, dimensions, wrap, GLOBAL_X_Z);
+
 			}
 
 			imageCache.put(Pair.of(image, wrap), textureData);
@@ -551,15 +564,87 @@ public class GltfModel implements Model {
 	}
 
 	public static GltfModel loadFromFile(File gltfFile) throws IOException {
+		if (gltfFile.getName().toLowerCase().endsWith(".glb")) {
+			return loadFromGlbFile(gltfFile);
+		} else {
+			return loadFromGltfFile(gltfFile);
+		}
+	}
 
+	private static GltfModel loadFromGltfFile(File gltfFile) throws IOException {
 		try (var reader = new FileReader(gltfFile)) {
-
 			Gltf gltf = new Gson().fromJson(reader, Gltf.class);
-
 			return new GltfModel(gltf, gltfFile);
-
 		} catch (Exception e) {
 			throw new IOException("Could not read glTF model at " + gltfFile, e);
+		}
+	}
+
+	private static GltfModel loadFromGlbFile(File glbFile) throws IOException {
+
+		try (var inputStream = new FileInputStream(glbFile)) {
+
+			byte[] headerData = inputStream.readNBytes(12);
+			ByteBuffer header = ByteBuffer.wrap(headerData).order(ByteOrder.LITTLE_ENDIAN);
+
+			// Check magic number (glTF in ASCII)
+			int magic = header.getInt();
+			if (magic != 0x46546C67) {
+				throw new IOException("Invalid GLB file: incorrect magic number");
+			}
+
+			// Check version
+			int version = header.getInt();
+			if (version != 2) {
+				throw new IOException("Unsupported GLB version: " + version);
+			}
+
+			// Read JSON chunk
+			byte[] chunkHeader = inputStream.readNBytes(8);
+			ByteBuffer chunkHeaderBuffer = ByteBuffer.wrap(chunkHeader).order(ByteOrder.LITTLE_ENDIAN);
+			int jsonChunkLength = chunkHeaderBuffer.getInt();
+			int jsonChunkType = chunkHeaderBuffer.getInt();
+
+			if (jsonChunkType != 0x4E4F534A) { // JSON in ASCII
+				throw new IOException("Invalid GLB file: first chunk is not JSON");
+			}
+
+			byte[] jsonData = inputStream.readNBytes(jsonChunkLength);
+			String jsonStr = new String(jsonData, StandardCharsets.UTF_8);
+			Gltf gltf = new Gson().fromJson(jsonStr, Gltf.class);
+
+			// Read BIN chunk if present
+			if (inputStream.available() > 0) {
+				byte[] binChunkHeader = inputStream.readNBytes(8);
+				ByteBuffer binChunkHeaderBuffer = ByteBuffer.wrap(binChunkHeader).order(ByteOrder.LITTLE_ENDIAN);
+				int binChunkLength = binChunkHeaderBuffer.getInt();
+				int binChunkType = binChunkHeaderBuffer.getInt();
+
+				if (binChunkType != 0x004E4942) { // BIN in ASCII
+					throw new IOException("Invalid GLB file: second chunk is not BIN");
+				}
+
+				byte[] binData = inputStream.readNBytes(binChunkLength);
+
+				// Create a buffer for the binary data if not already present
+				if (gltf.buffers != null && !gltf.buffers.isEmpty()) {
+					// Process all buffers that don't have a URI
+					// In GLB files, buffers without a URI refer to the BIN chunk
+					String base64Data = Base64.getEncoder().encodeToString(binData);
+					String dataUri = "data:application/octet-stream;base64," + base64Data;
+
+					for (GltfBuffer buffer : gltf.buffers) {
+						if (buffer.uri == null) {
+							buffer.uri = dataUri;
+						}
+					}
+				}
+			}
+
+			return new GltfModel(gltf, glbFile);
+
+		} catch (Exception e) {
+			throw new IOException("Could not read GLB model at " + glbFile, e);
 		}
 
 	}
