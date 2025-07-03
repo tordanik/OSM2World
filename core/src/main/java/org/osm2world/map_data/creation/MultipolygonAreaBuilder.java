@@ -253,11 +253,10 @@ final class MultipolygonAreaBuilder {
 	/**
 	 * @param rings  rings to build polygons from; will be empty afterwards
 	 */
-	private static final Collection<MapArea> buildPolygonsFromRings(
+	private static final List<MapArea> buildPolygonsFromRings(
 			OsmRelation relation, List<Ring> rings) {
 
-		Collection<MapArea> finishedPolygons =
-				new ArrayList<MapArea>(rings.size() / 2);
+		List<MapArea> finishedPolygons = new ArrayList<>(rings.size() / 2);
 
 		/* build polygon */
 
@@ -353,7 +352,7 @@ final class MultipolygonAreaBuilder {
 	 * @param isAtSea  true if the {@link OSMData} is sea on all sides (it may contain islands as long as they are
 	 *                 entirely within the bounds); false if it's on land or unknown/mixed
 	 */
-	public static final Collection<MapArea> createAreasForCoastlines(
+	public static final List<MapArea> createAreasForCoastlines(
 			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
 			Collection<MapNode> mapNodes, AxisAlignedRectangleXZ fileBoundary,
 			boolean isAtSea) throws EntityNotFoundException {

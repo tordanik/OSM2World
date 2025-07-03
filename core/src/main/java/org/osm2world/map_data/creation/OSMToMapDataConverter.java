@@ -136,10 +136,12 @@ public class OSMToMapDataConverter {
 
 		/* ... based on coastline ways */
 
-		mapAreas.addAll(MultipolygonAreaBuilder.createAreasForCoastlines(
+		List<MapArea> seaAreas = MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeIdMap, mapNodes,
 				calculateFileBoundary(osmData.getUnionOfExplicitBounds()),
-				isAtSea));
+				isAtSea);
+
+		mapAreas.addAll(seaAreas);
 
 		/* ... based on closed ways with certain tags */
 
@@ -170,14 +172,20 @@ public class OSMToMapDataConverter {
 
 		AxisAlignedRectangleXZ terrainBoundary = calculateFileBoundary(osmData.getUnionOfExplicitBounds());
 
-		if (terrainBoundary != null) {
+		boolean fullyCoveredBySea = seaAreas.size() == 1 && seaAreas.get(0).getPolygon().getArea() > terrainBoundary.area() - 0.01;
 
-			EmptyTerrainBuilder.createAreasForEmptyTerrain(
-					mapNodes, mapAreas, terrainBoundary);
+		if (!fullyCoveredBySea) {
 
-		} else {
+			if (terrainBoundary != null) {
 
-			//TODO fall back on data boundary if file does not contain bounds
+				EmptyTerrainBuilder.createAreasForEmptyTerrain(
+						mapNodes, mapAreas, terrainBoundary);
+
+			} else {
+
+				//TODO fall back on data boundary if file does not contain bounds
+
+			}
 
 		}
 
