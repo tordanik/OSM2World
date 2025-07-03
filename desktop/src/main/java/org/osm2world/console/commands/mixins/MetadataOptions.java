@@ -19,6 +19,10 @@ public class MetadataOptions {
 			"or an mbtiles file with such JSON data for multiple tiles", paramLabel = "<path>")
 	public @Nullable File metadataFile;
 
+	public Map<String, Object> configOptionsFromMetadata(@Nullable TileNumber tile) throws IOException {
+		return configOptionsFromMetadata(this.metadataFile, tile);
+	}
+
 	public static Map<String, Object> configOptionsFromMetadata(@Nullable File metadataFile, @Nullable TileNumber tile)
 			throws IOException {
 

@@ -170,8 +170,7 @@ public class TilesetCommand implements Callable<Integer> {
 
 						/* construct config - TODO: deduplicate with ConvertCommand */
 
-						var extraProperties = new HashMap<>(
-								MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
+						var extraProperties = new HashMap<>(metadataOptions.configOptionsFromMetadata(tile));
 
 						extraProperties.put("lod", lod.ordinal());
 

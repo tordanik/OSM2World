@@ -105,8 +105,7 @@ public class ConvertCommand implements Callable<Integer> {
 
 		/* augment and set the config */
 
-		var extraProperties = new HashMap<>(
-				MetadataOptions.configOptionsFromMetadata(metadataOptions.metadataFile, tile));
+		var extraProperties = new HashMap<>(metadataOptions.configOptionsFromMetadata(tile));
 
 		if (lod != null) { extraProperties.put("lod", lod.ordinal()); }
 		if (loggingOptions.logDir != null) { extraProperties.put("logDir", loggingOptions.logDir.toString()); }

@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.math.geo.TileNumber;
 
 import com.google.gson.Gson;
@@ -32,10 +33,33 @@ public record MapMetadata (@Nullable String locale, @Nullable Boolean land) {
 
 	public synchronized static MapMetadata metadataForTile(TileNumber tile, MBTilesReader tileMetadataReader)
 			throws MBTilesReadException, IOException {
+		return metadataForTile(tile, tileMetadataReader, false);
+	}
+
+	private static MapMetadata metadataForTile(TileNumber tile, MBTilesReader tileMetadataReader,
+			boolean suppressErrors) throws MBTilesReadException, IOException {
+
 		var metadataTile = tileMetadataReader.getTile(tile.zoom, tile.x, tile.flippedY());
-		try (var jsonPayloadReader = new InputStreamReader(metadataTile.getData())) {
-			return metadataFromJson(jsonPayloadReader);
+		var metadataPayload = metadataTile != null ? metadataTile.getData() : null;
+
+		if (metadataPayload != null) {
+			try (var jsonPayloadReader = new InputStreamReader(metadataPayload)) {
+				return metadataFromJson(jsonPayloadReader);
+			}
+		} else {
+
+			// Look for metadata of parent tiles
+			TileNumber parent = tile.ancestor(tile.zoom - 1);
+			MapMetadata result = metadataForTile(parent, tileMetadataReader, true);
+
+			if (result == null && !suppressErrors) {
+				ConversionLog.error("Could not read metadata for tile " + tile);
+			}
+
+			return result;
+
 		}
+
 	}
 
 	public static MapMetadata metadataFromJson(File metadataFile) throws IOException {
