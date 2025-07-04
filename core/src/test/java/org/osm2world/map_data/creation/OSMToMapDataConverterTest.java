@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -212,6 +213,33 @@ public class OSMToMapDataConverterTest {
 	public void testSelfIntersection() throws IOException, EntityNotFoundException {
 
 		loadMapData("self_intersection.osm");
+
+	}
+
+	/**
+	 * reads a file with very large areas which need to be clipped to the input bounds for reasonable
+	 */
+	@Test
+	public void testHugeArea() throws IOException, EntityNotFoundException, NoSuchElementException {
+
+		MapData mapData = loadMapData("huge_areas.osm");
+
+		MapArea a1 = mapData.getMapAreas().stream().filter(it -> it.getId() == -111L).findFirst().get();
+		MapArea a2 = mapData.getMapAreas().stream().filter(it -> it.getId() == -222L).findFirst().get();
+		MapArea a3 = mapData.getMapAreas().stream().filter(it -> it.getId() == -333L).findFirst().get();
+
+		assertTrue(a1.getPolygon().getArea() < 10 * mapData.getBoundary().getArea());
+		assertTrue(a2.getPolygon().getArea() < 10 * mapData.getBoundary().getArea());
+		assertTrue(a3.getPolygon().getArea() < 100.0);
+
+		for (MapArea area : List.of(a1, a2, a3)) {
+			assertSame(area.getPolygon().getOuter().size(), area.getBoundaryNodes().size() - 1);
+		}
+
+		assertTrue(a2.getBoundaryNodes().stream().anyMatch(it -> it.getTags().contains("note", "existing1")));
+		assertTrue(a2.getBoundaryNodes().stream().anyMatch(it -> it.getTags().contains("note", "existing2")));
+
+		assertFalse(a1.getPolygon().getTriangulation().isEmpty());
 
 	}
 

@@ -17,14 +17,13 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.*;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.datastructures.IndexGrid;
 import org.osm2world.math.datastructures.SpatialIndex;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.MapProjection;
-import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.math.shapes.LineSegmentXZ;
-import org.osm2world.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.math.shapes.*;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.osm.ruleset.HardcodedRuleset;
 import org.osm2world.osm.ruleset.Ruleset;
@@ -53,21 +52,104 @@ public class OSMToMapDataConverter {
 
 	public MapData createMapData(OSMData osmData, @Nullable O2WConfig config) throws EntityNotFoundException {
 
-		final List<MapNode> mapNodes = new ArrayList<>();
-		final List<MapWay> mapWays = new ArrayList<>();
-		final List<MapArea> mapAreas = new ArrayList<>();
-		final List<MapRelation> mapRelations = new ArrayList<>();
+		List<MapNode> mapNodes = new ArrayList<>();
+		List<MapWay> mapWays = new ArrayList<>();
+		List<MapArea> mapAreas = new ArrayList<>();
+		List<MapRelation> mapRelations = new ArrayList<>();
 
 		boolean isAtSea = config != null && config.isAtSea();
 
 		createMapElements(osmData, isAtSea, mapNodes, mapWays, mapAreas, mapRelations);
 
-		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds()));
+		AxisAlignedRectangleXZ fileBoundary = calculateFileBoundary(osmData.getUnionOfExplicitBounds());
+
+		mapAreas = shrinkHugeAreas(mapAreas, mapNodes, fileBoundary);
+
+		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations, fileBoundary);
 
 		calculateIntersectionsInMapData(mapData);
 
 		return mapData;
+
+	}
+
+	private List<MapArea> shrinkHugeAreas(List<MapArea> mapAreas, List<MapNode> mapNodes,
+			@Nullable AxisAlignedRectangleXZ fileBoundary) {
+
+		if (fileBoundary == null) {
+			return mapAreas;
+		}
+
+		double maxSize = fileBoundary.area() * 5.0;
+		AxisAlignedRectangleXZ paddedBoundary = fileBoundary.pad(1.0);
+
+		long highestNodeId = mapNodes.stream().mapToLong(MapNode::getId).max().orElse(0);
+
+		List<MapArea> result = new ArrayList<>(mapAreas.size());
+
+		for (MapArea area : mapAreas) {
+
+			if (area.getPolygon().getArea() <= maxSize) {
+				result.add(area);
+			} else {
+
+				ConversionLog.warn("Area is much larger than the data boundary, clipping it", area);
+
+				List<PolygonShapeXZ> clippedShapes;
+
+				if (area.getPolygon().contains(paddedBoundary)) {
+					clippedShapes = List.of(paddedBoundary);
+				} else {
+					clippedShapes = new ArrayList<>();
+					Collection<PolygonWithHolesXZ> polygons = CAGUtil.intersectPolygons(
+							List.of(area.getOuterPolygon(), paddedBoundary.polygonXZ()));
+					for (PolygonWithHolesXZ polygon : polygons) {
+						if (area.getPolygon().getHoles().isEmpty()) {
+							clippedShapes.add(polygon);
+						} else {
+							clippedShapes.addAll(CAGUtil.subtractPolygons(polygon, area.getPolygon().getHoles()));
+						}
+					}
+				}
+
+				for (PolygonShapeXZ shape : clippedShapes) {
+
+					List<MapNode> outer = null;
+					List<List<MapNode>> holes = new ArrayList<>();
+
+					for (SimplePolygonShapeXZ ring : shape.getRings()) {
+
+						List<MapNode> nodes = new ArrayList<>();
+						for (VectorXZ v : ring.verticesNoDup()) {
+							MapNode existingNode = area.getBoundaryNodes().stream().filter(n -> n.getPos().equals(v)).findAny().orElse(null);
+							nodes.add(existingNode != null ? existingNode
+									: MultipolygonAreaBuilder.createFakeMapNode(v, ++highestNodeId, null, mapNodes));
+						}
+						nodes.add(nodes.get(0));
+
+						if (shape.getOuter().equals(ring)) {
+							outer = nodes;
+						} else {
+							holes.add(nodes);
+						}
+
+					}
+
+					assert outer != null;
+
+					MapArea clippedArea = new MapArea(
+							area.getId(), area.isBasedOnRelation(), area.getTags(),
+							outer, holes);
+
+					result.add(clippedArea);
+
+				}
+
+			}
+
+		}
+
+		return result;
 
 	}
 

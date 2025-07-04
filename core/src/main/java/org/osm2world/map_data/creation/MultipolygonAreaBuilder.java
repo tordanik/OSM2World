@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapAreaSegment;
 import org.osm2world.map_data.data.MapNode;
@@ -627,13 +629,13 @@ final class MultipolygonAreaBuilder {
 
 	}
 
-	private static MapNode createFakeMapNode(VectorXZ pos, long nodeId,
-			TLongObjectMap<MapNode> nodeIdMap, Collection<MapNode> mapNodes) {
+	public static MapNode createFakeMapNode(VectorXZ pos, long nodeId,
+			@Nullable TLongObjectMap<MapNode> nodeIdMap, Collection<MapNode> mapNodes) {
 
 		long id = nodeId + 1;
 		MapNode mapNode = new MapNode(id, COASTLINE_NODE_TAGS, pos);
 		mapNodes.add(mapNode);
-		nodeIdMap.put(id, mapNode);
+		if (nodeIdMap != null) { nodeIdMap.put(id, mapNode); }
 
 		return mapNode;
 

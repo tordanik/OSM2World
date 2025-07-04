@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never' generator='JOSM'>
+  <bounds minlat='21.8716946' minlon='-4.152832' maxlat='21.8818898' maxlon='-4.1418457' origin='JOSM' />
+  <node id='-25676' action='modify' lat='19.55693608818' lon='-2.49067089006' />
+  <node id='-25677' action='modify' lat='20.56471742285' lon='-0.92731517268' />
+  <node id='-25678' action='modify' lat='21.19481522291' lon='0.66669457838' />
+  <node id='-25679' action='modify' lat='22.53188897672' lon='-2.82786526047' />
+  <node id='-25680' action='modify' lat='24.5829883386' lon='-5.52542022379' />
+  <node id='-25681' action='modify' lat='22.70166888944' lon='-9.75567687082' />
+  <node id='-25682' action='modify' lat='21.56589222406' lon='-6.07719282993' />
+  <node id='-25683' action='modify' lat='20.09760998262' lon='-4.50615827711' />
+  <node id='-25684' action='modify' lat='22.29808645407' lon='-1.22617667398' />
+  <node id='-25685' action='modify' lat='24.92398271823' lon='-1.07290650561' />
+  <node id='-25686' action='modify' lat='22.62386496761' lon='-4.00036672149' />
+  <node id='-25687' action='modify' lat='21.87994318223' lon='-4.14758720492' />
+  <node id='-25688' action='modify' lat='21.879945461' lon='-4.14753879347' />
+  <node id='-25689' action='modify' lat='21.87990065599' lon='-4.14753634434' />
+  <node id='-25690' action='modify' lat='21.87989837723' lon='-4.14758475578' />
+  <node id='-25691' action='modify' lat='21.88085776239' lon='-4.15004185511'>
+    <tag k='note' v='existing1' />
+  </node>
+  <node id='-25692' action='modify' lat='21.87385582137' lon='-4.15144861128'>
+    <tag k='note' v='existing2' />
+  </node>
+  <way id='-111' action='modify'>
+    <nd ref='-25676' />
+    <nd ref='-25677' />
+    <nd ref='-25678' />
+    <nd ref='-25679' />
+    <nd ref='-25680' />
+    <nd ref='-25681' />
+    <nd ref='-25682' />
+    <nd ref='-25676' />
+    <tag k='natural' v='sand' />
+  </way>
+  <way id='-222' action='modify'>
+    <nd ref='-25683' />
+    <nd ref='-25684' />
+    <nd ref='-25685' />
+    <nd ref='-25686' />
+    <nd ref='-25691' />
+    <nd ref='-25692' />
+    <nd ref='-25683' />
+    <tag k='landuse' v='forest' />
+  </way>
+  <way id='-333' action='modify'>
+    <nd ref='-25687' />
+    <nd ref='-25688' />
+    <nd ref='-25689' />
+    <nd ref='-25690' />
+    <nd ref='-25687' />
+    <tag k='area' v='yes' />
+    <tag k='highway' v='service' />
+  </way>
+</osm>
