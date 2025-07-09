@@ -579,7 +579,7 @@ public class GltfModel implements Model {
 		}
 	}
 
-	public static GltfModel loadFromStream(InputStream inputStream, GltfOutput.GltfFlavor flavor,
+	public static GltfModel loadFromStream(InputStream inputStream, GltfFlavor flavor,
 			@Nullable ExternalModelSource source) throws IOException {
 		try (inputStream) {
 			Gltf gltf = switch (flavor) {

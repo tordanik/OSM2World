@@ -2,8 +2,8 @@ package org.osm2world.viewer.view;
 
 import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
+import static org.osm2world.output.gltf.GltfFlavor.GLB;
+import static org.osm2world.output.gltf.GltfFlavor.GLTF;
 
 import java.awt.*;
 import java.io.File;

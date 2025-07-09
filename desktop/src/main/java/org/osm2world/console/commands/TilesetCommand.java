@@ -1,6 +1,6 @@
 package org.osm2world.console.commands;
 
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
+import static org.osm2world.output.gltf.GltfFlavor.GLB;
 
 import java.io.File;
 import java.io.IOException;

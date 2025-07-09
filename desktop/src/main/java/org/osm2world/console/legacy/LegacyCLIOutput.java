@@ -29,6 +29,7 @@ import org.osm2world.output.common.rendering.OrthographicUtil;
 import org.osm2world.output.common.rendering.PerspectiveProjection;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput;
+import org.osm2world.output.gltf.GltfFlavor;
 import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.image.ImageExporter;
 import org.osm2world.output.image.ImageOutputFormat;
@@ -153,8 +154,8 @@ final class LegacyCLIOutput {
 						} else {
 							bounds = scene.getBoundary();
 						}
-						GltfOutput.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
-								? GltfOutput.GltfFlavor.GLB : GltfOutput.GltfFlavor.GLTF;
+						GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
+								? GltfFlavor.GLB : GltfFlavor.GLTF;
 						Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
 								? Compression.GZ : Compression.NONE;
 						GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression, bounds);

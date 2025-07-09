@@ -20,6 +20,7 @@ import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.output.common.MeshOutput;
 import org.osm2world.output.common.compression.Compression;
+import org.osm2world.output.gltf.GltfFlavor;
 import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.tileset.tiles_data.TilesetAsset;
 import org.osm2world.output.tileset.tiles_data.TilesetEntry;
@@ -47,7 +48,7 @@ public class TilesetOutput extends MeshOutput {
 	private static final boolean TRANSPARENT_COMPRESSION = true;
 
 	private final File outputFile;
-	private final GltfOutput.GltfFlavor gltfFlavor;
+	private final GltfFlavor gltfFlavor;
 	private final Compression gltfCompression;
 	private final org.osm2world.math.geo.MapProjection mapProjection;
 	private final @Nullable SimpleClosedShapeXZ bounds;
@@ -56,7 +57,7 @@ public class TilesetOutput extends MeshOutput {
 	 * @param outputFile  the path for the tileset JSON
 	 */
 	public TilesetOutput(File outputFile,
-			GltfOutput.GltfFlavor gltfFlavor, Compression gltfCompression,
+			GltfFlavor gltfFlavor, Compression gltfCompression,
 			MapProjection mapProjection, @Nullable SimpleClosedShapeXZ bounds) {
 		this.outputFile = outputFile;
 		this.gltfFlavor = gltfFlavor;

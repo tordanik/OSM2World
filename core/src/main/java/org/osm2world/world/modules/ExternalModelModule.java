@@ -22,8 +22,8 @@ import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolylineXZ;
+import org.osm2world.output.gltf.GltfFlavor;
 import org.osm2world.output.gltf.GltfModel;
-import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.*;
 import org.osm2world.util.ValueParseUtil;
@@ -125,7 +125,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 
 				if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
 					try (InputStream inputStream = connection.getInputStream()) {
-						 return GltfModel.loadFromStream(inputStream, GltfOutput.GltfFlavor.GLB,
+						 return GltfModel.loadFromStream(inputStream, GltfFlavor.GLB,
 								 new ExternalModelSource.External3DMRSource(id));
 					}
 				} else {

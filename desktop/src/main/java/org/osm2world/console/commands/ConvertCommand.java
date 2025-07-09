@@ -4,7 +4,6 @@ import static java.lang.Math.*;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.console.commands.mixins.CameraOptions.*;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
 
@@ -31,6 +30,7 @@ import org.osm2world.output.common.rendering.OrthographicUtil;
 import org.osm2world.output.common.rendering.PerspectiveProjection;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput;
+import org.osm2world.output.gltf.GltfFlavor;
 import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.image.ImageExporter;
 import org.osm2world.output.image.ImageOutputFormat;

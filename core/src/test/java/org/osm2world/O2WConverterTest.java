@@ -2,7 +2,7 @@ package org.osm2world;
 
 import static org.junit.Assert.assertTrue;
 import static org.osm2world.output.common.compression.Compression.NONE;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
+import static org.osm2world.output.gltf.GltfFlavor.GLTF;
 import static org.osm2world.util.test.TestFileUtil.createTempFile;
 
 import java.io.File;

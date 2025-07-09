@@ -10,8 +10,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.output.common.compression.Compression;
+import org.osm2world.output.gltf.GltfFlavor;
 import org.osm2world.output.gltf.GltfOutput;
-import org.osm2world.output.gltf.GltfOutput.GltfFlavor;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;

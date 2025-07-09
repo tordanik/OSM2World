@@ -8,8 +8,8 @@ import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputM
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.REFERENCE;
 import static org.osm2world.output.common.compression.Compression.*;
 import static org.osm2world.output.common.compression.CompressionUtil.writeFileWithCompression;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLB;
-import static org.osm2world.output.gltf.GltfOutput.GltfFlavor.GLTF;
+import static org.osm2world.output.gltf.GltfFlavor.GLB;
+import static org.osm2world.output.gltf.GltfFlavor.GLTF;
 import static org.osm2world.scene.material.Material.Interpolation.SMOOTH;
 import static org.osm2world.scene.mesh.MeshStore.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredVertically;
@@ -60,16 +60,6 @@ import com.google.gson.JsonIOException;
  * builds a glTF or glb (binary glTF) output file
  */
 public class GltfOutput extends AbstractOutput {
-
-	public enum GltfFlavor {
-
-		GLTF, GLB;
-
-		public String extension() {
-			return "." + name().toLowerCase();
-		}
-
-	}
 
 	private final File outputFile;
 	private final GltfFlavor flavor;
