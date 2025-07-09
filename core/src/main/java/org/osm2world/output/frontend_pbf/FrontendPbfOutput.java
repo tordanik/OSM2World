@@ -7,10 +7,10 @@ import static java.util.Collections.emptyList;
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
+import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.mesh.MeshStore.*;
 import static org.osm2world.scene.mesh.MeshStore.MergeMeshes.MergeOption.*;
 import static org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
-import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseDirection;
@@ -32,24 +32,8 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.common.MeshOutput;
-import org.osm2world.scene.mesh.MeshStore;
-import org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.compression.CompressionUtil;
-import org.osm2world.scene.material.ImageFileTexture;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Material.Shadow;
-import org.osm2world.scene.material.RuntimeTexture;
-import org.osm2world.scene.material.TextureData;
-import org.osm2world.scene.mesh.ExtrusionGeometry;
-import org.osm2world.scene.mesh.LevelOfDetail;
-import org.osm2world.scene.mesh.Mesh;
-import org.osm2world.scene.mesh.TriangleGeometry;
-import org.osm2world.scene.model.ExternalResourceModel;
-import org.osm2world.scene.model.InstanceParameters;
-import org.osm2world.scene.model.Model;
-import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.output.frontend_pbf.FrontendPbf.*;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Animation.AnimationType;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Material.TextureLayer;
@@ -57,8 +41,20 @@ import org.osm2world.output.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCo
 import org.osm2world.output.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Material.Transparency;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Shape.ShapeType;
-import org.osm2world.util.FaultTolerantIterationUtil;
+import org.osm2world.output.gltf.GltfModel;
 import org.osm2world.scene.color.LColor;
+import org.osm2world.scene.material.ImageFileTexture;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Shadow;
+import org.osm2world.scene.material.RuntimeTexture;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.mesh.*;
+import org.osm2world.scene.mesh.ExtrusionGeometry;
+import org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
+import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.scene.model.*;
+import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
+import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.BarrierModule.BollardRow;
@@ -539,6 +535,9 @@ public class FrontendPbfOutput extends MeshOutput {
 
 			if (model instanceof ExternalResourceModel externalResourceModel) {
 				geometryBuilder.setResourceIdentifier(externalResourceModel.resourceIdentifier());
+			} else if (model instanceof GltfModel gltfModel
+					&& gltfModel.getSource() instanceof ExternalModelSource.External3DMRSource s) {
+				geometryBuilder.setResourceIdentifier(s.toString());
 			} else {
 				geometryBuilder.setModel(modelBlock.toIndex(model));
 			}

@@ -97,7 +97,7 @@ public class ConversionLog {
 		log(new Entry(level, Instant.now(), message, e, element));
 	}
 
-	public static void error(String message, Throwable e, MapRelationElement element) {
+	public static void error(String message, Throwable e, @Nullable MapRelationElement element) {
 		log(LogLevel.ERROR, message, e, element);
 	}
 
@@ -105,7 +105,7 @@ public class ConversionLog {
 		log(LogLevel.ERROR, message, e, null);
 	}
 
-	public static void error(String message, MapRelationElement element) {
+	public static void error(String message, @Nullable MapRelationElement element) {
 		log(LogLevel.ERROR, message, null, element);
 	}
 
@@ -113,7 +113,7 @@ public class ConversionLog {
 		log(LogLevel.ERROR, message, null, null);
 	}
 
-	public static void error(Throwable e, MapRelationElement element) {
+	public static void error(Throwable e, @Nullable MapRelationElement element) {
 		log(LogLevel.ERROR, messageFor(e), e, element);
 	}
 
@@ -121,7 +121,7 @@ public class ConversionLog {
 		log(LogLevel.ERROR, messageFor(e), e, null);
 	}
 
-	public static void warn(String message, Throwable e, MapRelationElement element) {
+	public static void warn(String message, Throwable e, @Nullable MapRelationElement element) {
 		log(LogLevel.WARNING, message, e, element);
 	}
 
@@ -129,7 +129,7 @@ public class ConversionLog {
 		log(LogLevel.WARNING, message, e, null);
 	}
 
-	public static void warn(String message, MapRelationElement element) {
+	public static void warn(String message, @Nullable MapRelationElement element) {
 		log(LogLevel.WARNING, message, null, element);
 	}
 
@@ -137,7 +137,7 @@ public class ConversionLog {
 		log(LogLevel.WARNING, message, null, null);
 	}
 
-	public static void warn(Throwable e, MapRelationElement element) {
+	public static void warn(Throwable e, @Nullable MapRelationElement element) {
 		log(LogLevel.WARNING, messageFor(e), e, element);
 	}
 

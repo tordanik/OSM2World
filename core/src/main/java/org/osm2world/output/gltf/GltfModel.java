@@ -30,6 +30,7 @@ import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.LODRange;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.scene.model.ExternalModelSource;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.util.exception.InvalidGeometryException;
@@ -45,11 +46,11 @@ public class GltfModel implements Model {
 	private static final LColor PLACEHOLDER_COLOR = new LColor(1f, 0f, 1f);
 
 	private final Gltf gltf;
-	private final @Nullable File source;
+	private final @Nullable ExternalModelSource source;
 
 	private final Map<Pair<GltfImage, Wrap>, TextureData> imageCache = new HashMap<>();
 
-	public GltfModel(Gltf gltf, @Nullable File source) {
+	public GltfModel(Gltf gltf, @Nullable ExternalModelSource source) {
 
 		this.gltf = gltf;
 		this.source = source;
@@ -60,8 +61,12 @@ public class GltfModel implements Model {
 
 	}
 
+	public ExternalModelSource getSource() {
+		return source;
+	}
+
 	public String toString() {
-		return source != null ? source.getName() : super.toString();
+		return source != null ? source.toString() : super.toString();
 	}
 
 	@Override
@@ -377,8 +382,8 @@ public class GltfModel implements Model {
 			// load external .bin file
 			try {
 				URI bufferUri = new URI(buffer.uri);
-				if (source != null) {
-					bufferUri = source.toURI().resolve(bufferUri);
+				if (source instanceof ExternalModelSource.LocalFileSource localFileSource) {
+					bufferUri = localFileSource.file().toURI().resolve(bufferUri);
 				}
 				try (InputStream inputStream = bufferUri.toURL().openStream()) {
 					result = ByteBuffer.wrap(inputStream.readAllBytes());
@@ -525,8 +530,8 @@ public class GltfModel implements Model {
 			} else if (image.uri != null) {
 				try {
 					URI imageUri = new URI(image.uri);
-					if (source != null) {
-						imageUri = source.toURI().resolve(imageUri);
+					if (source instanceof ExternalModelSource.LocalFileSource localFileSource) {
+						imageUri = localFileSource.file().toURI().resolve(imageUri);
 					}
 					textureData = new UriTexture(imageUri, dimensions, wrap, GLOBAL_X_Z);
 					textureData.getBufferedImage();
@@ -564,25 +569,38 @@ public class GltfModel implements Model {
 	}
 
 	public static GltfModel loadFromFile(File gltfFile) throws IOException {
-		if (gltfFile.getName().toLowerCase().endsWith(".glb")) {
-			return loadFromGlbFile(gltfFile);
-		} else {
-			return loadFromGltfFile(gltfFile);
-		}
-	}
-
-	private static GltfModel loadFromGltfFile(File gltfFile) throws IOException {
-		try (var reader = new FileReader(gltfFile)) {
-			Gltf gltf = new Gson().fromJson(reader, Gltf.class);
-			return new GltfModel(gltf, gltfFile);
+		try (var inputStream = new FileInputStream(gltfFile)) {
+			Gltf gltf = (gltfFile.getName().toLowerCase().endsWith(".glb"))
+					? loadFromGlb(inputStream)
+					: loadFromGltf(inputStream);
+			return new GltfModel(gltf, new ExternalModelSource.LocalFileSource(gltfFile));
 		} catch (Exception e) {
-			throw new IOException("Could not read glTF model at " + gltfFile, e);
+			throw new IOException("Could not read glTF model from file: " + gltfFile, e);
 		}
 	}
 
-	private static GltfModel loadFromGlbFile(File glbFile) throws IOException {
+	public static GltfModel loadFromStream(InputStream inputStream, GltfOutput.GltfFlavor flavor,
+			@Nullable ExternalModelSource source) throws IOException {
+		try (inputStream) {
+			Gltf gltf = switch (flavor) {
+				case GLB -> loadFromGlb(inputStream);
+				case GLTF -> loadFromGltf(inputStream);
+			};
+			return new GltfModel(gltf, source);
+		} catch (Exception e) {
+			throw new IOException("Could not read glTF model ", e);
+		}
+	}
 
-		try (var inputStream = new FileInputStream(glbFile)) {
+	private static Gltf loadFromGltf(InputStream inputStream) throws Exception {
+		try (var reader = new InputStreamReader(inputStream)) {
+			return new Gson().fromJson(reader, Gltf.class);
+		}
+	}
+
+	private static Gltf loadFromGlb(InputStream inputStream) throws Exception {
+
+		try (inputStream) {
 
 			byte[] headerData = inputStream.readNBytes(12);
 			ByteBuffer header = ByteBuffer.wrap(headerData).order(ByteOrder.LITTLE_ENDIAN);
@@ -641,10 +659,8 @@ public class GltfModel implements Model {
 				}
 			}
 
-			return new GltfModel(gltf, glbFile);
+			return gltf;
 
-		} catch (Exception e) {
-			throw new IOException("Could not read GLB model at " + glbFile, e);
 		}
 
 	}

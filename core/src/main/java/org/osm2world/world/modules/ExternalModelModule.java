@@ -2,10 +2,19 @@ package org.osm2world.world.modules;
 
 import static java.lang.Math.PI;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.data.EleConnector;
@@ -13,8 +22,11 @@ import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolylineXZ;
+import org.osm2world.output.gltf.GltfModel;
+import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.*;
+import org.osm2world.util.ValueParseUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentUtil;
 import org.osm2world.world.data.AreaWorldObject;
@@ -39,7 +51,10 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 				Model model = Models.getModel(element.getElementWithId().toString());
 
 				if (model == null && element.getTags().containsKey("3dmr")) {
-					model = new ExternalResourceModel("3dmr:" + element.getTags().getValue("3dmr"));
+					Integer id = ValueParseUtil.parseInt(element.getTags().getValue("3dmr"));
+					if (id != null) {
+						model = loadModelFrom3dmr(id, element.getElementWithId());
+					}
 				}
 
 				if (model != null) {
@@ -62,6 +77,70 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 
 			}
 		}
+
+	}
+
+	/**
+	 * attempt to load a model from the 3D model repository (3DMR)
+	 */
+	private @Nullable GltfModel loadModelFrom3dmr(long id, @Nullable MapRelationElement element) {
+
+		/* First, try to load from a local directory if available */
+
+		File modelDir = config.model3dmrDir();
+
+		if (modelDir != null) {
+
+			File modelFile = new File(modelDir, id + ".glb");
+
+			if (!modelFile.exists()) {
+				Pattern filenamePattern = Pattern.compile("^" + id + "(_[0-9]+)\\.glb$");
+				File[] files = modelDir.listFiles((dir, name) -> filenamePattern.matcher(name).matches());
+				if (files != null && files.length > 0) {
+					Arrays.sort(files, Comparator.comparingLong(f -> Long.parseLong(filenamePattern.matcher(f.getName()).group(1))));
+					modelFile = files[files.length - 1];
+				}
+			}
+
+			if (modelFile.exists()) {
+				try {
+					return GltfModel.loadFromFile(modelFile);
+				} catch (IOException e) {
+					ConversionLog.error("Error loading 3DMR model from local file: " + modelFile, element);
+				}
+			}
+
+		}
+
+		/* If a local file not found or couldn't be loaded, try to download from URL */
+
+		String urlPrefix = config.model3dmrUrl();
+
+		if (urlPrefix != null) {
+			try {
+
+				URL url = new URL(urlPrefix + id);
+				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+				connection.setRequestMethod("GET");
+
+				if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+					try (InputStream inputStream = connection.getInputStream()) {
+						 return GltfModel.loadFromStream(inputStream, GltfOutput.GltfFlavor.GLB,
+								 new ExternalModelSource.External3DMRSource(id));
+					}
+				} else {
+					ConversionLog.error("Response code " + connection.getResponseCode()
+							+ " retrieving 3DMR model '"  + id + "' from " + urlPrefix, element);
+				}
+
+			} catch (IOException e) {
+				ConversionLog.error("Error loading 3DMR model '"  + id + "' from " + urlPrefix, element);
+			}
+		}
+
+		/* Return null if the model couldn't be loaded */
+
+		return null;
 
 	}
 

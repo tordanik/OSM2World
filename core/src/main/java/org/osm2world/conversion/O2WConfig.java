@@ -282,6 +282,22 @@ public class O2WConfig {
 	}
 
 	/**
+	 * A directory with locally stored 3DMR models. Models are stored as "id.glb" or "id_version.glb".
+	 * If there are multiple versions of a model, the highest version should be used.
+	 */
+	public @Nullable File model3dmrDir() {
+		return resolveFileConfigProperty(getString("3dmrDir", null));
+	}
+
+	/**
+	 * URL prefix for the model API call of a 3DMR instance.
+	 * This is used to obtain models which are not available in the {@link #model3dmrDir()}.
+	 */
+	public @Nullable String model3dmrUrl() {
+		return getString("3dmrUrl", "https://3dmr.eu/api/model/");
+	}
+
+	/**
 	 * the algorithm to use for interpolating terrain elevation between sites of known elevation
 	 * @return  a function to create an instance of the algorithm
 	 */
@@ -311,14 +327,14 @@ public class O2WConfig {
 	 * if this config references some files by path, e.g. textures,
 	 * resolve file paths relative to the location of the config file used to load this config (if any)
 	 */
-	public @Nullable File resolveFileConfigProperty(String fileName) {
+	public @Nullable File resolveFileConfigProperty(@Nullable String fileName) {
 		return resolveFileConfigProperty(fileName, true);
 	}
 
 	/**
 	 * Variant of {@link #resolveFileConfigProperty(String)} which can optionally permit non-existing files.
 	 */
-	public @Nullable File resolveFileConfigProperty(String fileName, boolean requireFileExists) {
+	public @Nullable File resolveFileConfigProperty(@Nullable String fileName, boolean requireFileExists) {
 
 		if (fileName == null) {
 			return null;
