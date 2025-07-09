@@ -20,7 +20,7 @@ import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
  */
 public record OverpassReader(String apiURL) implements OSMDataReader {
 
-	public static final String DEFAULT_API_URL = "http://www.overpass-api.de/api/interpreter";
+	public static final String DEFAULT_API_URL = "https://www.overpass-api.de/api/interpreter";
 
 	/** accesses data from the default API at {@link #DEFAULT_API_URL} */
 	public OverpassReader() {
