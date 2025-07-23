@@ -9,6 +9,7 @@ import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +28,7 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.osm.ruleset.HardcodedRuleset;
 import org.osm2world.osm.ruleset.Ruleset;
+import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
 
 import de.topobyte.osm4j.core.model.iface.*;
@@ -83,11 +85,11 @@ public class OSMToMapDataConverter {
 		double maxSize = fileBoundary.area() * 5.0;
 		AxisAlignedRectangleXZ paddedBoundary = fileBoundary.pad(1.0);
 
-		long highestNodeId = mapNodes.stream().mapToLong(MapNode::getId).max().orElse(0);
+		AtomicLong highestNodeId = new AtomicLong(mapNodes.stream().mapToLong(MapNode::getId).max().orElse(0));
 
 		List<MapArea> result = new ArrayList<>(mapAreas.size());
 
-		for (MapArea area : mapAreas) {
+		FaultTolerantIterationUtil.forEach(mapAreas, (MapArea area) -> {
 
 			if (area.getPolygon().getArea() <= maxSize) {
 				result.add(area);
@@ -123,7 +125,7 @@ public class OSMToMapDataConverter {
 						for (VectorXZ v : ring.verticesNoDup()) {
 							MapNode existingNode = area.getBoundaryNodes().stream().filter(n -> n.getPos().equals(v)).findAny().orElse(null);
 							nodes.add(existingNode != null ? existingNode
-									: MultipolygonAreaBuilder.createFakeMapNode(v, ++highestNodeId, null, mapNodes));
+									: MultipolygonAreaBuilder.createFakeMapNode(v, highestNodeId.incrementAndGet(), null, mapNodes));
 						}
 						nodes.add(nodes.get(0));
 
@@ -147,7 +149,7 @@ public class OSMToMapDataConverter {
 
 			}
 
-		}
+		});
 
 		return result;
 
