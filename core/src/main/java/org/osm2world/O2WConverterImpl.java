@@ -121,16 +121,17 @@ class O2WConverterImpl {
 			return this.runConversion(mapData, mapProjection, outputs, perfListener);
 
 		} catch (EntityNotFoundException e) {
-			ConversionLog.log(FATAL, "Conversion failed", e, null);
+			@Nullable String name = buildConversionLogName(bounds, osmDataReader);
+			String message = "Conversion failed" + ((name != null) ? " (" + name + ")" : "");
+			ConversionLog.log(FATAL, message, e, null);
 			throw new IOException(e);
 		} catch (Exception e) {
-			ConversionLog.log(FATAL, "Conversion failed", e, null);
+			@Nullable String name = buildConversionLogName(bounds, osmDataReader);
+			String message = "Conversion failed" + ((name != null) ? " (" + name + ")" : "");
+			ConversionLog.log(FATAL, message, e, null);
 			throw e;
 		} finally {
-			GeoBounds b = (bounds != null) ? bounds
-					: (osmDataReader instanceof OSMDataReaderView view) ? view.getBounds() : null;
-			String fileNameSuffix = b instanceof TileNumber tile ? tile.toString("_") : null;
-			writeLogs(fileNameSuffix, perfListener, config);
+			writeLogs(buildConversionLogName(bounds, osmDataReader), perfListener, config);
 		}
 
 	}
@@ -405,6 +406,13 @@ class O2WConverterImpl {
 			ConversionLog.setConsoleLogLevels(EnumSet.allOf(ConversionLog.LogLevel.class));
 		}
 
+	}
+
+	/** tries to return a name for the log (usually a tile number) */
+	private static @Nullable String buildConversionLogName(GeoBounds bounds, OSMDataReader osmDataReader) throws IOException {
+		GeoBounds b = (bounds != null) ? bounds
+				: (osmDataReader instanceof OSMDataReaderView view) ? view.getBounds() : null;
+		return b instanceof TileNumber tile ? tile.toString("_") : null;
 	}
 
 	private static void writeLogs(@Nullable String fileNameSuffix, PerformanceListener perfListener, O2WConfig config) {
