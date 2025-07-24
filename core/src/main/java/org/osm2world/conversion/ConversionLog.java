@@ -64,6 +64,7 @@ public class ConversionLog {
 
 	public static void clear() {
 		log.get().clear();
+		suppressedCopiesOfLastEntry.set(0);
 	}
 
 	public static void log(Entry entry) {
