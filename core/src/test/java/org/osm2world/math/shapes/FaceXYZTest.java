@@ -1,6 +1,6 @@
 package org.osm2world.math.shapes;
 
-import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
@@ -13,12 +13,12 @@ public class FaceXYZTest {
 	@Test
 	public void testToFacePlane_xzParallel() {
 
-		FaceXYZ face = new FaceXYZ(closeLoop(asList(
+		FaceXYZ face = new FaceXYZ(closeLoop(
 				new VectorXYZ(-1, 20, -1),
 				new VectorXYZ(+1, 20, -1),
 				new VectorXYZ(+1, 20, +1),
 				new VectorXYZ(-1, 20, +1)
-				)));
+				));
 
 		SimplePolygonXZ faceInPlane = face.toFacePlane(face);
 		assertAlmostEquals(face.getSimpleXZPolygon(), faceInPlane);
@@ -32,11 +32,11 @@ public class FaceXYZTest {
 	@Test
 	public void testToFacePlane_xzParallelFlipped() {
 
-		FaceXYZ face = new FaceXYZ(closeLoop(asList(
+		FaceXYZ face = new FaceXYZ(closeLoop(
 				new VectorXYZ(-1, -3.5, -1),
 				new VectorXYZ(-1, -3.5, +1),
 				new VectorXYZ(+1, -3.5,  0)
-				)));
+				));
 
 		SimplePolygonXZ faceInPlane = face.toFacePlane(face);
 		PolygonXYZ faceBackInXYZ = face.fromFacePlane(faceInPlane);
@@ -47,12 +47,12 @@ public class FaceXYZTest {
 	@Test
 	public void testToFacePlane_verticalFace() {
 
-		FaceXYZ face = new FaceXYZ(closeLoop(asList(
+		FaceXYZ face = new FaceXYZ(closeLoop(
 				new VectorXYZ(-1, -1, 42),
 				new VectorXYZ(+1, -1, 42),
 				new VectorXYZ(+1, +1, 42),
 				new VectorXYZ(-1, +1, 42)
-				)));
+				));
 
 		SimplePolygonXZ faceInPlane = face.toFacePlane(face);
 		PolygonXYZ faceBackInXYZ = face.fromFacePlane(faceInPlane);
@@ -63,13 +63,12 @@ public class FaceXYZTest {
 	@Test
 	public void testClosestPoint_verticalFace() {
 
-		FaceXYZ face = new FaceXYZ(closeLoop(asList(
+		FaceXYZ face = new FaceXYZ(closeLoop(
 				new VectorXYZ(-1, -1, 22),
 				new VectorXYZ(-1,  0, 22),
 				new VectorXYZ(-1, +1, 22),
 				new VectorXYZ(+1, +1, 22),
-				new VectorXYZ(+1, -1, 22),
-				new VectorXYZ(-1, -1, 22))));
+				new VectorXYZ(+1, -1, 22)));
 
 			// within face
 			assertAlmostEquals(new VectorXYZ(0.2, 0.2, 22), face.closestPoint(new VectorXYZ(0.2, 0.2, 0)));
@@ -98,6 +97,27 @@ public class FaceXYZTest {
 				new VectorXYZ(0, 20, 20)));
 
 		assertAlmostEquals(0, 15, 15, face.closestPoint(new VectorXYZ(0, 10, 20)));
+
+	}
+
+	@Test
+	public void testDistanceXZ_verticalFace() {
+
+		FaceXYZ face = new FaceXYZ(closeLoop(
+				new VectorXYZ(-1, -1, 22),
+				new VectorXYZ(-1,  0, 22),
+				new VectorXYZ(-1, +1, 22),
+				new VectorXYZ(+1, +1, 22),
+				new VectorXYZ(+1, -1, 22)));
+
+		// within face
+		assertEquals(22.0, face.distanceToXZ(new VectorXZ(0.2, 0)), 0.1);
+		assertEquals(28.0, face.distanceToXZ(new VectorXZ(-1, 50)), 0.1);
+
+		// outside face
+		assertEquals(9.0, face.distanceToXZ(new VectorXZ(-10, 22)), 0.1);
+		assertEquals(9.0, face.distanceToXZ(new VectorXYZ(-10, -10, 22)), 0.1);
+		assertEquals(11.0, face.distanceToXZ(new VectorXZ(0, 33)), 0.1);
 
 	}
 

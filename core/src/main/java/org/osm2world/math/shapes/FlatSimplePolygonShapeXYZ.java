@@ -2,18 +2,20 @@ package org.osm2world.math.shapes;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
+import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
 
 /**
@@ -80,7 +82,16 @@ public interface FlatSimplePolygonShapeXYZ extends BoundedObject {
 		if (abs(this.getNormal().y) > 0.001) { // not vertical
 			return new PolygonXYZ(vertices()).getSimpleXZPolygon().closestPoint(pXZ).distanceTo(pXZ);
 		} else {
-			throw new NotImplementedException("only implemented for faces that are not vertical");
+			// collapse this face into a line segment in the XZ plane, then use that line for distance calculations
+			List<VectorXZ> verticesXZ = verticesNoDup().stream().map(VectorXYZ::xz).toList();
+			List<LineSegmentXZ> lines = new ArrayList<>(verticesXZ.size() * (verticesXZ.size() - 1) / 2);
+			for (int i = 0; i < verticesXZ.size() - 1; i++) {
+				for (int j = i + 1; j < verticesXZ.size(); j++) {
+					lines.add(new LineSegmentXZ(verticesXZ.get(i), verticesXZ.get(j)));
+				}
+			}
+			LineSegmentXZ longestLine = lines.stream().min(comparingDouble(LineSegmentXZ::getLength)).get();
+			return GeometryUtil.distanceFromLineSegment(pXZ, longestLine);
 		}
 	}
 
