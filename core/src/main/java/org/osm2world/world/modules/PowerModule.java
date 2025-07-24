@@ -1,11 +1,11 @@
 package org.osm2world.world.modules;
 
 import static java.awt.Color.BLACK;
-import static java.lang.Math.max;
 import static java.lang.Math.*;
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
-import static java.util.Collections.min;
 import static java.util.Collections.*;
+import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.map_elevation.data.GroundState.ON;
@@ -23,8 +23,8 @@ import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.rotateS
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -90,6 +90,10 @@ public final class PowerModule extends AbstractModule {
 				try {
 					voltage = Integer.valueOf(powerLine.getTags().getValue("voltage"));
 				} catch (NumberFormatException e) {}
+			}
+			if (dir.length() < 0.001) {
+				// can happen in rare cases, e.g. if two ways in opposite directions cancel each other out
+				dir = powerLines.get(0).getDirection();
 			}
 			dir = dir.normalize();
 		}
