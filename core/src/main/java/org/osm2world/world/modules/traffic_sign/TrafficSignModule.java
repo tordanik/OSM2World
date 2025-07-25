@@ -382,7 +382,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			String destination = relation.getTags().getValue("destination");
 			if (destination == null) {
-				ConversionLog.warn("Missing destination in destination_sign: " + relation);
+				ConversionLog.warn("Missing destination in destination_sign", relation);
 				continue;
 			}
 
@@ -415,14 +415,20 @@ public class TrafficSignModule extends AbstractModule {
 
 			if (intersection == null || to == null) {
 				ConversionLog.warn("Member 'intersection' or 'to' was not defined in relation " + relation +
-						". Destination sign rendering is omitted for this relation.");
+						". Destination sign rendering is omitted for this relation.", relation);
 				continue;
 			}
 
 			MapWay from;
 			if (fromMembers.size() != 1) {
-				// use the vector from "sign" to "intersection" instead
-				from = new MapWay(0, TagSet.of(), asList(node, intersection));
+				if (node.getPos().distanceTo(intersection.getPos()) > 0.1) {
+					// use the vector from "sign" to "intersection" instead
+					from = new MapWay(0, TagSet.of(), asList(node, intersection));
+				} else {
+					ConversionLog.warn("Could not identify a suitable and unambiguous 'from' direction" +
+							" for destination_sign relation", relation);
+					continue;
+				}
 			} else {
 				from = fromMembers.get(0);
 			}
@@ -433,11 +439,11 @@ public class TrafficSignModule extends AbstractModule {
 			MapWaySegment fromSegment = getAdjacentSegment(from, intersection);
 
 			if (toSegment == null) {
-				ConversionLog.warn("Way " + to + " is not connected to intersection " + intersection + ".");
+				ConversionLog.warn("Way " + to + " is not connected to intersection " + intersection + ".", relation);
 				continue;
 			}
 			if (fromSegment == null) {
-				ConversionLog.warn("Way " + from + " is not connected to intersection " + intersection);
+				ConversionLog.warn("Way " + from + " is not connected to intersection " + intersection, relation);
 				continue;
 			}
 
@@ -736,7 +742,7 @@ public class TrafficSignModule extends AbstractModule {
 	private static double calculateDirection(MapNode node, @Nullable ForwardBackward relativeDirection) {
 
 		if (node.getConnectedWaySegments().isEmpty()) {
-			ConversionLog.warn("Node " + node + " is not part of a way.");
+			ConversionLog.warn("Node is not part of a way, but has a relative traffic sign direction.", node);
 			return PI;
 		}
 

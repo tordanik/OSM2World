@@ -32,6 +32,11 @@ public class MapWay extends MapRelationElement implements BoundedObject {
 
 		nodes = withoutConsecutiveDuplicates(nodes);
 
+		if (nodes.size() < 2) {
+			throw new IllegalArgumentException("a way needs at least two nodes, but after removing duplicates, "
+					+ "w" + id + " has only " + nodes.size());
+		}
+
 		this.id = id;
 		this.tags = tags;
 		this.nodes = nodes;

@@ -288,7 +288,7 @@ public class OSMToMapDataConverter {
 					List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
 					var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
 					mapWays.add(way);
-				} catch (EntityNotFoundException e) {
+				} catch (EntityNotFoundException | IllegalArgumentException e) {
 					ConversionLog.error(e.getMessage());
 				}
 			}
@@ -363,7 +363,7 @@ public class OSMToMapDataConverter {
 					StringJoiner memberList = new StringJoiner(", ");
 					incompleteMembers.forEach(m -> memberList.add(
 							"'" + m.getRole() + "': " + m.getType() + " " + m.getId()));
-					ConversionLog.warn("Relation " + relation + " is incomplete, missing members: " + memberList);
+					ConversionLog.warn("Relation is incomplete, missing members: " + memberList, relation);
 
 					if (relation.getMembers().isEmpty()) continue;
 
