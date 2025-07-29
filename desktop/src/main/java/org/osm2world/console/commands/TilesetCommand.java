@@ -29,6 +29,7 @@ import org.osm2world.output.gltf.GltfOutput;
 import org.osm2world.output.tileset.TilesetOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.mesh.LevelOfDetail;
+import org.osm2world.util.exception.InvalidGeometryException;
 
 import me.tongfei.progressbar.ProgressBar;
 import picocli.CommandLine;
@@ -224,9 +225,8 @@ public class TilesetCommand implements Callable<Integer> {
 						output.setConfiguration(config);
 						output.outputScene(scene);
 
-					} catch (IOException e) {
-						// TODO handle exception
-						e.printStackTrace();
+					} catch (IOException | InvalidGeometryException e) {
+						System.err.println("Failed to create tile " + tile + " at " + lod + ": " + e.getMessage());
 					}
 
 				}
