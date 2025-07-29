@@ -118,8 +118,8 @@ public class JTSConversionUtil {
 			for (int i = 0; i < collection.getNumGeometries(); i++) {
 				result.addAll(polygonsFromJTS(collection.getGeometryN(i)));
 			}
-		} else if (!(geometry instanceof LineString)) {
-			// LineString is known to sometimes occur in the result and is ignored; other elements are unexpected
+		} else if (!(geometry instanceof LineString) && !(geometry instanceof Point)) {
+			// LineString and Point are known to sometimes occur in the result and are ignored; others are unexpected
 			throw new Error("unhandled geometry type: " + geometry.getClass());
 		}
 
