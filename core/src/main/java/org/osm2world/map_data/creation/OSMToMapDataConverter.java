@@ -220,12 +220,20 @@ public class OSMToMapDataConverter {
 
 		/* ... based on coastline ways */
 
-		List<MapArea> seaAreas = MultipolygonAreaBuilder.createAreasForCoastlines(
-				osmData, nodeIdMap, mapNodes,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds()),
-				isAtSea);
+		List<MapArea> seaAreas = emptyList();
 
-		mapAreas.addAll(seaAreas);
+		try {
+
+			seaAreas = MultipolygonAreaBuilder.createAreasForCoastlines(
+					osmData, nodeIdMap, mapNodes,
+					calculateFileBoundary(osmData.getUnionOfExplicitBounds()),
+					isAtSea);
+
+			mapAreas.addAll(seaAreas);
+
+		} catch (InvalidGeometryException e) {
+			ConversionLog.error("Failed to create sea areas from coastline ways", e);
+		}
 
 		/* ... based on closed ways with certain tags */
 
