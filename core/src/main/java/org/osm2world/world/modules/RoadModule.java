@@ -1,8 +1,8 @@
 package org.osm2world.world.modules;
 
+import static java.lang.Math.*;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.*;
@@ -42,6 +42,7 @@ import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
@@ -2155,7 +2156,17 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
-			return ROAD_MARKING_DASHED;
+
+			@Nullable Material baseSurface = getSurfaceMaterial(laneTags.getValue("surface"),
+					getSurfaceForRoad(roadTags, null));
+			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.getTextureLayers();
+
+			if (baseSurface != null && markingLayers.size() > 1) {
+				return baseSurface.withAddedLayers(markingLayers.subList(1, markingLayers.size()));
+			} else {
+				return ROAD_MARKING_DASHED;
+			}
+
 		}
 
 	};
