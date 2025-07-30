@@ -375,6 +375,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		List<Road> roads = getConnectedRoads(node, true);
 
+		if (roads.size() < 2) {
+			return emptyList();
+		}
+
 		/* check whether the oneway special case applies (for one oneway splitting into multiple, or vice versa) */
 
 		if (isJunction) {
@@ -2055,7 +2059,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					outline.add(rightLaneBorder.get(i));
 				}
 
-				if (!outlinesShareStart) {
+				if (!outlinesShareStart && !outline.get(outline.size() - 1).equals(rightLaneBorder.get(0))) {
 					outline.add(rightLaneBorder.get(0));
 				}
 
