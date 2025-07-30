@@ -562,8 +562,20 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		return new LaneConnection(lane1.type, RoadPart.LEFT,
 				lane1.road.rightHandTraffic,
-				leftLaneBorder, rightLaneBorder);
+				leftLaneBorder, rightLaneBorder,
+				sharedTags(lane1.road.tags, lane2.road.tags),
+				sharedTags(lane1.laneTags, lane2.laneTags));
 
+	}
+
+	private static TagSet sharedTags(TagSet t1, TagSet t2) {
+		List<Tag> sharedTags = new ArrayList<>(2);
+		for (Tag tag : t1) {
+			if (t2.contains(tag)) {
+				sharedTags.add(tag);
+			}
+		}
+		return TagSet.of(sharedTags);
 	}
 
 	/**
@@ -1863,14 +1875,20 @@ public class RoadModule extends ConfigurableWorldModule {
 		private final List<VectorXYZ> leftBorder;
 		private final List<VectorXYZ> rightBorder;
 
+		private final TagSet roadTags;
+		private final TagSet laneTags;
+
 		private LaneConnection(LaneType type, RoadPart roadPart,
 				boolean rightHandTraffic,
-				List<VectorXYZ> leftBorder, List<VectorXYZ> rightBorder) {
+				List<VectorXYZ> leftBorder, List<VectorXYZ> rightBorder,
+				TagSet roadTags, TagSet laneTags) {
 			this.type = type;
 			this.roadPart = roadPart;
 			this.rightHandTraffic = rightHandTraffic;
 			this.leftBorder = leftBorder;
 			this.rightBorder = rightBorder;
+			this.roadTags = roadTags;
+			this.laneTags = laneTags;
 		}
 
 		/**
@@ -1896,7 +1914,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public void renderTo(CommonTarget target) {
 
 			type.render(target, roadPart, rightHandTraffic,
-					TagSet.of(), TagSet.of(), leftBorder, rightBorder);
+					roadTags, laneTags, leftBorder, rightBorder);
 
 		}
 
