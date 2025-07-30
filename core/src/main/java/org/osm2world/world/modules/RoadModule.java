@@ -6,6 +6,7 @@ import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.*;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
@@ -817,7 +818,11 @@ public class RoadModule extends ConfigurableWorldModule {
 		private LaneLayout buildBasicLaneLayout() {
 
 			boolean isOneway = isOneway(tags);
-			boolean unmarkedLanes = tags.contains("lane_markings", "no");
+			boolean unmarkedLanes = switch (requireNonNullElse(tags.getValue("lane_markings"), "null")) {
+				case "yes" -> false;
+				case "no" -> true;
+				default -> List.of(EARTH, GRAVEL, ICE, PEBBLESTONE, ROCK, SAND, SNOW).contains(getSurface());
+			};
 
 			/* determine which special lanes and attributes exist */
 
