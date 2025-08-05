@@ -6,7 +6,7 @@ import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.*;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.math3.linear.*;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;

@@ -11,7 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.osm2world.scene.color.LColor;
 
