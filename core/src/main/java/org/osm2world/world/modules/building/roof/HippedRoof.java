@@ -2,6 +2,7 @@ package org.osm2world.world.modules.building.roof;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 
 import java.util.Collection;
 
@@ -39,13 +40,9 @@ public class HippedRoof extends RoofWithRidge {
 
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
-		if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) {
-			return roofHeight;
-		} else if (getPolygon().getOuter().getVertexCollection().contains(pos)) {
-			return 0.0;
-		} else {
-			return null;
-		}
+		double distRidge = distanceFromLineSegment(pos, ridge);
+		double relativePlacement = distRidge / maxDistanceToRidge;
+		return roofHeight - roofHeight * relativePlacement;
 	}
 
 }

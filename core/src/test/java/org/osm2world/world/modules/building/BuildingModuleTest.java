@@ -5,6 +5,7 @@ import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,10 @@ import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.material.Materials;
+import org.osm2world.util.test.TestFileUtil;
+
+import com.google.common.collect.Lists;
 
 public class BuildingModuleTest {
 
@@ -129,6 +134,23 @@ public class BuildingModuleTest {
 		} else {
 			assertEquals(3, building.getParts().size());
 		}
+
+	}
+
+	@Test
+	public void testMultipleOuters() throws IOException {
+
+		File testFile = TestFileUtil.getTestFile("mp_two_outer_roof.osm");
+
+		O2WConverter o2w = new O2WConverter();
+		Scene scene = o2w.convert(new OSMFileReader(testFile), null, null);
+
+		ArrayList<Building> buildings = Lists.newArrayList(scene.getWorldObjects(Building.class));
+
+		assertSame(1, buildings.size());
+		assertTrue(buildings.get(0).buildMeshes().stream().anyMatch(it -> it.material == Materials.ROOF_DEFAULT));
+
+		assertFalse(scene.getMeshes().isEmpty());
 
 	}
 

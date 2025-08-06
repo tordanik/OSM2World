@@ -1,7 +1,6 @@
 package org.osm2world.world.modules.building.roof;
 
 import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateValue;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
@@ -17,6 +16,7 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
@@ -146,11 +146,25 @@ abstract public class HeightfieldRoof extends Roof {
 
 		/* triangulate the (remaining) roof polygon */
 
-		List<TriangleXZ> trianglesXZ = JTSTriangulationUtil.triangulate(
+		List<SimplePolygonXZ> holes = subtractPolys.stream().map(p -> asSimplePolygon(p.getOuter())).toList();
+
+		List<TriangleXZ> trianglesXZ;
+
+		if (getInnerPoints().isEmpty()) {
+			Collection<PolygonWithHolesXZ> faces = FaceDecompositionUtil.splitPolygonIntoFaces(
 					getPolygon().getOuter(),
-					subtractPolys.stream().map(p -> asSimplePolygon(p.getOuter())).collect(toList()),
+					holes,
+					getInnerSegments()
+			);
+			trianglesXZ = new ArrayList<>();
+			faces.forEach(f -> trianglesXZ.addAll(f.getTriangulation()));
+		} else {
+			trianglesXZ = JTSTriangulationUtil.triangulate(
+					getPolygon().getOuter(),
+					holes,
 					getInnerSegments(),
 					getInnerPoints());
+		}
 
 		/* assign elevations to the triangulation */
 

@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='false' generator='JOSM'>
+  <node id='-25656' action='modify' lat='55.056' lon='37.053' />
+  <node id='-25657' action='modify' lat='55.057' lon='37.049' />
+  <node id='-25658' action='modify' lat='55.057' lon='37.052' />
+  <node id='-25659' action='modify' lat='55.055' lon='37.051' />
+  <node id='-25660' action='modify' lat='55.055' lon='37.054' />
+  <node id='-25661' action='modify' lat='55.058' lon='37.05' />
+  <node id='-25662' action='modify' lat='55.058' lon='37.05' />
+  <node id='-25663' action='modify' lat='55.0565' lon='37.0485' />
+  <node id='-25664' action='modify' lat='55.0565' lon='37.049' />
+  <node id='-25665' action='modify' lat='55.056' lon='37.048' />
+  <node id='-25666' action='modify' lat='55.058' lon='37.05' />
+  <node id='-25667' action='modify' lat='55.055' lon='37.047' />
+  <node id='-25668' action='modify' lat='55.055' lon='37.047' />
+  <node id='-25669' action='modify' lat='55.055' lon='37.047' />
+  <node id='-25670' action='modify' lat='55.055' lon='37.05' />
+  <node id='-25671' action='modify' lat='55.057' lon='37.053' />
+  <node id='-25672' action='modify' lat='55.058' lon='37.051' />
+  <node id='-25673' action='modify' lat='55.0555' lon='37.0475' />
+  <node id='-25674' action='modify' lat='55.057' lon='37.0485' />
+  <node id='-25675' action='modify' lat='55.056' lon='37.052' />
+  <node id='-25676' action='modify' lat='55.055' lon='37.05' />
+  <node id='-25677' action='modify' lat='55.055' lon='37.05' />
+  <node id='-25678' action='modify' lat='55.058' lon='37.047' />
+  <node id='-25679' action='modify' lat='55.058' lon='37.047' />
+  <node id='-25680' action='modify' lat='55.0555' lon='37.048' />
+  <node id='-25681' action='modify' lat='55.058' lon='37.054' />
+  <node id='-25682' action='modify' lat='55.056' lon='37.0475' />
+  <node id='-25683' action='modify' lat='55.058' lon='37.047' />
+  <way id='-7876' action='modify'>
+    <nd ref='-25669' />
+    <nd ref='-25683' />
+    <nd ref='-25666' />
+    <nd ref='-25677' />
+    <nd ref='-25669' />
+  </way>
+  <way id='-7877' action='modify'>
+    <nd ref='-25663' />
+    <nd ref='-25674' />
+    <nd ref='-25657' />
+    <nd ref='-25664' />
+    <nd ref='-25663' />
+  </way>
+  <way id='-7878' action='modify'>
+    <nd ref='-25667' />
+    <nd ref='-25678' />
+    <nd ref='-25661' />
+    <nd ref='-25676' />
+    <nd ref='-25667' />
+  </way>
+  <way id='-7879' action='modify'>
+    <nd ref='-25673' />
+    <nd ref='-25682' />
+    <nd ref='-25665' />
+    <nd ref='-25680' />
+    <nd ref='-25673' />
+  </way>
+  <way id='-7880' action='modify'>
+    <nd ref='-25675' />
+    <nd ref='-25658' />
+    <nd ref='-25671' />
+    <nd ref='-25656' />
+    <nd ref='-25675' />
+  </way>
+  <way id='-7881' action='modify'>
+    <nd ref='-25659' />
+    <nd ref='-25672' />
+    <nd ref='-25681' />
+    <nd ref='-25660' />
+    <nd ref='-25659' />
+  </way>
+  <way id='-7882' action='modify'>
+    <nd ref='-25668' />
+    <nd ref='-25679' />
+    <nd ref='-25662' />
+    <nd ref='-25670' />
+    <nd ref='-25668' />
+  </way>
+  <relation id='-218' action='modify'>
+    <member type='way' ref='-7878' role='outer' />
+    <member type='way' ref='-7881' role='outer' />
+    <member type='way' ref='-7879' role='inner' />
+    <member type='way' ref='-7877' role='inner' />
+    <member type='way' ref='-7880' role='inner' />
+    <tag k='building' v='yes' />
+    <tag k='height' v='15' />
+    <tag k='roof:height' v='7' />
+    <tag k='roof:shape' v='hipped' />
+    <tag k='type' v='multipolygon' />
+  </relation>
+</osm>
