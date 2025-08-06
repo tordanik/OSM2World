@@ -1,14 +1,13 @@
 package org.osm2world.conversion;
 
+import static org.osm2world.conversion.ConversionLog.LogLevel;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -274,6 +273,28 @@ public class O2WConfig {
 	 */
 	public @Nullable File logDir() {
 		return resolveFileConfigProperty(config.getString("logDir", null), false);
+	}
+
+	/**
+	 * the severity levels at which events should be logged to the console.
+	 * If this has not been set explicitly, the defaults depend on whether a {@link #logDir()} has been configured.
+	 */
+	public EnumSet<LogLevel> consoleLogLevels() {
+		if (config.containsKey("consoleLogLevels")) {
+			List<LogLevel> levels = new ArrayList<>();
+			for (Object level : config.getList("consoleLogLevels")) {
+				try {
+					levels.add(LogLevel.valueOf(level.toString().toUpperCase()));
+				} catch (IllegalArgumentException ignored) { }
+			}
+			return EnumSet.copyOf(levels);
+		} else {
+			if (logDir() != null) {
+				return EnumSet.of(ConversionLog.LogLevel.FATAL);
+			} else {
+				return EnumSet.allOf(ConversionLog.LogLevel.class);
+			}
+		}
 	}
 
 	/** a directory with SRTM data in .hgt or .hgt.zip format */

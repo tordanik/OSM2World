@@ -400,11 +400,7 @@ class O2WConverterImpl {
 		// clear ConversionLog (might have entries from previous convert runs on the same thread)
 		ConversionLog.clear();
 
-		if (config.logDir() != null) {
-			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
-		} else {
-			ConversionLog.setConsoleLogLevels(EnumSet.allOf(ConversionLog.LogLevel.class));
-		}
+		ConversionLog.setConsoleLogLevels(config.consoleLogLevels());
 
 	}
 
