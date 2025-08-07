@@ -4,16 +4,16 @@ import static com.google.common.collect.Iterables.getLast;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
-import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.inheritTags;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
@@ -51,7 +51,7 @@ import org.osm2world.world.modules.building.roof.Roof;
  */
 public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
-	static final double DEFAULT_RIDGE_HEIGHT = 5;
+	public static final double DEFAULT_RIDGE_HEIGHT = 5;
 	static final LevelOfDetail INDOOR_MIN_LOD = LOD3;
 
 	final Building building;

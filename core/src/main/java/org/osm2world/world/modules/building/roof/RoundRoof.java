@@ -7,6 +7,7 @@ import static org.osm2world.math.algorithms.GeometryUtil.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
@@ -14,10 +15,11 @@ import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 public class RoundRoof extends RoofWithRidge {
 
-	private final static double ROOF_SUBDIVISION_METER = 2.5;
+	private final static double ROOF_SUBDIVISIONS_PER_HEIGHT_METER = 1;
 
 	private final List<LineSegmentXZ> capParts;
 	private final int rings;
@@ -26,9 +28,14 @@ public class RoundRoof extends RoofWithRidge {
 
 		super(0, originalPolygon, tags, material);
 
-		rings = (int)max(3, maxDistanceToRidge/ROOF_SUBDIVISION_METER);
+		/* determine how many segments to use to simulate a round surface */
+
+		double height = Objects.requireNonNullElse(super.calculatePreliminaryHeight(), BuildingPart.DEFAULT_RIDGE_HEIGHT);
+		rings = (int)max(3, height / ROOF_SUBDIVISIONS_PER_HEIGHT_METER);
+
+		/* decide where to place the segments */
+
 		capParts = new ArrayList<>(rings*2);
-		// TODO: would be good to vary step size with slope
 		float step = 0.5f / (rings + 1);
 		for (int i = 1; i <= rings; i++) {
 			capParts.add(new LineSegmentXZ(
