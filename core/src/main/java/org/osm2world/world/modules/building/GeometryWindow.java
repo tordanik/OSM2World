@@ -77,9 +77,9 @@ public class GeometryWindow implements Window {
 					params.regionProperties.get(CENTER).width, params.regionProperties.get(CENTER).height));
 			SimpleClosedShapeXZ centerOutline = regionOutlines.get(CENTER);
 
-			LineSegmentXZ topSegment = centerOutline.intersectionSegments(new LineSegmentXZ(
+			LineSegmentXZ topSegment = centerOutline.intersections(new LineSegmentXZ(
 					centerOutline.getCentroid(), centerOutline.getCentroid().add(0, 1000)))
-					.stream().findAny().get();
+					.stream().findAny().get().segment();
 			regionBorderSegments.put(TOP, topSegment);
 
 			RegionProperties properties = params.regionProperties.get(TOP);

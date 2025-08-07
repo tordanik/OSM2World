@@ -7,14 +7,15 @@ import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment
 import static org.osm2world.util.ValueParseUtil.parseAngle;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
+import org.osm2world.math.Intersection;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
@@ -70,25 +71,29 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 		/* calculate the two outermost intersections of the
 		 * quasi-infinite ridge line with segments of the polygon */
 
+		var bbox = AxisAlignedRectangleXZ.bbox(outerPoly.vertices());
+
 		VectorXZ p1 = outerPoly.getCentroid();
 		LineSegmentXZ intersectionLine = new LineSegmentXZ(
-				p1.add(ridgeDirection.mult(-1000)),
-				p1.add(ridgeDirection.mult(1000))
+				p1.add(ridgeDirection.mult(-(bbox.sizeX() + bbox.sizeZ()))),
+				p1.add(ridgeDirection.mult(bbox.sizeX() + bbox.sizeZ()))
 		);
 
-		Collection<LineSegmentXZ> intersections = simplifiedPolygon.intersectionSegments(intersectionLine);
+		List<Intersection> intersections = simplifiedPolygon.intersections(intersectionLine);
 
 		if (intersections.size() < 2) {
 			throw new InvalidGeometryException("cannot handle roof geometry");
 		}
 
-		//TODO choose outermost instead of any pair of intersections
-		Iterator<LineSegmentXZ> it = intersections.iterator();
-		cap1 = it.next();
-		cap2 = it.next();
+		intersections.sort(comparingDouble(i -> i.point().distanceTo(intersectionLine.p1)));
+		Intersection i1 = intersections.get(0);
+		Intersection i2 = intersections.get(intersections.size() - 1);
 
-		VectorXZ c1 = cap1.getIntersection(intersectionLine.p1, intersectionLine.p2);
-		VectorXZ c2 = cap2.getIntersection(intersectionLine.p1, intersectionLine.p2);
+		cap1 = i1.segment();
+		cap2 = i2.segment();
+
+		VectorXZ c1 = i1.point();
+		VectorXZ c2 = i2.point();
 
 		/* consider an offset for ridges which do not end at the wall of the building */
 

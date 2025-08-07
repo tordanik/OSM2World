@@ -14,7 +14,8 @@ public class RoofDataDebugView extends DebugView {
 
 	private static final Color INNER_POINT_COLOR = Color.YELLOW;
 	private static final Color INNER_SEGMENT_COLOR = Color.GREEN;
-	private static final Color POLYGON_COLOR = Color.BLUE;
+	private static final Color POLYGON_COLOR = Color.WHITE;
+	private static final Color EXTRA_OUTLINE_COLOR = Color.RED;
 
 	@Override
 	public boolean canBeUsed() {
@@ -27,13 +28,12 @@ public class RoofDataDebugView extends DebugView {
 		for (Building building : scene.getWorldObjects(Building.class)) {
 			for (BuildingPart part : building.getParts()) {
 
-				if (!(part.getRoof() instanceof HeightfieldRoof)) return;
-
-				HeightfieldRoof roofData = (HeightfieldRoof)part.getRoof();
+				if (!(part.getRoof() instanceof HeightfieldRoof roofData)) return;
 
 				for (SimplePolygonShapeXZ polygon : roofData.getPolygon().getRings()) {
 					for (VectorXZ v : polygon.verticesNoDup()) {
-						drawBoxAround(target, v, POLYGON_COLOR, 0.3f);
+						boolean isOld = part.getPolygon().getRings().stream().anyMatch(r -> r.vertices().contains(v));
+						drawBoxAround(target, v, isOld ? POLYGON_COLOR : EXTRA_OUTLINE_COLOR, 0.3f);
 					}
 					for (LineSegmentXZ s : polygon.getSegments()) {
 						target.drawLineStrip(POLYGON_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));

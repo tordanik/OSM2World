@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.osm2world.math.BoundedObject;
+import org.osm2world.math.Intersection;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
 
@@ -90,6 +91,27 @@ public interface ShapeXZ extends BoundedObject {
 
 			if (intersection != null) {
 				result.add(segment);
+			}
+
+		}
+
+		return result;
+
+	}
+
+	/** finds all intersections between segments of this shape ({@link #getSegments()}) and lineSegment */
+	public default List<Intersection> intersections(LineSegmentXZ lineSegment) {
+
+		List<Intersection> result = new ArrayList<>();
+
+		for (LineSegmentXZ segment : getSegments()) {
+
+			VectorXZ intersectionPoint = GeometryUtil.getTrueLineSegmentIntersection(
+					lineSegment.p1, lineSegment.p2,
+					segment.p1, segment.p2);
+
+			if (intersectionPoint != null) {
+				result.add(new Intersection(intersectionPoint, segment));
 			}
 
 		}
