@@ -36,10 +36,69 @@ public class MapDataBuilderTest {
 				)
 		);
 
-		MapArea area = builder.createMultipolygonArea(outerRing, innerRings, TagSet.of("highway", "pedestrian"));
+		MapArea area1 = builder.createMultipolygonArea(outerRing, innerRings, TagSet.of("highway", "pedestrian"));
+		MapArea area2 = (MapArea)builder.createMultipolygon(List.of(outerRing), innerRings, TagSet.of("highway", "pedestrian"));
 
-		assertEquals(300.0, area.getPolygon().getArea(), 0.1);
+		assertEquals(300.0, area1.getPolygon().getArea(), 0.1);
+		assertEquals(300.0, area2.getPolygon().getArea(), 0.1);
 		
+	}
+
+	@Test
+	public void testMultipolygonMultipleOuters() {
+
+		var builder = new MapDataBuilder();
+
+		List<List<MapNode>> outerRings = List.of(
+				List.of(
+						builder.createNode(-10, -10),
+						builder.createNode(10, -10),
+						builder.createNode(10, 10),
+						builder.createNode(-10, 10)
+				),
+				List.of(
+						builder.createNode(-10, -10 + 100),
+						builder.createNode(10, -10 + 100),
+						builder.createNode(10, 10 + 100),
+						builder.createNode(-10, 10 + 100)
+				),
+				List.of(
+						builder.createNode(-2, -2),
+						builder.createNode(2, -2),
+						builder.createNode(2, 2),
+						builder.createNode(-2, 2)
+				)
+		);
+
+		List<List<MapNode>> innerRings = List.of(
+				List.of(
+						builder.createNode(-5, -5),
+						builder.createNode(5, -5),
+						builder.createNode(5, 5),
+						builder.createNode(-5, 5)
+				),
+				List.of(
+						builder.createNode(-1, -1),
+						builder.createNode(1, -1),
+						builder.createNode(1, 1),
+						builder.createNode(-1, 1)
+				),
+				List.of(
+						builder.createNode(-5, -5 + 100),
+						builder.createNode(5, -5 + 100),
+						builder.createNode(5, 5 + 100),
+						builder.createNode(-5, 5 + 100)
+				)
+		);
+
+		MapMultipolygonRelation relation = (MapMultipolygonRelation)builder.createMultipolygon(outerRings, innerRings,
+				TagSet.of("type", "multipolygon", "amenity", "parking"));
+
+		assertEquals(3, relation.getAreas().size());
+		assertEquals(300.0, relation.getAreas().get(0).getPolygon().getArea(), 0.1);
+		assertEquals(300.0, relation.getAreas().get(1).getPolygon().getArea(), 0.1);
+		assertEquals( 12.0, relation.getAreas().get(2).getPolygon().getArea(), 0.1);
+
 	}
 
 	@Test

@@ -13,6 +13,7 @@ import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.math.shapes.SimplePolygonXZ;
 
 /**
  * creates {@link MapData} consisting of one or more {@link MapElement}s.
@@ -58,18 +59,13 @@ public class MapDataBuilder {
 		return result;
 	}
 
+	/**
+	 * creates a multipolygon with a single outer ring.
+	 * Use {@link #createMultipolygon(List, List, TagSet)} if you have more than one outer ring.
+	 */
 	public MapArea createMultipolygonArea(List<MapNode> outerRing, List<List<MapNode>> innerRings, TagSet tags) {
 
-		if (!tags.contains("type", "multipolygon")) {
-			if (tags.containsKey("type")) {
-				throw new IllegalArgumentException("Invalid type for multipolygon relation");
-			} else {
-				List<Tag> tagList = new ArrayList<>(tags.size() + 1);
-				tagList.add(new Tag("type", "multipolygon"));
-				tags.forEach(tagList::add);
-				tags = TagSet.of(tagList);
-			}
-		}
+		tags = checkAndAddMultipolygonTag(tags);
 
 		MapArea result = new MapArea(createdRelations ++, true, tags,
 				closeLoop(outerRing), innerRings.stream().map(GeometryUtil::closeLoop).toList());
@@ -79,10 +75,81 @@ public class MapDataBuilder {
 
 	}
 
+	/**
+	 * creates a multipolygon with one or more outer rings.
+	 * If you know you have just a single outer ring, you can use {@link #createMultipolygonArea(List, List, TagSet)}.
+	 *
+	 * @return either a {@link MapArea} or a {@link MapMultipolygonRelation}
+	 */
+	public MapRelationElement createMultipolygon(List<List<MapNode>> outerRings, List<List<MapNode>> innerRings, TagSet tags) {
+
+		tags = checkAndAddMultipolygonTag(tags);
+
+		switch (outerRings.size()) {
+			case 0: throw new IllegalArgumentException("at least one outer ring is required");
+			case 1: return createMultipolygonArea(outerRings.get(0), innerRings, tags);
+			default: {
+
+				record Ring(List<MapNode> nodes, SimplePolygonXZ polygon) {
+					Ring(List<MapNode> nodes) {
+						this(nodes, MapArea.polygonFromMapNodeLoop(nodes));
+					}
+					boolean contains(Ring other) {
+						return polygon.contains(other.polygon.getPointInside())
+								&& polygon.getArea() > other.polygon.getArea();
+					}
+				}
+
+				List<Ring> outers = outerRings.stream().map(GeometryUtil::closeLoop).map(Ring::new).toList();
+				List<Ring> inners = innerRings.stream().map(GeometryUtil::closeLoop).map(Ring::new).toList();
+
+				List<MapArea> areas = new ArrayList<>(outers.size());
+
+				for (Ring outer : outers) {
+
+					List<List<MapNode>> containedInnerRings = new ArrayList<>(inners.size());
+					for (Ring inner : inners) {
+						if (outer.contains(inner)) {
+
+							boolean smallerOuterAlsoContainsInner = false;
+
+							for (Ring otherOuter : outers) {
+								if (otherOuter != outer && otherOuter.polygon.getArea() < outer.polygon.getArea()
+								   && otherOuter.contains(inner)) {
+									smallerOuterAlsoContainsInner = true;
+									break;
+								}
+							}
+
+							if (!smallerOuterAlsoContainsInner) {
+								containedInnerRings.add(inner.nodes);
+							}
+
+						}
+					}
+
+					areas.add(createMultipolygonArea(outer.nodes, containedInnerRings, tags));
+
+				}
+
+				if (areas.stream().mapToInt(a -> a.getHoles().size()).sum() != innerRings.size()) {
+					throw new IllegalArgumentException("not all inner rings are unambiguously contained in outer rings");
+				}
+
+				var result = new MapMultipolygonRelation(createdRelations ++, tags, areas);
+
+				relations.add(result);
+				return result;
+
+			}
+		}
+
+	}
+
 	public MapRelation createRelation(List<Map.Entry<String, MapRelationElement>> members, TagSet tags) {
 
 		if (tags.contains("type", "multipolygon")) {
-			throw new IllegalArgumentException("type=multipolygon should use createMultipolygonArea");
+			throw new IllegalArgumentException("type=multipolygon should use createMultipolygon");
 		}
 
 		MapRelation result = new MapRelation(createdRelations ++, tags);
@@ -114,6 +181,21 @@ public class MapDataBuilder {
 			for (var element : elements) {
 				OSMToMapDataConverter.addOverlapBetween(element, newElement);
 			}
+		}
+	}
+
+	private static TagSet checkAndAddMultipolygonTag(TagSet tags) {
+		if (!tags.contains("type", "multipolygon")) {
+			if (tags.containsKey("type")) {
+				throw new IllegalArgumentException("Invalid type for multipolygon relation");
+			} else {
+				List<Tag> tagList = new ArrayList<>(tags.size() + 1);
+				tagList.add(new Tag("type", "multipolygon"));
+				tags.forEach(tagList::add);
+				return TagSet.of(tagList);
+			}
+		} else {
+			return tags;
 		}
 	}
 
