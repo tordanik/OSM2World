@@ -92,7 +92,7 @@ public class TilesetOutput extends MeshOutput {
 
 		List<File> tileContentFiles = new ArrayList<>();
 
-		Path outputDir = outputFile.toPath().getParent();
+		Path outputDir = outputFile.toPath().toAbsolutePath().getParent();
 		String extension = gltfFlavor.extension() + gltfCompression.extension();
 		String baseFileName = outputFile.getName();
 		baseFileName = baseFileName.replaceAll("(?:\\.tileset)?\\.json$", "");

@@ -111,7 +111,7 @@ public class GltfOutput extends AbstractOutput {
 	}
 
 	public File outputDir() {
-		return outputFile.getParentFile();
+		return outputFile.getAbsoluteFile().getParentFile();
 	}
 
 	@Override
