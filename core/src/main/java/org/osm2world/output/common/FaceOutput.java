@@ -89,7 +89,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 					} else {
 
 						insertVertex(j, t.triangle.v1,
-								texCoordLists, t.texCoordOffset + 0);
+								t.texCoordLists, t.texCoordOffset + 0);
 
 					}
 
@@ -107,7 +107,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 					} else {
 
 						insertVertex(j, t.triangle.v2,
-								texCoordLists, t.texCoordOffset + 1);
+								t.texCoordLists, t.texCoordOffset + 1);
 
 					}
 
@@ -125,7 +125,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 					} else {
 
 						insertVertex(j, t.triangle.v3,
-								texCoordLists, t.texCoordOffset + 2);
+								t.texCoordLists, t.texCoordOffset + 2);
 
 					}
 
