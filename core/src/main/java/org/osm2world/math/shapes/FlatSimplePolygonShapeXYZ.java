@@ -153,18 +153,34 @@ public interface FlatSimplePolygonShapeXYZ extends BoundedObject {
 
 	}
 
-	/* TODO: make protected in Java 9 */
 	/** returns a triangle consisting of three polygon vertices that are not collinear */
-	public static TriangleXYZ triangleOnFace(List<VectorXYZ> vertexLoop) throws InvalidGeometryException {
+	static TriangleXYZ triangleOnFace(List<VectorXYZ> vertexLoop) throws InvalidGeometryException {
 
 		final VectorXYZ v1 = vertexLoop.get(0);
-		final VectorXYZ v2 = vertexLoop.get(1);
-
+		VectorXYZ v2 = null;
 		VectorXYZ v3 = null;
-		for (int i = 2; i < vertexLoop.size() - 1; i++) {
-			VectorXYZ vTest = vertexLoop.get(i);
-			if (vTest.subtract(v1).angleTo(vTest.subtract(v2)) > 0.001) {
-				v3 = vTest;
+
+		int i = 1;
+
+		for (; i < vertexLoop.size() - 1; i++) {
+			if (vertexLoop.get(i).distanceTo(v1) > 0.001) {
+				v2 = vertexLoop.get(i);
+				break;
+			}
+		}
+
+		i++;
+
+		if (v2 != null) {
+			for (; i < vertexLoop.size() - 1; i++) {
+				VectorXYZ vTest = vertexLoop.get(i);
+				VectorXYZ v1ToVTest = vTest.subtract(v1);
+				VectorXYZ v2ToVTest = vTest.subtract(v2);
+				if (v1ToVTest.length() > 0 && v2ToVTest.length() > 0
+						&& v1ToVTest.angleTo(v2ToVTest) > 0.001) {
+					v3 = vTest;
+					break;
+				}
 			}
 		}
 
