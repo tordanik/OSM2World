@@ -96,6 +96,38 @@ public interface FlatSimplePolygonShapeXYZ extends BoundedObject {
 	}
 
 	/**
+	 * returns all segments of this shape
+	 */
+	public default List<LineSegmentXYZ> getSegments() {
+		List<LineSegmentXYZ> segments = new ArrayList<>(vertices().size() - 1);
+		for (int i = 0; i + 1 < vertices().size(); i++) {
+			segments.add(new LineSegmentXYZ(vertices().get(i), vertices().get(i + 1)));
+		}
+		return segments;
+	}
+
+	/**
+	 * returns only those segments of this shape where the shape does not touch itself
+	 */
+	public default List<LineSegmentXYZ> getNonTouchingSegments() {
+		List<LineSegmentXYZ> result = this.getSegments();
+		for (int i = 0; i < result.size(); i++) {
+			LineSegmentXYZ s1 = result.get(i);
+			for (int j = i + 1; j < result.size(); j++) {
+				LineSegmentXYZ s2 = result.get(j);
+				if (s1.reverse().equals(s2)) {
+					result.remove(j);
+					result.remove(i);
+					i--;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+
+	/**
 	 * returns the y coord value at a {@link VectorXZ} within the face's 2D footprint.
 	 *
 	 * @throws InvalidGeometryException  if this face is vertical
