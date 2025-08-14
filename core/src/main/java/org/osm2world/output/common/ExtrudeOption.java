@@ -1,14 +1,8 @@
 package org.osm2world.output.common;
 
-import java.util.List;
-import java.util.Set;
-
-import org.osm2world.math.shapes.ShapeXZ;
-import org.osm2world.scene.material.Material;
-
 /**
  * Flags describing available options for
- * {@link DrawBasedOutput#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, Set)}.
+ * {@link org.osm2world.scene.mesh.ExtrusionGeometry}.
  */
 public enum ExtrudeOption {
 

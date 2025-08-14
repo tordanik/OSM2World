@@ -822,8 +822,8 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			//Draw 2 triangleStrips for each rope, to be visible from both front and back side
 			for(List<VectorXYZ> path : paths) {
-				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT.invert()), null, null, null);
-				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT), null, null, null);
+				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT.invert()), null, null);
+				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT), null, null);
 			}
 		}
 	}
@@ -1206,7 +1206,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				target.drawExtrudedShape(PLASTIC.withColor(BLACK), ring,
 						asList(params.position(), frontCenter),
-						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
+						nCopies(2, Y_UNIT), null, EnumSet.of(ExtrudeOption.END_CAP));
 
 				target.drawShape(PLASTIC, innerCircle, backCenter, faceNormal.xyz(0), Y_UNIT, 1);
 
@@ -1225,7 +1225,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				target.drawExtrudedShape(PLASTIC.withColor(BLACK), handShape,
 						asList(origin, origin.add(faceNormal.mult(thickness))),
-						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
+						nCopies(2, Y_UNIT), null, EnumSet.of(ExtrudeOption.END_CAP));
 
 			}
 
@@ -1447,10 +1447,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			PolygonWithHolesXZ upperDonut = new PolygonWithHolesXZ(asSimplePolygon(outerRing), singletonList(innerRing));
 
 			target.drawExtrudedShape(material, outerRing, asList(bottomCenter, topCenter),
-					null, null, null, EnumSet.of(START_CAP));
+					null, null, EnumSet.of(START_CAP));
 
 			target.drawExtrudedShape(material, innerRing, asList(topCenter, innerBottomCenter),
-					null, null, null, EnumSet.of(END_CAP));
+					null, null, EnumSet.of(END_CAP));
 
 			triangulate(upperDonut).forEach(it -> target.drawShape(material, it, topCenter, Y_UNIT, Z_UNIT, 1));
 
@@ -1972,7 +1972,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.drawExtrudedShape(material, new CircleXZ(NULL_VECTOR, 1),
 					asList(getBase(), getBase().addY(0.5), getBase().addY(0.5 + poleHeight)),
-					null, asList(0.16, 0.08, 0.08), null, null);
+					null, asList(0.16, 0.08, 0.08), null);
 
 			target.setCurrentAttachmentTypes();
 

@@ -84,7 +84,7 @@ abstract public class SpindleRoof extends Roof {
 		/* render the roof using shape extrusion */
 
 		target.drawExtrudedShape(material, spindleShape, path,
-				null, scaleFactors, null,
+				null, scaleFactors,
 				EnumSet.of(ExtrudeOption.SMOOTH_SIDES));
 
 	}

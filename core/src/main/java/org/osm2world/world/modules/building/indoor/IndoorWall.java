@@ -774,7 +774,7 @@ public class IndoorWall {
 					path.add(bottom);
 					path.add(top);
 
-					target.drawExtrudedShape(defaultInnerMaterial, polygon, path, null, null, null, null);
+					target.drawExtrudedShape(defaultInnerMaterial, polygon, path, null, null, null);
 
 					target.drawTriangles(defaultInnerMaterial, trianglesXYZBottom,
 							triangleTexCoordLists(trianglesXYZBottom, Materials.BRICK, GLOBAL_X_Z));

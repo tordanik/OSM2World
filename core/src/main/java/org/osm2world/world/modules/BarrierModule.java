@@ -1,7 +1,7 @@
 package org.osm2world.world.modules;
 
-import static java.lang.Math.max;
 import static java.lang.Math.*;
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -350,11 +350,11 @@ public class BarrierModule extends AbstractModule {
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(polePositions, height),
 					nCopies(polePositions.size(), Y_UNIT),
-					nCopies(polePositions.size(), width), null, null);
+					nCopies(polePositions.size(), width), null);
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(polePositions, 0.15 * height),
 					nCopies(polePositions.size(), Y_UNIT),
-					nCopies(polePositions.size(), width), null, null);
+					nCopies(polePositions.size(), width), null);
 
 			/* draw poles and the smaller vertical bars */
 
@@ -367,7 +367,7 @@ public class BarrierModule extends AbstractModule {
 				//draw pole
 				target.drawExtrudedShape(material, SQUARE,
 						asList(v, v.addY(0.99 * height)),
-						poleFacingDirections, poleScale, null, null);
+						poleFacingDirections, poleScale, null);
 
 			}
 
@@ -383,7 +383,7 @@ public class BarrierModule extends AbstractModule {
 					//draw small vertical bar
 					target.drawExtrudedShape(material, SQUARE,
 							asList(v.addY(0.14 * height), v.addY(0.99 * height)),
-							poleFacingDirections, smallPoleScale, null, null);
+							poleFacingDirections, smallPoleScale, null);
 
 				}
 
@@ -442,11 +442,11 @@ public class BarrierModule extends AbstractModule {
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(getCenterline(), height),
 					nCopies(getCenterline().size(), Y_UNIT),
-					nCopies(getCenterline().size(), width), null, EnumSet.of(START_CAP, END_CAP));
+					nCopies(getCenterline().size(), width), EnumSet.of(START_CAP, END_CAP));
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(getCenterline(), 0.07),
 					nCopies(getCenterline().size(), Y_UNIT),
-					nCopies(getCenterline().size(), width), null, EnumSet.of(START_CAP, END_CAP));
+					nCopies(getCenterline().size(), width), EnumSet.of(START_CAP, END_CAP));
 
 			/* draw columns */
 
@@ -463,7 +463,7 @@ public class BarrierModule extends AbstractModule {
 						.collect(toList());
 
 				target.drawExtrudedShape(material, COLUMN_SHAPE, extrudePath,
-						nCopies(extrudePath.size(), segment.getDirection().xyz(0)), poleScale, null, null);
+						nCopies(extrudePath.size(), segment.getDirection().xyz(0)), poleScale, null);
 
 			}
 
@@ -670,12 +670,12 @@ public class BarrierModule extends AbstractModule {
 				target.drawExtrudedShape(WOOD, PLANK_SHAPE,
 						asList(positions.get(leftIndex).add(offsetBackPlank),
 								positions.get(rightIndex).addY(height).add(offsetBackPlank)),
-						nCopies(2, Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 
 				target.drawExtrudedShape(WOOD, PLANK_SHAPE,
 						asList(positions.get(leftIndex).addY(height),
 								positions.get(rightIndex)),
-						nCopies(2, Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 
 			}
 
@@ -787,7 +787,7 @@ public class BarrierModule extends AbstractModule {
 			List<VectorXYZ> path = addYList(centerline, this.height - SHAPE_GERMAN_B_HEIGHT);
 
 			target.drawExtrudedShape(material.makeDoubleSided(), SHAPE_GERMAN_B,
-					path, nCopies(path.size(), Y_UNIT), null, null, null);
+					path, nCopies(path.size(), Y_UNIT), null, null);
 
 			/* add posts */
 
@@ -805,7 +805,7 @@ public class BarrierModule extends AbstractModule {
 
 				target.setCurrentLodRange(LOD3, LOD4);
 				target.drawExtrudedShape(material, SHAPE_POST_DOUBLE_T, polePath,
-						nCopies(polePath.size(), railNormal.xyz(0)), null, null, null);
+						nCopies(polePath.size(), railNormal.xyz(0)), null, null);
 
 				// extrude the bolts connecting the pole to the rail
 
@@ -824,7 +824,7 @@ public class BarrierModule extends AbstractModule {
 
 					target.setCurrentLodRange(LOD4, LOD4);
 					target.drawExtrudedShape(material, boltShape, boltPath,
-							nCopies(boltPath.size(), Y_UNIT), null, null, EnumSet.of(END_CAP));
+							nCopies(boltPath.size(), Y_UNIT), null, EnumSet.of(END_CAP));
 
 				}
 
@@ -888,7 +888,7 @@ public class BarrierModule extends AbstractModule {
 						interpolateBetween(points.get(i), points.get(i+1), 1.0 - relativeOffset));
 
 				target.drawExtrudedShape(CONCRETE, DEFAULT_SHAPE, path,
-						nCopies(2, Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 
 			}
 
@@ -1003,7 +1003,7 @@ public class BarrierModule extends AbstractModule {
 
 				target.setCurrentLodRange(LOD3, LOD4);
 				target.drawExtrudedShape(defaultFenceMaterial, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
-						Y_UNIT), null, null, null);
+						Y_UNIT), null, null);
 			}
 		}
 	}
@@ -1201,7 +1201,7 @@ public class BarrierModule extends AbstractModule {
 			}
 
 			target.drawExtrudedShape(STEEL, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
-					Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+					Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 
 		}
 

@@ -4,11 +4,11 @@ import static java.awt.Color.ORANGE;
 import static java.util.Collections.nCopies;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
-import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.awt.*;
@@ -99,7 +99,7 @@ public class PoolModule extends AbstractModule {
 			List<VectorXYZ> path = getOutlinePolygon().outer().vertices();
 
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
-					nCopies(path.size(), Y_UNIT), null, null, null);
+					nCopies(path.size(), Y_UNIT), null, null);
 
 		}
 	}
@@ -235,8 +235,8 @@ public class PoolModule extends AbstractModule {
 
 			List<VectorXYZ> up = nCopies(path.size(), Y_UNIT);
 
-			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null, null);
-			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null, null);
+			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null);
+			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null);
 
 			/* draw supporting pillars */
 

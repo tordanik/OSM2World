@@ -73,7 +73,7 @@ public class Ceiling {
         path.add(top);
 
         for (ShapeXZ side : sides) {
-            target.drawExtrudedShape(material, side, path, null, null, null, null);
+            target.drawExtrudedShape(material, side, path, null, null, null);
         }
     }
 }

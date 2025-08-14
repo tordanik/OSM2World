@@ -59,7 +59,7 @@ public class MastModule extends AbstractModule {
 			double radiusTop = radiusBottom * 0.8;
 
 			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, 1), asList(getBase(), getBase().addY(height)),
-					null, asList(radiusBottom, radiusTop), null, EnumSet.of(END_CAP));
+					null, asList(radiusBottom, radiusTop), EnumSet.of(END_CAP));
 
 			//TODO: proper ModelTarget/instancing support
 
@@ -89,7 +89,7 @@ public class MastModule extends AbstractModule {
 				target.drawExtrudedShape(STEEL, new CircleXZ(NULL_VECTOR, 0.025),
 						List.of(params.position().addY(relativeHeight * antennaHeight / 2),
 								antennaCenter.addY(relativeHeight * antennaHeight / 2)),
-						nCopies(2, Y_UNIT), null, null, null);
+						nCopies(2, Y_UNIT), null, null);
 			}
 
 			/* draw the antenna box itself */

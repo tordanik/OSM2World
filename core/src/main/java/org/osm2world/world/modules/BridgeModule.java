@@ -6,10 +6,10 @@ import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
+import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.Materials.BRIDGE_DEFAULT;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
-import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
@@ -249,7 +249,7 @@ public class BridgeModule extends AbstractModule {
 			// TODO: start pillar at ground instead of just x meters below the bridge
 			VectorXYZ base = top.y(max(top.y-20, -3));
 			target.drawExtrudedShape(material, crossSection,
-					asList(base, top), null, null, null, EnumSet.of(ExtrudeOption.END_CAP));
+					asList(base, top), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
 		}
 

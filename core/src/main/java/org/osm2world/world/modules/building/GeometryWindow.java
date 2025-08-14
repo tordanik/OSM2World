@@ -335,7 +335,7 @@ public class GeometryWindow implements Window {
 
 			target.drawExtrudedShape(params.frameMaterial, innerFrameShape,
 					framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
-					null, null, EnumSet.noneOf(ExtrudeOption.class));
+					null, EnumSet.noneOf(ExtrudeOption.class));
 
 		}
 
@@ -372,7 +372,7 @@ public class GeometryWindow implements Window {
 
 				target.drawExtrudedShape(params.shutterMaterial, extrusionShape,
 						asList(extrusionStartXYZ, extrusionStartXYZ.add(windowNormal.mult(SHUTTER_THICKNESS))),
-						nCopies(2, VectorXYZ.Y_UNIT), null, null, EnumSet.of(END_CAP));
+						nCopies(2, VectorXYZ.Y_UNIT), null, EnumSet.of(END_CAP));
 
 			}
 

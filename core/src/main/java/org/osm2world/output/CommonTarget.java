@@ -163,10 +163,6 @@ public interface CommonTarget {
 	 * @param  scaleFactors   optionally allows the shape to be scaled at each point.
 	 *                        Must have the same number of elements as path.
 	 *                        Can be set to null for a constant scale factor of 1
-	 * @param  texCoordLists  one texture coordinate list per texture.
-	 *                        The number of vectors in each must be equal to the number of
-	 *                        vertices of the shape, multiplied by the length of the path.
-	 *                        Can be null, in which case it falls back to a default.
 	 * @param  options        flags setting additional options; can be null for no options.
 	 *                        Usually an {@link EnumSet}.
 	 *
@@ -175,8 +171,8 @@ public interface CommonTarget {
 	 *                                   or otherwise ambiguous paths.
 	 */
 	default void drawExtrudedShape(@Nonnull Material material, @Nonnull ShapeXZ shape, @Nonnull List<VectorXYZ> path,
-								   @Nullable List<VectorXYZ> upVectors, @Nullable List<Double> scaleFactors,
-								   @Nullable List<List<VectorXZ>> texCoordLists, @Nullable Set<ExtrudeOption> options) {
+			@Nullable List<VectorXYZ> upVectors, @Nullable List<Double> scaleFactors,
+			@Nullable Set<ExtrudeOption> options) {
 
 		if (material.getInterpolation() == Material.Interpolation.SMOOTH) {
 			options = requireNonNullElse(options, EnumSet.noneOf(ExtrudeOption.class));

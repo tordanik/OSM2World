@@ -327,7 +327,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				);
 
 				target.drawExtrudedShape(CONCRETE, wallShape, ring.vertices(),
-						nCopies(ring.vertices().size(), Y_UNIT), null, null, null);
+						nCopies(ring.vertices().size(), Y_UNIT), null, null);
 
 			}
 			

@@ -68,7 +68,7 @@ public class ChimneyRoof extends Roof {
 
 		List<VectorXYZ> chimneyHolePath = asList(new VectorXYZ(0, chimneyHoleEle, 0), new VectorXYZ(0, baseEle, 0));
 		target.drawExtrudedShape(material, new PolylineXZ(chimneyHole.vertices()).reverse(),
-				chimneyHolePath, null, null, null, null);
+				chimneyHolePath, null, null, null);
 
 		List<TriangleXZ> holeTrianglesXZ = chimneyHole.getTriangulation();
 		List<TriangleXYZ> holeTriangles = holeTrianglesXZ.stream().map(t -> t.xyz(chimneyHoleEle)).collect(toList());
