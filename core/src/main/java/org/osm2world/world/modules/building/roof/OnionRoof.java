@@ -12,7 +12,7 @@ import org.osm2world.scene.material.Material;
 public class OnionRoof extends SpindleRoof {
 
 	public OnionRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, material);
+		super(originalPolygon, tags, material.makeSmooth());
 	}
 
 	@Override

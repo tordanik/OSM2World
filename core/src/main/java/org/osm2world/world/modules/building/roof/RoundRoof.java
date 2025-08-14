@@ -26,7 +26,7 @@ public class RoundRoof extends RoofWithRidge {
 
 	public RoundRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(0, originalPolygon, tags, material);
+		super(0, originalPolygon, tags, material.makeSmooth());
 
 		/* determine how many segments to use to simulate a round surface */
 

@@ -13,7 +13,7 @@ import org.osm2world.scene.material.Material;
 public class DomeRoof extends SpindleRoof {
 
 	public DomeRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, material);
+		super(originalPolygon, tags, material.makeSmooth());
 	}
 
 	/**

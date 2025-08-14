@@ -1,6 +1,7 @@
 package org.osm2world.output;
 
 import static java.util.Collections.nCopies;
+import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.trianglesFromTriangleFan;
 import static org.osm2world.math.algorithms.GeometryUtil.trianglesFromTriangleStrip;
@@ -176,6 +177,11 @@ public interface CommonTarget {
 	default void drawExtrudedShape(@Nonnull Material material, @Nonnull ShapeXZ shape, @Nonnull List<VectorXYZ> path,
 								   @Nullable List<VectorXYZ> upVectors, @Nullable List<Double> scaleFactors,
 								   @Nullable List<List<VectorXZ>> texCoordLists, @Nullable Set<ExtrudeOption> options) {
+
+		if (material.getInterpolation() == Material.Interpolation.SMOOTH) {
+			options = requireNonNullElse(options, EnumSet.noneOf(ExtrudeOption.class));
+			options.add(ExtrudeOption.SMOOTH_SIDES);
+		}
 
 		drawMesh(new Mesh(new ExtrusionGeometry(shape, path, upVectors, scaleFactors, null, options,
 				material.getTextureDimensions()), material));

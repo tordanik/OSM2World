@@ -9,6 +9,7 @@ import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,6 +21,7 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.ShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.output.CommonTarget;
+import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureLayer;
@@ -91,7 +93,7 @@ abstract public class SpindleRoof extends Roof {
 				null, scaleFactors,
 				spindleTexCoordLists(path, spindleShape.vertices().size(),
 						polygon.getOutlineLength(), material),
-				null);
+				EnumSet.of(ExtrudeOption.SMOOTH_SIDES));
 
 	}
 
