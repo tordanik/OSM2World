@@ -46,7 +46,6 @@ import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.texcoord.TexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -2404,7 +2403,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				}
 
 				VectorXZ rawTexCoord = new VectorXZ(s, t);
-				result.add(TexCoordUtil.applyPadding(rawTexCoord, textureDimensions));
+				result.add(textureDimensions.applyPadding(rawTexCoord));
 
 			}
 

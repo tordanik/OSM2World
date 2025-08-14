@@ -92,7 +92,7 @@ public record StripWallTexCoordFunction(TextureDataDimensions textureDimensions,
 			}
 
 			VectorXZ rawTexCoord = new VectorXZ(s, t);
-			result.add(TexCoordUtil.applyPadding(rawTexCoord, textureDimensions));
+			result.add(textureDimensions.applyPadding(rawTexCoord));
 
 		}
 

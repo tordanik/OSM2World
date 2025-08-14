@@ -1,7 +1,5 @@
 package org.osm2world.scene.texcoord;
 
-import static org.osm2world.scene.texcoord.TexCoordUtil.applyPadding;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +28,7 @@ public record FaceFitTexCoordFunction(TextureDataDimensions textureDimensions) i
 		for (VectorXZ v : faceXZ.vertices()) {
 			VectorXZ vRelative = v.subtract(faceBbox.bottomLeft());
 			VectorXZ rawTexCoord = new VectorXZ(vRelative.x / faceBbox.sizeX(), vRelative.z / faceBbox.sizeZ());
-			result.add(applyPadding(rawTexCoord, textureDimensions));
+			result.add(textureDimensions.applyPadding(rawTexCoord));
 		}
 
 		return result;

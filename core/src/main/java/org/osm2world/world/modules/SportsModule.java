@@ -33,7 +33,6 @@ import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;
@@ -239,7 +238,7 @@ public class SportsModule extends AbstractModule {
 									shortSideProjectedLength / shortSide.length(),
 									longSideProjectedLength / longSide.length());
 
-					result.add(TexCoordUtil.applyPadding(rawTexCoord, textureDimensions));
+					result.add(textureDimensions.applyPadding(rawTexCoord));
 
 				}
 

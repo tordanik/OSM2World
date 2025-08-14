@@ -20,10 +20,9 @@ public record GlobalXZTexCoordFunction(TextureDataDimensions textureDimensions) 
 		List<VectorXZ> result = new ArrayList<>(vs.size());
 
 		for (VectorXYZ v : vs) {
-			result.add(TexCoordUtil.applyPadding(new VectorXZ(
+			result.add(textureDimensions.applyPadding(new VectorXZ(
 							v.x / textureDimensions.width(),
-							v.z / textureDimensions.height()),
-					this.textureDimensions));
+							v.z / textureDimensions.height())));
 		}
 
 		return result;

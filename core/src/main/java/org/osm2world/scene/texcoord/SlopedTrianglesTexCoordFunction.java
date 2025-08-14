@@ -66,7 +66,7 @@ public record SlopedTrianglesTexCoordFunction(TextureDataDimensions textureDimen
 				VectorXZ texCoord = new VectorXZ(
 						-baseTexCoord.x / textureDimensions.width(),
 						-baseTexCoord.z / textureDimensions.height());
-				result.add(TexCoordUtil.applyPadding(texCoord, textureDimensions));
+				result.add(textureDimensions.applyPadding(texCoord));
 			}
 
 		}
