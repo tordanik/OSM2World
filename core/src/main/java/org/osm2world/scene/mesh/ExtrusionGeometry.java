@@ -2,9 +2,8 @@ package org.osm2world.scene.mesh;
 
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
-import static java.util.Collections.max;
 import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
+import static java.util.Collections.max;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.math.algorithms.GeometryUtil.triangleVertexListFromTriangleStrip;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
@@ -13,8 +12,8 @@ import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createT
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
@@ -26,14 +25,14 @@ import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.TextureDataDimensions;
-import org.osm2world.scene.texcoord.MapBasedTexCoordFunction;
+import org.osm2world.scene.texcoord.PrecomputedTexCoordFunction;
 
 /**
  * geometry defined by extruding a 2d shape along a path
  */
 public class ExtrusionGeometry implements Geometry {
 
-	private static final Double DEFAULT_SCALE_FACTOR = Double.valueOf(1.0);
+	private static final Double DEFAULT_SCALE_FACTOR = 1.0;
 	private static final EnumSet<ExtrudeOption> DEFAULT_EXTRUDE_OPTIONS = EnumSet.noneOf(ExtrudeOption.class);
 
 	/** the shape to be extruded; != null */
@@ -163,7 +162,6 @@ public class ExtrusionGeometry implements Geometry {
 
 		Interpolation normalMode = (shape instanceof CircleXZ || options.contains(SMOOTH_SIDES))
 				? Interpolation.SMOOTH : Interpolation.FLAT;
-		Map<VectorXYZ, VectorXZ> texCoordMap = new HashMap<>();
 		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(textureDimensions.size(), color, normalMode);
 
 		/* calculate the forward direction of the shape from the path.
@@ -248,33 +246,42 @@ public class ExtrusionGeometry implements Geometry {
 
 			/* calculate texture coordinates */
 
-			//TODO implement texture snapping using totalPathLength and totalShapeLength
+			double totalLengthAcross = new PolylineXZ(shape.vertices()).getLength();
 
-			double totalPathLength = new PolylineXYZ(path).length();
-			double totalShapeLength = new PolylineXZ(shape.vertices()).getLength();
+			double maxTotalLengthAlong = 0;
+			for (int j = 0; j < shape.vertices().size(); j++) {
+				double totalLengthAlongJ = 0;
+				for (int pathI = 0; pathI + 1 < path.size(); pathI++) {
+					totalLengthAlongJ += shapeVectors[pathI].get(j).distanceTo(shapeVectors[pathI + 1].get(j));
+				}
+				maxTotalLengthAlong = Math.max(maxTotalLengthAlong, totalLengthAlongJ);
+			}
+
+			@SuppressWarnings("unchecked")
+			List<VectorXZ>[] rawTexCoordsPerRing = new List[path.size()];
 
 			for (int pathI = 0; pathI < path.size(); pathI ++) {
+
+				rawTexCoordsPerRing[pathI] = new ArrayList<>();
+
 				for (int j = 0; j < shape.vertices().size(); j++) {
 
 					VectorXZ texCoord;
 
-					double lengthAlongPath = 0;
-					if (pathI > 0) {
-						lengthAlongPath = new PolylineXYZ(path.subList(0, pathI + 1)).length();
+					double lengthAlong = 0;
+					for (int i = 0; i + 1 <= pathI; i++) {
+						lengthAlong += shapeVectors[i].get(j).distanceTo(shapeVectors[i + 1].get(j));
 					}
 
-					double lengthAlongShape = 0;
-					if (j > 0) {
-						lengthAlongShape = new PolylineXZ(shape.vertices().subList(0, j + 1)).getLength();
-					}
+					double lengthAcross = (totalLengthAcross / shape.vertices().size()) * j;
 
 					if (options.contains(TEX_HEIGHT_ALONG_PATH)) {
-						texCoord = new VectorXZ(lengthAlongShape, lengthAlongPath);
+						texCoord = new VectorXZ(lengthAcross, lengthAlong);
 					} else {
-						texCoord = new VectorXZ(lengthAlongPath, lengthAlongShape);
+						texCoord = new VectorXZ(lengthAlong, lengthAcross);
 					}
 
-					texCoordMap.put(shapeVectors[pathI].get(j), texCoord);
+					rawTexCoordsPerRing[pathI].add(texCoord);
 
 				}
 			}
@@ -287,31 +294,45 @@ public class ExtrusionGeometry implements Geometry {
 				double scaleB = scaleFactors.get(pathI + 1);
 				List<VectorXYZ> shapeA = shapeVectors[pathI];
 				List<VectorXYZ> shapeB = shapeVectors[pathI + 1];
+				List<VectorXZ> texCoordsA = rawTexCoordsPerRing[pathI];
+				List<VectorXZ> texCoordsB = rawTexCoordsPerRing[pathI + 1];
 
 				List<VectorXYZ> triangleVs;
+				List<VectorXZ> triangleTexCoords;
 
 				if (scaleA != 0 && scaleB != 0) {
 					triangleVs = triangleVertexListFromTriangleStrip(createTriangleStripBetween(shapeB, shapeA));
-				} else if (scaleA != 0 && scaleB == 0) {
+					triangleTexCoords = triangleVertexListFromTriangleStrip(createTriangleStripBetween(texCoordsB, texCoordsA));
+				} else if (scaleA != 0) {
 					triangleVs = new ArrayList<>();
+					triangleTexCoords = new ArrayList<>();
 					for (int i = 0; i + 1 < shapeA.size(); i++) {
-						triangleVs.addAll(asList(shapeA.get(i), shapeA.get(i + 1), shapeB.get(0)));
+						triangleVs.addAll(List.of(shapeA.get(i), shapeA.get(i + 1), shapeB.get(0)));
+						triangleTexCoords.addAll(List.of(texCoordsA.get(i), texCoordsA.get(i + 1),
+								texCoordsB.get(i).add(texCoordsB.get(i + 1)).mult(0.5)));
 					}
-				} else if (scaleA == 0 && scaleB != 0) {
+				} else if (scaleB != 0) {
 					triangleVs = new ArrayList<>();
+					triangleTexCoords = new ArrayList<>();
 					for (int i = 0; i + 1 < shapeB.size(); i++) {
-						triangleVs.addAll(asList(shapeB.get(i + 1), shapeB.get(i), shapeA.get(0)));
+						triangleVs.addAll(List.of(shapeB.get(i + 1), shapeB.get(i), shapeA.get(0)));
+						triangleTexCoords.addAll(List.of(texCoordsB.get(i + 1), texCoordsB.get(i),
+								texCoordsA.get(i).add(texCoordsA.get(i + 1)).mult(0.5)));
 					}
 				} else {
 					triangleVs = null;
+					triangleTexCoords = null;
 				}
 
 				if (triangleVs != null) {
 
+					double totalX = options.contains(TEX_HEIGHT_ALONG_PATH) ? totalLengthAcross : maxTotalLengthAlong;
+					double totalZ = options.contains(TEX_HEIGHT_ALONG_PATH) ? maxTotalLengthAlong : totalLengthAcross;
+
 					List<List<VectorXZ>> texCoords = textureDimensions.stream()
-							.map(t -> new MapBasedTexCoordFunction(texCoordMap, t))
+							.map(t -> new PrecomputedTexCoordFunction(triangleTexCoords, t, totalX, totalZ))
 							.map(f -> f.apply(triangleVs))
-							.collect(toList());
+							.toList();
 
 					builder.addTriangleVs(triangleVs, texCoords);
 

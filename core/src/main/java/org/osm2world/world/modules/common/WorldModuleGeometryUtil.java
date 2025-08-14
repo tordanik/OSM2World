@@ -59,13 +59,15 @@ public final class WorldModuleGeometryUtil {
 
 	/**
 	 * creates a triangle strip between two outlines with identical number of vectors
+	 * @param <V>  the vector type, e.g. {@link VectorXYZ}
 	 */
-	public static final List<VectorXYZ> createTriangleStripBetween(
-			List<VectorXYZ> leftOutline, List<VectorXYZ> rightOutline) {
+	public static final <V> List<V> createTriangleStripBetween(
+			List<V> leftOutline, List<V> rightOutline) {
 
 		assert leftOutline.size() == rightOutline.size();
 
-		VectorXYZ[] vs = new VectorXYZ[leftOutline.size() * 2];
+		@SuppressWarnings("unchecked")
+		V[] vs = (V[])new Object[leftOutline.size() * 2];
 
 		for (int i = 0; i < leftOutline.size(); i++) {
 			vs[i*2] = leftOutline.get(i);
