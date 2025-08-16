@@ -1,5 +1,7 @@
 package org.osm2world.math.shapes;
 
+import java.util.List;
+
 import org.osm2world.math.VectorXYZ;
 
 public class LineSegmentXYZ {
@@ -18,6 +20,16 @@ public class LineSegmentXYZ {
 
 	public LineSegmentXZ getSegmentXZ() {
 		return new LineSegmentXZ(p1.xz(), p2.xz());
+	}
+
+	/** returns a list containing the two vertices {@link #p1} and {@link #p2} */
+	public List<VectorXYZ> vertices() {
+		return List.of(p1, p2);
+	}
+
+	/** returns a normalized vector indicating the segment's direction */
+	public VectorXYZ getDirection() {
+		return p2.subtract(p1).normalize();
 	}
 
 	/** returns the flipped version of this segment */

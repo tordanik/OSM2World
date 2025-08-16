@@ -8,7 +8,7 @@ import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -17,9 +17,13 @@ import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.NormalCalculationUtil;
+import org.osm2world.math.shapes.LineSegmentXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.texcoord.TexCoordFunction;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /** a geometry composed of triangles */
 public class TriangleGeometry implements Geometry {
@@ -350,6 +354,39 @@ public class TriangleGeometry implements Geometry {
 					.toList();
 			return new TriangleGeometry(newTriangles, newNormals, texCoords, colors);
 		}
+
+	}
+
+	/**
+	 * Returns all edges where this geometry is not flat.
+	 * That is, this method returns all triangle segments in this geometry where the two triangles sharing the segment
+	 * have different normals.
+	 */
+	public Set<LineSegmentXYZ> edges() {
+
+		Set<LineSegmentXYZ> result = new HashSet<>();
+
+		Multimap<LineSegmentXYZ, TriangleXYZ> adjacentTriangles = HashMultimap.create();
+
+		for (TriangleXYZ triangle : triangles) {
+			for (LineSegmentXYZ segment : triangle.segments()) {
+				LineSegmentXYZ canonicalSegment = (segment.getDirection().y > 0
+						|| (segment.getDirection().y == 0 && segment.getDirection().xz().angle() >= Math.PI))
+						? segment : segment.reverse();
+				adjacentTriangles.put(canonicalSegment, triangle);
+			}
+		}
+
+		for (LineSegmentXYZ segment : adjacentTriangles.keySet()) {
+			Collection<TriangleXYZ> triangles = adjacentTriangles.get(segment);
+			VectorXYZ n = triangles.iterator().next().getNormal();
+			if (triangles.size() == 1
+					|| triangles.stream().anyMatch(it -> it.getNormal().distanceTo(n) > 0.01)) {
+				result.add(segment);
+			}
+		}
+
+		return result;
 
 	}
 
