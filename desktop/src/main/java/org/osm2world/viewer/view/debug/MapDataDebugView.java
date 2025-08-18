@@ -19,19 +19,14 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.TriangleXZ;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.output.jogl.JOGLOutput;
 
 /**
  * shows the plain {@link MapData} as a network of nodes, lines and areas
  */
 public class MapDataDebugView extends DebugView {
-
-	@Override
-	public String getDescription() {
-		return "shows the map data (without elevation) as a network of nodes, lines and areas";
-	}
 
 	private static final Color LINE_COLOR = Color.WHITE;
 	private static final Color NODE_COLOR = Color.YELLOW;
@@ -41,9 +36,8 @@ public class MapDataDebugView extends DebugView {
 
 	private static final float HALF_NODE_WIDTH = 0.4f;
 
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public MapDataDebugView() {
+		super("Map data", "shows the raw map data as a network of nodes, lines and areas");
 	}
 
 	@Override

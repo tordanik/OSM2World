@@ -17,9 +17,8 @@ public class RoofDataDebugView extends DebugView {
 	private static final Color POLYGON_COLOR = Color.WHITE;
 	private static final Color EXTRA_OUTLINE_COLOR = Color.RED;
 
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public RoofDataDebugView() {
+		super("Roof data", "draws internal results of roof calculations");
 	}
 
 	@Override

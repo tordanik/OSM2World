@@ -4,24 +4,18 @@ import java.awt.*;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.common.Primitive;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.PrimitiveBuffer;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
 
-public class WorldObjectNormalsDebugView extends DebugView {
+public class NormalsDebugView extends DebugView {
 
 	private static final Color FLAT_NORMALS_COLOR = Color.YELLOW;
 	private static final Color SMOOTH_NORMALS_COLOR = Color.ORANGE;
 
-	@Override
-	public String getDescription() {
-		return "draws world object normals as arrows";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public NormalsDebugView() {
+		super("Normals", "draws world object normals as arrows");
 	}
 
 	@Override

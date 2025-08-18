@@ -16,20 +16,14 @@ import org.osm2world.viewer.control.actions.OrthoBoundsAction;
  */
 public class OrthoBoundsDebugView extends DebugView {
 
-	@Override
-	public String getDescription() {
-		return "illustrates the construction of the orthogonal perspective";
+	public OrthoBoundsDebugView() {
+		super("Orthographic bounds debug view", "illustrates the construction of the orthogonal perspective");
 	}
 
 	private static final Color LINE_COLOR = Color.YELLOW;
 	private static final Color POINT_COLOR = Color.RED;
 
 	private static final float HALF_POINT_WIDTH = 0.4f;
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
-	}
 
 	@Override
 	public void fillTarget(JOGLOutput target) {

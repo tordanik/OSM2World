@@ -7,7 +7,7 @@ import org.osm2world.viewer.model.RenderOptions;
 public class LeastSquaresInterpolatorDebugView extends TerrainInterpolatorDebugView {
 
 	public LeastSquaresInterpolatorDebugView(RenderOptions renderOptions) {
-		super(renderOptions);
+		super(renderOptions, "LeastSquaresInterpolator");
 	}
 
 	@Override

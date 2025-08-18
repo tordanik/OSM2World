@@ -15,12 +15,12 @@ import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.scene.material.ImmutableMaterial;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.viewer.model.RenderOptions;
 
 public abstract class TerrainInterpolatorDebugView extends DebugView {
@@ -36,14 +36,10 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 	private MapProjection mapProjection = null;
 
-	protected TerrainInterpolatorDebugView(RenderOptions renderOptions) {
+	protected TerrainInterpolatorDebugView(RenderOptions renderOptions, String interpolatorName) {
+		super(interpolatorName + " debug view",
+				"shows empty terrain approximated by a " + interpolatorName);
 		this.renderOptions = renderOptions;
-	}
-
-	@Override
-	public String getDescription() {
-		return "shows empty terrain approximated by a " +
-				buildInterpolator().getClass().getSimpleName();
 	}
 
 	@Override
@@ -90,7 +86,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 				}
 
 				if (x % 100 == 0) {
-					long finishedSamples = x * sampleGrid.sizeZ();
+					long finishedSamples = x * (long) sampleGrid.sizeZ();
 					System.out.println(finishedSamples + "/" + sampleGrid.size()
 							+ " after " + ((System.currentTimeMillis() - startTimeMillis) / 1000f));
 				}

@@ -15,16 +15,10 @@ import org.osm2world.output.jogl.JOGLOutput;
  */
 public class InternalCoordsDebugView extends DebugView {
 
-	@Override
-	public String getDescription() {
-		return "shows the internal world coordinate grid";
-	}
-
 	private static final double LINE_DIST = 100;
 
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public InternalCoordsDebugView() {
+		super("Metric coordinate grid", "shows the internal world coordinate grid");
 	}
 
 	@Override

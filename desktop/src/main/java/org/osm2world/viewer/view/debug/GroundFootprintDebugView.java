@@ -21,14 +21,8 @@ public class GroundFootprintDebugView extends DebugView {
 	private static final Color WAY_BOUNDARY_COLOR = Color.GREEN;
 	private static final Color AREA_BOUNDARY_COLOR = Color.BLUE;
 
-	@Override
-	public String getDescription() {
-		return "draws terrain boundaries defined by world objects";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public GroundFootprintDebugView() {
+		super("Ground footprints", "draws terrain boundaries defined by world objects");
 	}
 
 	@Override

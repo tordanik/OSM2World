@@ -21,14 +21,8 @@ public class EleConstraintDebugView extends DebugView {
 	private static final Color MIN_VDIST_COLOR = PINK;
 	private static final Color SMOOTHNESS = GREEN;
 
-	@Override
-	public String getDescription() {
-		return "shows elevation constraints";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public EleConstraintDebugView() {
+		super("Elevation constraints", "shows elevation constraints");
 	}
 
 	@Override

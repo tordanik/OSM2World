@@ -26,6 +26,10 @@ public class QuadtreeDebugView extends DebugView {
 	private MapQuadtree mapQuadtree;
 	private boolean arrowsEnabled = true;
 
+	public QuadtreeDebugView() {
+		super("Quadtree debug view", "shows the Quadtree data structure");
+	}
+
 	@Override
 	public void setConversionResults(Scene conversionResults) {
 		super.setConversionResults(conversionResults);
@@ -34,11 +38,6 @@ public class QuadtreeDebugView extends DebugView {
 
 	public void setArrowsEnabled(boolean arrowsEnabled) {
 		this.arrowsEnabled = arrowsEnabled;
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
 	}
 
 	@Override

@@ -12,15 +12,14 @@ public class Map2dTreeDebugView extends DebugView {
 
 	private RenderableMap2dTree map2dTree;
 
+	public Map2dTreeDebugView() {
+		super("Map2dTree debug view", "shows the Map2dTree data structure");
+	}
+
 	@Override
 	public void setConversionResults(Scene conversionResults) {
 		super.setConversionResults(conversionResults);
 		this.map2dTree = null;
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
 	}
 
 	@Override
@@ -59,9 +58,7 @@ public class Map2dTreeDebugView extends DebugView {
 				double minZ, double maxZ,
 				int depth) {
 
-			if (node instanceof InnerNode) {
-
-				InnerNode innerNode = (InnerNode)node;
+			if (node instanceof InnerNode innerNode) {
 
 				Color lineColor = new Color(1.0f,
 						Math.min(1.0f, 2.0f / depth), 0.0f);

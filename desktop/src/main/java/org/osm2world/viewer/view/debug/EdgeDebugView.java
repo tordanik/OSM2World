@@ -9,9 +9,8 @@ import org.osm2world.scene.mesh.Mesh;
  */
 public class EdgeDebugView extends DebugView {
 
-	@Override
-	public String getDescription() {
-		return "shows edges of WorldObject geometries";
+	public EdgeDebugView() {
+		super("Edges", "shows edges of WorldObject geometries");
 	}
 
 	@Override

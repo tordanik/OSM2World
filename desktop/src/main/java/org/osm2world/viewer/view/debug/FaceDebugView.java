@@ -7,8 +7,8 @@ import java.util.List;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.FaceOutput;
-import org.osm2world.scene.material.Material;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.material.Material;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -19,20 +19,13 @@ public class FaceDebugView extends DebugView {
 
 	private static final Color BORDER_COLOR = new Color(0, 0, 1.0f);
 
-	@Override
-	public String getDescription() {
-		return "shows decomposition of WorldObjects into faces";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public FaceDebugView() {
+		super("Faces", "shows decomposition of WorldObjects into faces");
 	}
 
 	private static class FaceSink extends FaceOutput {
 
-		public final List<List<VectorXYZ>> faces =
-				new ArrayList<List<VectorXYZ>>();
+		public final List<List<VectorXYZ>> faces = new ArrayList<>();
 
 		@Override
 		public boolean reconstructFaces() {

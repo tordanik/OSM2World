@@ -14,9 +14,8 @@ import org.osm2world.scene.Scene;
  */
 public class LatLonDebugView extends DebugView {
 
-	@Override
-	public String getDescription() {
-		return "shows the latitude and longitude grid";
+	public LatLonDebugView() {
+		super("Geographic coordinate grid", "shows the latitude and longitude grid");
 	}
 
 	private static final double LINE_DIST = 1.0 / 3600;

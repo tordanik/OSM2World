@@ -6,7 +6,7 @@ import org.osm2world.viewer.model.RenderOptions;
 public class LinearInterpolatorDebugView extends TerrainInterpolatorDebugView {
 
 	public LinearInterpolatorDebugView(RenderOptions renderOptions) {
-		super(renderOptions);
+		super(renderOptions, "LinearInterpolator");
 	}
 
 	@Override

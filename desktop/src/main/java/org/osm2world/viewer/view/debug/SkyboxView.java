@@ -4,20 +4,19 @@ import static java.lang.Math.sqrt;
 
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
+import org.osm2world.scene.material.Materials;
 
 public class SkyboxView extends DebugView {
 
-	@Override
-	public String getDescription() {
-		return "shows a skybox in the background";
+	public SkyboxView() {
+		super("Skybox", "shows a skybox in the background");
 	}
 
 	@Override
 	public boolean canBeUsed() {
-		return scene != null;
+		return scene != null && Materials.SKYBOX.getNumTextureLayers() > 0;
 	}
 
 	@Override

@@ -22,6 +22,10 @@ public class HelpView extends DebugView {
 	private int width = 0, height = 0;
 	private float scale = 1;
 
+	public HelpView() {
+		super("Help view", "");
+	}
+
 	@Override
 	public void reset() {
 		super.reset();

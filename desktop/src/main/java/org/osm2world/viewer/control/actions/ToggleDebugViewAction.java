@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
@@ -29,9 +29,9 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 			boolean enabled, ViewerFrame viewerFrame,
 			Data data, RenderOptions renderOptions) {
 
-		super(debugView.getClass().getSimpleName());
+		super(debugView.label);
 
-		putValue(SHORT_DESCRIPTION, debugView.getDescription());
+		putValue(SHORT_DESCRIPTION, debugView.description);
 		putValue(MNEMONIC_KEY, mnemonicKey);
 		putValue(SELECTED_KEY, enabled);
 
@@ -44,6 +44,8 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 		if (enabled) {
 			renderOptions.activeDebugViews.add(debugView);
 		}
+
+		this.setEnabled(debugView.canBeUsed());
 
 		data.addObserver(this);
 
@@ -70,8 +72,9 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 
 		debugView.setConfiguration(data.getConfig());
 
-		debugView.setConversionResults(
-				data.getConversionResults());
+		debugView.setConversionResults(data.getConversionResults());
+
+		this.setEnabled(debugView.canBeUsed());
 
 	}
 

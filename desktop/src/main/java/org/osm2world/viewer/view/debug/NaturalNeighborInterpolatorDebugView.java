@@ -7,7 +7,7 @@ import org.osm2world.viewer.model.RenderOptions;
 public class NaturalNeighborInterpolatorDebugView extends TerrainInterpolatorDebugView {
 
 	public NaturalNeighborInterpolatorDebugView(RenderOptions renderOptions) {
-		super(renderOptions);
+		super(renderOptions, "NaturalNeighborInterpolator");
 	}
 
 	@Override

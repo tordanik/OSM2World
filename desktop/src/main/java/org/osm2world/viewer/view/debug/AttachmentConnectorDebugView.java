@@ -7,9 +7,9 @@ import static org.osm2world.math.VectorXZ.Z_UNIT;
 import java.awt.*;
 
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.WorldObject;
 
@@ -18,14 +18,8 @@ public class AttachmentConnectorDebugView extends DebugView {
 	private final Color ATTACHED_COLOUR = GREEN;
 	private final Color FAILED_COLOUR = RED;
 
-	@Override
-	public String getDescription() {
-		return "shows connectors that attach objects to surfaces";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public AttachmentConnectorDebugView() {
+		super("Attachment connectors", "shows connectors that attach objects to surfaces");
 	}
 
 	@Override

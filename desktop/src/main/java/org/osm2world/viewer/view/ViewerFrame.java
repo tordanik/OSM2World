@@ -116,9 +116,6 @@ public class ViewerFrame extends JFrame {
 			JMenu subMenu = new JMenu("View");
 			subMenu.setMnemonic(VK_V);
 
-			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleBackfaceCullingAction(this, data, renderOptions)));
-
 			initAndAddDebugView(subMenu, VK_W, true,
 					new WorldObjectView(renderOptions));
 			initAndAddDebugView(subMenu, -1, true,
@@ -126,40 +123,50 @@ public class ViewerFrame extends JFrame {
 
 			subMenu.addSeparator();
 
+			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(data, renderOptions)));
+			subMenu.add(new JCheckBoxMenuItem(new ToggleBackfaceCullingAction(data, renderOptions)));
+
+			subMenu.addSeparator();
+
 			initAndAddDebugView(subMenu, -1, false,
-					new AttachmentSurfaceDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new AttachmentConnectorDebugView());
-			initAndAddDebugView(subMenu, VK_D, false,
-					new MapDataDebugView());
-			initAndAddDebugView(subMenu, VK_E, false,
-					new EleConnectorDebugView());
-			initAndAddDebugView(subMenu, VK_C, false,
-					new EleConstraintDebugView());
-			initAndAddDebugView(subMenu, VK_R, false,
-					new RoofDataDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new FaceDebugView());
+					new NormalsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new EdgeDebugView());
-			initAndAddDebugView(subMenu, VK_X, false,
-					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
-					new Map2dTreeDebugView());
-			initAndAddDebugView(subMenu, VK_B, false,
-					new GroundFootprintDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new WorldObjectNormalsDebugView());
+					new FaceDebugView());
+
+			subMenu.addSeparator();
+
 			initAndAddDebugView(subMenu, -1, false,
 					new MapDataBoundsDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new OrthoBoundsDebugView());
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new InternalCoordsDebugView(), -1, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new LatLonDebugView(), -1, false,
 					this, data, renderOptions)));
+
+			subMenu.addSeparator();
+
+			initAndAddDebugView(subMenu, VK_D, false,
+					new MapDataDebugView());
+			initAndAddDebugView(subMenu, VK_R, false,
+					new RoofDataDebugView());
+			initAndAddDebugView(subMenu, VK_B, false,
+					new GroundFootprintDebugView());
+
+			initAndAddDebugView(subMenu, -1, false,
+					new AttachmentSurfaceDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new AttachmentConnectorDebugView());
+			initAndAddDebugView(subMenu, VK_E, false,
+					new EleConnectorDebugView());
+			initAndAddDebugView(subMenu, VK_C, false,
+					new EleConstraintDebugView());
+			initAndAddDebugView(subMenu, VK_X, false,
+					new QuadtreeDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new Map2dTreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new NaturalNeighborInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
@@ -169,7 +176,9 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, -1, false,
 					new LinearInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
-					new ShadowView(renderOptions));
+					new OrthoBoundsDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new ShadowDebugView(renderOptions));
 
 			menu.add(subMenu);
 

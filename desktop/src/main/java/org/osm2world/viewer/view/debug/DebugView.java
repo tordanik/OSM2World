@@ -28,6 +28,9 @@ import com.jogamp.opengl.GL;
  */
 public abstract class DebugView {
 
+	public final String label;
+	public final String description;
+
 	protected O2WConfig config;
 
 	protected Scene scene;
@@ -42,6 +45,11 @@ public abstract class DebugView {
 
 	private JOGLOutput target = null;
 	private boolean targetNeedsReset;
+
+	protected DebugView(String label, String description) {
+		this.label = label;
+		this.description = description;
+	}
 
 	public final void setConfiguration(O2WConfig config) {
 
@@ -70,18 +78,11 @@ public abstract class DebugView {
 
 	/**
 	 * returns true if this DebugView can currently be used for rendering.
-	 * By default, this checks whether all the setters have been used with
-	 * non-null values, but subclasses can overwrite it with their own checks.
+	 * By default, this checks whether the #scene is available (not null),
+	 * but subclasses can overwrite it with their own checks.
 	 */
 	public boolean canBeUsed() {
 		return scene != null;
-	}
-
-	/**
-	 * returns a description of the debug view
-	 */
-	public String getDescription() {
-		return "";
 	}
 
 	/**

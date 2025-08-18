@@ -12,17 +12,8 @@ public class WorldObjectView extends DebugView {
 	private final RenderOptions renderOptions;
 
 	public WorldObjectView(RenderOptions renderOptions) {
+		super("World objects", "shows the world objects");
 		this.renderOptions = renderOptions;
-	}
-
-	@Override
-	public String getDescription() {
-		return "shows the world objects";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
 	}
 
 	@Override

@@ -16,14 +16,8 @@ public class EleConnectorDebugView extends DebugView {
 	private static final Color CONNECTOR_COLOR = BLUE;
 	private static final float CONNECTOR_HALF_WIDTH = 0.25f;
 
-	@Override
-	public String getDescription() {
-		return "shows all elevation connectors";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public EleConnectorDebugView() {
+		super("Elevation connectors", "shows all elevation connectors");
 	}
 
 	@Override

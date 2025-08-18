@@ -8,22 +8,13 @@ import org.osm2world.output.jogl.JOGLOutputShader;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.viewer.model.RenderOptions;
 
-public class ShadowView extends DebugView {
+public class ShadowDebugView extends DebugView {
 
 	private final RenderOptions renderOptions;
 
-	public ShadowView(RenderOptions renderOptions) {
+	public ShadowDebugView(RenderOptions renderOptions) {
+		super("Shadow debug view", "shows the world from the perspective of the light");
 		this.renderOptions = renderOptions;
-	}
-
-	@Override
-	public String getDescription() {
-		return "shows the world from the perspective of the light";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
 	}
 
 	@Override

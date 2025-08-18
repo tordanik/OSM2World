@@ -11,14 +11,8 @@ import org.osm2world.output.jogl.JOGLOutput;
  */
 public class MapDataBoundsDebugView extends DebugView {
 
-	@Override
-	public String getDescription() {
-		return "shows the bounding boxes of map data";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
+	public MapDataBoundsDebugView() {
+		super("Data bounds", "shows the bounding boxes of map data");
 	}
 
 	private static final Color DATA_BB_COLOR = Color.YELLOW;

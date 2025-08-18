@@ -10,10 +10,10 @@ import java.util.Random;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
+import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.WorldObject;
 
@@ -25,21 +25,11 @@ public class AttachmentSurfaceDebugView extends DebugView {
 
 	public AttachmentSurfaceDebugView() {
 
-		super();
+		super("Attachment surfaces", "shows surfaces that other WorldObjects can attach themselves to");
 
 		surfaceTypeColors.put("wall", new Color(1.0f, 1.0f, 0));
 		surfaceTypeColors.put("roof", new Color(1.0f, 0.8f, 0.8f));
 
-	}
-
-	@Override
-	public String getDescription() {
-		return "shows surfaces that other WorldObjects can attach themselves to";
-	}
-
-	@Override
-	public boolean canBeUsed() {
-		return scene != null;
 	}
 
 	@Override
