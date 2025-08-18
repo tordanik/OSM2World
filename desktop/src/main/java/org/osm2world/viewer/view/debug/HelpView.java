@@ -99,7 +99,7 @@ public class HelpView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void updateOutput(JOGLOutput output, boolean viewChanged, Camera camera, Projection projection) {
 		//do nothing, has its own renderTo implementation
 	}
 

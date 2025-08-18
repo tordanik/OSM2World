@@ -16,15 +16,15 @@ import org.osm2world.math.datastructures.MapQuadtree.QuadLeaf;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.Scene;
 
-public class QuadtreeDebugView extends DebugView {
+public class QuadtreeDebugView extends StaticDebugView {
 
+	private static final boolean ARROWS_ENABLED = true;
 	private static final Color LEAF_BORDER_COLOR = Color.WHITE;
 	private static final Color NODE_ARROW_COLOR = Color.YELLOW;
 	private static final Color LINE_ARROW_COLOR = Color.LIGHT_GRAY;
 	private static final Color AREA_ARROW_COLOR = new Color(0.8f, 0.8f, 1);
 
 	private MapQuadtree mapQuadtree;
-	private boolean arrowsEnabled = true;
 
 	public QuadtreeDebugView() {
 		super("Quadtree debug view", "shows the Quadtree data structure");
@@ -36,12 +36,8 @@ public class QuadtreeDebugView extends DebugView {
 		this.mapQuadtree = null;
 	}
 
-	public void setArrowsEnabled(boolean arrowsEnabled) {
-		this.arrowsEnabled = arrowsEnabled;
-	}
-
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
 		if (mapQuadtree == null) {
 			mapQuadtree = new MapQuadtree(scene.getMapData().getDataBoundary());
@@ -54,9 +50,9 @@ public class QuadtreeDebugView extends DebugView {
 
 			/* draw leaf boundary */
 
-			target.drawLineStrip(LEAF_BORDER_COLOR, 1, listXYZ(leaf.bounds.vertices(), 0));
+			output.drawLineStrip(LEAF_BORDER_COLOR, 1, listXYZ(leaf.bounds.vertices(), 0));
 
-			if (arrowsEnabled) {
+			if (ARROWS_ENABLED) {
 
 				/* draw arrows from leaf center to elements */
 
@@ -68,7 +64,7 @@ public class QuadtreeDebugView extends DebugView {
 
 						VectorXZ nodePos = node.getPos();
 
-						drawArrow(target, NODE_ARROW_COLOR,
+						drawArrow(output, NODE_ARROW_COLOR,
 								(float) min(1,
 										distance(leafCenter, nodePos) * 0.3),
 								leafCenter.xyz(0), nodePos.xyz(0));
@@ -82,7 +78,7 @@ public class QuadtreeDebugView extends DebugView {
 
 						float headLength = (float)
 								min(1, distance(leafCenter, lineCenter) * 0.3);
-						drawArrow(target,
+						drawArrow(output,
 								LINE_ARROW_COLOR, headLength,
 								leafCenter.xyz(0), lineCenter.xyz(0));
 
@@ -93,7 +89,7 @@ public class QuadtreeDebugView extends DebugView {
 
 						float headLength = (float)
 								min(1, distance(leafCenter, areaCenter) * 0.3);
-						drawArrow(target,
+						drawArrow(output,
 								AREA_ARROW_COLOR, headLength,
 								leafCenter.xyz(0), areaCenter.xyz(0));
 

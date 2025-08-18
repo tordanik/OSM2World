@@ -4,6 +4,8 @@ import static java.lang.Math.sqrt;
 
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.scene.material.Materials;
@@ -20,31 +22,29 @@ public class SkyboxView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void updateOutput(JOGLOutput output, boolean viewChanged, Camera camera, Projection projection) {
 
-		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
+		if (viewChanged) {
+			return;
+		} else if (!output.isFinished()) {
+			output.reset();
+		}
+
+		output.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 
 		// disable backface culling
-		target.setRenderingParameters(
+		output.setRenderingParameters(
 				new JOGLRenderingParameters(null, false, true));
 
 		// draw the skybox close to the limits of the viewing distance
 		double skyboxSize = 1.95 * projection.farClippingDistance() / sqrt(3);
 
-		target.drawBox(Materials.SKYBOX,
+		output.drawBox(Materials.SKYBOX,
 				camera.pos().add(0, -skyboxSize / 2, 0),
 				VectorXZ.Z_UNIT, skyboxSize, skyboxSize, skyboxSize);
 
-		target.finish();
+		output.finish();
 
-	}
-
-	@Override
-	protected void updateTarget(JOGLOutput target, boolean viewChanged) {
-		if (viewChanged) {
-			target.reset();
-			fillTarget(target);
-		}
 	}
 
 }

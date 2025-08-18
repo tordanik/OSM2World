@@ -9,7 +9,7 @@ import org.osm2world.output.jogl.PrimitiveBuffer;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 
-public class NormalsDebugView extends DebugView {
+public class NormalsDebugView extends StaticDebugView {
 
 	private static final Color FLAT_NORMALS_COLOR = Color.YELLOW;
 	private static final Color SMOOTH_NORMALS_COLOR = Color.ORANGE;
@@ -19,7 +19,7 @@ public class NormalsDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void fillOutput(JOGLOutput output) {
 
 		final PrimitiveBuffer primitiveBuffer = new PrimitiveBuffer();
 
@@ -36,7 +36,7 @@ public class NormalsDebugView extends DebugView {
 					VectorXYZ v = primitive.vertices.get(i);
 					VectorXYZ n = primitive.normals.get(i);
 					if (n != null) {
-						drawArrow(target, color, 0.3f, v, v.add(n));
+						drawArrow(output, color, 0.3f, v, v.add(n));
 					}
 				}
 

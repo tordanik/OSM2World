@@ -28,4 +28,8 @@ public interface Camera {
 		return getViewDirection().crossNormalized(up());
 	}
 
+	default ImmutableCamera copy() {
+		return new ImmutableCamera(pos(), lookAt(), up());
+	}
+
 }

@@ -7,18 +7,18 @@ import org.osm2world.scene.mesh.Mesh;
 /**
  * shows face edges in {@link org.osm2world.scene.mesh.Geometry}s
  */
-public class EdgeDebugView extends DebugView {
+public class EdgeDebugView extends StaticDebugView {
 
 	public EdgeDebugView() {
 		super("Edges", "shows edges of WorldObject geometries");
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void fillOutput(JOGLOutput output) {
 
 		for (Mesh mesh : scene.getMeshes()) {
 			for (LineSegmentXYZ edge : mesh.geometry.asTriangles().edges()) {
-				target.drawLineLoop(mesh.material.getColor(), 2, edge.vertices());
+				output.drawLineLoop(mesh.material.getColor(), 2, edge.vertices());
 			}
 		}
 

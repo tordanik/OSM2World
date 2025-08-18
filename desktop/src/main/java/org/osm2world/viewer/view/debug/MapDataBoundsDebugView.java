@@ -9,7 +9,7 @@ import org.osm2world.output.jogl.JOGLOutput;
 /**
  * shows the bounding boxes of map data
  */
-public class MapDataBoundsDebugView extends DebugView {
+public class MapDataBoundsDebugView extends StaticDebugView {
 
 	public MapDataBoundsDebugView() {
 		super("Data bounds", "shows the bounding boxes of map data");
@@ -19,13 +19,13 @@ public class MapDataBoundsDebugView extends DebugView {
 	private static final Color FILE_BB_COLOR = Color.GREEN;
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void fillOutput(JOGLOutput output) {
 
 		List<VectorXZ> vs = scene.getBoundary().polygonXZ().vertices();
-		target.drawLineLoop(DATA_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
+		output.drawLineLoop(DATA_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
 
 		vs = scene.getBoundary().polygonXZ().vertices();
-		target.drawLineLoop(FILE_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
+		output.drawLineLoop(FILE_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
 
 	}
 

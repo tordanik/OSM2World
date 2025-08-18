@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Objects;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
@@ -12,6 +13,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.ImmutableCamera;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLOutputFixedFunction;
@@ -35,13 +37,9 @@ public abstract class DebugView {
 
 	protected Scene scene;
 
-	protected Camera camera;
-	protected Projection projection;
-
 	// camera attributes that are used to detect changes
-	private VectorXYZ cameraPos;
-	private VectorXYZ cameraUp;
-	private VectorXYZ cameraLookAt;
+	private ImmutableCamera previousCamera;
+	private Projection previousProjection;
 
 	private JOGLOutput target = null;
 	private boolean targetNeedsReset;
@@ -77,7 +75,7 @@ public abstract class DebugView {
 	}
 
 	/**
-	 * returns true if this DebugView can currently be used for rendering.
+	 * Returns true if this DebugView can currently be used for rendering.
 	 * By default, this checks whether the #scene is available (not null),
 	 * but subclasses can overwrite it with their own checks.
 	 */
@@ -86,7 +84,7 @@ public abstract class DebugView {
 	}
 
 	/**
-	 * renders the content added by {@link #fillTarget(JOGLOutput)}.
+	 * Renders the content added by {@link #updateOutput(JOGLOutput, boolean, Camera, Projection)}.
 	 * Only has an effect if {@link #canBeUsed()} is true.
 	 *
 	 * @param gl  needs to be the same gl as in previous calls
@@ -107,30 +105,15 @@ public abstract class DebugView {
 			}
 			targetNeedsReset = false;
 
-			boolean viewChanged = !camera.pos().equals(this.cameraPos)
-					|| !camera.up().equals(this.cameraUp)
-					|| !camera.lookAt().equals(this.cameraLookAt)
-					|| !projection.equals(this.projection);
+			boolean viewChanged = !Objects.equals(camera.copy(), previousCamera)
+					|| !Objects.equals(projection, previousProjection);
 
-			this.camera = camera;
-			this.cameraPos = camera.pos();
-			this.cameraUp = camera.up();
-			this.cameraLookAt = camera.lookAt();
-			this.projection = projection;
+			this.previousCamera = camera.copy();
+			this.previousProjection = projection;
 
-			if (!target.isFinished()) {
+			updateOutput(target, !target.isFinished() || viewChanged, camera, projection);
 
-				fillTarget(target);
-
-				target.finish();
-
-			} else {
-
-				updateTarget(target, viewChanged);
-
-				target.finish();
-
-			}
+			target.finish();
 
 			target.render(camera, projection);
 
@@ -141,18 +124,13 @@ public abstract class DebugView {
 	}
 
 	/**
-	 * lets the subclass add all content and settings for rendering.
+	 * Lets the subclass add all content and settings for rendering,
+	 * either initially or after a relevant change.
 	 * Will only be called if {@link #canBeUsed()} is true.
-	 */
-	protected abstract void fillTarget(JOGLOutput target);
-
-	/**
-	 * lets the subclass update the target after the initial
-	 * {@link #fillTarget(JOGLOutput)}.
 	 *
-	 * @param viewChanged  true if camera or projection have changed
+	 * @param viewChanged  true for the first call, and if camera or projection have changed
 	 */
-	protected void updateTarget(JOGLOutput target, boolean viewChanged) {}
+	protected abstract void updateOutput(JOGLOutput output, boolean viewChanged, Camera camera, Projection projection);
 
 	protected static final void drawBoxAround(JOGLOutput target,
 			VectorXZ center, Color color, float halfWidth) {

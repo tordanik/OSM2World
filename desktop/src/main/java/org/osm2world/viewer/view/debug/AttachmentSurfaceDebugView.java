@@ -17,7 +17,7 @@ import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.WorldObject;
 
-public class AttachmentSurfaceDebugView extends DebugView {
+public class AttachmentSurfaceDebugView extends StaticDebugView {
 
 	private static final Color BASE_ELE_COLOR = ORANGE;
 
@@ -33,7 +33,7 @@ public class AttachmentSurfaceDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void fillOutput(JOGLOutput output) {
 
 		for (WorldObject object : scene.getWorldObjects()) {
 			for (AttachmentSurface surface : object.getAttachmentSurfaces()) {
@@ -44,7 +44,7 @@ public class AttachmentSurfaceDebugView extends DebugView {
 				for (FlatSimplePolygonShapeXYZ face : surface.getFaces()) {
 
 					Material material = new ImmutableMaterial(Interpolation.FLAT, color);
-					target.drawConvexPolygon(material, face.vertices(), emptyList());
+					output.drawConvexPolygon(material, face.vertices(), emptyList());
 
 					//draw base ele
 					for (int i = 0; i < face.vertices().size() - 1; i++) {
@@ -52,7 +52,7 @@ public class AttachmentSurfaceDebugView extends DebugView {
 						VectorXYZ v2 = face.vertices().get(i + 1);
 						v1 = v1.y(surface.getBaseEleAt(v1.xz()));
 						v2 = v2.y(surface.getBaseEleAt(v2.xz()));
-						target.drawLineStrip(BASE_ELE_COLOR, 2, v1, v2);
+						output.drawLineStrip(BASE_ELE_COLOR, 2, v1, v2);
 					}
 
 				}

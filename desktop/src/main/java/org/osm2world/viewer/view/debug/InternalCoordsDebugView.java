@@ -13,7 +13,7 @@ import org.osm2world.output.jogl.JOGLOutput;
 /**
  * shows the internal world coordinate grid
  */
-public class InternalCoordsDebugView extends DebugView {
+public class InternalCoordsDebugView extends StaticDebugView {
 
 	private static final double LINE_DIST = 100;
 
@@ -22,7 +22,7 @@ public class InternalCoordsDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
 		AxisAlignedRectangleXZ bound = scene.getBoundary();
 
@@ -31,20 +31,20 @@ public class InternalCoordsDebugView extends DebugView {
 
 				Color colorX = (z == 0 && x >= 0) ? RED : WHITE;
 				int widthX = (z == 0) ? 3 : 1;
-				target.drawLineStrip(colorX, widthX,
+				output.drawLineStrip(colorX, widthX,
 						new VectorXYZ(x * LINE_DIST, 0, z * LINE_DIST),
 						new VectorXYZ((x+1) * LINE_DIST, 0, z * LINE_DIST));
 
 				Color colorZ = (x == 0 && z >= 0) ? BLUE : WHITE;
 				int widthZ = (x == 0) ? 3 : 1;
-				target.drawLineStrip(colorZ, widthZ,
+				output.drawLineStrip(colorZ, widthZ,
 						new VectorXYZ(x * LINE_DIST, 0, z * LINE_DIST),
 						new VectorXYZ(x * LINE_DIST, 0, (z+1) * LINE_DIST));
 
 			}
 		}
 
-		target.drawLineStrip(GREEN, 3,
+		output.drawLineStrip(GREEN, 3,
 				VectorXYZ.NULL_VECTOR, new VectorXYZ(0, LINE_DIST, 0));
 
 	}

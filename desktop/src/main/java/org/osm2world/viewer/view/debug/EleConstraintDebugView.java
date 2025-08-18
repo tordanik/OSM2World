@@ -15,7 +15,7 @@ import org.osm2world.world.data.WorldObject;
 /**
  * shows elevation constraints
  */
-public class EleConstraintDebugView extends DebugView {
+public class EleConstraintDebugView extends StaticDebugView {
 
 	private static final Color SAME_ELE_COLOR = WHITE;
 	private static final Color MIN_VDIST_COLOR = PINK;
@@ -26,9 +26,9 @@ public class EleConstraintDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void fillOutput(JOGLOutput output) {
 
-		ConstraintSink sink = new ConstraintSink(target);
+		ConstraintSink sink = new ConstraintSink(output);
 
 		for (WorldObject worldObject : scene.getWorldObjects()) {
 			worldObject.defineEleConstraints(sink);

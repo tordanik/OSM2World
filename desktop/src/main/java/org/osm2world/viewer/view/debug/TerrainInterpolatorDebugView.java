@@ -23,7 +23,7 @@ import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.viewer.model.RenderOptions;
 
-public abstract class TerrainInterpolatorDebugView extends DebugView {
+public abstract class TerrainInterpolatorDebugView extends StaticDebugView {
 
 	protected abstract TerrainInterpolator buildInterpolator();
 
@@ -54,12 +54,12 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
-		target.setRenderingParameters(new JOGLRenderingParameters(null,
+		output.setRenderingParameters(new JOGLRenderingParameters(null,
     			renderOptions.isWireframe(), true));
 
-		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
+		output.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 
 		try {
 
@@ -97,7 +97,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 			for (int x = 0; x+1 < samples.length; x++) {
 				for (int z = 0; z+1 < samples[x].length; z++) {
 
-					target.drawTriangleFan(TERRAIN_MAT,
+					output.drawTriangleFan(TERRAIN_MAT,
 							asList(samples[x][z], samples[x+1][z],
 									samples[x+1][z+1], samples[x][z+1]),
 							List.of());

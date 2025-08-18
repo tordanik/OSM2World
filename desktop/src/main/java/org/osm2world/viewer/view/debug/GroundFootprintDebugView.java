@@ -15,7 +15,7 @@ import org.osm2world.world.data.WaySegmentWorldObject;
 /**
  * draws ground footprints defined by world objects
  */
-public class GroundFootprintDebugView extends DebugView {
+public class GroundFootprintDebugView extends StaticDebugView {
 
 	private static final Color NODE_BOUNDARY_COLOR = Color.YELLOW;
 	private static final Color WAY_BOUNDARY_COLOR = Color.GREEN;
@@ -26,7 +26,7 @@ public class GroundFootprintDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
 		/* draw terrain boundaries */
 
@@ -44,7 +44,7 @@ public class GroundFootprintDebugView extends DebugView {
 
 				for (PolygonShapeXZ p : o.getRawGroundFootprint()) {
 					for (SimplePolygonShapeXZ ring : p.getRings()) {
-						target.drawLineLoop(color, 1, listXYZ(ring.vertices(), 0));
+						output.drawLineLoop(color, 1, listXYZ(ring.vertices(), 0));
 					}
 				}
 

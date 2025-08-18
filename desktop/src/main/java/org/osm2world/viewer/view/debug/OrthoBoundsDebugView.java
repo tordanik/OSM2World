@@ -14,7 +14,7 @@ import org.osm2world.viewer.control.actions.OrthoBoundsAction;
  * illustrates the construction of the orthogonal perspective
  * as set by {@link OrthoBoundsAction}
  */
-public class OrthoBoundsDebugView extends DebugView {
+public class OrthoBoundsDebugView extends StaticDebugView {
 
 	public OrthoBoundsDebugView() {
 		super("Orthographic bounds debug view", "illustrates the construction of the orthogonal perspective");
@@ -26,20 +26,20 @@ public class OrthoBoundsDebugView extends DebugView {
 	private static final float HALF_POINT_WIDTH = 0.4f;
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
 		MutableCamera orthoCam = OrthographicUtil.cameraForBounds(
 				scene.getBoundary(), 30, CardinalDirection.S);
 
 		List<VectorXYZ> boundVertices = scene.getBoundary().polygonXZ().xyz(0).verticesNoDup();
-		target.drawLineLoop(LINE_COLOR, 1, boundVertices);
-		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(0), boundVertices.get(2));
-		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(1), boundVertices.get(3));
+		output.drawLineLoop(LINE_COLOR, 1, boundVertices);
+		output.drawLineStrip(LINE_COLOR, 1, boundVertices.get(0), boundVertices.get(2));
+		output.drawLineStrip(LINE_COLOR, 1, boundVertices.get(1), boundVertices.get(3));
 
-		drawBoxAround(target, orthoCam.pos(), POINT_COLOR, HALF_POINT_WIDTH);
-		drawBoxAround(target, orthoCam.lookAt(), POINT_COLOR, HALF_POINT_WIDTH);
+		drawBoxAround(output, orthoCam.pos(), POINT_COLOR, HALF_POINT_WIDTH);
+		drawBoxAround(output, orthoCam.lookAt(), POINT_COLOR, HALF_POINT_WIDTH);
 
-		target.drawLineStrip(LINE_COLOR, 1, orthoCam.pos(), orthoCam.lookAt());
+		output.drawLineStrip(LINE_COLOR, 1, orthoCam.pos(), orthoCam.lookAt());
 
 	}
 

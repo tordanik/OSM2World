@@ -3,6 +3,8 @@ package org.osm2world.viewer.view.debug;
 import static org.osm2world.output.jogl.JOGLRenderingParameters.Winding.CCW;
 
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLOutputShader;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
@@ -18,18 +20,15 @@ public class ShadowDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput output) {
+	protected void updateOutput(JOGLOutput output, boolean viewChanged, Camera camera, Projection projection) {
 		if (output instanceof JOGLOutputShader joglOutput) {
 			setParameters(joglOutput);
-			joglOutput.setXZBoundary(scene.getBoundary());
-			joglOutput.setShowShadowPerspective(true);
-			joglOutput.outputScene(scene, true);
+			if (!output.isFinished()) {
+				joglOutput.setXZBoundary(scene.getBoundary());
+				joglOutput.setShowShadowPerspective(true);
+				joglOutput.outputScene(scene, true);
+			}
 		}
-	}
-
-	@Override
-	protected void updateTarget(JOGLOutput target, boolean viewChanged) {
-		setParameters(target);
 	}
 
 	private void setParameters(final JOGLOutput target) {

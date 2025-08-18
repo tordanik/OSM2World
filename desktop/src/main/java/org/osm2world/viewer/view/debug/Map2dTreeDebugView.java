@@ -8,7 +8,7 @@ import org.osm2world.math.datastructures.Map2dTree;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.Scene;
 
-public class Map2dTreeDebugView extends DebugView {
+public class Map2dTreeDebugView extends StaticDebugView {
 
 	private RenderableMap2dTree map2dTree;
 
@@ -23,7 +23,7 @@ public class Map2dTreeDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
 		if (map2dTree == null) {
 			map2dTree = new RenderableMap2dTree();
@@ -32,7 +32,7 @@ public class Map2dTreeDebugView extends DebugView {
 			}
 		}
 
-		map2dTree.renderTo(target);
+		map2dTree.renderTo(output);
 
 	}
 

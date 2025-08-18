@@ -7,6 +7,8 @@ import static java.lang.Math.floor;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.Scene;
 
@@ -35,7 +37,9 @@ public class LatLonDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	protected void updateOutput(JOGLOutput output, boolean viewChanged, Camera camera, Projection projection) {
+
+		if (!viewChanged) return;
 
 		AxisAlignedRectangleXZ xzBounds = scene.getBoundary();
 		var bounds = LatLonBounds.ofPoints(xzBounds.vertices().stream().map(mapProjection::toLatLon).toList());
@@ -47,7 +51,7 @@ public class LatLonDebugView extends DebugView {
 						: (z % 60 == 0) ? 3 : 1;
 
 				if (widthLat > 1 || camera.pos().y < 1000) {
-					target.drawLineStrip(WHITE, widthLat,
+					output.drawLineStrip(WHITE, widthLat,
 							mapProjection.toXZ(z * LINE_DIST, x * LINE_DIST).xyz(0),
 							mapProjection.toXZ(z * LINE_DIST, (x+1) * LINE_DIST).xyz(0));
 				}
@@ -56,7 +60,7 @@ public class LatLonDebugView extends DebugView {
 						: (x % 60 == 0) ? 3 : 1;
 
 				if (widthLon > 1 || camera.pos().y < 1000) {
-					target.drawLineStrip(WHITE, widthLon,
+					output.drawLineStrip(WHITE, widthLon,
 							mapProjection.toXZ(z * LINE_DIST, x * LINE_DIST).xyz(0),
 							mapProjection.toXZ((z+1) * LINE_DIST, x * LINE_DIST).xyz(0));
 				}

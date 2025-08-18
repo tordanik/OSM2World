@@ -15,7 +15,7 @@ import org.osm2world.world.data.WorldObject;
  * shows decomposition of {@link WorldObject}s into faces
  * as they would be written to any {@link FaceOutput}
  */
-public class FaceDebugView extends DebugView {
+public class FaceDebugView extends StaticDebugView {
 
 	private static final Color BORDER_COLOR = new Color(0, 0, 1.0f);
 
@@ -41,13 +41,13 @@ public class FaceDebugView extends DebugView {
 	}
 
 	@Override
-	protected void fillTarget(JOGLOutput target) {
+	protected void fillOutput(JOGLOutput output) {
 
 		FaceSink faceSink = new FaceSink();
 		faceSink.outputScene(scene);
 
 		for (List<VectorXYZ> face : faceSink.faces) {
-			target.drawLineLoop(BORDER_COLOR, 2, face);
+			output.drawLineLoop(BORDER_COLOR, 2, face);
 		}
 
 	}

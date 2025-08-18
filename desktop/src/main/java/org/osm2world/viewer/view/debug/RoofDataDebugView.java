@@ -10,7 +10,7 @@ import org.osm2world.world.modules.building.Building;
 import org.osm2world.world.modules.building.BuildingPart;
 import org.osm2world.world.modules.building.roof.HeightfieldRoof;
 
-public class RoofDataDebugView extends DebugView {
+public class RoofDataDebugView extends StaticDebugView {
 
 	private static final Color INNER_POINT_COLOR = Color.YELLOW;
 	private static final Color INNER_SEGMENT_COLOR = Color.GREEN;
@@ -22,7 +22,7 @@ public class RoofDataDebugView extends DebugView {
 	}
 
 	@Override
-	public void fillTarget(JOGLOutput target) {
+	public void fillOutput(JOGLOutput output) {
 
 		for (Building building : scene.getWorldObjects(Building.class)) {
 			for (BuildingPart part : building.getParts()) {
@@ -32,19 +32,19 @@ public class RoofDataDebugView extends DebugView {
 				for (SimplePolygonShapeXZ polygon : roofData.getPolygon().getRings()) {
 					for (VectorXZ v : polygon.verticesNoDup()) {
 						boolean isOld = part.getPolygon().getRings().stream().anyMatch(r -> r.vertices().contains(v));
-						drawBoxAround(target, v, isOld ? POLYGON_COLOR : EXTRA_OUTLINE_COLOR, 0.3f);
+						drawBoxAround(output, v, isOld ? POLYGON_COLOR : EXTRA_OUTLINE_COLOR, 0.3f);
 					}
 					for (LineSegmentXZ s : polygon.getSegments()) {
-						target.drawLineStrip(POLYGON_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
+						output.drawLineStrip(POLYGON_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
 					}
 				}
 
 				for (VectorXZ v : roofData.getInnerPoints()) {
-					drawBoxAround(target, v, INNER_POINT_COLOR, 0.5f);
+					drawBoxAround(output, v, INNER_POINT_COLOR, 0.5f);
 				}
 
 				for (LineSegmentXZ s : roofData.getInnerSegments()) {
-					target.drawLineStrip(INNER_SEGMENT_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
+					output.drawLineStrip(INNER_SEGMENT_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
 				}
 
 			}
