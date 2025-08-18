@@ -140,6 +140,8 @@ public class ViewerFrame extends JFrame {
 					new RoofDataDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new FaceDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new EdgeDebugView());
 			initAndAddDebugView(subMenu, VK_X, false,
 					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
