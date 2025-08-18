@@ -1,9 +1,10 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.awt.Color.WHITE;
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
 
-import org.osm2world.math.VectorXZ;
+import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.jogl.JOGLOutput;
@@ -36,15 +37,11 @@ public class LatLonDebugView extends DebugView {
 	@Override
 	public void fillTarget(JOGLOutput target) {
 
-		AxisAlignedRectangleXZ bound = scene.getBoundary();
+		AxisAlignedRectangleXZ xzBounds = scene.getBoundary();
+		var bounds = LatLonBounds.ofPoints(xzBounds.vertices().stream().map(mapProjection::toLatLon).toList());
 
-		double minLon = toDegrees(mapProjection.toLon(new VectorXZ(bound.minX, bound.minZ)));
-		double minLat = toDegrees(mapProjection.toLat(new VectorXZ(bound.minX, bound.minZ)));
-		double maxLon = toDegrees(mapProjection.toLon(new VectorXZ(bound.maxX, bound.maxZ)));
-		double maxLat = toDegrees(mapProjection.toLat(new VectorXZ(bound.maxX, bound.maxZ)));
-
-		for (int x = (int)floor(minLon / LINE_DIST); x < (int)ceil(maxLon / LINE_DIST); x++) {
-			for (int z = (int)floor(minLat / LINE_DIST); z < (int)ceil(maxLat / LINE_DIST); z++) {
+		for (int x = (int)floor(bounds.minlon / LINE_DIST); x < (int)ceil(bounds.maxlon / LINE_DIST); x++) {
+			for (int z = (int)floor(bounds.minlat / LINE_DIST); z < (int)ceil(bounds.maxlat / LINE_DIST); z++) {
 
 				int widthLat = (z % 3600 == 0) ? 6
 						: (z % 60 == 0) ? 3 : 1;
