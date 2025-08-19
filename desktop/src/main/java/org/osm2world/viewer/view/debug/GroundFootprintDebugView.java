@@ -19,10 +19,10 @@ public class GroundFootprintDebugView extends StaticDebugView {
 
 	private static final Color NODE_BOUNDARY_COLOR = Color.YELLOW;
 	private static final Color WAY_BOUNDARY_COLOR = Color.GREEN;
-	private static final Color AREA_BOUNDARY_COLOR = Color.BLUE;
+	private static final Color AREA_BOUNDARY_COLOR = new Color(0.65f, 0.65f, 1);
 
 	public GroundFootprintDebugView() {
-		super("Ground footprints", "draws terrain boundaries defined by world objects");
+		super("Ground footprints", "draws raw ground footprints defined by world objects");
 	}
 
 	@Override
