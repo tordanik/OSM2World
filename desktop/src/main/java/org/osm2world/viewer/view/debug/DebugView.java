@@ -1,6 +1,5 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import java.awt.*;
@@ -9,6 +8,7 @@ import java.util.Objects;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
@@ -132,44 +132,27 @@ public abstract class DebugView {
 	 */
 	protected abstract void updateOutput(JOGLOutput output, boolean viewChanged, Camera camera, Projection projection);
 
-	protected static final void drawBoxAround(JOGLOutput target,
-			VectorXZ center, Color color, float halfWidth) {
-		drawBoxAround(target, center.xyz(0), color, halfWidth);
+	protected static void drawBoxAround(JOGLOutput output,
+			Vector3D center, Color color, float halfWidth) {
+		VectorXYZ centerXYZ = center.xyz();
+		output.drawLineLoop(color, 1, List.of(
+				centerXYZ.add(- halfWidth, 0, - halfWidth),
+				centerXYZ.add(- halfWidth, 0, halfWidth),
+				centerXYZ.add(halfWidth, 0, halfWidth),
+				centerXYZ.add(halfWidth, 0, - halfWidth)));
 	}
 
-	protected static final void drawBoxAround(JOGLOutput target,
-			VectorXYZ center, Color color, float halfWidth) {
-		drawBox(target, color,
-			new VectorXYZ(center.x - halfWidth,
-				center.y,
-				center.z - halfWidth),
-			new VectorXYZ(center.x - halfWidth,
-				center.y,
-				center.z + halfWidth),
-			new VectorXYZ(center.x + halfWidth,
-				center.y,
-				center.z + halfWidth),
-			new VectorXYZ(center.x + halfWidth,
-				center.y,
-				center.z - halfWidth));
-	}
-
-	protected static final void drawBox(JOGLOutput target, Color color,
-			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {
-		target.drawLineLoop(color, 1, asList(v1, v2, v3, v4));
-	}
-
-	protected static final void drawArrow(JOGLOutput target, Color color,
+	protected static void drawArrow(JOGLOutput output, Color color,
 			float headLength, VectorXYZ... vs) {
 
-		target.drawLineStrip(color, 1, vs);
+		output.drawLineStrip(color, 1, vs);
 
 		/* draw head */
 
 		VectorXYZ lastV = vs[vs.length-1];
-		VectorXYZ slastV = vs[vs.length-2];
+		VectorXYZ sLastV = vs[vs.length-2];
 
-		VectorXYZ endDir = lastV.subtract(slastV).normalize();
+		VectorXYZ endDir = lastV.subtract(sLastV).normalize();
 		VectorXYZ headStart = lastV.subtract(endDir.mult(headLength));
 
 		VectorXZ endDirXZ = endDir.xz();
@@ -183,7 +166,7 @@ public abstract class DebugView {
 
 		var colorMaterial = new ImmutableMaterial(Interpolation.FLAT, color);
 
-		target.drawTriangles(colorMaterial, List.of(
+		output.drawTriangles(colorMaterial, List.of(
 				new TriangleXYZ(
 						lastV,
 						headStart.subtract(endNormal.mult(headLength / 2)),

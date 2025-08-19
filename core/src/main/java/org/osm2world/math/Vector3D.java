@@ -8,7 +8,7 @@ public interface Vector3D extends BoundedObject {
 
 	public VectorXZ xz();
 
-	private VectorXYZ xyz() {
+	default VectorXYZ xyz() {
 		if (this instanceof VectorXYZ) {
 			return (VectorXYZ) this;
 		} else {
