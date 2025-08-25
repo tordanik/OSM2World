@@ -132,7 +132,7 @@ public class TilesetOutput extends MeshOutput {
 		GltfOutput gltfOutput = new GltfOutput(gltfFile, gltfFlavor, gltfCompression, bounds);
 		gltfOutput.setConfiguration(config);
 
-		gltfOutput.outputScene(meshesWithMetadata);
+		gltfOutput.outputScene(meshesWithMetadata, null);
 
 	}
 

@@ -28,6 +28,7 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.common.AbstractOutput;
@@ -121,10 +122,11 @@ public class GltfOutput extends AbstractOutput {
 
 	@Override
 	public void outputScene(Scene scene) {
-		outputScene(getMeshesWithMetadata(scene));
+		outputScene(scene.getMeshesWithMetadata(),
+				scene.getMapProjection() != null ? scene.getMapProjection().getOrigin() : null);
 	}
 
-	public void outputScene(List<MeshWithMetadata> meshesWithMetadata) {
+	public void outputScene(List<MeshWithMetadata> meshesWithMetadata, @Nullable LatLon origin) {
 
 		MeshStore meshStore = new MeshStore(meshesWithMetadata);
 
@@ -132,10 +134,10 @@ public class GltfOutput extends AbstractOutput {
 
 			try {
 				if (flavor == GltfFlavor.GLTF) {
-					writeJson(meshStore, outputStream);
+					writeJson(meshStore, origin, outputStream);
 				} else {
 					try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
-						writeJson(meshStore, jsonChunkOutputStream);
+						writeJson(meshStore, origin, jsonChunkOutputStream);
 						ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
 						writeGlb(outputStream, jsonChunkData, binChunkData);
 					}
@@ -146,10 +148,6 @@ public class GltfOutput extends AbstractOutput {
 
 		});
 
-	}
-
-	private static List<MeshWithMetadata> getMeshesWithMetadata(Scene scene) {
-		return scene.getMeshesWithMetadata();
 	}
 
 	/** creates a {@link GltfNode} and returns its index in {@link Gltf#nodes} */
@@ -413,7 +411,7 @@ public class GltfOutput extends AbstractOutput {
 	 * constructs the JSON document after all parts of the glTF have been created
 	 * and outputs it to an {@link OutputStream}
 	 */
-	private void writeJson(MeshStore meshStore, OutputStream outputStream) throws IOException {
+	private void writeJson(MeshStore meshStore, @Nullable LatLon origin, OutputStream outputStream) throws IOException {
 
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
 		boolean clipToBounds = config.getBoolean("clipToBounds", false);
@@ -444,6 +442,14 @@ public class GltfOutput extends AbstractOutput {
 
 		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
 
+		/* define metadata for the scene and root node */
+
+		var sceneMetadata = new HashMap<String, Object>();
+
+		if (origin != null) {
+			sceneMetadata.put("origin", Map.of("lat", origin.lat, "lon", origin.lon, "ele", 0));
+		}
+
 		/* create the basic structure of the glTF */
 
 		gltf.asset = new GltfAsset();
@@ -453,6 +459,7 @@ public class GltfOutput extends AbstractOutput {
 		gltf.scene = 0;
 		gltf.scenes = List.of(new GltfScene());
 		gltf.scenes.get(0).nodes = List.of(0);
+		gltf.scenes.get(0).extras = sceneMetadata;
 
 		gltf.accessors = new ArrayList<>();
 		gltf.buffers = new ArrayList<>();
@@ -469,6 +476,7 @@ public class GltfOutput extends AbstractOutput {
 
 		GltfNode rootNode = new GltfNode();
 		rootNode.name = "OSM2World scene";
+		rootNode.extras = sceneMetadata;
 		gltf.nodes.add(rootNode);
 
 		rootNode.children = new ArrayList<>();
