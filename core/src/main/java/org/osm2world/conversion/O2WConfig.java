@@ -133,6 +133,10 @@ public class O2WConfig {
 		return config.getList(key);
 	}
 
+	public List<Object> getList(String key, List<Object> defaultValue) {
+		return config.getList(key, defaultValue);
+	}
+
 	public <T extends Enum<T>> @Nullable T getEnum(Class<T> enumClass, String key) {
 		String value = getString(key);
 		if (value != null) {
@@ -141,6 +145,24 @@ public class O2WConfig {
 			} catch (IllegalArgumentException ignored) {}
 		}
 		return null;
+	}
+
+	public <T extends Enum<T>> EnumSet<T> getEnumSet(Class<T> enumClass, String key, EnumSet<T> defaultValue) {
+
+		List<Object> values = getList(key, null);
+
+		if (values == null) {
+			return defaultValue;
+		}
+
+		EnumSet<T> result = EnumSet.noneOf(enumClass);
+		for (Object value : values) {
+			try {
+				result.add(Enum.valueOf(enumClass, value.toString().toUpperCase()));
+			} catch (IllegalArgumentException ignored) {}
+		}
+		return result;
+
 	}
 
 	public @Nullable Color getColor(String key) {
@@ -345,6 +367,15 @@ public class O2WConfig {
 	}
 
 	/**
+	 * Indicates which metadata (such as OSM IDs and tags from the source data) should be exported to the output file.
+	 * Only works with some output formats (currently glTF and glb).
+	 * By default, the only type of metadata
+	 */
+	public Set<ObjectMetadataType> exportMetadata() {
+		return getEnumSet(ObjectMetadataType.class, "exportMetadata", EnumSet.of(ObjectMetadataType.ID));
+	}
+
+	/**
 	 * if this config references some files by path, e.g. textures,
 	 * resolve file paths relative to the location of the config file used to load this config (if any)
 	 */
@@ -404,6 +435,10 @@ public class O2WConfig {
 
 		return config;
 
+	}
+
+	public enum ObjectMetadataType {
+		ID, TAGS
 	}
 
 }

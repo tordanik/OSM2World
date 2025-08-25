@@ -3,6 +3,8 @@ package org.osm2world.output.gltf;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static org.osm2world.conversion.O2WConfig.ObjectMetadataType;
 import static org.osm2world.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.output.common.ResourceOutputSettings.ResourceOutputMode.REFERENCE;
@@ -23,6 +25,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapRelationElement;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Vector3D;
@@ -503,7 +506,7 @@ public class GltfOutput extends AbstractOutput {
 					meshNodeIndizes.add(parentNodeIndex);
 				}
 
-				meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index), objectMetadata));
+				meshNodeIndizes.forEach(index -> addMeshNameAndExtras(gltf.nodes.get(index), objectMetadata, config));
 
 			}
 
@@ -654,14 +657,20 @@ public class GltfOutput extends AbstractOutput {
 
 	}
 
-	private static void addMeshNameAndId(GltfNode node, MeshMetadata metadata) {
+	private static void addMeshNameAndExtras(GltfNode node, MeshMetadata metadata, O2WConfig config) {
 
 		MapRelationElement mapElement = metadata.mapElement();
 
 		if (mapElement != null) {
 			Map<String, Object> extras = new HashMap<>();
-			extras.put("osmId", mapElement.toString());
+			if (config.exportMetadata().contains(ObjectMetadataType.ID)) {
+				extras.put("osmId", mapElement.toString());
+			}
+			if (config.exportMetadata().contains(ObjectMetadataType.TAGS)) {
+				extras.put("osmTags", mapElement.getTags().stream().collect(toMap(t -> t.key, t -> t.value)));
+			}
 			node.extras = extras;
+
 		}
 
 		if (metadata.modelClass() != null && mapElement != null) {
