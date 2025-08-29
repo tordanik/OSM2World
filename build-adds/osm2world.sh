@@ -4,7 +4,7 @@ cd `dirname $0`
 
 # retrieve VM parameters
 
-vmparams="-Xmx2G --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED"
+vmparams="--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED"
 
 if [[ $1 == --vm-params=* ]]
   then
