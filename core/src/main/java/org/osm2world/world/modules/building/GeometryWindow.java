@@ -277,18 +277,18 @@ public class GeometryWindow implements Window {
 				skip = (lodRange == null);
 			}
 			if (!skip) {
-				target.drawTriangles(params.transparentWindowMaterial, paneTriangles,
-						triangleTexCoordLists(paneTriangles, params.transparentWindowMaterial, surface::texCoordFunction));
+				target.drawTriangles(params.transparentWindowMaterial(), paneTriangles,
+						triangleTexCoordLists(paneTriangles, params.transparentWindowMaterial(), surface::texCoordFunction));
 			}
 			if (target instanceof ProceduralWorldObject.Target t) {
 				t.setCurrentLodRange(LOD0, BuildingPart.INDOOR_MIN_LOD);
-				t.drawTriangles(params.opaqueWindowMaterial, paneTriangles,
-						triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial, surface::texCoordFunction));
+				t.drawTriangles(params.opaqueWindowMaterial(), paneTriangles,
+						triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial(), surface::texCoordFunction));
 				t.setCurrentLodRange(previousLodRange);
 			}
 		} else {
-			target.drawTriangles(params.opaqueWindowMaterial, paneTriangles,
-					triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial, surface::texCoordFunction));
+			target.drawTriangles(params.opaqueWindowMaterial(), paneTriangles,
+					triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial(), surface::texCoordFunction));
 		}
 
 		/* draw outer frame */

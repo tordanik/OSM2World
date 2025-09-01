@@ -179,10 +179,12 @@ public class WindowParameters {
 	public final RegionProperties overallProperties;
 	public final Map<WindowRegion, RegionProperties> regionProperties;
 
-	/** the material to use for the window pane if it should appear opaque (non-transparent) */
-	public final Material opaqueWindowMaterial;
-	/** the material to use for the window pane if it should appear transparent */
-	public final Material transparentWindowMaterial;
+	/**
+	 * The material for the window pane if it should appear opaque (non-transparent).
+	 * If it should appear transparent, a suitable variant can be accessed from
+	 * {@link #transparentWindowMaterial()}.
+	 */
+	public final Material windowMaterial;
 
 	public final Material frameMaterial;
 	public final Material shutterMaterial;
@@ -202,15 +204,10 @@ public class WindowParameters {
 		String materialString = tags.getValue("window:material");
 		materialString = "glass".equals(materialString) ? null : materialString;
 
-		opaqueWindowMaterial = BuildingPart.buildMaterial(
+		windowMaterial = BuildingPart.buildMaterial(
 				materialString,
 				tags.getValue("window:colour"),
 				Materials.GLASS, false);
-
-		transparentWindowMaterial = BuildingPart.buildMaterial(
-				null,
-				tags.getValue("window:colour"),
-				Materials.GLASS_TRANSPARENT, false);
 
 		numberWindows = parseUInt(tags.getValue("window:count"));
 		groupSize = parseUInt(tags.getValue("window:group_size"), 1);
@@ -375,6 +372,14 @@ public class WindowParameters {
 				tags.getValue("window:shutter:colour"),
 				Materials.WOOD, false);
 
+	}
+
+	public Material opaqueWindowMaterial() {
+		return windowMaterial;
+	}
+
+	public Material transparentWindowMaterial() {
+		return Materials.getTransparentVariant(windowMaterial);
 	}
 
 }
