@@ -321,7 +321,12 @@ public class ExteriorBuildingWall {
 			/* draw the wall */
 
 			int levelCount = buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size();
-			double windowHeight = (heightWithoutRoof - buildingPart.levelStructure.bottomHeight()) / levelCount;
+			Double windowHeight = (heightWithoutRoof - buildingPart.levelStructure.bottomHeight()) / levelCount;
+
+			if (!hasWindows && buildingPart.getTags().contains("building", "roof")) {
+				// the single "level" of wall below the roof is not a suitable indicator of level height for glass walls
+				windowHeight = null;
+			}
 
 			if (mainSurface != null) {
 				mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
