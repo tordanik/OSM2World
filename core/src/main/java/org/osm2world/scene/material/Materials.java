@@ -6,8 +6,8 @@ import static java.util.Collections.emptyList;
 import java.awt.*;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -623,6 +623,8 @@ public final class Materials {
 	 * @return  valid {@link TextureDataDimensions} extracted from the config file, possibly using default values
 	 */
 	private static TextureDataDimensions createTextureDataDimensions(O2WConfig config, String keyPrefix) {
+
+		keyPrefix  = keyPrefix.replaceFirst("_(?:color|normal|orm|displacement)$", "");
 
 		double width = config.getDouble(keyPrefix + "_width", 1.0);
 		double height = config.getDouble(keyPrefix + "_height", 1.0);
