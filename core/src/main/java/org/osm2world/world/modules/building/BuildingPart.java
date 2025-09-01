@@ -166,11 +166,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 			walls = splitIntoWalls(area, this);
 
-			if (floorHeight > 0) {
-				bottoms = singletonList(new BuildingBottom(this, materialWall, polygon, floorHeight));
-			} else {
-				bottoms = emptyList();
-			}
+			bottoms = singletonList(new BuildingBottom(this, materialWall, polygon, floorHeight));
 
 		} else {
 
@@ -282,7 +278,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 					ring = ring.getSimplifiedPolygon();
 					for (int i = 0; i < ring.size(); i++) {
 						walls.add(new ExteriorBuildingWall(null, this,
-								asList(ring.getVertex(i), ring.getVertexAfter(i)),
+								List.of(ring.getVertex(i), ring.getVertexAfter(i)),
 								emptyMap(),
 								polygonFloorHeightMap.get(polygon)));
 					}
@@ -291,6 +287,14 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			}
 
 		}
+
+		/* remove building bottoms under some conditions */
+
+		if (floorHeight <= 0 // this building doesn't need a bottom because touches the ground
+				|| this.isBottomless()) {
+			bottoms = emptyList();
+		}
+
 	}
 
 	/** creates indoor components like rooms and interior walls */
@@ -533,7 +537,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		return buildingPartInterior;
 	}
 
-	static Material createWallMaterial(TagSet tags, O2WConfig config) {
+	protected Material createWallMaterial(TagSet tags, O2WConfig config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -550,16 +554,16 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	}
 
-	private static Material createRoofMaterial(TagSet tags, O2WConfig config) {
+	protected Material createRoofMaterial(TagSet tags, O2WConfig config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
 		if (config.getBoolean("useBuildingColors", true)) {
 
 			return buildMaterial(
-					tags.getValue("roof:material"),
-					tags.getValue("roof:colour"),
-					defaults.materialRoof, true);
+						tags.getValue("roof:material"),
+						tags.getValue("roof:colour"),
+						defaults.materialRoof, true);
 		} else {
 			return defaults.materialRoof;
 		}
@@ -645,9 +649,43 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	}
 
+	/**
+	 * whether this building part should have a {@link BuildingBottom}.
+	 * Should only return false if the building should not have one for semantic reasons,
+	 * not just because it can be hidden for performance reasons.
+	 */
+	protected boolean isBottomless() {
+		return false; // this building doesn't need a bottom because touches the ground
+	}
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + "(" + area + ")";
+	}
+
+	public static BuildingPart create(Building building, MapArea area, O2WConfig config) {
+
+		enum BuildingPartType {
+			STANDARD, ROOF;
+
+			public static BuildingPartType forTags(TagSet tags) {
+				for (String key : List.of("building:part", "building")) {
+					for (BuildingPartType type : values()) {
+						if (type.name().equalsIgnoreCase(tags.getValue(key))) {
+							return type;
+						}
+					}
+				}
+				return STANDARD;
+			}
+
+		}
+
+		return switch (BuildingPartType.forTags(area.getTags())) {
+			case ROOF -> new RoofBuildingPart(building, area, config);
+			default -> new BuildingPart(building, area, config);
+		};
+
 	}
 
 }

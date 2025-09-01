@@ -366,6 +366,25 @@ public final class Materials {
 		return fieldNameMap.get(material);
 	}
 
+	/**
+	 * Returns the transparent variant of a material, if available.
+	 * For example, there may be an equivalent of GLASS_WALL that has partially transparent glass panes
+	 * and should be used if the space behind the wall is also modeled in 3D.
+	 *
+	 * @return the transparent variant of the material, or null if none is available
+	 */
+	public static @Nullable Material getTransparentVariant(Material material) {
+		if (material == GLASS) {
+			return GLASS_TRANSPARENT;
+		} else if (material == GLASS_WALL) {
+			return getMaterial("GLASS_WALL_TRANSPARENT", null);
+		} else if (material == GLASS_ROOF) {
+			return getMaterial("GLASS_ROOF_TRANSPARENT", null);
+		} else {
+			return null;
+		}
+	}
+
 	private static final Pattern CONF_KEY_PATTERN = Pattern.compile(
 					"material_(.+)_(interpolation|color|doubleSided|shadow|ssao|transparency|texture\\d*_.+)");
 

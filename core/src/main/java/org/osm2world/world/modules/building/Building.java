@@ -62,8 +62,8 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 			/* find building parts based on the relation */
 
 			for (Membership membership : buildingRelation.get().getMembers()) {
-				if ("part".equals(membership.getRole()) && membership.getElement() instanceof MapArea) {
-					parts.add(new BuildingPart(this, (MapArea) membership.getElement(), config));
+				if ("part".equals(membership.getRole()) && membership.getElement() instanceof MapArea area) {
+					parts.add(BuildingPart.create(this, area, config));
 				}
 			}
 
@@ -83,7 +83,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 						}
 
 						if (roughlyContains(area.getPolygon(), otherArea.getPolygon())) {
-							parts.add(new BuildingPart(this, otherArea, config));
+							parts.add(BuildingPart.create(this, otherArea, config));
 						}
 
 					}
@@ -112,7 +112,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 		}
 
 		if (useBuildingAsPart) {
-			areas.forEach(area -> parts.add(new BuildingPart(this, area, config)));
+			areas.forEach(area -> parts.add(BuildingPart.create(this, area, config)));
 		}
 
 		/* create connectors along the outline.

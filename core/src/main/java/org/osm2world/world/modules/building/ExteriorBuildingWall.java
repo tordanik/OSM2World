@@ -96,7 +96,7 @@ public class ExteriorBuildingWall {
 		double floorEle = baseEle + floorHeight;
 		double heightWithoutRoof = buildingPart.levelStructure.heightWithoutRoof();
 
-		Material material = BuildingPart.createWallMaterial(tags, buildingPart.config);
+		Material material = buildingPart.createWallMaterial(tags, buildingPart.config);
 
 		/* determine if the wall has windows */
 
@@ -323,7 +323,7 @@ public class ExteriorBuildingWall {
 			int levelCount = buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size();
 			Double windowHeight = (heightWithoutRoof - buildingPart.levelStructure.bottomHeight()) / levelCount;
 
-			if (!hasWindows && buildingPart.getTags().contains("building", "roof")) {
+			if (!hasWindows && buildingPart instanceof RoofBuildingPart) {
 				// the single "level" of wall below the roof is not a suitable indicator of level height for glass walls
 				windowHeight = null;
 			}
