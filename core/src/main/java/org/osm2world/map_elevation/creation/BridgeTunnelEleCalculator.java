@@ -29,7 +29,7 @@ public class BridgeTunnelEleCalculator extends TagEleCalculator {
 		} else if (TunnelModule.isTunnel(tags)) {
 			return terrainEle + eleOffsetTunnel;
 		} else {
-			return terrainEle;
+			return null;
 		}
 
 	}
