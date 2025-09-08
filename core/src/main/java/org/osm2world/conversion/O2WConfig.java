@@ -335,9 +335,10 @@ public class O2WConfig {
 	/**
 	 * URL prefix for the model API call of a 3DMR instance.
 	 * This is used to obtain models which are not available in the {@link #model3dmrDir()}.
+	 * The value for the main 3dmr instance would be "https://3dmr.eu/api/model/".
 	 */
 	public @Nullable String model3dmrUrl() {
-		return getString("3dmrUrl", "https://3dmr.eu/api/model/");
+		return getString("3dmrUrl", null);
 	}
 
 	/**
