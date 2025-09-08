@@ -126,16 +126,20 @@ public record TransformationMatrix (float[] values) {
 
 	public VectorXYZ applyTo(VectorXYZ v) {
 
+		v = new VectorXYZ(v.x, v.y, -v.z);
+
 		var x = get(0, 0) * v.x + get(1, 0) * v.y + get(2, 0) * v.z + get(3, 0) * 1;
 		var y = get(0, 1) * v.x + get(1, 1) * v.y + get(2, 1) * v.z + get(3, 1) * 1;
 		var z = get(0, 2) * v.x + get(1, 2) * v.y + get(2, 2) * v.z + get(3, 2) * 1;
 		var w = get(0, 3) * v.x + get(1, 3) * v.y + get(2, 3) * v.z + get(3, 3) * 1;
 
-		return new VectorXYZ(x, y, z);
+		return new VectorXYZ(x, y, -z);
 
 	}
 
 	public VectorXYZ applyToNormal(VectorXYZ n) {
+
+		n = new VectorXYZ(n.x, n.y, -n.z);
 
 		float[][] ti = transposedInverse3x3();
 
@@ -143,7 +147,7 @@ public record TransformationMatrix (float[] values) {
 		var y = ti[0][1] * n.x + ti[1][1] * n.y + ti[2][1] * n.z;
 		var z = ti[0][2] * n.x + ti[1][2] * n.y + ti[2][2] * n.z;
 
-		return new VectorXYZ(x, y, z);
+		return new VectorXYZ(x, y, -z);
 
 	}
 

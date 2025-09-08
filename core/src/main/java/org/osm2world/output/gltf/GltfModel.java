@@ -78,8 +78,8 @@ public class GltfModel implements Model {
 
 			float rotAngle = (float) Angle.ofRadians(params.direction()).plus(Angle.ofDegrees(180)).radians;
 			TransformationMatrix rootTransform = TransformationMatrix.forTRS(
-					new float[] { (float)params.position().x, (float)params.position().y, (float)params.position().z },
-					new float[] { 0, (float)sin(rotAngle/2), 0, (float)cos(rotAngle/2) },
+					new float[] { (float)params.position().x, (float)params.position().y, -(float)params.position().z },
+					new float[] { 0, (float)sin(rotAngle/2), 0, -(float)cos(rotAngle/2) },
 					new float[] { 1, 1, 1 } // TODO provide scale
 			);
 

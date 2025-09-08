@@ -102,7 +102,7 @@ public class TransformationMatrixTest {
 	@Test
 	public void testApplyTo() {
 		var v = new VectorXYZ(1, 2, 3);
-		var m = TransformationMatrix.forTranslation(new float[]{10f, 20f, 30f});
+		var m = TransformationMatrix.forTranslation(new float[]{10f, 20f, -30f});
 		assertEquals(new VectorXYZ(11, 22, 33), m.applyTo(v));
 	}
 
