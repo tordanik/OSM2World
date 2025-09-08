@@ -40,7 +40,7 @@ public final class AttachmentUtil {
 
 		/* handle rooftop features */
 
-		if (tags.contains("location", "roof") || tags.contains("parking", "rooftop")) {
+		if (tags.contains("location", "roof") || tags.contains("location", "rooftop") || tags.contains("parking", "rooftop")) {
 			if (level != null) {
 				types.add("roof" + level);
 			}

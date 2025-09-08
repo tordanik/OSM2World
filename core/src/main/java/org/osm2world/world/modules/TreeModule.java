@@ -404,11 +404,6 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 			target.addSubModel(new ModelInstance(model, new InstanceParameters(getBase(), 0, dimensions.height)));
 		}

@@ -33,7 +33,6 @@ import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
@@ -1155,11 +1154,6 @@ public class BarrierModule extends AbstractModule {
 
 			height = parseHeight(tags, DEFAULT_HEIGHT);
 
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON; //TODO: flexible ground states
 		}
 
 		@Override

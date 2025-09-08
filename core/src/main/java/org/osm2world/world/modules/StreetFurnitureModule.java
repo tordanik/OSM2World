@@ -206,11 +206,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			target.setCurrentLodRange(LOD2, LOD4);
@@ -550,11 +545,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			target.setCurrentLodRange(LOD3, LOD4);
@@ -584,46 +574,32 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	public static final class Billboard extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		private final double width;
-		/** the height of the billboard itself, i.e. height minus minHeight */
-		private final double trueHeight;
-		private final double minHeight;
+		/** @param trueHeight  the height of the billboard itself, i.e. height minus minHeight */
+		private record BillboardDimensions(
+			double width,
+			double trueHeight,
+			double minHeight
+		) {
+			public static BillboardDimensions fromTags(TagSet tags) {
+				double width = parseWidth(tags, 4);
+				double height = parseHeight(tags, 3.5f);
+				double minHeight = height / 5;
+				double trueHeight = height - minHeight;
+				return new BillboardDimensions(width, trueHeight, minHeight);
+			}
+		}
 
-		private final AttachmentConnector connector;
+		private final BillboardDimensions dimensions;
 
 		public Billboard(MapNode node) {
-
 			super(node);
-
-			width = parseWidth(node.getTags(), 4);
-
-			double height = parseHeight(node.getTags(), 3.5f);
-			minHeight = height / 5;
-			trueHeight = height - minHeight;
-
-			List<String> attachmentSurfaceTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
-
-			if (!attachmentSurfaceTypes.isEmpty()) {
-				connector = new AttachmentConnector(attachmentSurfaceTypes,
-						node.getPos().xyz(0), this, minHeight + trueHeight / 2, true);
-			} else {
-				connector = null;
-			}
-
+			this.dimensions = BillboardDimensions.fromTags(node.getTags());
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			if (connector == null) {
-				return emptyList();
-			} else {
-				return singleton(connector);
-			}
+		protected double getPreferredVerticalAttachmentHeight() {
+			var dimensions = BillboardDimensions.fromTags(node.getTags());
+			return dimensions.minHeight + dimensions.trueHeight / 2;
 		}
 
 		@Override
@@ -631,15 +607,16 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD2, LOD4);
 
-			VectorXZ faceVector;
+			VectorXZ faceVector = VectorXZ.fromAngle(parseDirection(node.getTags(), PI));
 			VectorXYZ bottomCenter;
 
-			if (connector == null || !connector.isAttached()) {
-				faceVector = VectorXZ.fromAngle(parseDirection(node.getTags(), PI));
-				bottomCenter = getBase().addY(minHeight);
+			if (attachmentConnector == null || !attachmentConnector.isAttached()) {
+				bottomCenter = getBase().addY(dimensions.minHeight);
 			} else {
-				faceVector = connector.getAttachedSurfaceNormal().xz();
-				bottomCenter = connector.getAttachedPos().addY(-trueHeight/2).add(faceVector.mult(0.01));
+				bottomCenter = attachmentConnector.getAttachedPos().addY(-dimensions.trueHeight/2).add(faceVector.mult(0.01));
+				if (attachmentConnector.getAttachedSurfaceNormal().xz().length() > 0.01) { // handle vertical attachment surfaces
+					faceVector = attachmentConnector.getAttachedSurfaceNormal().xz();
+				}
 			}
 
 			VectorXZ boardVector = faceVector.rightNormal();
@@ -647,10 +624,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			/* draw board */
 
 			VectorXYZ[] vsPoster = {
-					bottomCenter.add(boardVector.mult(width / 2)).addY(trueHeight),
-					bottomCenter.add(boardVector.mult(width / 2)),
-					bottomCenter.add(boardVector.mult(-width / 2)).addY(trueHeight),
-					bottomCenter.add(boardVector.mult(-width / 2))
+					bottomCenter.add(boardVector.mult(dimensions.width / 2)).addY(dimensions.trueHeight),
+					bottomCenter.add(boardVector.mult(dimensions.width / 2)),
+					bottomCenter.add(boardVector.mult(-dimensions.width / 2)).addY(dimensions.trueHeight),
+					bottomCenter.add(boardVector.mult(-dimensions.width / 2))
 			};
 
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
@@ -681,30 +658,30 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw frame */
 
-			target.drawBox(CONCRETE, bottomCenter.addY(trueHeight - 0.1),
-					faceVector, 0.1, width, 0.1);
+			target.drawBox(CONCRETE, bottomCenter.addY(dimensions.trueHeight - 0.1),
+					faceVector, 0.1, dimensions.width, 0.1);
 
 			target.drawBox(CONCRETE, bottomCenter,
-					faceVector, 0.1, width, 0.1);
+					faceVector, 0.1, dimensions.width, 0.1);
 
-			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(width / 2)),
-					faceVector, trueHeight, 0.1, 0.1);
+			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(dimensions.width / 2)),
+					faceVector, dimensions.trueHeight, 0.1, 0.1);
 
-			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(-width / 2)),
-					faceVector, trueHeight, 0.1, 0.1);
+			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(-dimensions.width / 2)),
+					faceVector, dimensions.trueHeight, 0.1, 0.1);
 
 			/* draw poles */
 
-			if (connector == null) {
+			if (attachmentConnector == null || !attachmentConnector.isAttached()) { // FIXME: check if it's attached to vertical surface
 
 				VectorXZ[] poles = {
-						node.getPos().add(boardVector.mult(-width / 4)),
-						node.getPos().add(boardVector.mult(+width / 4))
+						node.getPos().add(boardVector.mult(-dimensions.width / 4)),
+						node.getPos().add(boardVector.mult(+dimensions.width / 4))
 				};
 
 				for (VectorXZ pole : poles) {
 					target.drawBox(CONCRETE, pole.xyz(getBase().y),
-							faceVector, minHeight, 0.2, 0.1);
+							faceVector, dimensions.minHeight, 0.2, 0.1);
 				}
 
 			}
@@ -717,11 +694,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public Swing(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -830,25 +802,8 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	public static final class Bench extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		private final AttachmentConnector connector;
-
 		public Bench(MapNode node) {
 			super(node);
-
-			List<String> attachmentSurfaceTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
-
-			if (!attachmentSurfaceTypes.isEmpty()) {
-				connector = new AttachmentConnector(attachmentSurfaceTypes,
-						node.getPos().xyz(0), this, 0, false);
-			} else {
-				connector = null;
-			}
-
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -856,13 +811,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD3, LOD4);
 
-			/* determine elevation from connector */
-
 			VectorXYZ position = getBase();
-
-			if (connector != null && connector.isAttached()) {
-				position = position.xz().xyz(connector.getAttachedPos().getY());
-			}
 
 			/* determine the width of the bench */
 
@@ -920,15 +869,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			if (connector == null) {
-				return emptyList();
-			} else {
-				return singleton(connector);
-			}
-		}
-
 	}
 
 
@@ -944,11 +884,6 @@ public class StreetFurnitureModule extends AbstractModule {
 			} else {
 				defaultMaterial = Materials.STEEL;
 			}
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -1073,11 +1008,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			target.setCurrentLodRange(LOD2, LOD4);
@@ -1147,7 +1077,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			return GroundState.ATTACHED;
 		}
 
 		@Override
@@ -1253,11 +1183,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			target.setCurrentLodRange(LOD2, LOD4);
@@ -1342,42 +1267,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	public static final class WasteBasket extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		private final AttachmentConnector connector;
-
 		public WasteBasket(MapNode node) {
-
 			super(node);
-
-			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
-
-			if (AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)) {
-				connector = new AttachmentConnector(attachmentTypes,
-						node.getPos().xyz(0), this, 0.6, true);
-			} else if (!attachmentTypes.isEmpty()) {
-				connector = new AttachmentConnector(attachmentTypes,
-						node.getPos().xyz(0), this, 0, false);
-			} else {
-				connector = null;
-			}
-
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			if (connector != null && connector.isAttached()) {
-				return GroundState.ATTACHED;
-			} else {
-				return GroundState.ON;
-			}
-		}
-
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			if (connector == null) {
-				return emptyList();
-			} else {
-				return singleton(connector);
-			}
+		protected double getPreferredVerticalAttachmentHeight() {
+			return 0.6;
 		}
 
 		@Override
@@ -1406,13 +1302,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			boolean onHorizontalSurface = true;
 
-			if (connector != null && connector.isAttached()) {
+			if (attachmentConnector != null && attachmentConnector.isAttached()) {
 
-				pos = connector.getAttachedPos();
+				pos = attachmentConnector.getAttachedPos();
 
-				if (connector.getAttachedSurfaceNormal().y < 0.8) {
+				if (attachmentConnector.getAttachedSurfaceNormal().y < 0.8) {
 					onHorizontalSurface = false;
-					direction = connector.getAttachedSurfaceNormal();
+					direction = attachmentConnector.getAttachedSurfaceNormal();
 				}
 
 			}
@@ -1462,11 +1358,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public GritBin(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -1520,11 +1411,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public Phone(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -1598,46 +1484,22 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	public static final class VendingMachine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		private final AttachmentConnector connector;
-
 		public VendingMachine(MapNode node) {
-
 			super(node);
+		}
 
+		@Override
+		protected List<String> getAttachmentTypes() {
 			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
-
 			if (attachmentTypes.isEmpty() && isInWall(node)) {
 				attachmentTypes = List.of("wall");
 			}
-
-			if (attachmentTypes.isEmpty()) {
-				connector = null;
-			} else if (AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)) {
-				connector = new AttachmentConnector(attachmentTypes,
-						node.getPos().xyz(0), this, 0.83, true);
-			} else {
-				connector = new AttachmentConnector(attachmentTypes,
-						node.getPos().xyz(0), this, 0, false);
-			}
-
+			return attachmentTypes;
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			if (connector != null && connector.isAttached()) {
-				return GroundState.ATTACHED;
-			} else {
-				return GroundState.ON;
-			}
-		}
-
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			if (connector == null) {
-				return emptyList();
-			} else {
-				return singleton(connector);
-			}
+		protected double getPreferredVerticalAttachmentHeight() {
+			return 0.83;
 		}
 
 		@Override
@@ -1667,13 +1529,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			boolean onHorizontalSurface = true;
 
-			if (connector != null && connector.isAttached()) {
+			if (attachmentConnector != null && attachmentConnector.isAttached()) {
 
-				pos = connector.getAttachedPos();
+				pos = attachmentConnector.getAttachedPos();
 
-				if (connector.getAttachedSurfaceNormal().y < 0.8) {
+				if (attachmentConnector.getAttachedSurfaceNormal().y < 0.8) {
 					onHorizontalSurface = false;
-					direction = connector.getAttachedSurfaceNormal();
+					direction = attachmentConnector.getAttachedSurfaceNormal();
 				}
 
 			}
@@ -1699,11 +1561,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public PostBox(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -1774,11 +1631,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public BusStop(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -1900,11 +1752,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			target.setCurrentLodRange(LOD3, LOD4);
@@ -1936,11 +1783,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public StreetLamp(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -2007,11 +1849,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public Board(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override

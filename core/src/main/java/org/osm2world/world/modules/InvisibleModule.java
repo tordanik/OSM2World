@@ -74,6 +74,11 @@ public class InvisibleModule extends AbstractModule {
 		}
 
 		@Override
+		protected List<String> getAttachmentTypes() {
+			return emptyList();
+		}
+
+		@Override
 		public List<Mesh> buildMeshes() {
 			return emptyList();
 		}

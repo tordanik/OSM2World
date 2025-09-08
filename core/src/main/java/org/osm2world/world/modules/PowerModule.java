@@ -204,11 +204,6 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			/* determine material */
@@ -283,23 +278,8 @@ public final class PowerModule extends AbstractModule {
 
 		};
 
-		private final AttachmentConnector connector;
-
 		public WindTurbine(MapNode node) {
-
 			super(node);
-
-			if (node.getTags().contains("location", "roof") || node.getTags().contains("location", "rooftop")) {
-				connector = new AttachmentConnector(singletonList("roof"), node.getPos().xyz(0), this, 0, false);
-			} else {
-				connector = null;
-			}
-
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		@Override
@@ -333,9 +313,6 @@ public final class PowerModule extends AbstractModule {
 
 			/* determine position with elevation */
 			VectorXYZ position = getBase();
-			if (connector != null && connector.isAttached()) {
-				position = position.xz().xyz(connector.getAttachedPos().getY());
-			}
 
 			/* draw pole */
 			target.drawColumn(poleMaterial, null,
@@ -354,15 +331,6 @@ public final class PowerModule extends AbstractModule {
 					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 					0, rotorDiameter)));
 
-		}
-
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			if (connector == null) {
-				return emptyList();
-			} else {
-				return singleton(connector);
-			}
 		}
 
 	}
@@ -596,11 +564,6 @@ public final class PowerModule extends AbstractModule {
 			this.config = config;
 		}
 
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
 		// TODO we're missing the ceramics to hold the power lines
 
 		@Override
@@ -644,11 +607,6 @@ public final class PowerModule extends AbstractModule {
 			super(node);
 			this.config = config;
 			this.direction = config.direction;
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 		/**
