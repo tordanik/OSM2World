@@ -143,6 +143,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 	private void createComponents() {
 
 		Material materialWall = createWallMaterial(tags, config);
+		Material baseMaterial = createBaseMaterial(tags, config);
 
 		List<Level> levels = levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND, LevelType.ROOF));
 		double floorHeight = levels.isEmpty() ? 0 : levels.get(0).relativeEle;
@@ -166,7 +167,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 			walls = splitIntoWalls(area, this);
 
-			bottoms = singletonList(new BuildingBottom(this, materialWall, polygon, floorHeight));
+			bottoms = singletonList(new BuildingBottom(this, baseMaterial, polygon, floorHeight));
 
 		} else {
 
@@ -271,7 +272,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 			for (PolygonWithHolesXZ polygon : polygonFloorHeightMap.keySet()) {
 
-				bottoms.add(new BuildingBottom(this, materialWall, polygon, polygonFloorHeightMap.get(polygon)));
+				bottoms.add(new BuildingBottom(this, baseMaterial, polygon, polygonFloorHeightMap.get(polygon)));
 
 				for (SimplePolygonXZ ring : polygon.getRings()) {
 					ring = polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise();
@@ -566,6 +567,30 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 						defaults.materialRoof, true);
 		} else {
 			return defaults.materialRoof;
+		}
+
+	}
+
+	protected Material createBaseMaterial(TagSet tags, O2WConfig config) {
+
+		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
+
+		if (config.getBoolean("useBuildingColors", true)) {
+
+			@Nullable String materialValue = tags.getValue("base:material");
+			materialValue = materialValue != null ? materialValue : tags.getValue("floor:material");
+			materialValue = materialValue != null ? materialValue : tags.getValue("building:material");
+
+			@Nullable String colorValue = tags.getValue("base:colour");
+			colorValue = colorValue != null ? colorValue : tags.getValue("building:colour");
+
+			return buildMaterial(
+					materialValue,
+					colorValue,
+					defaults.materialWall, false);
+
+		} else {
+			return defaults.materialWall;
 		}
 
 	}
