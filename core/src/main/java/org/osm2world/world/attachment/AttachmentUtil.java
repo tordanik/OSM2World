@@ -3,6 +3,8 @@ package org.osm2world.world.attachment;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.util.ValueParseUtil;
@@ -63,6 +65,14 @@ public final class AttachmentUtil {
 	 */
 	public static boolean hasVerticalSurfaceTypes(List<String> attachmentSurfaceTypes) {
 		return attachmentSurfaceTypes.stream().anyMatch(t -> !t.startsWith("roof") && !t.startsWith("floor"));
+	}
+
+	/**
+	 * Returns true if the attachment connector is attached to a vertical surface
+	 */
+	public static boolean isAttachedToVerticalSurface(@Nullable AttachmentConnector connector) {
+		return connector != null && connector.isAttached()
+				&& connector.getAttachedSurfaceNormal().y < 0.8;
 	}
 
 }

@@ -24,12 +24,16 @@ import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.world.attachment.AttachmentUtil.getCompatibleSurfaceTypes;
+import static org.osm2world.world.attachment.AttachmentUtil.isAttachedToVerticalSurface;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.*;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
@@ -56,7 +60,6 @@ import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
-import org.osm2world.world.attachment.AttachmentUtil;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NodeModelInstance;
 import org.osm2world.world.data.NodeWorldObject;
@@ -167,6 +170,49 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * a {@link NodeWorldObject} which can either be attached to a vertical surface,
+	 * or stand on its own supports. In the latter case, the supports will be rendered as part of this model.
+	 */
+	private static abstract class NodeWorldObjectWithOptionalSupports extends NoOutlineNodeWorldObject
+			implements ProceduralWorldObject {
+
+		public NodeWorldObjectWithOptionalSupports(MapNode node) {
+			super(node);
+		}
+
+		/** Returns the bottom position for the model itself, excluding the support. */
+		public VectorXYZ getModelBase() {
+			if (isAttachedToVerticalSurface(attachmentConnector)) {
+				return getBase();
+			} else {
+				return getBase().addY(getPreferredVerticalAttachmentHeight());
+			}
+		}
+
+		/**
+		 * Returns the bottom position for the support,
+		 * or null if the model is attached to a vertical surface and therefore needs no supports.
+		 */
+		public @Nullable VectorXYZ getSupportBase() {
+			if (isAttachedToVerticalSurface(attachmentConnector)) {
+				return null;
+			} else {
+				return getBase();
+			}
+		}
+
+		/** Returns the facing direction. */
+		public VectorXZ getDirection() {
+			if (isAttachedToVerticalSurface(attachmentConnector)) {
+				return attachmentConnector.getAttachedSurfaceNormal().xz().normalize();
+			} else {
+				return VectorXZ.fromAngle(parseDirection(node.getTags(), PI));
+			}
+		}
+
 	}
 
 	public static final class Pole extends NoOutlineNodeWorldObject {
@@ -572,7 +618,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Billboard extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public static final class Billboard extends NodeWorldObjectWithOptionalSupports {
 
 		/** @param trueHeight  the height of the billboard itself, i.e. height minus minHeight */
 		private record BillboardDimensions(
@@ -599,7 +645,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		protected double getPreferredVerticalAttachmentHeight() {
 			var dimensions = BillboardDimensions.fromTags(node.getTags());
-			return dimensions.minHeight + dimensions.trueHeight / 2;
+			return dimensions.minHeight;
 		}
 
 		@Override
@@ -607,27 +653,32 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD2, LOD4);
 
-			VectorXZ faceVector = VectorXZ.fromAngle(parseDirection(node.getTags(), PI));
-			VectorXYZ bottomCenter;
+			@Nullable VectorXYZ supportBase = getSupportBase();
+			VectorXYZ boardBase = getModelBase();
+			VectorXZ direction = getDirection();
 
-			if (attachmentConnector == null || !attachmentConnector.isAttached()) {
-				bottomCenter = getBase().addY(dimensions.minHeight);
+			if (supportBase != null) {
+				drawSupport(target, supportBase, direction);
 			} else {
-				bottomCenter = attachmentConnector.getAttachedPos().addY(-dimensions.trueHeight/2).add(faceVector.mult(0.01));
-				if (attachmentConnector.getAttachedSurfaceNormal().xz().length() > 0.01) { // handle vertical attachment surfaces
-					faceVector = attachmentConnector.getAttachedSurfaceNormal().xz();
-				}
+				// prevent the board from overlapping with the wall
+				boardBase = boardBase.add(direction.mult(0.01));
 			}
 
-			VectorXZ boardVector = faceVector.rightNormal();
+			drawBoard(target, boardBase, direction);
+
+		}
+
+		private void drawBoard(Target target, VectorXYZ boardBase, VectorXZ direction) {
 
 			/* draw board */
 
+			VectorXZ boardVector = direction.rightNormal();
+
 			VectorXYZ[] vsPoster = {
-					bottomCenter.add(boardVector.mult(dimensions.width / 2)).addY(dimensions.trueHeight),
-					bottomCenter.add(boardVector.mult(dimensions.width / 2)),
-					bottomCenter.add(boardVector.mult(-dimensions.width / 2)).addY(dimensions.trueHeight),
-					bottomCenter.add(boardVector.mult(-dimensions.width / 2))
+					boardBase.add(boardVector.mult(dimensions.width / 2)).addY(dimensions.trueHeight),
+					boardBase.add(boardVector.mult(dimensions.width / 2)),
+					boardBase.add(boardVector.mult(-dimensions.width / 2)).addY(dimensions.trueHeight),
+					boardBase.add(boardVector.mult(-dimensions.width / 2))
 			};
 
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
@@ -635,7 +686,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.drawTriangleStrip(ADVERTISING_POSTER, vsListPoster,
 					texCoordLists(vsListPoster, ADVERTISING_POSTER, STRIP_FIT));
 
-			List<VectorXYZ> vsBoard = asList(
+			List<VectorXYZ> vsBoard = List.of(
 					vsPoster[2],
 					vsPoster[3],
 					vsPoster[0],
@@ -658,32 +709,35 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw frame */
 
-			target.drawBox(CONCRETE, bottomCenter.addY(dimensions.trueHeight - 0.1),
-					faceVector, 0.1, dimensions.width, 0.1);
+			target.drawBox(CONCRETE, boardBase.addY(dimensions.trueHeight - 0.1),
+					direction, 0.1, dimensions.width, 0.1);
 
-			target.drawBox(CONCRETE, bottomCenter,
-					faceVector, 0.1, dimensions.width, 0.1);
+			target.drawBox(CONCRETE, boardBase,
+					direction, 0.1, dimensions.width, 0.1);
 
-			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(dimensions.width / 2)),
-					faceVector, dimensions.trueHeight, 0.1, 0.1);
+			target.drawBox(CONCRETE, boardBase.add(boardVector.mult(dimensions.width / 2)),
+					direction, dimensions.trueHeight, 0.1, 0.1);
 
-			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(-dimensions.width / 2)),
-					faceVector, dimensions.trueHeight, 0.1, 0.1);
+			target.drawBox(CONCRETE, boardBase.add(boardVector.mult(-dimensions.width / 2)),
+					direction, dimensions.trueHeight, 0.1, 0.1);
 
-			/* draw poles */
+		}
 
-			if (attachmentConnector == null || !attachmentConnector.isAttached()) { // FIXME: check if it's attached to vertical surface
 
-				VectorXZ[] poles = {
-						node.getPos().add(boardVector.mult(-dimensions.width / 4)),
-						node.getPos().add(boardVector.mult(+dimensions.width / 4))
-				};
+		private void drawSupport(Target target, VectorXYZ supportBase, VectorXZ direction) {
 
-				for (VectorXZ pole : poles) {
-					target.drawBox(CONCRETE, pole.xyz(getBase().y),
-							faceVector, dimensions.minHeight, 0.2, 0.1);
-				}
+			/* draw two poles */
 
+			VectorXZ boardVector = direction.rightNormal();
+
+			VectorXZ[] poles = {
+					node.getPos().add(boardVector.mult(-dimensions.width / 4)),
+					node.getPos().add(boardVector.mult(+dimensions.width / 4))
+			};
+
+			for (VectorXZ pole : poles) {
+				target.drawBox(CONCRETE, pole.xyz(supportBase.y),
+						direction, dimensions.minHeight, 0.2, 0.1);
 			}
 
 		}
@@ -1265,7 +1319,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class WasteBasket extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public static final class WasteBasket extends NodeWorldObjectWithOptionalSupports {
 
 		public WasteBasket(MapNode node) {
 			super(node);
@@ -1295,44 +1349,33 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
 
-			/* determine position */
+			/* determine position and direction */
 
-			VectorXYZ pos = getBase();
-			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
+			@Nullable VectorXYZ supportBase = getSupportBase();
+			VectorXYZ modelBase = getModelBase();
+			VectorXZ direction = getDirection();
 
-			boolean onHorizontalSurface = true;
+			/* render geometry */
 
-			if (attachmentConnector != null && attachmentConnector.isAttached()) {
-
-				pos = attachmentConnector.getAttachedPos();
-
-				if (attachmentConnector.getAttachedSurfaceNormal().y < 0.8) {
-					onHorizontalSurface = false;
-					direction = attachmentConnector.getAttachedSurfaceNormal();
-				}
-
+			if (supportBase != null) {
+				drawSupport(target, material, supportBase);
+				modelBase = modelBase.add(direction.mult(0.05));
 			}
 
-			if (onHorizontalSurface) {
-
-				/* draw pole */
-				target.drawColumn(material, null, pos, 1.2, 0.06, 0.06, false, true);
-
-				pos = pos.addY(0.6).add(direction.mult(0.05));
-
-			}
-
-			/* draw basket */
-			renderBasket(target, material, pos, direction);
+			drawBasket(target, material, modelBase, direction);
 
 		}
 
-		private void renderBasket(Target target, Material material, VectorXYZ pos, VectorXYZ direction) {
+		private static void drawSupport(Target target, Material material, VectorXYZ supportBase) {
+			target.drawColumn(material, null, supportBase, 1.2, 0.06, 0.06, false, true);
+		}
+
+		private void drawBasket(Target target, Material material, VectorXYZ modelBase, VectorXZ direction) {
 
 			double height = 0.5;
 			double radius = 0.2;
 
-			VectorXYZ bottomCenter = pos.addY(-0.1).add(direction.mult(0.2));
+			VectorXYZ bottomCenter = modelBase.addY(-0.1).add(direction.mult(0.2));
 			VectorXYZ innerBottomCenter = bottomCenter.addY(height * 0.05);
 			VectorXYZ topCenter = bottomCenter.addY(height);
 
@@ -1482,7 +1525,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class VendingMachine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public static final class VendingMachine extends NodeWorldObjectWithOptionalSupports {
 
 		public VendingMachine(MapNode node) {
 			super(node);
@@ -1490,7 +1533,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		protected List<String> getAttachmentTypes() {
-			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(node);
+			List<String> attachmentTypes = getCompatibleSurfaceTypes(node);
 			if (attachmentTypes.isEmpty() && isInWall(node)) {
 				attachmentTypes = List.of("wall");
 			}
@@ -1524,32 +1567,20 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			double height = parseHeight(node.getTags(), 1.8f);
 
-			VectorXYZ pos = getBase();
-			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
+			@Nullable VectorXYZ supportBase = getSupportBase();
+			VectorXYZ boardBase = getModelBase();
+			VectorXZ direction = getDirection();
 
-			boolean onHorizontalSurface = true;
-
-			if (attachmentConnector != null && attachmentConnector.isAttached()) {
-
-				pos = attachmentConnector.getAttachedPos();
-
-				if (attachmentConnector.getAttachedSurfaceNormal().y < 0.8) {
-					onHorizontalSurface = false;
-					direction = attachmentConnector.getAttachedSurfaceNormal();
-				}
-
-			}
-
-			if (onHorizontalSurface) {
+			if (supportBase != null) {
 
 				/* draw pole */
-				target.drawBox(STEEL, pos, direction.xz(), height - 0.3, 0.1, 0.1);
+				target.drawBox(STEEL, supportBase, direction.xz(), height - 0.3, 0.1, 0.1);
 
-				pos = pos.addY(0.8).add(direction.mult(0.05));
+				boardBase = boardBase.add(direction.mult(0.05));
 
 			}
 
-			target.drawBox(machineMaterial, pos.add(direction.mult(0.1)), direction.xz(), height - 0.8, 1, 0.2);
+			target.drawBox(machineMaterial, boardBase.add(direction.mult(0.1)), direction.xz(), height - 0.8, 1, 0.2);
 
 		}
 
@@ -1845,10 +1876,15 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Board extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public static final class Board extends NodeWorldObjectWithOptionalSupports {
 
 		public Board(MapNode node) {
 			super(node);
+		}
+
+		@Override
+		protected double getPreferredVerticalAttachmentHeight() {
+			return 1.2;
 		}
 
 		@Override
@@ -1856,14 +1892,28 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD3, LOD4);
 
-			double directionAngle = parseDirection(node.getTags(), PI);
-			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
-			target.drawColumn(WOOD, null,
-					getBase(),
-					1.5, 0.05, 0.05, false, true);
+			@Nullable VectorXYZ supportBase = getSupportBase();
+			VectorXYZ boardBase = getModelBase();
+			VectorXZ direction = getDirection();
+
+			if (supportBase != null) {
+				drawSupport(target, supportBase, direction);
+			}
+
+			drawBoard(target, boardBase, direction);
+
+		}
+
+		private void drawBoard(Target target, VectorXYZ boardBase, VectorXZ faceVector) {
 			target.drawBox(WOOD,
-					getBase().addY(1.2),
+					boardBase,
 					faceVector, 0.4, 0.4, 0.1);
+		}
+
+		private void drawSupport(Target target, VectorXYZ supportBase, VectorXZ faceVector) {
+			target.drawColumn(WOOD, null,
+					supportBase,
+					1.5, 0.05, 0.05, false, true);
 		}
 
 	}
