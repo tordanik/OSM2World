@@ -7,7 +7,6 @@ import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.scene.material.Materials.*;
-import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -43,7 +42,7 @@ public class MastModule extends AbstractModule {
 	public static class MobilePhoneMast extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public MobilePhoneMast(MapNode node) {
-			super(node);
+			super(node, true);
 		}
 
 		@Override
@@ -54,17 +53,17 @@ public class MastModule extends AbstractModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			double height = parseHeight(node.getTags(), 7);
+			VectorXYZ base = getBase();
+			double height = getHeight(7);
+
 			double radiusBottom = height / 40;
 			double radiusTop = radiusBottom * 0.8;
 
-			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, 1), asList(getBase(), getBase().addY(height)),
+			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, 1), asList(base, base.addY(height)),
 					null, asList(radiusBottom, radiusTop), EnumSet.of(END_CAP));
 
-			//TODO: proper ModelTarget/instancing support
-
 			for (double angleRad : asList(PI, 0.3 * PI, 1.5 * PI)) {
-				VectorXYZ pos = getBase().addY(height - 0.6);
+				VectorXYZ pos = base.addY(height - 0.6);
 				pos = pos.add(VectorXZ.fromAngle(angleRad).mult(radiusTop));
 				target.addSubModel(new ModelInstance(MOBILE_PHONE_ANTENNA_MODEL, new InstanceParameters(pos, angleRad)));
 			}

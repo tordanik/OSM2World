@@ -1,10 +1,14 @@
 package org.osm2world.world.data;
 
+import static java.lang.Math.abs;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static org.osm2world.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.util.List;
 
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
@@ -26,12 +30,20 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 
 	protected final MapNode node;
 
-	private final EleConnector eleConnector;
+	protected final EleConnector eleConnector;
 	protected final AttachmentConnector attachmentConnector;
 
+	protected final boolean supportMinHeight;
+
 	public NoOutlineNodeWorldObject(MapNode node) {
+		this(node, false);
+	}
+
+	public NoOutlineNodeWorldObject(MapNode node, boolean supportMinHeight) {
 
 		this.node = node;
+		this.supportMinHeight = supportMinHeight;
+
 		this.eleConnector = new EleConnector(node.getPos(), node,
 				getGroundState());
 
@@ -103,14 +115,58 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	}
 
 	/**
-	 * provides subclasses with the 3d position of the {@link MapNode}.
+	 * Provides subclasses with the 3d position of the {@link MapNode}.
 	 * Only works during rendering (i.e. after elevation calculation).
+	 * Will consider attachment, and will also consider min_height tags if {@link #supportMinHeight} is true.
 	 */
 	protected VectorXYZ getBase() {
-		if (attachmentConnector != null && attachmentConnector.isAttached()) {
-			return attachmentConnector.getAttachedPos();
+
+		VectorXYZ base = (attachmentConnector != null && attachmentConnector.isAttached())
+				? attachmentConnector.getAttachedPos()
+				: eleConnector.getPosXYZ();
+
+		double minHeight = getMinHeight();
+
+		if (minHeight <= 0) {
+			return base;
+		} else if (attachmentConnector != null && attachmentConnector.isAttached()
+				&& abs((attachmentConnector.getAttachedPos().y - eleConnector.getPosXYZ().y) - minHeight) < 0.5) {
+			// ignore redundant min_height, e.g. when both minHeight and location=roof are used
+			return base;
 		} else {
-			return eleConnector.getPosXYZ();
+			return base.addY(minHeight);
+		}
+
+	}
+
+	/**
+	 * Returns the object's height based on tags. Will subtract min_height if {@link #supportMinHeight} is true.
+	 */
+	protected double getHeight(double defaultHeight) {
+
+		double height = parseHeight(node.getTags(), defaultHeight);
+		double minHeight = getMinHeight();
+
+		if (minHeight > height) {
+			ConversionLog.warn("Invalid min_height/height values: " + minHeight + "/" + height, node);
+			return height;
+		} else {
+			return height - minHeight;
+		}
+
+	}
+
+	private double getMinHeight() {
+		if (!supportMinHeight) {
+			return 0;
+		} else {
+			double minHeight = parseMeasure(node.getTags().getValue("min_height"), 0.0);
+			if (minHeight < 0) {
+				ConversionLog.warn("Negative min_height value: " + minHeight, node);
+				return 0;
+			} else {
+				return minHeight;
+			}
 		}
 	}
 

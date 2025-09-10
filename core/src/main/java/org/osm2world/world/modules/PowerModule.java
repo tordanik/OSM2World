@@ -279,14 +279,13 @@ public final class PowerModule extends AbstractModule {
 		};
 
 		public WindTurbine(MapNode node) {
-			super(node);
+			super(node, true);
 		}
 
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			double poleHeight = parseHeight(node.getTags(),
-					parseMeasure(node.getTags().getValue("height:hub"), 100.0));
+			double poleHeight = getHeight(parseMeasure(node.getTags().getValue("height:hub"), 100.0));
 			double poleRadiusBottom = parseWidth(node.getTags(), poleHeight / 20) / 2;
 			double poleRadiusTop = poleRadiusBottom / 2;
 			double nacelleHeight = poleHeight * 0.05;
