@@ -5,12 +5,14 @@ import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.math.BoundedObject;
+import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
@@ -81,6 +83,15 @@ public class AttachmentSurface implements BoundedObject {
 
 	public double distanceTo(VectorXYZ v) {
 		return getFaces().stream().mapToDouble(f -> f.distanceTo(v)).min().getAsDouble();
+	}
+
+	public double distanceToXZ(Vector3D v) {
+		return getFaces().stream().mapToDouble(f -> f.distanceToXZ(v)).min().getAsDouble();
+	}
+
+	public VectorXYZ closestPoint(VectorXYZ v) {
+		return getFaces().stream().map(f -> f.closestPoint(v))
+				.min(Comparator.comparingDouble(f -> f.distanceTo(v))).get();
 	}
 
 	@Override

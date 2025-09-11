@@ -274,13 +274,28 @@ class O2WConverterImpl {
 					Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
 							bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ()));
 
-					Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
+					List<AttachmentSurface> compatibleSurfaces = Streams.stream(nearbySurfaces)
 							.filter(s -> s.getTypes().stream().anyMatch(t -> t.equals(surfaceType)))
 							.filter(s -> s.getFaces().stream().anyMatch(f -> connector.isAcceptableNormal.test(f.getNormal())))
-							.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+							.toList();
 
-					if (closestSurface.isPresent()) {
-						attachConnectorIfValid(connector, closestSurface.get());
+					Optional<AttachmentSurface> candidateSurface = Optional.empty();
+
+					if ("roof".equals(surfaceType)) {
+						// prioritize the topmost roof to avoid attaching to the hidden "roofs" of lower building parts
+						double minDistanceXZ = compatibleSurfaces.stream()
+								.mapToDouble(s -> s.distanceToXZ(connector.originalPos)).min().orElse(0);
+						candidateSurface = compatibleSurfaces.stream()
+								.filter(s -> s.distanceToXZ(connector.originalPos) < minDistanceXZ + 0.1)
+								.max(comparingDouble(s -> s.closestPoint(connector.originalPos).y));
+					} else {
+						// choose the closest surface by 3D distance
+						candidateSurface = compatibleSurfaces.stream()
+								.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+					}
+
+					if (candidateSurface.isPresent()) {
+						attachConnectorIfValid(connector, candidateSurface.get());
 						break;
 					}
 				}
