@@ -16,7 +16,7 @@ public class EdgeDebugView extends StaticDebugView {
 	@Override
 	protected void fillOutput(JOGLOutput output) {
 
-		for (Mesh mesh : scene.getMeshes()) {
+		for (Mesh mesh : scene.getMeshes(config)) {
 			for (LineSegmentXYZ edge : mesh.geometry.asTriangles().edges()) {
 				output.drawLineLoop(mesh.material.getColor(), 2, edge.vertices());
 			}

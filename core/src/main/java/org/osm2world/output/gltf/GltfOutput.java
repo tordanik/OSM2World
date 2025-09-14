@@ -125,7 +125,7 @@ public class GltfOutput extends AbstractOutput {
 
 	@Override
 	public void outputScene(Scene scene) {
-		outputScene(scene.getMeshesWithMetadata(),
+		outputScene(scene.getMeshesWithMetadata(config),
 				scene.getMapProjection() != null ? scene.getMapProjection().getOrigin() : null);
 	}
 
