@@ -27,9 +27,9 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.osm2world.math.VectorXZ;
+import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
-import org.osm2world.scene.color.LColor;
 
 /**
  * a texture with metadata necessary for calculating texture coordinates.
@@ -176,7 +176,10 @@ public abstract class TextureData {
 		writeRasterImageToStream(stream, 0.75f);
 	}
 
-	/** returns this texture's aspect ratio (same definition as {@link Resolution#getAspectRatio()}) */
+	/**
+	 * Returns this texture's aspect ratio (same definition as {@link Resolution#getAspectRatio()}).
+	 * Where possible and applicable, this will return the aspect ratio of the original underlying image.
+	 */
 	public float getAspectRatio() {
 		return Resolution.of(getBufferedImage()).getAspectRatio();
 	}

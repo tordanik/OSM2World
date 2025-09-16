@@ -31,6 +31,15 @@ public class SvgImageFileTexture extends ImageFileTexture {
 	}
 
 	@Override
+	public float getAspectRatio() {
+		try {
+			return (float) getSvgAspectRatio(file);
+		} catch (IOException | TranscoderException e) {
+			throw new Error("Could not read texture file " + file, e);
+		}
+	}
+
+	@Override
 	protected BufferedImage createBufferedImage() {
 		return createBufferedImage(DEFAULT_SVG_RESOLUTION);
 	}
@@ -60,8 +69,7 @@ public class SvgImageFileTexture extends ImageFileTexture {
 
 			/* first conversion (temporary result to determine the SVG's aspect ratio) */
 
-			BufferedImage tmpImage = svgToBufferedImageImpl(svgFile, emptyMap());
-			double inputAspectRatio = Resolution.of(tmpImage).getAspectRatio();
+			double inputAspectRatio = getSvgAspectRatio(svgFile);
 			double outputAspectRatio = resolution.getAspectRatio();
 
 			/* second conversion (to produce the actual output image) */
@@ -109,6 +117,12 @@ public class SvgImageFileTexture extends ImageFileTexture {
 
 		}
 
+	}
+
+	/** returns the aspect ratio of an SVG image file */
+	private static double getSvgAspectRatio(File svgFile) throws IOException, TranscoderException {
+		BufferedImage tmpImage = svgToBufferedImageImpl(svgFile, emptyMap());
+		return Resolution.of(tmpImage).getAspectRatio();
 	}
 
 	@Override
