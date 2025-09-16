@@ -5,6 +5,7 @@ import static java.lang.Math.*;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.math.NumberUtils.max;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
@@ -46,18 +47,15 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
-import org.osm2world.scene.material.ConfMaterial;
-import org.osm2world.scene.material.ImmutableMaterial;
-import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.*;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.MapBasedTexCoordFunction;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
@@ -270,9 +268,22 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			Flag flag = null;
 
-			if (node.getTags().contains("flag:type", "national")
-					&& node.getTags().containsKey("country")) {
-				flag = NATIONAL_FLAGS.get(node.getTags().getValue("country"));
+			String wikidataId = node.getTags().getValue("flag:wikidata");
+			if (wikidataId != null) {
+				Material flagMaterial = buildTexturedFlagMaterial(wikidataId);
+				if (flagMaterial != null) {
+					flag = new TexturedFlag(flagMaterial);
+				}
+			}
+
+			String countryCode = node.getTags().getValue("country");
+			if (flag == null && node.getTags().contains("flag:type", "national") && countryCode != null) {
+				Material countryFlagMaterial = buildTexturedFlagMaterial(countryCode);
+				if (countryFlagMaterial != null) {
+					flag = new TexturedFlag(countryFlagMaterial);
+				} else {
+					flag = NATIONAL_FLAGS.get(countryCode);
+				}
 			}
 
 			if (flag == null && node.getTags().containsKey("flag:colour")) {
@@ -306,6 +317,31 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			}
 
+		}
+
+		/**
+		 * Combines a flag image with {@link Materials#FLAGCLOTH} to create a textured flag material.
+		 *
+		 * @param flagId  the ID of the flag, e.g. a country code or Wikidata ID
+		 */
+		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
+			Material material = Materials.getMaterial("FLAG_" + flagId);
+			if (material != null && material.getNumTextureLayers() > 0 && FLAGCLOTH.getNumTextureLayers() > 0) {
+				List<TextureLayer> textureLayers = new ArrayList<>(FLAGCLOTH.getTextureLayers());
+				TextureLayer flag0 = material.getTextureLayers().get(0);
+				TextureLayer cloth0 = FLAGCLOTH.getTextureLayers().get(0);
+				textureLayers.set(0, new TextureLayer(
+						flag0.baseColorTexture,
+						requireNonNullElse(flag0.normalTexture, cloth0.normalTexture),
+						requireNonNullElse(flag0.ormTexture, cloth0.ormTexture),
+						requireNonNullElse(flag0.displacementTexture, cloth0.displacementTexture),
+						flag0.colorable));
+				return new ImmutableMaterial(Interpolation.SMOOTH, WHITE, true,
+						FLAGCLOTH.getTransparency(), FLAGCLOTH.getShadow(), FLAGCLOTH.getAmbientOcclusion(),
+						textureLayers);
+			} else {
+				return material;
+			}
 		}
 
 		static class FlagMesh {
@@ -358,8 +394,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				/* define a function that looks the texture coordinate up in the map  */
 
-				TexCoordFunction texCoordFunction = (List<VectorXYZ> vs) ->
-					vs.stream().map(texCoordMap::get).collect(toList());
+				var texCoordFunction = new MapBasedTexCoordFunction(texCoordMap);
 
 				/* flip the mesh array in case of vertically striped flags */
 
@@ -475,7 +510,7 @@ public class StreetFurnitureModule extends AbstractModule {
 								factor * factor * -0.25 * height,
 								factor * factor * 0.35 * height);
 
-						texCoordMap.put(vertices[x][y], new VectorXZ(xRatio, yRatio));
+						texCoordMap.put(vertices[x][y], new VectorXZ(xRatio, 1 - yRatio));
 
 					}
 				}
@@ -534,12 +569,14 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			/**
-			 * alternative constructor that uses the aspect ratio of the first texture layer's color texture
-			 * instead of an explicit heightWidthRatio parameter. Only works for textured materials.
+			 * Alternative constructor that uses the aspect ratio of the first texture layer's color texture
+			 * instead of an explicit heightWidthRatio parameter. Only works for textured materials,
+			 * otherwise an unreliable default is used.
 			 */
 			public TexturedFlag(Material material) {
-				this(material.getTextureLayers().get(0).baseColorTexture.dimensions().height()
-						/ material.getTextureLayers().get(0).baseColorTexture.dimensions().width(), material);
+				this(material.getTextureLayers().isEmpty() ? 3 / 5.0
+						: 1.0 / material.getTextureLayers().get(0).baseColorTexture.getAspectRatio(),
+						material);
 			}
 
 		}
