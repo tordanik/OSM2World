@@ -46,7 +46,7 @@ public class ExportGltfAction extends AbstractExportAction {
 		try {
 
 			/* write the file */
-			GltfOutput output = new GltfOutput(file, flavor, Compression.NONE,null);
+			GltfOutput output = new GltfOutput(file, flavor, Compression.NONE);
 			output.setConfiguration(data.getConfig());
 			output.outputScene(data.getConversionResults());
 

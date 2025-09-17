@@ -129,10 +129,10 @@ public class TilesetOutput extends MeshOutput {
 	private void writeGltf(File gltfFile, List<MeshStore.MeshWithMetadata> meshesWithMetadata,
 			SimpleClosedShapeXZ bounds) {
 
-		GltfOutput gltfOutput = new GltfOutput(gltfFile, gltfFlavor, gltfCompression, bounds);
+		GltfOutput gltfOutput = new GltfOutput(gltfFile, gltfFlavor, gltfCompression);
 		gltfOutput.setConfiguration(config);
 
-		gltfOutput.outputScene(meshesWithMetadata, null);
+		gltfOutput.outputScene(meshesWithMetadata, null, bounds);
 
 	}
 

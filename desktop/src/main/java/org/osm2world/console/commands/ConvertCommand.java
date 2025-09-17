@@ -222,9 +222,9 @@ public class ConvertCommand implements Callable<Integer> {
 							bounds = scene.getBoundary();
 						}
 						GltfFlavor gltfFlavor = GltfFlavor.valueOf(extension);
-						GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression, bounds);
+						GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression);
 						output.setConfiguration(config);
-						output.outputScene(scene);
+						output.outputScene(scene.getMeshesWithMetadata(config), proj.getOrigin(), bounds);
 					}
 
 					case "POV" -> {

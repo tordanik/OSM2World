@@ -158,9 +158,11 @@ final class LegacyCLIOutput {
 								? GltfFlavor.GLB : GltfFlavor.GLTF;
 						Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
 								? Compression.GZ : Compression.NONE;
-						GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression, bounds);
+						GltfOutput output = new GltfOutput(outputFile, gltfFlavor, compression);
 						output.setConfiguration(config);
-						output.outputScene(scene);
+						output.outputScene(scene.getMeshesWithMetadata(config),
+								scene.getMapProjection() != null ? scene.getMapProjection().getOrigin() : null,
+								bounds);
 					}
 					break;
 

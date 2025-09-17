@@ -21,7 +21,6 @@ import org.osm2world.console.commands.mixins.LoggingOptions;
 import org.osm2world.console.commands.mixins.MetadataOptions;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.geo.*;
-import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.output.Output;
 import org.osm2world.output.common.compression.Compression;
@@ -201,11 +200,6 @@ public class TilesetCommand implements Callable<Integer> {
 						MapProjection mapProjection = scene.getMapProjection();
 						assert mapProjection != null;
 
-						var boundsLL = tile.latLonBounds();
-						var boundsXZ = AxisAlignedRectangleXZ.bbox(List.of(
-								mapProjection.toXZ(boundsLL.getMin()),
-								mapProjection.toXZ(boundsLL.getMax())));
-
 						/* create glb and tileset files */
 
 						Output output;
@@ -213,12 +207,12 @@ public class TilesetCommand implements Callable<Integer> {
 						if (noJson) {
 
 							File glbFile = getTileFilename(tile, lod, ".glb" + getCompression().extension());
-							output = new GltfOutput(glbFile, GLB, null, boundsXZ);
+							output = new GltfOutput(glbFile, GLB, null);
 
 						} else {
 
 							File tilesetJsonFile = getTileFilename(tile, lod, ".tileset.json");
-							output = new TilesetOutput(tilesetJsonFile, GLB, getCompression(), mapProjection, boundsXZ);
+							output = new TilesetOutput(tilesetJsonFile, GLB, getCompression(), mapProjection, scene.getBoundary());
 
 						}
 

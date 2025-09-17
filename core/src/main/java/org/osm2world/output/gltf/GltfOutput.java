@@ -68,7 +68,6 @@ public class GltfOutput extends AbstractOutput {
 	private final File outputFile;
 	private final GltfFlavor flavor;
 	private final Compression compression;
-	private final @Nullable SimpleClosedShapeXZ bounds;
 
 	/** the gltf asset under construction */
 	private final Gltf gltf = new Gltf();
@@ -81,10 +80,10 @@ public class GltfOutput extends AbstractOutput {
 
 	/**
 	 * Sets up an output to write a scene as glTF.
-	 * Uses defaults for most parameters of {@link #GltfOutput(File, GltfFlavor, Compression, SimpleClosedShapeXZ)}.
+	 * Uses defaults for most parameters of {@link #GltfOutput(File, GltfFlavor, Compression)}.
 	 */
 	public GltfOutput(File outputFile) {
-		this(outputFile, null, null, null);
+		this(outputFile, null, null);
 	}
 
 	/**
@@ -94,14 +93,10 @@ public class GltfOutput extends AbstractOutput {
 	 * @param flavor       type of glTF file (JSON or binary); will be guessed from filename if null
 	 * @param compression  compression used for the output file; may be <code>NONE</code>;
 	 *                     will be guessed from filename if null
-	 * @param bounds       the boundary to be used for the output file.
-	 *                     Has an effect if some options such as clipping to bounds are used.
 	 */
-	public GltfOutput(File outputFile, @Nullable GltfFlavor flavor, @Nullable Compression compression,
-			  @Nullable SimpleClosedShapeXZ bounds) {
+	public GltfOutput(File outputFile, @Nullable GltfFlavor flavor, @Nullable Compression compression) {
 
 		this.outputFile = outputFile;
-		this.bounds = bounds;
 
 		if (flavor != null && compression != null) {
 			this.flavor = flavor;
@@ -126,10 +121,16 @@ public class GltfOutput extends AbstractOutput {
 	@Override
 	public void outputScene(Scene scene) {
 		outputScene(scene.getMeshesWithMetadata(config),
-				scene.getMapProjection() != null ? scene.getMapProjection().getOrigin() : null);
+				scene.getMapProjection() != null ? scene.getMapProjection().getOrigin() : null,
+				scene.getBoundary());
 	}
 
-	public void outputScene(List<MeshWithMetadata> meshesWithMetadata, @Nullable LatLon origin) {
+	/**
+	 * @param bounds  the boundary to be used for the output file.
+	 *                Has an effect if some options such as clipping to bounds are used.
+	 */
+	public void outputScene(List<MeshWithMetadata> meshesWithMetadata, @Nullable LatLon origin,
+			@Nullable SimpleClosedShapeXZ bounds) {
 
 		MeshStore meshStore = new MeshStore(meshesWithMetadata);
 
@@ -137,10 +138,10 @@ public class GltfOutput extends AbstractOutput {
 
 			try {
 				if (flavor == GltfFlavor.GLTF) {
-					writeJson(meshStore, origin, outputStream);
+					writeJson(meshStore, origin, bounds, outputStream);
 				} else {
 					try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
-						writeJson(meshStore, origin, jsonChunkOutputStream);
+						writeJson(meshStore, origin, bounds, jsonChunkOutputStream);
 						ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
 						writeGlb(outputStream, jsonChunkData, binChunkData);
 					}
@@ -414,7 +415,8 @@ public class GltfOutput extends AbstractOutput {
 	 * constructs the JSON document after all parts of the glTF have been created
 	 * and outputs it to an {@link OutputStream}
 	 */
-	private void writeJson(MeshStore meshStore, @Nullable LatLon origin, OutputStream outputStream) throws IOException {
+	private void writeJson(MeshStore meshStore, @Nullable LatLon origin, SimpleClosedShapeXZ bounds,
+			OutputStream outputStream) throws IOException {
 
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
 		boolean clipToBounds = config.getBoolean("clipToBounds", false);

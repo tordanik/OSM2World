@@ -48,7 +48,7 @@ public class O2WConverterTest {
 			try {
 
 				File outputFile = createTempFile(".gltf");
-				Output testOutput = new GltfOutput(outputFile, GLTF, NONE, null);
+				Output testOutput = new GltfOutput(outputFile, GLTF, NONE);
 				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
 
 				var o2w = new O2WConverter();
