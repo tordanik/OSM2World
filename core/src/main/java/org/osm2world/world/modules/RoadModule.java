@@ -1315,7 +1315,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		private double getLengthXZ() {
-			return new PolylineXZ(getCenterlineXZ()).getLength();
+			return getCenterlineXZ().getLength();
 		}
 
 		public Material getSurface() {
@@ -1395,7 +1395,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			record CrossSection(VectorXYZ center, VectorXYZ left, VectorXYZ right) {}
 
 			Function2<Road, Double, CrossSection> getCrossSectionAt = (Road roadSegment, Double offset) -> {
-				var line = new PolylineXZ(roadSegment.getCenterlineXZ());
+				var line = roadSegment.getCenterlineXZ();
 				List<VectorXYZ> lineXYZ = roadSegment.getCenterline();
 				VectorXZ posXZ = line.pointAtOffset(offset);
 				VectorXYZ posXYZ = interpolateElevation(posXZ, lineXYZ.get(0), lineXYZ.get(lineXYZ.size() - 1));

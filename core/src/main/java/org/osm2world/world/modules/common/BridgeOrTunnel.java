@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.common;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
@@ -65,8 +64,8 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 	@Override
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {
 
-		List<List<VectorXZ>> lines = asList(
-				primaryRep.getCenterlineXZ(),
+		List<List<VectorXZ>> lines = List.of(
+				primaryRep.getCenterlineXZ().vertices(),
 				primaryRep.getOutlineXZ(true),
 				primaryRep.getOutlineXZ(false));
 

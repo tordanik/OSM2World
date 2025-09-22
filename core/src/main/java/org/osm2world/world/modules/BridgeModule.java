@@ -236,7 +236,7 @@ public class BridgeModule extends AbstractModule {
 
 			/* determine the bridge elevation at that point */
 
-			PolylineXZ centerlineXZ = new PolylineXZ(primaryRep.getCenterlineXZ());
+			PolylineXZ centerlineXZ = primaryRep.getCenterlineXZ();
 			double offset = centerlineXZ.offsetOf(centerlineXZ.closestPoint(pos));
 			double ratio = offset / centerlineXZ.getLength();
 

@@ -37,10 +37,7 @@ import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
-import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.math.shapes.PolygonShapeXZ;
-import org.osm2world.math.shapes.PolygonXYZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
+import org.osm2world.math.shapes.*;
 import org.osm2world.util.enums.UpDown;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentConnector;
@@ -457,7 +454,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		if (isBroken()) return emptyList();
 
-		return connectors.getConnectors(getCenterlineXZ());
+		return connectors.getConnectors(getCenterlineXZ().vertices());
 
 	}
 
@@ -465,13 +462,13 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 * returns a sequence of node running along the center of the
 	 * line from start to end (each with offset).
 	 */
-	public List<VectorXZ> getCenterlineXZ() {
+	public PolylineXZ getCenterlineXZ() {
 
 		if (centerlineXZ == null) {
 			calculateXZGeometry();
 		}
 
-		return centerlineXZ;
+		return new PolylineXZ(centerlineXZ);
 
 	}
 
@@ -483,13 +480,13 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		if (attachmentConnectorList.size() == 2 && attachmentConnectorList.stream().allMatch(c -> c.isAttached())) {
 
-			return interpolateEleOfSegment(getCenterlineXZ(),
+			return interpolateEleOfSegment(getCenterlineXZ().vertices(),
 					segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()),
 					attachmentConnectorList.get(0).getAttachedPos().getY(),
 					attachmentConnectorList.get(1).getAttachedPos().getY());
 
 		} else {
-			return connectors.getPosXYZ(getCenterlineXZ());
+			return connectors.getPosXYZ(getCenterlineXZ().vertices());
 		}
 	}
 
