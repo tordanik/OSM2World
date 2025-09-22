@@ -452,7 +452,7 @@ public class TreeModule extends ConfigurableWorldModule {
 					.filter(it -> {
 						if (getStartPosition().equals(it)) {
 							// prevent adding a tree node to two segments if it's exactly on the shared node
-							return segment.getWay().getWaySegments().indexOf(segment) == 0;
+							return segment.getIndexInWay() == 0;
 						} else if (getEndPosition().equals(it)) {
 							return true;
 						} else {

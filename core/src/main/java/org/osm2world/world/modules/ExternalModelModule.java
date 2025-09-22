@@ -64,7 +64,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 					} else if (element instanceof MapArea a) {
 						a.addRepresentation(new ExternalModelAreaWorldObject(a, model));
 					} else if (element instanceof MapWaySegment s) {
-						if (s.getWay().getWaySegments().indexOf(s) == 0) {
+						if (s.getIndexInWay() == 0) {
 							s.addRepresentation(new ExternalModelWayWorldObject(s, model));
 							for (int i = 1; i < s.getWay().getWaySegments().size(); i++) {
 								MapWaySegment segment = s.getWay().getWaySegments().get(i);

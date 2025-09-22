@@ -36,6 +36,11 @@ public class MapWaySegment extends MapSegment implements MapElement {
 		return way;
 	}
 
+	/** returns this segment's index in its parent {@link MapWay} */
+	public int getIndexInWay() {
+		return way.getWaySegments().indexOf(this);
+	}
+
 	/** returns the parent {@link MapWay}'s tags */
 	@Override
 	public TagSet getTags() {
@@ -87,7 +92,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 
 	@Override
 	public String toString() {
-		return way + "[" + way.getWaySegments().indexOf(this) + "]";
+		return way + "[" + getIndexInWay() + "]";
 	}
 
 }
