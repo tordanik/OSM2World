@@ -30,13 +30,13 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.eclipse.collections.api.block.function.Function2;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
@@ -1314,6 +1314,10 @@ public class RoadModule extends ConfigurableWorldModule {
 			return width;
 		}
 
+		private double getLengthXZ() {
+			return new PolylineXZ(getCenterlineXZ()).getLength();
+		}
+
 		public Material getSurface() {
 			return getSurfaceForRoad(tags, ASPHALT);
 		}
@@ -1351,9 +1355,6 @@ public class RoadModule extends ConfigurableWorldModule {
 			leftOutline = interpolateEleOfPolyline(leftOutline.stream().map(VectorXYZ::xz).collect(toList()), firstNodeEle, lastNodeEle);
 			rightOutline = interpolateEleOfPolyline(rightOutline.stream().map(VectorXYZ::xz).collect(toList()), firstNodeEle, lastNodeEle);
 
-			double lineLength = VectorXZ.distance (
-					segment.getStartNode().getPos(), segment.getEndNode().getPos());
-
 			/* evaluate material and color */
 
 			Material material = null;
@@ -1388,49 +1389,66 @@ public class RoadModule extends ConfigurableWorldModule {
 			target.drawTriangleStrip(ASPHALT, vsDown,
 					texCoordLists(vsDown, ASPHALT, GLOBAL_X_Z));
 
-			/* determine the length of each individual step */
+			/* Determine the position of the start/end for each step.
+			 * May need to look beyond this way segment because step_count refers to the entire way. */
 
-			float stepLength = 0.3f;
+			record CrossSection(VectorXYZ center, VectorXYZ left, VectorXYZ right) {}
 
-			if (tags.containsKey("step_count")) {
-				try {
-					int stepCount = Integer.parseInt(tags.getValue("step_count"));
-					stepLength = (float)lineLength / stepCount;
-				} catch (NumberFormatException e) { /* don't overwrite default length */ }
+			Function2<Road, Double, CrossSection> getCrossSectionAt = (Road roadSegment, Double offset) -> {
+				var line = new PolylineXZ(roadSegment.getCenterlineXZ());
+				List<VectorXYZ> lineXYZ = roadSegment.getCenterline();
+				VectorXZ posXZ = line.pointAtOffset(offset);
+				VectorXYZ posXYZ = interpolateElevation(posXZ, lineXYZ.get(0), lineXYZ.get(lineXYZ.size() - 1));
+				return new CrossSection(posXYZ,
+						posXYZ.subtract(roadSegment.segment.getRightNormal().mult(0.5 * width)),
+						posXYZ.add(roadSegment.segment.getRightNormal().mult(0.5 * width)));
+			};
+
+			List<Road> segments = segment.getWay().getWaySegments().stream()
+					.map(it -> it.getPrimaryRepresentation() instanceof Road r ? r : null)
+					.filter(Objects::nonNull)
+					.toList();
+
+			double totalLength = segments.stream()
+					.mapToDouble(Road::getLengthXZ)
+					.sum();
+			double lengthBeforeCurrentSegment = segments.subList(0, segment.getIndexInWay()).stream()
+					.mapToDouble(Road::getLengthXZ)
+					.sum();
+
+			Integer stepCount = parseUInt(tags.getValue("step_count"));
+			double stepLength = (stepCount != null && stepCount > 0) ? totalLength / stepCount : 0.3f;
+
+			List<CrossSection> stepBorders = new ArrayList<>();
+
+			if (segment.getIndexInWay() == 0) {
+				stepBorders.add(getCrossSectionAt.apply(this, 0.0));
 			}
 
-			/* locate the position on the line at the beginning/end of each step
-			 * (positions on the line spaced by step length),
-			 * interpolate heights between adjacent points with elevation */
+			double stepOffset = stepLength;
+			for (; stepOffset < lengthBeforeCurrentSegment + this.getLengthXZ(); stepOffset += stepLength) {
+				if (stepOffset > lengthBeforeCurrentSegment) {
+					stepBorders.add(getCrossSectionAt.apply(this, stepOffset - lengthBeforeCurrentSegment));
+				}
+			}
 
-			List<VectorXZ> stepBorderPositionsXZ =
-				GeometryUtil.equallyDistributePointsAlong(
-					stepLength, true, startWithOffset, endWithOffset);
-
-			List<VectorXYZ> stepBorderPositions = new ArrayList<VectorXYZ>();
-			for (VectorXZ posXZ : stepBorderPositionsXZ) {
-				VectorXYZ posXYZ = interpolateElevation(posXZ,
-						centerline.get(0),
-						centerline.get(centerline.size() - 1));
-				stepBorderPositions.add(posXYZ);
+			if (segment.getIndexInWay() == segments.size() - 1) {
+				stepBorders.add(getCrossSectionAt.apply(this, getLengthXZ()));
+			} else {
+				stepBorders.add(getCrossSectionAt.apply(segments.get(segment.getIndexInWay() + 1),
+						stepOffset - this.getLengthXZ() - lengthBeforeCurrentSegment));
 			}
 
 			/* draw steps */
 
-			for (int step = 0; step < stepBorderPositions.size() - 1; step++) {
+			for (int step = 0; step < stepBorders.size() - 1; step++) {
 
-				VectorXYZ frontCenter = stepBorderPositions.get(step);
-				VectorXYZ backCenter = stepBorderPositions.get(step+1);
+				CrossSection front = stepBorders.get(step);
+				CrossSection back = stepBorders.get(step+1);
 
-				VectorXYZ frontLeft = frontCenter.subtract(segment.getRightNormal().mult(0.5 * width));
-				VectorXYZ frontRight = frontCenter.add(segment.getRightNormal().mult(0.5 * width));
+				boolean frontIsLower = front.center.y < back.center.y;
 
-				VectorXYZ backLeft = backCenter.subtract(segment.getRightNormal().mult(0.5 * width));
-				VectorXYZ backRight = backCenter.add(segment.getRightNormal().mult(0.5 * width));
-
-				boolean frontIsLower = frontCenter.y < backCenter.y;
-
-				if (abs(frontCenter.y - backCenter.y) < 0.01 && tags.containsKey("incline")) {
+				if (abs(front.center.y - back.center.y) < 0.01 && tags.containsKey("incline")) {
 					UpDown inclineDir = parseInclineDirection(tags);
 					frontIsLower = (inclineDir == UpDown.UP);
 				}
@@ -1438,22 +1456,22 @@ public class RoadModule extends ConfigurableWorldModule {
 				VectorXYZ edgeLeft, edgeRight;
 
 				if (frontIsLower) {
-					double edgeY = max(backCenter.y, frontCenter.y + 0.1);
-					edgeLeft = frontLeft.y(edgeY);
-					edgeRight = frontRight.y(edgeY);
+					double edgeY = max(back.center.y, front.center.y + 0.1);
+					edgeLeft = front.left.y(edgeY);
+					edgeRight = front.right.y(edgeY);
 				} else {
-					double edgeY = max(frontCenter.y, backCenter.y + 0.1);
-					edgeLeft = backLeft.y(edgeY);
-					edgeRight = backRight.y(edgeY);
+					double edgeY = max(front.center.y, back.center.y + 0.1);
+					edgeLeft = back.left.y(edgeY);
+					edgeRight = back.right.y(edgeY);
 				}
 
-				List<VectorXYZ> topStrip = asList(frontLeft, frontRight, edgeLeft, edgeRight, backLeft, backRight);
+				List<VectorXYZ> topStrip = List.of(front.left, front.right, edgeLeft, edgeRight, back.left, back.right);
 				target.drawTriangleStrip(material, topStrip,
 						texCoordLists(topStrip, material, STRIP_WALL));
 
-				List<TriangleXYZ> sideTriangles = asList(
-						new TriangleXYZ(frontLeft, edgeLeft, backLeft),
-						new TriangleXYZ(backRight, edgeRight, frontRight));
+				List<TriangleXYZ> sideTriangles = List.of(
+						new TriangleXYZ(front.left, edgeLeft, back.left),
+						new TriangleXYZ(back.right, edgeRight, front.right));
 
 				target.drawTriangles(material, sideTriangles,
 						triangleTexCoordLists(sideTriangles, material, SLOPED_TRIANGLES));
