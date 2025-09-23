@@ -560,7 +560,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		public Iterable<EleConnector> getEleConnectors() {
 
 			if (treeConnectors == null) {
-				createTreeConnectors(config.getDouble("treesPerSquareMeter", 0.01f));
+				createTreeConnectors(config.treesPerSquareMeter());
 			}
 
 			return treeConnectors;

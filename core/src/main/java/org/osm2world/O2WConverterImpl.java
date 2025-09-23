@@ -484,7 +484,7 @@ class O2WConverterImpl {
 				printStream.println();
 
 				List<ConversionLog.Entry> entries = ConversionLog.getLog();
-				int maxLogEntries = config.getInt("maxLogEntries", 100);
+				int maxLogEntries = config.maxLogEntries();
 
 				if (entries.size() <= maxLogEntries) {
 					entries.forEach(printStream::println);

@@ -44,7 +44,7 @@ public class TrafficSignModule extends AbstractModule {
 		final VectorXZ DEFAULT_OFFSET_VECTOR = new VectorXZ(1, 1);
 
 		// possible values are yes/limited/no
-		String state = config.getString("deduceTrafficSignsFromWayTags", "no");
+		String state = config.deduceTrafficSignsFromWayTags();
 		if ("no".equals(state)) return;
 
 		String country;

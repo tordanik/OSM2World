@@ -300,7 +300,7 @@ public class ViewerFrame extends JFrame {
 	private void createCanvas(O2WConfig config) {
 		// select OpenGL implementation. TODO: autodetection
 		GLProfile profile;
-		if ("shader".equals(config.getString("joglImplementation"))) {
+		if ("shader".equals(config.joglImplementation())) {
 			profile = GLProfile.get(GLProfile.GL3);
 		} else {
 			profile = GLProfile.get(GLProfile.GL2);

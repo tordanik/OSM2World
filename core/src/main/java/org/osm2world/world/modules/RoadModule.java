@@ -127,7 +127,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		} else if (segment.getTags().contains("driving_side", "right")) {
 			return LeftRight.RIGHT;
 		} else {
-			return getDefaultDrivingSide(config);
+			return config.drivingSide();
 		}
 	}
 

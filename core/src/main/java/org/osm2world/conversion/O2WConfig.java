@@ -24,6 +24,7 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.scene.mesh.LevelOfDetail;
+import org.osm2world.util.enums.LeftRight;
 
 /**
  * a set of configuration options for OSM2World.
@@ -261,6 +262,30 @@ public class O2WConfig {
 	}
 
 	/**
+	 * Whether the geometry should be clipped to the bounds when exporting to output formats such as glTF.
+	 */
+	public boolean clipToBounds() {
+		return getBoolean("clipToBounds", false);
+	}
+
+	/**
+	 * Whether traffic signs should be deduced from a way's tags and placed next to the way.
+	 * The available options are "yes", "limited" and "no".
+	 * Experimental option, off by default.
+	 */
+	public String deduceTrafficSignsFromWayTags() {
+		return getString("deduceTrafficSignsFromWayTags", "no").toLowerCase();
+	}
+
+	/**
+	 * The driving side for roads which have no driving_side tag.
+	 */
+	public LeftRight drivingSide() {
+		return "left".equalsIgnoreCase(config.getString("drivingSide", "right"))
+				? LeftRight.LEFT : LeftRight.RIGHT;
+	}
+
+	/**
 	 * the algorithm to use for calculating elevations
 	 * @return  a function to create an instance of the calculation algorithm
 	 */
@@ -271,6 +296,10 @@ public class O2WConfig {
 			case "ConstraintEleCalculator" -> () -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer());
 			default -> BridgeTunnelEleCalculator::new;
 		};
+	}
+
+	public boolean forceUnbufferedPNGRendering() {
+		return getBoolean("forceUnbufferedPNGRendering", false);
 	}
 
 	/**
@@ -290,11 +319,40 @@ public class O2WConfig {
 		return getBoolean("isAtSea", false);
 	}
 
+	/** Can be set to the value "shader" to enable shaders for OpenGL rendering. */
+	public String joglImplementation() {
+		return getString("joglImplementation");
+	}
+
+	/**
+	 * Whether OSM elements will be exported as separate entities to output formats such as glTF.
+	 * Disabling this significantly improves performance by allowing geometry to be merged into larger meshes
+	 * across object boundaries.
+	 */
+	public boolean keepOsmElements() {
+		return getBoolean("keepOsmElements", true);
+	}
+
 	/**
 	 * output directory for log files
 	 */
 	public @Nullable File logDir() {
 		return resolveFileConfigProperty(config.getString("logDir", null), false);
+	}
+
+	/** The maximum number of log entries to write to log files. */
+	public int maxLogEntries() {
+		return getInt("maxLogEntries", 100);
+	}
+
+	/** Image quality for embedded textures. */
+	public float textureQuality() {
+		return getFloat("textureQuality", 0.75f);
+	}
+
+	/** Default tree density in forests. Large numbers of trees can negatively affect performance. */
+	public double treesPerSquareMeter() {
+		return getDouble("treesPerSquareMeter", 0.01f);
 	}
 
 	/**

@@ -43,7 +43,7 @@ public class HelpView extends DebugView {
 
 		if (!canBeUsed()) { return; }
 		if (textRenderer == null) {
-			if ("shader".equals(config.getString("joglImplementation"))) {
+			if ("shader".equals(config.joglImplementation())) {
 				textRenderer = new TextRendererShader(gl.getGL2ES2());
 			} else {
 				textRenderer = new TextRendererFixedFunction();

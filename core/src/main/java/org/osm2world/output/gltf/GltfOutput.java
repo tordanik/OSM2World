@@ -394,7 +394,7 @@ public class GltfOutput extends AbstractOutput {
 
 		if (flavor == GltfFlavor.GLB && mode == EMBED) {
 			try (var stream = new ByteArrayOutputStream()) {
-				textureData.writeRasterImageToStream(stream, config.getFloat("textureQuality", 0.75f));
+				textureData.writeRasterImageToStream(stream, config.textureQuality());
 				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00), null);
 				image.mimeType = textureData.getRasterImageFormat().mimeType();
 			}
@@ -418,8 +418,8 @@ public class GltfOutput extends AbstractOutput {
 	private void writeJson(MeshStore meshStore, @Nullable LatLon origin, SimpleClosedShapeXZ bounds,
 			OutputStream outputStream) throws IOException {
 
-		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
-		boolean clipToBounds = config.getBoolean("clipToBounds", false);
+		boolean keepOsmElements = config.keepOsmElements();
+		boolean clipToBounds = config.clipToBounds();
 
 		/* process the meshes */
 

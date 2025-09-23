@@ -264,7 +264,7 @@ final class LegacyCLIOutput {
 		/* call the constructor */
 
 		boolean unbufferedRendering = onlyOneRenderPass
-				|| config.getBoolean("forceUnbufferedPNGRendering", false);
+				|| config.forceUnbufferedPNGRendering();
 
 		int pBufferSizeX, pBufferSizeY;
 

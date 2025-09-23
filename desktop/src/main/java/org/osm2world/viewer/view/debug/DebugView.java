@@ -94,7 +94,7 @@ public abstract class DebugView {
 		if (canBeUsed() && camera != null && projection != null) {
 
 			if (target == null) {
-				if ("shader".equals(config.getString("joglImplementation"))) {
+				if ("shader".equals(config.joglImplementation())) {
 					target = new JOGLOutputShader(gl.getGL3(), new JOGLRenderingParameters(), null);
 				} else {
 					target = new JOGLOutputFixedFunction(gl.getGL2(), new JOGLRenderingParameters(), null);
