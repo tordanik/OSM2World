@@ -6,9 +6,9 @@ import java.util.Observer;
 
 import javax.swing.*;
 
-import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.view.StatisticsDialog;
 import org.osm2world.viewer.view.ViewerFrame;
@@ -43,7 +43,7 @@ public class StatisticsAction extends AbstractAction implements Observer {
 
 		Scene conversionResults = data.getConversionResults();
 
-		LevelOfDetail lod = data.getConfig().getLod();
+		LevelOfDetail lod = data.getConfig().lod();
 		StatisticsOutput stats = new StatisticsOutput(lod);
 
 		stats.outputScene(conversionResults);

@@ -25,7 +25,7 @@ import org.osm2world.world.data.WorldObject;
 public interface DrawBasedOutput extends Output, CommonTarget {
 
 	default LevelOfDetail getLod() {
-		return getConfiguration().getLod();
+		return getConfiguration().lod();
 	}
 
 	@Override

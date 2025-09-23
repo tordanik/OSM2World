@@ -429,7 +429,7 @@ public class GltfOutput extends AbstractOutput {
 			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
 		}
 
-		LevelOfDetail lod = config.getLod();
+		LevelOfDetail lod = config.lod();
 
 		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
 				new FilterLod(lod),

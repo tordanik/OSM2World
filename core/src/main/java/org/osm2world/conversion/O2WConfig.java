@@ -1,6 +1,5 @@
 package org.osm2world.conversion;
 
-import static org.osm2world.conversion.ConversionLog.LogLevel;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
 import java.awt.*;
@@ -27,7 +26,7 @@ import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.enums.LeftRight;
 
 /**
- * a set of configuration options for OSM2World.
+ * A set of configuration options for OSM2World.
  * Includes models, materials and settings which control the visual appearance of the scene.
  */
 public class O2WConfig {
@@ -53,7 +52,7 @@ public class O2WConfig {
 	}
 
 	/**
-	 * constructs a configuration from a {@link Map} containing key-value options for OSM2World
+	 * Constructs a configuration from a {@link Map} containing key-value options for OSM2World
 	 * and one or more config files. Config files use the .properties format.
 	 * For keys which are present multiple times, values from the map take precedence over values from the config files.
 	 * Among configFiles, those later in the list take precedence.
@@ -203,7 +202,7 @@ public class O2WConfig {
 					"\\s*(\\d{1,3})\\s*%\\s*\\)");
 
 	/**
-	 * parses colors that are given as a color scheme identifier
+	 * Parses colors that are given as a color scheme identifier
 	 * with a value tuple in brackets.
 	 * Currently only supports hsv.
 	 *
@@ -233,17 +232,6 @@ public class O2WConfig {
 
 	}
 
-	/** parses and returns the value of the lod property */
-	public LevelOfDetail getLod() {
-		return switch (this.getInt("lod", 4)) {
-			case 0 -> LOD0;
-			case 1 -> LOD1;
-			case 2 -> LOD2;
-			case 3 -> LOD3;
-			default -> LOD4;
-		};
-	}
-
 	/**
 	 * the background color for rendered images
 	 */
@@ -253,12 +241,34 @@ public class O2WConfig {
 
 	/**
 	 * Limit for the size of the canvas used for rendering an exported image.
-	 * The width and height each must not exceed this value.
+	 * The width and the height must each not exceed this value.
 	 * If the requested image is larger, it may be rendered in multiple passes and combined afterward.
 	 * This is intended to avoid overwhelmingly large canvases (which would lead to crashes).
 	 */
 	public int canvasLimit() {
 		return getInt("canvasLimit", 1024);
+	}
+
+	/**
+	 * The severity levels at which events should be logged to the console.
+	 * If this has not been set explicitly, the defaults depend on whether a {@link #logDir()} has been configured.
+	 */
+	public EnumSet<ConversionLog.LogLevel> consoleLogLevels() {
+		if (config.containsKey("consoleLogLevels")) {
+			List<ConversionLog.LogLevel> levels = new ArrayList<>();
+			for (Object level : config.getList("consoleLogLevels")) {
+				try {
+					levels.add(ConversionLog.LogLevel.valueOf(level.toString().toUpperCase()));
+				} catch (IllegalArgumentException ignored) { }
+			}
+			return EnumSet.copyOf(levels);
+		} else {
+			if (logDir() != null) {
+				return EnumSet.of(ConversionLog.LogLevel.FATAL);
+			} else {
+				return EnumSet.allOf(ConversionLog.LogLevel.class);
+			}
+		}
 	}
 
 	/**
@@ -298,6 +308,15 @@ public class O2WConfig {
 		};
 	}
 
+	/**
+	 * Indicates which metadata (such as OSM IDs and tags from the source data) should be exported to the output file.
+	 * Only works with some output formats (currently glTF and glb).
+	 * By default, only OSM IDs are exported.
+	 */
+	public Set<ObjectMetadataType> exportMetadata() {
+		return getEnumSet(ObjectMetadataType.class, "exportMetadata", EnumSet.of(ObjectMetadataType.ID));
+	}
+
 	public boolean forceUnbufferedPNGRendering() {
 		return getBoolean("forceUnbufferedPNGRendering", false);
 	}
@@ -333,6 +352,17 @@ public class O2WConfig {
 		return getBoolean("keepOsmElements", true);
 	}
 
+	/** The {@link LevelOfDetail} at which models should be generated. */
+	public LevelOfDetail lod() {
+		return switch (this.getInt("lod", 4)) {
+			case 0 -> LOD0;
+			case 1 -> LOD1;
+			case 2 -> LOD2;
+			case 3 -> LOD3;
+			default -> LOD4;
+		};
+	}
+
 	/**
 	 * output directory for log files
 	 */
@@ -340,46 +370,21 @@ public class O2WConfig {
 		return resolveFileConfigProperty(config.getString("logDir", null), false);
 	}
 
+	/**
+	 * The type of map projection to use during conversion.
+	 *
+	 * @return  a factory method to create a MapProjection instance from an origin
+	 */
+	public Function<LatLon,? extends MapProjection> mapProjection() {
+		return switch (getString("mapProjection", "")) {
+			case "OrthographicAzimuthalMapProjection" -> OrthographicAzimuthalMapProjection::new;
+			default -> MetricMapProjection::new;
+		};
+	}
+
 	/** The maximum number of log entries to write to log files. */
 	public int maxLogEntries() {
 		return getInt("maxLogEntries", 100);
-	}
-
-	/** Image quality for embedded textures. */
-	public float textureQuality() {
-		return getFloat("textureQuality", 0.75f);
-	}
-
-	/** Default tree density in forests. Large numbers of trees can negatively affect performance. */
-	public double treesPerSquareMeter() {
-		return getDouble("treesPerSquareMeter", 0.01f);
-	}
-
-	/**
-	 * the severity levels at which events should be logged to the console.
-	 * If this has not been set explicitly, the defaults depend on whether a {@link #logDir()} has been configured.
-	 */
-	public EnumSet<LogLevel> consoleLogLevels() {
-		if (config.containsKey("consoleLogLevels")) {
-			List<LogLevel> levels = new ArrayList<>();
-			for (Object level : config.getList("consoleLogLevels")) {
-				try {
-					levels.add(LogLevel.valueOf(level.toString().toUpperCase()));
-				} catch (IllegalArgumentException ignored) { }
-			}
-			return EnumSet.copyOf(levels);
-		} else {
-			if (logDir() != null) {
-				return EnumSet.of(ConversionLog.LogLevel.FATAL);
-			} else {
-				return EnumSet.allOf(ConversionLog.LogLevel.class);
-			}
-		}
-	}
-
-	/** a directory with SRTM data in .hgt or .hgt.zip format */
-	public @Nullable File srtmDir() {
-		return resolveFileConfigProperty(config.getString("srtmDir", null));
 	}
 
 	/**
@@ -399,8 +404,13 @@ public class O2WConfig {
 		return getString("3dmrUrl", null);
 	}
 
+	/** A directory with SRTM data in .hgt or .hgt.zip format */
+	public @Nullable File srtmDir() {
+		return resolveFileConfigProperty(config.getString("srtmDir", null));
+	}
+
 	/**
-	 * the algorithm to use for interpolating terrain elevation between sites of known elevation
+	 * The algorithm to use for interpolating terrain elevation between sites of known elevation
 	 * @return  a function to create an instance of the algorithm
 	 */
 	public Supplier<TerrainInterpolator> terrainInterpolator() {
@@ -413,25 +423,14 @@ public class O2WConfig {
 		};
 	}
 
-	/**
-	 * The type of map projection to use during conversion.
-	 *
-	 * @return  a factory method to create a MapProjection instance from an origin
-	 */
-	public Function<LatLon,? extends MapProjection> mapProjection() {
-		return switch (getString("mapProjection", "")) {
-			case "OrthographicAzimuthalMapProjection" -> OrthographicAzimuthalMapProjection::new;
-			default -> MetricMapProjection::new;
-		};
+	/** Image quality for embedded textures. */
+	public float textureQuality() {
+		return getFloat("textureQuality", 0.75f);
 	}
 
-	/**
-	 * Indicates which metadata (such as OSM IDs and tags from the source data) should be exported to the output file.
-	 * Only works with some output formats (currently glTF and glb).
-	 * By default, the only type of metadata
-	 */
-	public Set<ObjectMetadataType> exportMetadata() {
-		return getEnumSet(ObjectMetadataType.class, "exportMetadata", EnumSet.of(ObjectMetadataType.ID));
+	/** Default tree density in forests. Large numbers of trees can negatively affect performance. */
+	public double treesPerSquareMeter() {
+		return getDouble("treesPerSquareMeter", 0.01f);
 	}
 
 	/**
@@ -488,9 +487,7 @@ public class O2WConfig {
 		Arrays.stream(configFiles)
 				.filter(File::exists)
 				.findFirst()
-				.ifPresent(f -> {
-					config.addProperty("configPath", f.getAbsoluteFile().getParent());
-				});
+				.ifPresent(f -> config.addProperty("configPath", f.getAbsoluteFile().getParent()));
 
 		return config;
 

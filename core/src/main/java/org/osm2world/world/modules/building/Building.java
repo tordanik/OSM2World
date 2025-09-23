@@ -182,7 +182,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	protected @Nullable LevelOfDetail getConfiguredLod() {
-		return config.getLod();
+		return config.lod();
 	}
 
 	@Override

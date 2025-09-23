@@ -200,7 +200,7 @@ public class ExteriorBuildingWall {
 
 			LODRange lodRange = windowImplementations.get(windowImplementation);
 			if (buildingPart.config.containsKey("lod") &&
-					!lodRange.contains(buildingPart.config.getLod())) continue;
+					!lodRange.contains(buildingPart.config.lod())) continue;
 			target.setCurrentLodRange(lodRange);
 
 			/* construct the surface(s) */
@@ -271,7 +271,7 @@ public class ExteriorBuildingWall {
 
 								DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
 								if (lodRange.max().ordinal() < 3
-										|| buildingPart.config.getLod().ordinal() < 3) {
+										|| buildingPart.config.lod().ordinal() < 3) {
 									params = params.withInset(0.0);
 								}
 								mainSurface.addElementIfSpaceFree(new Door(pos, params));
@@ -447,7 +447,7 @@ public class ExteriorBuildingWall {
 		TagSet doorTags = TagSet.of("door", "overhead");
 		DoorParameters params = DoorParameters.fromTags(doorTags, this.tags);
 
-		if (buildingPart.config.getLod().ordinal() < 3) {
+		if (buildingPart.config.lod().ordinal() < 3) {
 			params = params.withInset(0.0);
 		}
 
