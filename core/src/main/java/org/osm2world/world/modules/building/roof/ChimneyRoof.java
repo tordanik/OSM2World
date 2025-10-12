@@ -1,13 +1,14 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.output.common.ExtrudeOption.TEX_HEIGHT_ALONG_PATH;
 import static org.osm2world.scene.material.Materials.VOID;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.osm2world.map_data.data.TagSet;
@@ -58,17 +59,17 @@ public class ChimneyRoof extends Roof {
 
 		/* draw the area around the hole */
 
-		List<TriangleXZ> trianglesXZ = new PolygonWithHolesXZ(outerPolygon, asList(chimneyHole)).getTriangulation();
-		List<TriangleXYZ> triangles = trianglesXZ.stream().map(t -> t.xyz(baseEle)).collect(toList());
+		List<TriangleXZ> trianglesXZ = new PolygonWithHolesXZ(outerPolygon, List.of(chimneyHole)).getTriangulation();
+		List<TriangleXYZ> triangles = trianglesXZ.stream().map(t -> t.xyz(baseEle)).toList();
 
 		target.drawTriangles(material, triangles,
 				triangleTexCoordLists(triangles, material, NamedTexCoordFunction.GLOBAL_X_Z));
 
 		/* draw the walls and bottom of the hole */
 
-		List<VectorXYZ> chimneyHolePath = asList(new VectorXYZ(0, chimneyHoleEle, 0), new VectorXYZ(0, baseEle, 0));
+		List<VectorXYZ> chimneyHolePath = List.of(new VectorXYZ(0, chimneyHoleEle, 0), new VectorXYZ(0, baseEle, 0));
 		target.drawExtrudedShape(material, new PolylineXZ(chimneyHole.vertices()).reverse(),
-				chimneyHolePath, null, null, null);
+				chimneyHolePath, null, null, EnumSet.of(TEX_HEIGHT_ALONG_PATH));
 
 		List<TriangleXZ> holeTrianglesXZ = chimneyHole.getTriangulation();
 		List<TriangleXYZ> holeTriangles = holeTrianglesXZ.stream().map(t -> t.xyz(chimneyHoleEle)).collect(toList());
