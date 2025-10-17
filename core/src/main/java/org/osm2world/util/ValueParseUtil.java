@@ -452,9 +452,11 @@ public final class ValueParseUtil {
 				Matcher rangePatternMatcher = LEVEL_RANGE_PATTERN.matcher(levelRange);
 
 				if (rangePatternMatcher.matches()) {
-					// range (e.g. "-5-10")
-					int lowerLevel = Integer.parseInt(rangePatternMatcher.group(1));
-					int upperLevel = Integer.parseInt(rangePatternMatcher.group(2));
+					// range (e.g. "-5-10" or "4-2")
+					int levelA = Integer.parseInt(rangePatternMatcher.group(1));
+					int levelB = Integer.parseInt(rangePatternMatcher.group(2));
+					int lowerLevel = Math.min(levelA, levelB);
+					int upperLevel = Math.max(levelA, levelB);
 					for (int i = lowerLevel; i <= upperLevel; i++) {
 						result.add(i);
 					}

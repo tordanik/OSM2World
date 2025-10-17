@@ -1,11 +1,12 @@
 package org.osm2world.util;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.osm2world.util.ValueParseUtil.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.util.ValueParseUtil.*;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.junit.Test;
 
@@ -177,6 +178,8 @@ public class ValueParseUtilTest {
     	assertEquals(asList(-4, -3), parseLevels("-4--3"));
     	assertEquals(asList(5, 6, 7), parseLevels("6;5 ; 7"));
     	assertEquals(asList(-3, 0, 1, 2, 3), parseLevels(" -3; 0-2 ;3"));
+		assertEquals(asList(1, 2, 3), parseLevels("3-1"));
+		assertEquals(asList(-1, 0), parseLevels("0--1"));
     }
 
     @Test
@@ -194,7 +197,6 @@ public class ValueParseUtilTest {
     @Test
     public void testParseLevelsInvalid() {
     	assertNull(parseLevels("ground floor"));
-    	assertNull(parseLevels("3-1"));
     	assertNull(parseLevels("5.5"));
     }
 
