@@ -6,15 +6,16 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.function.BiConsumer;
 
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.util.Resolution;
 
-class TextureTestUtil {
+final class TextureTestUtil {
 
 	/** prevents instantiation */
 	private TextureTestUtil() { }
 
-	static final TextureData drawTestTexture(BiConsumer<Resolution, Graphics2D> drawImpl) {
+	static TextureData drawTestTexture(BiConsumer<Resolution, Graphics2D> drawImpl) {
 		return new RuntimeTexture(new TextureDataDimensions(1, 1), Wrap.REPEAT, GLOBAL_X_Z) {
 			@Override
 			protected BufferedImage createBufferedImage() {
@@ -26,11 +27,16 @@ class TextureTestUtil {
 		};
 	}
 
-	static final TextureData drawSingleColorTexture(Color color) {
+	static TextureData drawSingleColorTexture(Color color) {
 		return drawTestTexture((res, g2d) -> {
-			g2d.setBackground(color);
+			g2d.setBackground(toAWT(color));
 			g2d.clearRect(0, 0, res.width, res.height);
 		});
 	}
+
+	static java.awt.Color toAWT(Color color) {
+		return new java.awt.Color(color.getRGB());
+	}
+
 
 }

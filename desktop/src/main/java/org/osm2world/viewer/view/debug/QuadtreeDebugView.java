@@ -4,8 +4,6 @@ import static java.lang.Math.min;
 import static org.osm2world.math.Vector3D.distance;
 import static org.osm2world.math.VectorXZ.listXYZ;
 
-import java.awt.*;
-
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.MapNode;
@@ -15,6 +13,7 @@ import org.osm2world.math.datastructures.MapQuadtree;
 import org.osm2world.math.datastructures.MapQuadtree.QuadLeaf;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.color.Color;
 
 public class QuadtreeDebugView extends StaticDebugView {
 

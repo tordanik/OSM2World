@@ -1,11 +1,10 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.*;
-
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.common.Primitive;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.PrimitiveBuffer;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 

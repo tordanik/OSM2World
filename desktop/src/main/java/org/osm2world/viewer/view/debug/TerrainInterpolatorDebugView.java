@@ -2,7 +2,6 @@ package org.osm2world.viewer.view.debug;
 
 import static java.util.Arrays.asList;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +17,7 @@ import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;

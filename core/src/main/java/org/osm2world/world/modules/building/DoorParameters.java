@@ -1,17 +1,16 @@
 package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseWidth;
-
-import java.awt.*;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.scene.color.Color;
 
 /**
  * data about a door.

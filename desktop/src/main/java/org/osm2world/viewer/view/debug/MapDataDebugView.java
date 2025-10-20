@@ -3,7 +3,6 @@ package org.osm2world.viewer.view.debug;
 import static java.util.Collections.emptyList;
 import static org.osm2world.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 
-import java.awt.*;
 import java.util.Collection;
 import java.util.function.Predicate;
 
@@ -20,6 +19,7 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material.Interpolation;
 

@@ -1,13 +1,13 @@
 package org.osm2world.scene.mesh;
 
-import static java.awt.Color.RED;
-import static java.awt.Color.YELLOW;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.osm2world.scene.color.Color.RED;
+import static org.osm2world.scene.color.Color.YELLOW;
 import static org.osm2world.scene.mesh.MeshTestUtil.containsTriangle;
 import static org.osm2world.test.TestUtil.assertSameCyclicOrder;
 

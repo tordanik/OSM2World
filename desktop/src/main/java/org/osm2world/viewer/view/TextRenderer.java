@@ -1,6 +1,6 @@
 package org.osm2world.viewer.view;
 
-import java.awt.Color;
+import org.osm2world.scene.color.Color;
 
 public interface TextRenderer {
 

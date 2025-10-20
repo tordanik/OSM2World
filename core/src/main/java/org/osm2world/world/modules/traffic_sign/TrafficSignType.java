@@ -1,6 +1,6 @@
 package org.osm2world.world.modules.traffic_sign;
 
-import static java.awt.Color.WHITE;
+import static org.osm2world.scene.color.Color.WHITE;
 import static org.osm2world.scene.material.Materials.getMaterial;
 
 import javax.annotation.Nullable;

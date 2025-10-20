@@ -338,7 +338,7 @@ public class FrontendPbfOutput extends MeshOutput {
 
 		float[] baseColorFactor = material.getNumTextureLayers() == 0
 				? new float[] {1f, 1f, 1f}
-				: material.getTextureLayers().get(0).baseColorFactor(LColor.fromAWT(material.getColor()), 1f);
+				: material.getTextureLayers().get(0).baseColorFactor(LColor.fromRGB(material.getColor()), 1f);
 
 		materialBuilder.setBaseColorR(round(baseColorFactor[0] * 255));
 		materialBuilder.setBaseColorG(round(baseColorFactor[1] * 255));

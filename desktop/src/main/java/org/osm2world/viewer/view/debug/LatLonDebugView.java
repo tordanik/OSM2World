@@ -1,8 +1,8 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.awt.Color.WHITE;
 import static java.lang.Math.ceil;
 import static java.lang.Math.floor;
+import static org.osm2world.scene.color.Color.WHITE;
 
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.MapProjection;

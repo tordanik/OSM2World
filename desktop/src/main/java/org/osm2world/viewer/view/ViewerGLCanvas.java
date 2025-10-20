@@ -2,11 +2,10 @@ package org.osm2world.viewer.view;
 
 import static jogamp.nativewindow.awt.AWTMisc.getWindow;
 
-import java.awt.*;
-
 import javax.swing.*;
 
 import org.osm2world.output.jogl.AbstractJOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.MessageManager.Message;

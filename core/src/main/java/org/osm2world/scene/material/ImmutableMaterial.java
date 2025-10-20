@@ -1,7 +1,8 @@
 package org.osm2world.scene.material;
 
-import java.awt.Color;
 import java.util.List;
+
+import org.osm2world.scene.color.Color;
 
 /**
  * a simple material class that offers no capabilities beyond the minimum

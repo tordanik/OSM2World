@@ -1,6 +1,5 @@
 package org.osm2world.output.jogl;
 
-import java.awt.*;
 import java.io.File;
 import java.util.List;
 
@@ -11,6 +10,7 @@ import org.osm2world.output.common.DrawBasedOutput;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.scene.color.Color;
 
 public interface JOGLOutput extends DrawBasedOutput {
 

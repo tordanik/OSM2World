@@ -1,6 +1,5 @@
 package org.osm2world.world.modules;
 
-import static java.awt.Color.BLACK;
 import static java.lang.Math.*;
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
@@ -13,6 +12,7 @@ import static org.osm2world.math.VectorXYZ.*;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.VectorXZ.angleBetween;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.scene.color.Color.BLACK;
 import static org.osm2world.scene.material.Materials.PLASTIC;
 import static org.osm2world.scene.material.Materials.SOLAR_PANEL;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
@@ -22,9 +22,7 @@ import static org.osm2world.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -40,6 +38,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;

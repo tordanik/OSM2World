@@ -1,18 +1,18 @@
 package org.osm2world.scene.material;
 
-import static java.awt.Color.BLACK;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.osm2world.scene.color.Color.BLACK;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.scene.material.TextureData.Wrap;

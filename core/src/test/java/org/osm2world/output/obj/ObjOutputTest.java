@@ -3,13 +3,13 @@ package org.osm2world.output.obj;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.*;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.Mesh;

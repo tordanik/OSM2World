@@ -1,23 +1,22 @@
 package org.osm2world.scene.material;
 
-import static java.awt.Color.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.osm2world.scene.color.Color.*;
 import static org.osm2world.scene.material.TextureTestUtil.drawSingleColorTexture;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.scene.color.Color;
 
 public class TextureAtlasTest {
 
 	@Test
-	public void testGetBufferedImage() throws IOException {
+	public void testGetBufferedImage() {
 
 		List<TextureData> testTextures = asList(
 				drawSingleColorTexture(RED),

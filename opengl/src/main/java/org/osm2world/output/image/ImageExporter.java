@@ -21,6 +21,7 @@ import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.*;
+import org.osm2world.scene.color.Color;
 import org.osm2world.util.Resolution;
 
 import com.jogamp.opengl.*;

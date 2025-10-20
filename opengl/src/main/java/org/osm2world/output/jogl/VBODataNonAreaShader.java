@@ -3,10 +3,10 @@ package org.osm2world.output.jogl;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
 
-import java.awt.*;
 import java.nio.Buffer;
 
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.scene.color.Color;
 
 import com.jogamp.opengl.GL3;
 

@@ -1,7 +1,8 @@
 package org.osm2world.viewer.view;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
+
+import org.osm2world.scene.color.Color;
 
 import com.jogamp.opengl.util.awt.TextRenderer;
 
@@ -24,7 +25,7 @@ public class TextRendererFixedFunction implements org.osm2world.viewer.view.Text
 //	}
 
 	protected void drawText(String string, float x, float y, Color color) {
-		textRenderer.setColor(color);
+		textRenderer.setColor(new java.awt.Color(color.getRGB()));
 		textRenderer.beginRendering((int) (screenWidth / scale), (int) (screenHeight / scale));
 		textRenderer.draw(string, (int) x, (int) y);
 		textRenderer.endRendering();

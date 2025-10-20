@@ -4,7 +4,6 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +15,7 @@ import org.osm2world.math.shapes.ClosedShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.CommonTarget;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;

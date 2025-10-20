@@ -3,11 +3,10 @@ package org.osm2world.scene.model;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD0;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 
-import java.awt.*;
-
 import javax.annotation.Nullable;
 
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.mesh.LODRange;
 
 /**

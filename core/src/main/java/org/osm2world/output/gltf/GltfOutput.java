@@ -180,7 +180,7 @@ public class GltfOutput extends AbstractOutput {
 		List<? extends TriangleXYZ> triangles = triangleGeometry.triangles;
 		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords;
 		List<LColor> colors = triangleGeometry.colors == null ? null
-				: triangleGeometry.colors.stream().map(LColor::fromAWT).toList();
+				: triangleGeometry.colors.stream().map(LColor::fromRGB).toList();
 
 		texCoordLists = mirroredVertically(texCoordLists); // move texture coordinate origin to the top left
 

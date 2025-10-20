@@ -1,6 +1,5 @@
 package org.osm2world.world.modules;
 
-import static java.awt.Color.YELLOW;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.min;
@@ -8,6 +7,7 @@ import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
+import static org.osm2world.scene.color.Color.YELLOW;
 import static org.osm2world.scene.material.Materials.PLASTIC;
 import static org.osm2world.scene.material.Materials.SAND;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
@@ -18,7 +18,6 @@ import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.triangulateAreaBetween;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +34,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.JTSBufferUtil;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.world.data.AbstractAreaWorldObject;

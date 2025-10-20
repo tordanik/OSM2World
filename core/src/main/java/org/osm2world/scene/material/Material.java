@@ -3,8 +3,6 @@ package org.osm2world.scene.material;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import java.awt.*;
-import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,6 +11,7 @@ import javax.annotation.Nonnull;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 
 /**
@@ -96,7 +95,7 @@ public abstract class Material {
 	}
 
 	public LColor getLColor() {
-		return LColor.fromAWT(getColor());
+		return LColor.fromRGB(getColor());
 	}
 
 	public boolean isDoubleSided() {

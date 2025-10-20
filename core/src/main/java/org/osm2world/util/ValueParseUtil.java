@@ -3,7 +3,6 @@ package org.osm2world.util;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.POSITIVE;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -12,6 +11,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.ColorNameDefinition;
 
 /** parses the syntax of typical OSM tag values */

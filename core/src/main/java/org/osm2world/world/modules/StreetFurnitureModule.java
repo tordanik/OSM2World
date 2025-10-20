@@ -1,6 +1,5 @@
 package org.osm2world.world.modules;
 
-import static java.awt.Color.*;
 import static java.lang.Math.*;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
@@ -16,6 +15,7 @@ import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
+import static org.osm2world.scene.color.Color.*;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.mesh.ExtrusionGeometry.createColumn;
@@ -29,10 +29,8 @@ import static org.osm2world.world.attachment.AttachmentUtil.getCompatibleSurface
 import static org.osm2world.world.attachment.AttachmentUtil.isAttachedToVerticalSurface;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
-import java.awt.*;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -47,6 +45,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
@@ -1478,7 +1477,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(-depth / 2)).addY(height),
 					getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
 
-			Material lidMaterial = material.withColor(material.getColor().brighter());
+			Material lidMaterial = material;
 			target.drawTriangleFan(lidMaterial, vs, texCoordLists(vs, lidMaterial, SLOPED_TRIANGLES));
 
 		}

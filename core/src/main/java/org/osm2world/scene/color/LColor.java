@@ -2,9 +2,6 @@ package org.osm2world.scene.color;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.awt.*;
-import java.awt.color.ColorSpace;
-
 /**
  * a color with linear RGB components between 0.0 and 1.0.
  * Linear components are useful for doing calculations on colors, such as averaging or scaling them.
@@ -13,8 +10,6 @@ public class LColor {
 
 	public static final LColor BLACK = new LColor(0f, 0f, 0f);
 	public static final LColor WHITE = new LColor(1f, 1f, 1f);
-
-	private static final ColorSpace LINEAR_COLOR_SPACE = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
 
 	public final float red;
 	public final float green;
@@ -49,13 +44,41 @@ public class LColor {
 		return new LColor(red * color.red, green * color.green, blue * color.blue);
 	}
 
-	public Color toAWT() {
-		return new Color(LINEAR_COLOR_SPACE, componentsRGB(), 1.0f);
+	public static LColor fromRGB(Color color) {
+		return new LColor(new float[] {
+			(float) srgbToLinear(color.getRed()),
+			(float) srgbToLinear(color.getGreen()),
+			(float) srgbToLinear(color.getBlue())
+		});
 	}
 
-	public static LColor fromAWT(Color color) {
-		float[] componentsRGB = color.getColorComponents(LINEAR_COLOR_SPACE, null);
-		return new LColor(componentsRGB);
+	/**
+	 * Convert sRGB component (0-255) to linear RGB (0.0-1.0)
+	 */
+	private static double srgbToLinear(int component) {
+		double normalized = component / 255.0;
+		if (normalized <= 0.04045) {
+			return normalized / 12.92;
+		} else {
+			return Math.pow((normalized + 0.055) / 1.055, 2.4);
+		}
+	}
+
+	public Color toRGB() {
+		return new Color(linearToSrgb(red), linearToSrgb(green), linearToSrgb(blue));
+	}
+
+	/**
+	 * Convert linear RGB component (0.0-1.0) to sRGB (0-255)
+	 */
+	private static int linearToSrgb(double linear) {
+		double srgb;
+		if (linear <= 0.0031308) {
+			srgb = linear * 12.92;
+		} else {
+			srgb = 1.055 * Math.pow(linear, 1.0 / 2.4) - 0.055;
+		}
+		return (int) Math.round(Math.max(0, Math.min(255, srgb * 255)));
 	}
 
 	@Override

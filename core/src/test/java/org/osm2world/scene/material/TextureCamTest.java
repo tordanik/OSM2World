@@ -1,9 +1,9 @@
 package org.osm2world.scene.material;
 
-import static java.awt.Color.*;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.osm2world.scene.color.Color.*;
 import static org.osm2world.scene.material.TextureCam.colorFromNormal;
 import static org.osm2world.scene.material.TextureCam.normalFromColor;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
@@ -61,7 +61,7 @@ public class TextureCamTest {
 
 		assertAlmostEquals(new LColor(0.5f, 0.5f, 0f),
 				result.baseColorTexture.getColorAt(new VectorXZ(0.0, 0.5), Wrap.CLAMP));
-		assertAlmostEquals(LColor.fromAWT(GRAY),
+		assertAlmostEquals(LColor.fromRGB(GRAY),
 				result.baseColorTexture.getColorAt(new VectorXZ(1.0, 0.5), Wrap.CLAMP));
 
 		assertAlmostEquals(new LColor(1f, 1f, 1f),

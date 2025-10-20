@@ -2,11 +2,9 @@ package org.osm2world.conversion;
 
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -22,6 +20,7 @@ import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.enums.LeftRight;
 

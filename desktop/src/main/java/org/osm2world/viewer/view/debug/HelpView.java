@@ -1,10 +1,9 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.*;
-
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.util.GlobalValues;
 import org.osm2world.viewer.view.TextRenderer;
 import org.osm2world.viewer.view.TextRendererFixedFunction;

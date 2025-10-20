@@ -1,9 +1,9 @@
 package org.osm2world.world.modules.traffic_sign;
 
-import static java.awt.Color.WHITE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.scene.color.Color.WHITE;
 import static org.osm2world.scene.material.Material.Interpolation.FLAT;
 import static org.osm2world.scene.material.Materials.STEEL;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;

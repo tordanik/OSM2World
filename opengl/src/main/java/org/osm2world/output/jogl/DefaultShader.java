@@ -5,17 +5,17 @@ import static com.jogamp.opengl.GL2ES2.GL_TEXTURE_BORDER_COLOR;
 import static java.lang.Math.min;
 import static org.osm2world.output.jogl.AbstractJOGLOutput.getFloatBuffer;
 
-import java.awt.*;
 import java.nio.FloatBuffer;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.scene.color.Color;
+import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.material.TextureLayer;
-import org.osm2world.scene.color.LColor;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
@@ -179,7 +179,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (numTexLayers == 0) {
 			color = material.getColor();
 		} else if (material.getTextureLayers().get(0).colorable) {
-			color = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromAWT(material.getColor())).toAWT();
+			color = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromRGB(material.getColor())).toRGB();
 		} else {
 			color = Color.WHITE;
 		}

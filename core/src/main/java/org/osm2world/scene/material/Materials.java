@@ -1,7 +1,7 @@
 package org.osm2world.scene.material;
 
-import static java.awt.Color.*;
 import static java.util.Collections.emptyList;
+import static org.osm2world.scene.color.Color.*;
 
 import java.awt.*;
 import java.io.File;
@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.scene.material.TextTexture.FontStyle;
@@ -426,7 +427,7 @@ public final class Materials {
 			/* If material is not defined in Materials.java, create new material
 			 * and add it to externalMaterials map */
 			if (material == null) {
-				material = new ConfMaterial(Interpolation.FLAT, Color.white);
+				material = new ConfMaterial(Interpolation.FLAT, WHITE);
 				externalMaterials.put(materialName, material);
 			}
 

@@ -6,9 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.util.ValueParseUtil.*;
 
-import java.awt.*;
-
 import org.junit.Test;
+import org.osm2world.scene.color.Color;
 
 public class ValueParseUtilTest {
 

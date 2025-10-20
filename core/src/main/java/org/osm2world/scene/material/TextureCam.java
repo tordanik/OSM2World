@@ -22,6 +22,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
+import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.material.TextureLayer.TextureType;
 import org.osm2world.scene.mesh.Mesh;
@@ -29,7 +30,6 @@ import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
-import org.osm2world.scene.color.LColor;
 
 /**
  * A "texture camera" that produces textures by rendering a scene from a given camera position.
@@ -44,7 +44,7 @@ public class TextureCam {
 	public static final Resolution DEFAULT_RESOLUTION = new Resolution(1024, 1024);
 
 	private static final int TRANSPARENT_RGB = new Color(0, 0, 0, 0).getRGB();
-	private static final int DEFAULT_NORMAL_RGB = new LColor(0.5f, 0.5f, 1f).toAWT().getRGB();
+	private static final int DEFAULT_NORMAL_RGB = new LColor(0.5f, 0.5f, 1f).toRGB().getRGB();
 
 	private static class TriangleWithAttributes {
 
@@ -110,12 +110,12 @@ public class TextureCam {
 
 					if (tg.colors != null) {
 						colors = asList(
-								LColor.fromAWT(tg.colors.get(3 * i)),
-								LColor.fromAWT(tg.colors.get(3 * i + 1)),
-								LColor.fromAWT(tg.colors.get(3 * i + 2)));
+								LColor.fromRGB(tg.colors.get(3 * i)),
+								LColor.fromRGB(tg.colors.get(3 * i + 1)),
+								LColor.fromRGB(tg.colors.get(3 * i + 2)));
 					} else if (mesh.material.getNumTextureLayers() == 0
 							|| mesh.material.getTextureLayers().get(0).colorable) {
-						colors = nCopies(3, LColor.fromAWT(mesh.material.color));
+						colors = nCopies(3, LColor.fromRGB(mesh.material.color));
 					} else {
 						colors = nCopies(3, LColor.WHITE);
 					}
@@ -185,10 +185,10 @@ public class TextureCam {
 					LColor geometryColor = interpolateOnTriangle(point,
 							t.triangle, t.colors.get(0), t.colors.get(1), t.colors.get(2));
 					LColor c = pickColorAtTexCoord(TextureType.BASE_COLOR, texCoord, t.material, geometryColor);
-					colorImage.setRGB(x, y, c.toAWT().getRGB());
+					colorImage.setRGB(x, y, c.toRGB().getRGB());
 
 					LColor cOrm = pickColorAtTexCoord(TextureType.ORM, texCoord, t.material, LColor.WHITE);
-					ormImage.setRGB(x, y, cOrm.toAWT().getRGB());
+					ormImage.setRGB(x, y, cOrm.toRGB().getRGB());
 
 					LColor cNormal = pickColorAtTexCoord(TextureType.NORMAL, texCoord, t.material, LColor.WHITE);
 					if (cNormal == LColor.WHITE) {
@@ -207,7 +207,7 @@ public class TextureCam {
 						// TODO: general solution: rotate texture normal vector based on geometry normal vector (MikkTSpace)
 						cNormal = colorFromNormal(geometryNormal);
 					}
-					normalImage.setRGB(x, y, cNormal.toAWT().getRGB());
+					normalImage.setRGB(x, y, cNormal.toRGB().getRGB());
 
 					displacementHeights[x][y] = interpolateOnTriangle(point, t.triangle, t.vertexHeights.get(0),
 							t.vertexHeights.get(1), t.vertexHeights.get(2));
@@ -250,7 +250,7 @@ public class TextureCam {
 					float value = (float) ((absoluteHeight - minHeight) / (maxHeight - minHeight));
 
 					LColor cDisplacement = new LColor(value, value, value);
-					displacementImage.setRGB(x, y, cDisplacement.toAWT().getRGB());
+					displacementImage.setRGB(x, y, cDisplacement.toRGB().getRGB());
 
 				}
 			}
@@ -271,12 +271,12 @@ public class TextureCam {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x - i, y, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(-1, 0, 0.01).normalize()).toAWT().getRGB());
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(-1, 0, 0.01).normalize()).toRGB().getRGB());
 					} else if (jumpHeight < -jumpThreshold) {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x - 1 + i, y, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(+1, 0, 0.01).normalize()).toAWT().getRGB());
+						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(+1, 0, 0.01).normalize()).toRGB().getRGB());
 					}
 				}
 
@@ -287,12 +287,12 @@ public class TextureCam {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x, y - i, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, -1, 0.01).normalize()).toAWT().getRGB());
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, -1, 0.01).normalize()).toRGB().getRGB());
 					} else if (jumpHeight < -jumpThreshold) {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x, y - 1 + i, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 1, 0.01).normalize()).toAWT().getRGB());
+						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 1, 0.01).normalize()).toRGB().getRGB());
 					}
 				}
 

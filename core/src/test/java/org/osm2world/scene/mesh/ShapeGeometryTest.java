@@ -1,11 +1,11 @@
 package org.osm2world.scene.mesh;
 
-import static java.awt.Color.WHITE;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static org.junit.Assert.*;
 import static org.osm2world.math.VectorXYZ.*;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
+import static org.osm2world.scene.color.Color.WHITE;
 import static org.osm2world.scene.mesh.MeshTestUtil.assertContainsQuad;
 import static org.osm2world.scene.mesh.MeshTestUtil.containsTriangle;
 

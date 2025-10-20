@@ -4,9 +4,9 @@ import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES2.GL_TEXTURE_BORDER_COLOR;
 import static org.osm2world.output.jogl.AbstractJOGLOutput.getFloatBuffer;
 
-import java.awt.*;
 import java.nio.FloatBuffer;
 
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.scene.material.TextureData;

@@ -3,12 +3,11 @@ package org.osm2world.viewer.view.debug;
 import static org.osm2world.math.VectorXZ.listXYZ;
 import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
-import java.awt.*;
-
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
 

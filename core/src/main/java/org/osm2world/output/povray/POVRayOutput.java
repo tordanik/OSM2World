@@ -1,12 +1,10 @@
 package org.osm2world.output.povray;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.List;
 import java.util.*;
 
 import javax.annotation.Nonnull;
@@ -22,6 +20,7 @@ import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.OrthographicProjection;
 import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.*;
 import org.osm2world.util.GlobalValues;
 

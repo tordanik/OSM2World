@@ -1,16 +1,14 @@
 package org.osm2world.scene.mesh;
 
-import static java.awt.Color.WHITE;
 import static java.lang.Math.min;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.GeometryUtil.isRightOf;
+import static org.osm2world.scene.color.Color.WHITE;
 import static org.osm2world.scene.mesh.Geometry.combine;
 
-import java.awt.*;
-import java.util.List;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,9 +24,10 @@ import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
+import org.osm2world.scene.color.Color;
+import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.*;
 import org.osm2world.util.FaultTolerantIterationUtil;
-import org.osm2world.scene.color.LColor;
 import org.osm2world.world.data.WorldObject;
 
 import com.google.common.base.Objects;
@@ -369,19 +368,19 @@ public class MeshStore {
 
 				} else if (mesh.geometry instanceof ShapeGeometry sg) {
 
-					LColor existingColor = sg.color == null ? LColor.WHITE : LColor.fromAWT(sg.color);
+					LColor existingColor = sg.color == null ? LColor.WHITE : LColor.fromRGB(sg.color);
 					LColor newColor = existingColor.multiply(mesh.material.getLColor());
 
 					newGeometry = new ShapeGeometry(sg.shape, sg.point, sg.frontVector, sg.upVector, sg.scaleFactor,
-							newColor.toAWT(), sg.normalMode, sg.textureDimensions);
+							newColor.toRGB(), sg.normalMode, sg.textureDimensions);
 
 				} else if (mesh.geometry instanceof ExtrusionGeometry eg) {
 
-					LColor existingColor = eg.color == null ? LColor.WHITE : LColor.fromAWT(eg.color);
-					LColor newColor = existingColor.multiply(LColor.fromAWT(mesh.material.getColor()));
+					LColor existingColor = eg.color == null ? LColor.WHITE : LColor.fromRGB(eg.color);
+					LColor newColor = existingColor.multiply(LColor.fromRGB(mesh.material.getColor()));
 
 					newGeometry = new ExtrusionGeometry(eg.shape, eg.path, eg.upVectors, eg.scaleFactors,
-							newColor.toAWT(), eg.options, eg.textureDimensions);
+							newColor.toRGB(), eg.options, eg.textureDimensions);
 
 				} else {
 					throw new Error("unsupported geometry type: " + mesh.geometry.getClass());
@@ -669,7 +668,7 @@ public class MeshStore {
 							for (int j = 0; j <= 2; j++) {
 
 								if (origColors != null) {
-									origColors[j] = LColor.fromAWT(tg.colors.get(3 * i + j));
+									origColors[j] = LColor.fromRGB(tg.colors.get(3 * i + j));
 								}
 
 								origNormals[j] = normals.get(3 * i + j);
@@ -698,7 +697,7 @@ public class MeshStore {
 
 									if (origColors != null) {
 										newColors.add(GeometryUtil.interpolateOnTriangle(projectedV, projectedTriangle,
-												origColors[0], origColors[1], origColors[2]).toAWT());
+												origColors[0], origColors[1], origColors[2]).toRGB());
 									}
 
 									newNormals.add(GeometryUtil.interpolateOnTriangle(projectedV, projectedTriangle,

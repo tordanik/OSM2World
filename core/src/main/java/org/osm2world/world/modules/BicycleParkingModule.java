@@ -1,6 +1,5 @@
 package org.osm2world.world.modules;
 
-import static java.awt.Color.*;
 import static java.lang.Math.max;
 import static java.lang.Math.toRadians;
 import static java.util.Collections.emptyList;
@@ -11,6 +10,7 @@ import static org.osm2world.math.VectorXZ.listXYZ;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
+import static org.osm2world.scene.color.Color.*;
 import static org.osm2world.scene.material.Material.Interpolation.SMOOTH;
 import static org.osm2world.scene.material.Materials.STEEL;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
@@ -21,7 +21,6 @@ import static org.osm2world.util.ValueParseUtil.parseAngle;
 import static org.osm2world.util.ValueParseUtil.parseUInt;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +35,7 @@ import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.*;

@@ -11,9 +11,7 @@ import static org.osm2world.output.common.ExtrudeOption.*;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
@@ -23,6 +21,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.texcoord.PrecomputedTexCoordFunction;

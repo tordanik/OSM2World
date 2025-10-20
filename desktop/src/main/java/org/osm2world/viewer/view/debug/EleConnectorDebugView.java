@@ -1,11 +1,10 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.awt.Color.BLUE;
-
-import java.awt.*;
+import static org.osm2world.scene.color.Color.BLUE;
 
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.world.data.WorldObject;
 
 /**

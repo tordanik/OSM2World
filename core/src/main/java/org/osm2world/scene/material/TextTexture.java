@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 
 import com.google.common.base.Objects;
@@ -67,7 +68,7 @@ public class TextTexture extends RuntimeTexture {
 			image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
 			g2d = image.createGraphics();
 			g2d.setFont(font);
-			g2d.setPaint(textColor);
+			g2d.setPaint(new java.awt.Color(textColor.getRGB()));
 
 			//place text
 			int xCoord = (int)(imageWidth*leftOffset/100 - stringWidth/2);

@@ -1,8 +1,7 @@
 package org.osm2world.output.common.lighting;
 
-import java.awt.Color;
-
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.scene.color.Color;
 
 /**
  * parameters that describe lighting affecting the entire scene; immutable

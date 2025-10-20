@@ -1,11 +1,10 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.*;
-
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.world.modules.building.Building;
 import org.osm2world.world.modules.building.BuildingPart;
 import org.osm2world.world.modules.building.roof.HeightfieldRoof;

@@ -2,7 +2,6 @@ package org.osm2world.viewer.view.debug;
 
 import static java.util.Collections.emptyList;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,6 +19,7 @@ import org.osm2world.output.jogl.JOGLOutputFixedFunction;
 import org.osm2world.output.jogl.JOGLOutputShader;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material.Interpolation;
 

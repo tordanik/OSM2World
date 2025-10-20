@@ -10,7 +10,6 @@ import static org.osm2world.util.enums.LeftRight.RIGHT;
 import static org.osm2world.world.modules.RoadModule.getConnectedRoads;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseDirection;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,6 +23,7 @@ import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.MapRelation.Membership;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.util.enums.ForwardBackward;
 import org.osm2world.util.enums.LeftRight;

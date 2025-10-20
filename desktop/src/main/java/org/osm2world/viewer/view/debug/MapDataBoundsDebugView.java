@@ -1,10 +1,10 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.*;
 import java.util.List;
 
 import org.osm2world.math.VectorXZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 
 /**
  * shows the bounding boxes of map data

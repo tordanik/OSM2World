@@ -3,7 +3,6 @@ package org.osm2world.output.jogl;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL2GL3.GL_DOUBLE;
 
-import java.awt.Color;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -11,12 +10,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.scene.color.Color;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL3;
 
 /**
- * Renders the a bunch of {@link NonAreaPrimitive} objects using JOGL and the new shader based OpengGL pipeline.
+ * Renders the a bunch of {@link NonAreaPrimitive} objects using JOGL and the new shader based OpenGL pipeline.
  * Uses vertex buffer objects (VBO) to speed up the process.
  *
  * If you don't need the renderer anymore, it's recommended to manually call

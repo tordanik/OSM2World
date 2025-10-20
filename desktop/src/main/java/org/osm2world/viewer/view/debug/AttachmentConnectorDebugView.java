@@ -1,13 +1,12 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.awt.Color.GREEN;
-import static java.awt.Color.RED;
 import static org.osm2world.math.VectorXZ.Z_UNIT;
-
-import java.awt.*;
+import static org.osm2world.scene.color.Color.GREEN;
+import static org.osm2world.scene.color.Color.RED;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.attachment.AttachmentConnector;

@@ -3,12 +3,11 @@ package org.osm2world.output.jogl;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2.*;
 import static com.jogamp.opengl.GL2ES3.GL_QUADS;
-import static java.awt.Color.WHITE;
+import static org.osm2world.scene.color.Color.WHITE;
 import static org.osm2world.scene.material.Material.Transparency.BINARY;
 import static org.osm2world.scene.material.Material.Transparency.TRUE;
 import static org.osm2world.scene.material.Material.multiplyColor;
 
-import java.awt.*;
 import java.io.File;
 import java.util.List;
 
@@ -20,18 +19,19 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.common.rendering.Camera;
+import org.osm2world.output.common.rendering.OrthographicProjection;
+import org.osm2world.output.common.rendering.PerspectiveProjection;
+import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.output.jogl.JOGLRenderingParameters.Winding;
+import org.osm2world.scene.color.Color;
+import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.ImageFileTexture;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.material.TextureDataDimensions;
-import org.osm2world.output.common.rendering.Camera;
-import org.osm2world.output.common.rendering.OrthographicProjection;
-import org.osm2world.output.common.rendering.PerspectiveProjection;
-import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
-import org.osm2world.output.jogl.JOGLRenderingParameters.Winding;
-import org.osm2world.scene.color.LColor;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
@@ -341,7 +341,7 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 		if (numTexLayers == 0) {
 			c = material.getColor();
 		} else if (material.getTextureLayers().get(0).colorable) {
-			c = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromAWT(material.getColor())).toAWT();
+			c = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromRGB(material.getColor())).toRGB();
 		}
 
 		//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse

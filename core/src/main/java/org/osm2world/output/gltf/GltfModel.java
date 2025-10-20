@@ -5,7 +5,6 @@ import static java.lang.Math.*;
 import static org.osm2world.scene.material.TextureData.Wrap;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
-import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,7 +12,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
@@ -25,6 +23,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.gltf.data.*;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.LODRange;
@@ -151,7 +150,7 @@ public class GltfModel implements Model {
 										min(max(0f, (float)c.x), 1f),
 										min(max(0f, (float)c.y), 1f),
 										min(max(0f, (float)-c.z), 1f))
-										.toAWT())
+										.toRGB())
 								.toList();
 					}
 
@@ -430,7 +429,7 @@ public class GltfModel implements Model {
 				if (PLACEHOLDER_COLOR.equals(lColor) && instanceColor != null) {
 					color = instanceColor;
 				} else {
-					color = lColor.toAWT();
+					color = lColor.toRGB();
 				}
 			}
 

@@ -5,8 +5,6 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
-import java.awt.*;
-import java.util.List;
 import java.util.*;
 
 import org.osm2world.math.Vector3D;
@@ -15,6 +13,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 
 public final class TestUtil {
@@ -147,8 +146,8 @@ public final class TestUtil {
 	}
 
 	public static final void assertAlmostEquals(Color expected, Color actual) {
-		float[] expectedComponents = expected.getRGBColorComponents(null);
-		float[] actualComponents = actual.getRGBColorComponents(null);
+		float[] expectedComponents = expected.getColorComponents(null);
+		float[] actualComponents = actual.getColorComponents(null);
 		for (int i = 0; i < 3; i++) {
 			if (!almostEquals(expectedComponents[i], actualComponents[i])) {
 				fail("expected " + expected + ", was " + actual);

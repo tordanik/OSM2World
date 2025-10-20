@@ -1,9 +1,9 @@
 package org.osm2world.output.jogl;
 
-import java.awt.*;
 import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.scene.color.Color;
 
 /**
  * represents points and lines to be drawn by a {@link JOGLOutput}.

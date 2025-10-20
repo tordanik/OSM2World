@@ -1,14 +1,13 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.awt.Color.*;
 import static java.lang.Math.ceil;
 import static java.lang.Math.floor;
-
-import java.awt.*;
+import static org.osm2world.scene.color.Color.*;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 
 /**
  * shows the internal world coordinate grid

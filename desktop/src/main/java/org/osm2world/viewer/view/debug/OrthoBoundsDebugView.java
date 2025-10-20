@@ -1,6 +1,5 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.*;
 import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
@@ -8,6 +7,7 @@ import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.output.common.rendering.OrthographicUtil;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 
 /**

@@ -1,16 +1,17 @@
 package org.osm2world.scene.mesh;
 
-import org.osm2world.math.VectorXYZ;
-import org.osm2world.math.VectorXZ;
-import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.scene.material.TextureDataDimensions;
-
-import javax.annotation.Nullable;
-import java.awt.*;
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.VectorXZ;
+import org.osm2world.scene.color.Color;
+import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.scene.material.TextureDataDimensions;
 
 public class MeshUtil {
 

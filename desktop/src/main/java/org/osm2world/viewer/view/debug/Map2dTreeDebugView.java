@@ -1,12 +1,11 @@
 package org.osm2world.viewer.view.debug;
 
-import java.awt.*;
-
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.Map2dTree;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.Scene;
+import org.osm2world.scene.color.Color;
 
 public class Map2dTreeDebugView extends StaticDebugView {
 

@@ -1,9 +1,8 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.awt.Color.ORANGE;
 import static java.util.Collections.emptyList;
+import static org.osm2world.scene.color.Color.ORANGE;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -11,6 +10,7 @@ import java.util.Random;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.output.jogl.JOGLOutput;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;

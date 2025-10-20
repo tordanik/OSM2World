@@ -3,10 +3,9 @@ package org.osm2world.output.jogl;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2.GL_POLYGON;
 import static java.util.Arrays.asList;
-import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredVertically;
 import static org.osm2world.output.jogl.NonAreaPrimitive.Type.*;
+import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredVertically;
 
-import java.awt.*;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +16,11 @@ import org.osm2world.output.common.Primitive;
 import org.osm2world.output.common.Primitive.Type;
 import org.osm2world.output.common.PrimitiveOutput;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.scene.color.Color;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.TextureLayer;
 
 import com.jogamp.opengl.GL;
 
@@ -186,7 +186,7 @@ public abstract class AbstractJOGLOutput extends PrimitiveOutput implements JOGL
 
 	static final FloatBuffer getFloatBuffer(Color color) {
 		float colorArray[] = {0, 0, 0, color.getAlpha() / 255f};
-		color.getRGBColorComponents(colorArray);
+		color.getColorComponents(colorArray);
 		return FloatBuffer.wrap(colorArray);
 	}
 }

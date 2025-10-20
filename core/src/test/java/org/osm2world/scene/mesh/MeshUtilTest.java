@@ -3,12 +3,12 @@ package org.osm2world.scene.mesh;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.scene.mesh.MeshUtil.createBox;
 
-import java.awt.*;
 import java.util.List;
 
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.TextureDataDimensions;
 
 public class MeshUtilTest {

@@ -1,7 +1,5 @@
 package org.osm2world.scene.color;
 
-import java.awt.Color;
-
 /** a mapping from color names to RGB colors */
 public interface ColorNameDefinition {
 

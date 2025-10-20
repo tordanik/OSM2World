@@ -3,11 +3,11 @@ package org.osm2world.conversion;
 import static org.junit.Assert.*;
 import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
-import java.awt.*;
 import java.io.File;
 import java.util.Map;
 
 import org.junit.Test;
+import org.osm2world.scene.color.Color;
 import org.osm2world.util.enums.ForwardBackward;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.LeftRightBoth;

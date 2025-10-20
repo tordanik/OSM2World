@@ -27,6 +27,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.osm2world.math.VectorXZ;
+import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
@@ -222,7 +223,7 @@ public abstract class TextureData {
 		BufferedImage image = getBufferedImage();
 		int x = min((int)floor(image.getWidth() * texCoord.x), image.getWidth() - 1);
 		int y = min((int)floor(image.getHeight() * texCoord.z), image.getHeight() - 1);
-		return LColor.fromAWT(new Color(image.getRGB(x, y)));
+		return LColor.fromRGB(new Color(image.getRGB(x, y)));
 
 	}
 
