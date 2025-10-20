@@ -1,11 +1,11 @@
 package org.osm2world.map_elevation.creation;
 
 import static java.lang.Math.*;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNullElse;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -100,12 +100,12 @@ public class SRTMData implements TerrainElevationData {
 
 			Pattern pattern = Pattern.compile(fileNameRegex);
 
-			Optional<Path> path = Files.list(tileDirectory.toPath())
-					.filter(it -> pattern.matcher(it.getFileName().toString()).matches())
+			Optional<File> file = stream(requireNonNullElse(tileDirectory.listFiles(), new File[0]))
+					.filter(it -> pattern.matcher(it.getName()).matches())
 					.findFirst();
 
-			if (path.isPresent()) {
-				setTile(lon, lat, new SRTMTile(path.get().toFile()));
+			if (file.isPresent()) {
+				setTile(lon, lat, new SRTMTile(file.get()));
 			} else {
 				ConversionLog.error("Missing SRTM tile " + fileNameRegex);
 			}
