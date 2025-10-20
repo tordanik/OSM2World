@@ -1,23 +1,21 @@
 package org.osm2world.math.algorithms;
 
+import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
-import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.VectorXZ.*;
+import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.test.TestUtil.anyVectorXZ;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.math.shapes.LineSegmentXZ;
-import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.*;
 
 public class GeometryUtilTest {
 
@@ -29,6 +27,27 @@ public class GeometryUtilTest {
 
 		assertEquals(new VectorXZ(0, 0), getLineSegmentIntersection(l1.p1, l1.p2, l2.p1, l2.p2));
 
+	}
+
+	@Test
+	public void testDistanceFromLine() {
+
+		LineXZ l1 = new LineXZ(new VectorXZ(1, -10), new VectorXZ(1, 10));
+		assertEquals(1, distanceFromLine(new VectorXZ(0, 0), l1), 0.001);
+		assertEquals(0, distanceFromLine(new VectorXZ(1, 20), l1), 0.001);
+
+		LineXZ l2 = new LineXZ(new VectorXZ(-1, -1), new VectorXZ(1, 1));
+		assertEquals(0, distanceFromLine(new VectorXZ(0, 0), l2), 0.001);
+		assertEquals(0, distanceFromLine(new VectorXZ(5, 5), l2), 0.001);
+		assertEquals(sqrt(2), distanceFromLine(new VectorXZ(-1, 1), l2), 0.001);
+
+	}
+
+	@Test
+	public void testDistanceFromLineSegment() {
+		LineSegmentXZ l = new LineSegmentXZ(new VectorXZ(1, -10), new VectorXZ(1, +10));
+		assertEquals(1, distanceFromLineSegment(new VectorXZ(0, 0), l), 0.001);
+		assertEquals(10, distanceFromLineSegment(new VectorXZ(1, 20), l), 0.001);
 	}
 
 	@Test

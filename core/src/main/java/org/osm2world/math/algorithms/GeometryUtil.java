@@ -1,5 +1,6 @@
 package org.osm2world.math.algorithms;
 
+import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -9,7 +10,6 @@ import static org.osm2world.math.VectorXZ.distance;
 import static org.osm2world.math.VectorXZ.distanceSquared;
 import static org.osm2world.math.algorithms.CAGUtil.subtractPolygons;
 
-import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -292,10 +292,23 @@ public final class GeometryUtil {
 	}
 
 	/**
+	 * returns the closest distance between point p and line l
+	 */
+	public static final double distanceFromLine(VectorXZ p, LineXZ l) {
+		return distanceFromLine(p, l.p1(), l.p2());
+	}
+
+	/**
 	 * returns the closest distance between point p and a line defined by two points
 	 */
 	public static final double distanceFromLine(VectorXZ p,	VectorXZ v1, VectorXZ v2) {
-		return Line2D.ptLineDist(v1.x, v1.z, v2.x, v2.z, p.x, p.z);
+		VectorXZ toV2 = v2.subtract(v1);
+		VectorXZ toP = p.subtract(v1);
+		double dot = toP.dot(toV2);
+		double projLengthSq = dot * dot / toV2.lengthSquared();
+		double lengthSq = toP.lengthSquared() - projLengthSq;
+		lengthSq = max(lengthSq, 0.0);
+		return sqrt(lengthSq);
 	}
 
 	/**
