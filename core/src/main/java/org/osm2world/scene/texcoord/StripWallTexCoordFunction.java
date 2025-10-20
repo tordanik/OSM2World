@@ -1,5 +1,6 @@
 package org.osm2world.scene.texcoord;
 
+import static java.lang.Math.max;
 import static java.lang.Math.round;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public record StripWallTexCoordFunction(TextureDataDimensions textureDimensions,
 		if (fitWidth) {
 			width = totalLength;
 		} else if (textureDimensions.widthPerEntity() != null) {
-			long entities = Long.max(1, round(totalLength / textureDimensions.widthPerEntity()));
+			long entities = max(1, round(totalLength / textureDimensions.widthPerEntity()));
 			double textureRepeats = entities / (textureDimensions.width() / textureDimensions.widthPerEntity());
 			width = totalLength / textureRepeats;
 		} else {
@@ -58,7 +59,7 @@ public record StripWallTexCoordFunction(TextureDataDimensions textureDimensions,
 			double totalHeight = IntStream.range(0, vs.size() / 2)
 					.mapToDouble(i -> vs.get(2 * i).distanceTo(vs.get(2 * i + 1)))
 					.max().getAsDouble();
-			long entities = Long.max(1, round(totalHeight / textureDimensions.heightPerEntity()));
+			long entities = max(1, round(totalHeight / textureDimensions.heightPerEntity()));
 			double textureRepeats = entities / (textureDimensions.height() / textureDimensions.heightPerEntity());
 			height = totalHeight / textureRepeats;
 		} else {

@@ -1,5 +1,6 @@
 package org.osm2world.scene.material;
 
+import static java.lang.Math.max;
 import static java.lang.Math.round;
 
 import java.util.ArrayList;
@@ -64,13 +65,13 @@ public record TextureDataDimensions(double width, double height,
 			double height = height();
 
 			if (totalX != null && widthPerEntity() != null) {
-				long entities = Long.max(1, round(totalX / widthPerEntity()));
+				long entities = max(1, round(totalX / widthPerEntity()));
 				double textureRepeats = entities / (width() / widthPerEntity());
 				width = totalX / textureRepeats;
 			}
 
 			if (totalZ != null && heightPerEntity() != null) {
-				long entities = Long.max(1, round(totalZ / heightPerEntity()));
+				long entities = max(1, round(totalZ / heightPerEntity()));
 				double textureRepeats = entities / (height() / heightPerEntity());
 				height = totalZ / textureRepeats;
 			}

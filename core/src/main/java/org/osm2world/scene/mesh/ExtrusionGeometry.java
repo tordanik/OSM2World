@@ -189,11 +189,11 @@ public class ExtrusionGeometry implements Geometry {
 
 			double maxRadius = max(scaleFactors) * circle.getRadius();
 			double minPointsForError = PI / sqrt (2 * desiredMaxError / maxRadius);
-			int numPoints = Integer.max(4, (int) ceil(minPointsForError));
+			int numPoints = Math.max(4, (int) ceil(minPointsForError));
 
 			if (!options.contains(START_CAP) && !options.contains(END_CAP)) {
 				// if the ends aren't visible, it's a lot easier to fake roundness with smooth shading
-				numPoints = Integer.max(4, numPoints / 2);
+				numPoints = Math.max(4, numPoints / 2);
 			}
 
 			shape = new SimplePolygonXZ(circle.vertices(numPoints));
