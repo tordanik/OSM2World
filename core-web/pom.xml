@@ -1,0 +1,97 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.osm2world</groupId>
+		<artifactId>osm2world</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+	</parent>
+
+	<packaging>jar</packaging>
+	<artifactId>osm2world-core-web</artifactId>
+
+	<name>OSM2World Core Web</name>
+	<description>OSM2World library for web browsers</description>
+
+	<properties>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<teavm.version>0.12.3</teavm.version>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.osm2world</groupId>
+			<artifactId>osm2world-core</artifactId>
+			<version>0.5.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Emulator of Java class library for TeaVM -->
+		<dependency>
+			<groupId>org.teavm</groupId>
+			<artifactId>teavm-classlib</artifactId>
+			<version>${teavm.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- JavaScriptObjects (JSO) - a JavaScript binding for TeaVM -->
+		<dependency>
+			<groupId>org.teavm</groupId>
+			<artifactId>teavm-jso-apis</artifactId>
+			<version>${teavm.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Configure TeaVM -->
+			<plugin>
+				<groupId>org.teavm</groupId>
+				<artifactId>teavm-maven-plugin</artifactId>
+				<version>${teavm.version}</version>
+				<executions>
+					<execution>
+						<id>web-client</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+
+							<mainClass>org.osm2world.WebLibrary</mainClass>
+
+							<!-- Directory where TeaVM should put generated files. This configuration conforms to the settings
+								 of the WAR plugin -->
+							<targetDirectory>${project.build.directory}/generated/js/teavm</targetDirectory>
+
+							<!-- Whether TeaVM should produce minified JavaScript. Can reduce JavaScript file size more than
+								 two times -->
+							<minifying>true</minifying>
+
+							<!-- Whether TeaVM should produce debug information for its built-in debugger -->
+							<debugInformationGenerated>true</debugInformationGenerated>
+
+							<!-- Whether TeaVM should produce source maps file -->
+							<sourceMapsGenerated>true</sourceMapsGenerated>
+
+							<!-- Whether TeaVM should also put source files into output directory,
+								 for compatibility with source maps -->
+							<sourceFilesCopied>true</sourceFilesCopied>
+
+							<!-- Optimization level. Valid values are: SIMPLE, ADVANCED, FULL -->
+							<optimizationLevel>ADVANCED</optimizationLevel>
+
+							<jsModuleType>NONE</jsModuleType>
+
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

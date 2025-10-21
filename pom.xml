@@ -11,6 +11,7 @@
 	<modules>
 		<module>core</module>
 		<module>core-jvm</module>
+		<module>core-web</module>
 		<module>desktop</module>
 		<module>opengl</module>
 	</modules>

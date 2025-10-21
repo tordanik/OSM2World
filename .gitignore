@@ -9,6 +9,7 @@
 /target
 /core/target
 /core-jvm/target
+/core-web/target
 /desktop/target
 /opengl/target
 /dist
