@@ -141,6 +141,11 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	}
 
 	@Override
+	public String toString() {
+		return "Building(" + element + ")";
+	}
+
+	@Override
 	public GroundState getGroundState() {
 		return GroundState.ON;
 	}
