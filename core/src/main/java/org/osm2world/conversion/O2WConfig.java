@@ -253,9 +253,9 @@ public class O2WConfig {
 	 * If this has not been set explicitly, the defaults depend on whether a {@link #logDir()} has been configured.
 	 */
 	public EnumSet<ConversionLog.LogLevel> consoleLogLevels() {
-		if (config.containsKey("consoleLogLevels")) {
+		if (containsKey("consoleLogLevels")) {
 			List<ConversionLog.LogLevel> levels = new ArrayList<>();
-			for (Object level : config.getList("consoleLogLevels")) {
+			for (Object level : getList("consoleLogLevels")) {
 				try {
 					levels.add(ConversionLog.LogLevel.valueOf(level.toString().toUpperCase()));
 				} catch (IllegalArgumentException ignored) { }
@@ -290,7 +290,7 @@ public class O2WConfig {
 	 * The driving side for roads which have no driving_side tag.
 	 */
 	public LeftRight drivingSide() {
-		return "left".equalsIgnoreCase(config.getString("drivingSide", "right"))
+		return "left".equalsIgnoreCase(getString("drivingSide", "right"))
 				? LeftRight.LEFT : LeftRight.RIGHT;
 	}
 
@@ -324,7 +324,7 @@ public class O2WConfig {
 	 * whether underground {@link org.osm2world.world.data.WorldObject}s should be rendered
 	 */
 	public boolean renderUnderground() {
-		return config.getBoolean("renderUnderground", true);
+		return getBoolean("renderUnderground", true);
 	}
 
 	/**
@@ -366,7 +366,7 @@ public class O2WConfig {
 	 * output directory for log files
 	 */
 	public @Nullable File logDir() {
-		return resolveFileConfigProperty(config.getString("logDir", null), false);
+		return resolveFileConfigProperty(getString("logDir", null), false);
 	}
 
 	/**
@@ -405,7 +405,7 @@ public class O2WConfig {
 
 	/** A directory with SRTM data in .hgt or .hgt.zip format */
 	public @Nullable File srtmDir() {
-		return resolveFileConfigProperty(config.getString("srtmDir", null));
+		return resolveFileConfigProperty(getString("srtmDir", null));
 	}
 
 	/**
@@ -413,7 +413,7 @@ public class O2WConfig {
 	 * @return  a function to create an instance of the algorithm
 	 */
 	public Supplier<TerrainInterpolator> terrainInterpolator() {
-		return switch (config.getString("terrainInterpolator", "")) {
+		return switch (getString("terrainInterpolator", "")) {
 			case "LinearInterpolator" -> LinearInterpolator::new;
 			case "LeastSquaresInterpolator" -> LeastSquaresInterpolator::new;
 			case "NaturalNeighborInterpolator" -> NaturalNeighborInterpolator::new;
