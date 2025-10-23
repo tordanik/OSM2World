@@ -10,8 +10,8 @@ import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.output.gltf.GltfModel;
-import org.osm2world.world.creation.WorldModule;
 import org.osm2world.scene.material.Materials;
+import org.osm2world.world.creation.WorldModule;
 
 /**
  * this class defines {@link Model}s that can be used by all {@link WorldModule}s,
@@ -74,7 +74,7 @@ public class Models {
 			if (matcher.matches()) {
 
 				String modelName = matcher.group(1);
-				List<String> fileNames = config.getList(key).stream().map(f -> f.toString()).toList();
+				List<String> fileNames = config.getList(key);
 
 				try {
 					List<Model> ms = new ArrayList<>(fileNames.size());

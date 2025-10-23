@@ -2,8 +2,7 @@ package org.osm2world.conversion;
 
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -12,9 +11,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.map_elevation.creation.*;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
@@ -30,10 +26,10 @@ import org.osm2world.util.enums.LeftRight;
  */
 public class O2WConfig {
 
-	private final PropertiesConfiguration config;
+	private final Properties props;
 
-	private O2WConfig(PropertiesConfiguration config) {
-		this.config = config;
+	private O2WConfig(Properties props) {
+		this.props = props;
 	}
 
 	/**
@@ -57,14 +53,35 @@ public class O2WConfig {
 	 * Among configFiles, those later in the list take precedence.
 	 */
 	public O2WConfig(@Nullable Map<String, ?> properties, File... configFiles) {
+
+		props = new Properties();
+
 		try {
-			var mapConfig = new MapConfiguration(properties == null ? Map.of() : properties);
-			PropertiesConfiguration loadedConfig = loadConfigFiles(configFiles);
-			loadedConfig.copy(mapConfig);
-			this.config = loadedConfig;
-		} catch (ConfigurationException e) {
-			throw new RuntimeException(e);
+
+			for (File configFile : configFiles) {
+				if (configFile != null && configFile.exists()) {
+					if (!props.containsKey("configPath")) {
+						String basePath = configFile.getAbsoluteFile().getParent();
+						props.setProperty("configPath", basePath);
+					}
+					loadFileWithIncludes(props, configFile, new HashSet<>());
+				}
+			}
+
+			if (properties != null) {
+				for (Map.Entry<String, ?> e : properties.entrySet()) {
+					if (e.getValue() == null) {
+						props.remove(e.getKey());
+					} else {
+						props.setProperty(e.getKey(), String.valueOf(e.getValue()));
+					}
+				}
+			}
+
+		} catch (IOException e) {
+			throw new RuntimeException("Error loading configuration file", e);
 		}
+
 	}
 
 	/**
@@ -72,68 +89,88 @@ public class O2WConfig {
 	 * @param value  the new value; can be set to null to delete an existing property
 	 */
 	public O2WConfig withProperty(String key, @Nullable Object value) {
-		PropertiesConfiguration newConfig = (PropertiesConfiguration) config.clone();
-		newConfig.clearProperty(key);
-		if (value != null) {
-			newConfig.addProperty(key, value);
+		Properties copy = new Properties();
+		copy.putAll(this.props);
+		if (value == null) {
+			copy.remove(key);
+		} else {
+			copy.setProperty(key, String.valueOf(value));
 		}
-		return new O2WConfig(newConfig);
+		return new O2WConfig(copy);
 	}
 
 	public Iterator<String> getKeys() {
-		return config.getKeys();
+		return props.stringPropertyNames().iterator();
 	}
 
 	public boolean containsKey(String key) {
-		return config.containsKey(key);
+		return props.containsKey(key);
 	}
 
 	public String getString(String key) {
-		return config.getString(key);
+		return props.getProperty(key);
 	}
 
 	public String getString(String key, String defaultValue) {
-		return config.getString(key, defaultValue);
+		return props.getProperty(key, defaultValue);
 	}
 
 	public boolean getBoolean(String key) {
-		return config.getBoolean(key);
+		return getBoolean(key, false);
 	}
 
 	public boolean getBoolean(String key, boolean defaultValue) {
-		return config.getBoolean(key, defaultValue);
+		String v = props.getProperty(key);
+		if (v == null) return defaultValue;
+		v = v.trim().toLowerCase(Locale.ROOT);
+		return v.equals("true") || v.equals("yes") || v.equals("on") || v.equals("1");
 	}
 
 	public int getInt(String key, int defaultValue) {
-		return config.getInt(key, defaultValue);
+		return getInteger(key, defaultValue);
 	}
 
 	public Integer getInteger(String key, Integer defaultValue) {
-		return config.getInteger(key, defaultValue);
+		String v = props.getProperty(key);
+		if (v == null) return defaultValue;
+		try { return Integer.parseInt(v.trim()); }
+		catch (NumberFormatException e) {
+			try {
+				return (int) Math.round(Double.parseDouble(v.trim()));
+			} catch (NumberFormatException e2) {
+				return defaultValue;
+			}
+		}
 	}
 
 	public float getFloat(String key, float defaultValue) {
-		return config.getFloat(key, defaultValue);
+		return getFloat(key, (Float) defaultValue);
 	}
 
 	public Float getFloat(String key, Float defaultValue) {
-		return config.getFloat(key, defaultValue);
+		String v = props.getProperty(key);
+		if (v == null) return defaultValue;
+		try { return Float.parseFloat(v.trim()); } catch (NumberFormatException ex) { return defaultValue; }
 	}
 
 	public double getDouble(String key, double defaultValue) {
-		return config.getDouble(key, defaultValue);
+		return getDouble(key, (Double) defaultValue);
 	}
 
 	public Double getDouble(String key, Double defaultValue) {
-		return config.getDouble(key, defaultValue);
+		String v = props.getProperty(key);
+		if (v == null) return defaultValue;
+		try { return Double.parseDouble(v.trim()); } catch (NumberFormatException ex) { return defaultValue; }
 	}
 
-	public List<Object> getList(String key) {
-		return config.getList(key);
+	public List<String> getList(String key) {
+		return getList(key, List.of());
 	}
 
-	public List<Object> getList(String key, List<Object> defaultValue) {
-		return config.getList(key, defaultValue);
+	public List<String> getList(String key, List<String> defaultValue) {
+		String v = props.getProperty(key);
+		if (v == null) return defaultValue;
+		return parseList(v);
 	}
 
 	public <T extends Enum<T>> @Nullable T getEnum(Class<T> enumClass, String key) {
@@ -148,16 +185,16 @@ public class O2WConfig {
 
 	public <T extends Enum<T>> EnumSet<T> getEnumSet(Class<T> enumClass, String key, EnumSet<T> defaultValue) {
 
-		List<Object> values = getList(key, null);
+		List<String> values = getList(key, null);
 
 		if (values == null) {
 			return defaultValue;
 		}
 
 		EnumSet<T> result = EnumSet.noneOf(enumClass);
-		for (Object value : values) {
+		for (String value : values) {
 			try {
-				result.add(Enum.valueOf(enumClass, value.toString().toUpperCase()));
+				result.add(Enum.valueOf(enumClass, value.toUpperCase()));
 			} catch (IllegalArgumentException ignored) {}
 		}
 		return result;
@@ -254,13 +291,8 @@ public class O2WConfig {
 	 */
 	public EnumSet<ConversionLog.LogLevel> consoleLogLevels() {
 		if (containsKey("consoleLogLevels")) {
-			List<ConversionLog.LogLevel> levels = new ArrayList<>();
-			for (Object level : getList("consoleLogLevels")) {
-				try {
-					levels.add(ConversionLog.LogLevel.valueOf(level.toString().toUpperCase()));
-				} catch (IllegalArgumentException ignored) { }
-			}
-			return EnumSet.copyOf(levels);
+			return getEnumSet(ConversionLog.LogLevel.class, "consoleLogLevels",
+					EnumSet.noneOf(ConversionLog.LogLevel.class));
 		} else {
 			if (logDir() != null) {
 				return EnumSet.of(ConversionLog.LogLevel.FATAL);
@@ -457,18 +489,10 @@ public class O2WConfig {
 
 		File file = new File(fileName);
 
-		String basePath = null;
 		if (this.containsKey("configPath")) {
-			basePath = this.getString("configPath");
-		}
-
-		if (basePath == null && config.getFile() != null) {
-			basePath = config.getFile().getAbsoluteFile().getParent();
-		}
-
-		if (basePath != null) {
-			file = Path.of(basePath).normalize()
-					.resolve(Path.of(fileName).normalize()).toFile();
+			File base = new File(this.getString("configPath"));
+			File combined = new File(base, fileName);
+			return combined.getAbsoluteFile();
 		}
 
 		if (requireFileExists && !file.exists()) {
@@ -480,21 +504,48 @@ public class O2WConfig {
 
 	}
 
-	private static PropertiesConfiguration loadConfigFiles(File... configFiles) throws ConfigurationException {
+	private static List<String> parseList(String value) {
+		List<String> result = new ArrayList<>();
+		for (String part : value.split(";")) {
+			String s = part.trim();
+			if (!s.isEmpty()) result.add(s);
+		}
+		return result;
+	}
 
-		PropertiesConfiguration config = new PropertiesConfiguration();
-		config.setListDelimiter(';');
+	private static void loadFileWithIncludes(Properties dest, File file, Set<File> visited) throws IOException {
 
-		for (File it : configFiles) {
-			config.load(it);
+		// prevent loading the same file multiple times from different include directives
+		if (!visited.add(file.getCanonicalFile())) return;
+
+		/* process include directives */
+
+		Pattern includePattern = Pattern.compile("^\\s*include\\s*[:=]\\s*(.+)\\s*$", Pattern.CASE_INSENSITIVE);
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				Matcher m = includePattern.matcher(line);
+				if (m.matches()) {
+					String includeValue = m.group(1).trim();
+					File includeFile = new File(includeValue);
+					if (!includeFile.isAbsolute()) {
+						includeFile = new File(file.getParentFile(), includeValue);
+					}
+					loadFileWithIncludes(dest, includeFile, visited);
+				}
+			}
 		}
 
-		Arrays.stream(configFiles)
-				.filter(File::exists)
-				.findFirst()
-				.ifPresent(f -> config.addProperty("configPath", f.getAbsoluteFile().getParent()));
+		/* load the file itself and merge (overriding previously loaded values) */
 
-		return config;
+		try (var fileInputStream = new FileInputStream(file)) {
+			Properties current = new Properties();
+			current.load(fileInputStream);
+			current.remove("include"); // don't expose include directive
+			for (var e : current.entrySet()) {
+				dest.put(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
+			}
+		}
 
 	}
 

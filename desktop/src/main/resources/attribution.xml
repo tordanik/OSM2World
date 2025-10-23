@@ -46,23 +46,6 @@
          </downloadUrls>
       </dependency>
       <dependency>
-         <name>Apache Commons Configuration</name>
-         <groupId>commons-configuration</groupId>
-         <artifactId>commons-configuration</artifactId>
-         <version>1.10</version>
-         <projectUrl>http://commons.apache.org/configuration/</projectUrl>
-         <type>jar</type>
-         <licenses>
-            <license>
-               <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-         <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/commons-configuration/commons-configuration/1.10/commons-configuration-1.10.jar</string>
-         </downloadUrls>
-      </dependency>
-      <dependency>
          <name>Apache Commons IO</name>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
@@ -196,23 +179,6 @@
          </licenses>
          <downloadUrls>
             <string>https://repo.maven.apache.org/maven2/commons-lang/commons-lang/2.6/commons-lang-2.6.jar</string>
-         </downloadUrls>
-      </dependency>
-      <dependency>
-         <name>Commons Logging</name>
-         <groupId>commons-logging</groupId>
-         <artifactId>commons-logging</artifactId>
-         <version>1.1.1</version>
-         <projectUrl>http://commons.apache.org/logging</projectUrl>
-         <type>jar</type>
-         <licenses>
-            <license>
-               <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-         <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>

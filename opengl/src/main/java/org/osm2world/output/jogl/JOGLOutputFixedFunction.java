@@ -13,8 +13,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
@@ -50,8 +48,6 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 	private static final boolean ANISOTROPIC_FILTERING = true;
 
 	private final GL2 gl;
-
-	private Configuration config = new BaseConfiguration();
 
 	private static @Nullable Winding frontFaceWinding = Winding.CCW;
 

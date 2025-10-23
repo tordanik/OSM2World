@@ -215,8 +215,7 @@ class O2WConverterImpl {
 	 */
 	private static List<WorldModule> createModuleList(O2WConfig config) {
 
-		List<String> excludedModules = config.getList("excludeWorldModule")
-				.stream().map(Object::toString).toList();
+		List<String> excludedModules = config.getList("excludeWorldModule");
 
 		return Stream.of((WorldModule)
 						new ExternalModelModule(),
