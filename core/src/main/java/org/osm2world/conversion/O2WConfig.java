@@ -279,11 +279,17 @@ public class O2WConfig {
 
 	/**
 	 * Whether traffic signs should be deduced from a way's tags and placed next to the way.
+	 * Will also look at tags on way nodes, such as highway=stop and highway=give_way.
 	 * The available options are "yes", "limited" and "no".
 	 * Experimental option, off by default.
 	 */
-	public String deduceTrafficSignsFromWayTags() {
-		return getString("deduceTrafficSignsFromWayTags", "no").toLowerCase();
+	public String deduceTrafficSigns() {
+		if (containsKey("deduceTrafficSigns")) {
+			return getString("deduceTrafficSigns", "no").toLowerCase();
+		} else {
+			// support old property name for backwards compatibility
+			return getString("deduceTrafficSignsFromWayTags", "no").toLowerCase();
+		}
 	}
 
 	/**

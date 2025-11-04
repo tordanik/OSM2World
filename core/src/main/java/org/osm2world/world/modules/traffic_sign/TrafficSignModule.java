@@ -44,7 +44,7 @@ public class TrafficSignModule extends AbstractModule {
 		final VectorXZ DEFAULT_OFFSET_VECTOR = new VectorXZ(1, 1);
 
 		// possible values are yes/limited/no
-		String state = config.deduceTrafficSignsFromWayTags();
+		String state = config.deduceTrafficSigns();
 		if ("no".equals(state)) return;
 
 		String country;
@@ -334,12 +334,16 @@ public class TrafficSignModule extends AbstractModule {
 
 		/* handle the special cases highway=give_way/stop */
 
-		String highwayValue = node.getTags().getValue("highway");
+		if (!config.deduceTrafficSigns().equals("no")) {
 
-		if (asList("give_way", "stop").contains(highwayValue)
-				&& !signIds.contains(new TrafficSignIdentifier(null, highwayValue))) {
-			signIds = new ArrayList<>(signIds);
-			signIds.add(new TrafficSignIdentifier(null, highwayValue));
+			String highwayValue = node.getTags().getValue("highway");
+
+			if (List.of("give_way", "stop").contains(highwayValue)
+					&& !signIds.contains(new TrafficSignIdentifier(null, highwayValue))) {
+				signIds = new ArrayList<>(signIds);
+				signIds.add(new TrafficSignIdentifier(null, highwayValue));
+			}
+
 		}
 
 		/* calculate the rotation and position(s) */
@@ -361,7 +365,7 @@ public class TrafficSignModule extends AbstractModule {
 		List<TrafficSignModel> signs = new ArrayList<>(signIds.size());
 		signIds.forEach(sign -> signs.add(TrafficSignModel.create(sign, node.getTags(), config)));
 
-		if (signs.size() > 0) {
+		if (!signs.isEmpty()) {
 			for (VectorXZ position : positions) {
 				node.addRepresentation(new TrafficSignGroup(node, signs, position, direction, config));
 			}
