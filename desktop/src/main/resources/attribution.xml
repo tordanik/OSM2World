@@ -63,10 +63,27 @@
          </downloadUrls>
       </dependency>
       <dependency>
+         <name>Apache Commons IO</name>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+         <version>2.14.0</version>
+         <projectUrl>https://commons.apache.org/proper/commons-io/</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>Apache-2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/commons-io/commons-io/2.14.0/commons-io-2.14.0.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
          <name>Apache Commons Lang</name>
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-lang3</artifactId>
-         <version>3.17.0</version>
+         <version>3.18.0</version>
          <projectUrl>https://commons.apache.org/proper/commons-lang/</projectUrl>
          <type>jar</type>
          <licenses>
@@ -76,7 +93,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar</string>
+            <string>https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -134,7 +151,7 @@
          <name>asm</name>
          <groupId>org.ow2.asm</groupId>
          <artifactId>asm</artifactId>
-         <version>9.7.1</version>
+         <version>9.9</version>
          <projectUrl>http://asm.ow2.io/</projectUrl>
          <type>jar</type>
          <licenses>
@@ -144,7 +161,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar</string>
+            <string>https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.9/asm-9.9.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -162,23 +179,6 @@
          </licenses>
          <downloadUrls>
             <string>https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar</string>
-         </downloadUrls>
-      </dependency>
-      <dependency>
-         <name>Commons IO</name>
-         <groupId>commons-io</groupId>
-         <artifactId>commons-io</artifactId>
-         <version>2.4</version>
-         <projectUrl>http://commons.apache.org/io/</projectUrl>
-         <type>jar</type>
-         <licenses>
-            <license>
-               <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-         <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/commons-io/commons-io/2.4/commons-io-2.4.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -247,7 +247,7 @@
          <name>Eclipse Collections API</name>
          <groupId>org.eclipse.collections</groupId>
          <artifactId>eclipse-collections-api</artifactId>
-         <version>12.0.0.M3</version>
+         <version>13.0.0</version>
          <projectUrl>https://github.com/eclipse/eclipse-collections/eclipse-collections-api</projectUrl>
          <type>jar</type>
          <licenses>
@@ -261,14 +261,14 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/org/eclipse/collections/eclipse-collections-api/12.0.0.M3/eclipse-collections-api-12.0.0.M3.jar</string>
+            <string>https://repo.maven.apache.org/maven2/org/eclipse/collections/eclipse-collections-api/13.0.0/eclipse-collections-api-13.0.0.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
          <name>Eclipse Collections Main Library</name>
          <groupId>org.eclipse.collections</groupId>
          <artifactId>eclipse-collections</artifactId>
-         <version>12.0.0.M3</version>
+         <version>13.0.0</version>
          <projectUrl>https://github.com/eclipse/eclipse-collections/eclipse-collections</projectUrl>
          <type>jar</type>
          <licenses>
@@ -282,7 +282,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/org/eclipse/collections/eclipse-collections/12.0.0.M3/eclipse-collections-12.0.0.M3.jar</string>
+            <string>https://repo.maven.apache.org/maven2/org/eclipse/collections/eclipse-collections/13.0.0/eclipse-collections-13.0.0.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -323,7 +323,7 @@
          <name>GeoDesk</name>
          <groupId>com.geodesk</groupId>
          <artifactId>geodesk</artifactId>
-         <version>0.1.9</version>
+         <version>1.0.2</version>
          <projectUrl>http://www.geodesk.com</projectUrl>
          <type>jar</type>
          <licenses>
@@ -333,7 +333,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/com/geodesk/geodesk/0.1.9/geodesk-0.1.9.jar</string>
+            <string>https://repo.maven.apache.org/maven2/com/geodesk/geodesk/1.0.2/geodesk-1.0.2.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -495,6 +495,40 @@
          </licenses>
          <downloadUrls>
             <string>https://repo.maven.apache.org/maven2/com/jhlabs/javaproj/1.0/javaproj-1.0.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>JLine Native Library</name>
+         <groupId>org.jline</groupId>
+         <artifactId>jline-native</artifactId>
+         <version>3.24.1</version>
+         <projectUrl>http://nexus.sonatype.org/oss-repository-hosting.html/jline-parent/jline-native</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The BSD License</name>
+               <url>https://opensource.org/licenses/BSD-3-Clause</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/org/jline/jline-native/3.24.1/jline-native-3.24.1.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>JLine Terminal</name>
+         <groupId>org.jline</groupId>
+         <artifactId>jline-terminal</artifactId>
+         <version>3.24.1</version>
+         <projectUrl>http://nexus.sonatype.org/oss-repository-hosting.html/jline-parent/jline-terminal</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The BSD License</name>
+               <url>https://opensource.org/licenses/BSD-3-Clause</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/org/jline/jline-terminal/3.24.1/jline-terminal-3.24.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -950,7 +984,7 @@
          <name>osm4j-core</name>
          <groupId>de.topobyte</groupId>
          <artifactId>osm4j-core</artifactId>
-         <version>1.4.0</version>
+         <version>1.4.1</version>
          <projectUrl>https://github.com/topobyte/osm4j</projectUrl>
          <type>jar</type>
          <licenses>
@@ -960,14 +994,14 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://mvn.topobyte.de/de/topobyte/osm4j-core/1.4.0/osm4j-core-1.4.0.jar</string>
+            <string>https://mvn.topobyte.de/de/topobyte/osm4j-core/1.4.1/osm4j-core-1.4.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
          <name>osm4j-pbf (lite runtime)</name>
          <groupId>de.topobyte</groupId>
          <artifactId>osm4j-pbf</artifactId>
-         <version>1.4.0</version>
+         <version>1.4.1</version>
          <projectUrl>https://github.com/topobyte/osm4j</projectUrl>
          <type>jar</type>
          <licenses>
@@ -977,14 +1011,14 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://mvn.topobyte.de/de/topobyte/osm4j-pbf/1.4.0/osm4j-pbf-1.4.0.jar</string>
+            <string>https://mvn.topobyte.de/de/topobyte/osm4j-pbf/1.4.1/osm4j-pbf-1.4.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
          <name>osm4j-xml</name>
          <groupId>de.topobyte</groupId>
          <artifactId>osm4j-xml</artifactId>
-         <version>1.4.0</version>
+         <version>1.4.1</version>
          <projectUrl>https://github.com/topobyte/osm4j</projectUrl>
          <type>jar</type>
          <licenses>
@@ -994,7 +1028,24 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://mvn.topobyte.de/de/topobyte/osm4j-xml/1.4.0/osm4j-xml-1.4.0.jar</string>
+            <string>https://mvn.topobyte.de/de/topobyte/osm4j-xml/1.4.1/osm4j-xml-1.4.1.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>picocli</name>
+         <groupId>info.picocli</groupId>
+         <artifactId>picocli</artifactId>
+         <version>4.7.7</version>
+         <projectUrl>https://picocli.info</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The Apache Software License, version 2.0</name>
+               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/info/picocli/picocli/4.7.7/picocli-4.7.7.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -1029,6 +1080,23 @@
          </licenses>
          <downloadUrls>
             <string>https://repo.maven.apache.org/maven2/org/orbisgis/poly2tri-core/0.1.2/poly2tri-core-0.1.2.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>progressbar</name>
+         <groupId>me.tongfei</groupId>
+         <artifactId>progressbar</artifactId>
+         <version>0.10.1</version>
+         <projectUrl>http://github.com/ctongfei/progressbar</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>MIT</name>
+               <url>http://opensource.org/licenses/MIT</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/me/tongfei/progressbar/0.10.1/progressbar-0.10.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -1086,17 +1154,17 @@
          <name>SQLite JDBC</name>
          <groupId>org.xerial</groupId>
          <artifactId>sqlite-jdbc</artifactId>
-         <version>3.8.7</version>
-         <projectUrl>http://nexus.sonatype.org/oss-repository-hosting.html/sqlite-jdbc</projectUrl>
+         <version>3.41.2.2</version>
+         <projectUrl>https://github.com/xerial/sqlite-jdbc</projectUrl>
          <type>jar</type>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/org/xerial/sqlite-jdbc/3.8.7/sqlite-jdbc-3.8.7.jar</string>
+            <string>https://repo.maven.apache.org/maven2/org/xerial/sqlite-jdbc/3.41.2.2/sqlite-jdbc-3.41.2.2.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
