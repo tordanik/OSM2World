@@ -476,7 +476,7 @@ public class ExteriorBuildingWall {
 			// window in the outer wall, check if indoor space behind it is mapped
 			return connectedFeatures.stream().anyMatch(it -> {
 				if (it instanceof IndoorRoom r) {
-					return r.getLevelRange().containsInteger(level);
+					return r.getLevelRange().contains(level);
 				} else if (it instanceof IndoorArea a) {
 					return a.getFloorLevel() == level;
 				} else {

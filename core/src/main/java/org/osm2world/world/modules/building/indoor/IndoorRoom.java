@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -73,8 +73,8 @@ public class IndoorRoom implements AreaWorldObject, ProceduralWorldObject {
 		return emptyList();
 	}
 
-	public IntRange getLevelRange() {
-		return new IntRange(floor.level, ceiling.level);
+	public IntegerRange getLevelRange() {
+		return IntegerRange.of(floor.level, ceiling.level);
 	}
 
 }
