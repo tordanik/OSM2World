@@ -518,6 +518,14 @@ public class O2WConfig {
 		// prevent loading the same file multiple times from different include directives
 		if (!visited.add(file.getCanonicalFile())) return;
 
+		/* load properties from the file itself */
+
+		Properties current = new Properties();
+		try (var fileInputStream = new FileInputStream(file)) {
+			current.load(fileInputStream);
+			current.remove("include"); // don't expose include directive
+		}
+
 		/* process include directives */
 
 		Pattern includePattern = Pattern.compile("^\\s*include\\s*[:=]\\s*(.+)\\s*$", Pattern.CASE_INSENSITIVE);
@@ -527,6 +535,15 @@ public class O2WConfig {
 				Matcher m = includePattern.matcher(line);
 				if (m.matches()) {
 					String includeValue = m.group(1).trim();
+					// replace variables enclosed in curly braces
+					Pattern variablePattern = Pattern.compile("\\$\\{([^}]+)}");
+					Matcher matcher = variablePattern.matcher(includeValue);
+					while (matcher.find()) {
+						String key = matcher.group(1);
+						includeValue = includeValue.replaceAll("\\$\\{" + Pattern.quote(key) + "}", current.getOrDefault(key, "").toString());
+						matcher = variablePattern.matcher(includeValue);
+					}
+					// load properties from the included file
 					File includeFile = new File(includeValue);
 					if (!includeFile.isAbsolute()) {
 						includeFile = new File(file.getParentFile(), includeValue);
@@ -536,15 +553,10 @@ public class O2WConfig {
 			}
 		}
 
-		/* load the file itself and merge (overriding previously loaded values) */
+		/* merge properties (override previously loaded values) */
 
-		try (var fileInputStream = new FileInputStream(file)) {
-			Properties current = new Properties();
-			current.load(fileInputStream);
-			current.remove("include"); // don't expose include directive
-			for (var e : current.entrySet()) {
-				dest.put(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
-			}
+		for (var e : current.entrySet()) {
+			dest.put(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
 		}
 
 	}
