@@ -7,6 +7,7 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.MapAreaSegment;
 import org.osm2world.map_data.data.MapRelationElement;
 import org.osm2world.map_data.data.MapWaySegment;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * utility class that allows iterations where Exceptions in the processing
@@ -38,6 +39,9 @@ final public class FaultTolerantIterationUtil {
 
 	/** a default exception handler that logs to {@link ConversionLog} */
 	public static final BiConsumer<Throwable, Object> DEFAULT_EXCEPTION_HANDLER = (Throwable e, Object o) -> {
+		if (o instanceof WorldObject wo) {
+			o = wo.getPrimaryMapElement();
+		}
 		if (o instanceof MapRelationElement element) {
 			ConversionLog.error(e, element);
 		} else if (o instanceof MapWaySegment s) {
