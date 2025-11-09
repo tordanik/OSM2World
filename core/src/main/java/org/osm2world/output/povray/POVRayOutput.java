@@ -284,9 +284,11 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 	}
 
 	@Override
-	public void drawTriangles(@Nonnull Material material,
+	public void drawTriangles(@Nonnull MaterialOrRef materialOrRef,
 							  @Nonnull List<? extends TriangleXYZ> triangles,
 							  @Nonnull List<List<VectorXZ>> texCoordLists) {
+
+		Material material = materialOrRef.get();
 
 		if (!checkMeshValidity(triangles))
 			return;
@@ -423,7 +425,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 //	}
 
 	@Override
-	public void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	public void drawConvexPolygon(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		for (VectorXYZ vector : vs) {
@@ -437,14 +439,14 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 			appendVector(v);
 		}
 
-		appendMaterialOrName(material);
+		appendMaterialOrName(material.get());
 
 		append("}\n");
 
 	}
 
 	@Override
-	public void drawColumn(@Nonnull Material material, Integer corners, @Nonnull VectorXYZ base,
+	public void drawColumn(@Nonnull MaterialOrRef material, Integer corners, @Nonnull VectorXYZ base,
 						   double height, double radiusBottom, double radiusTop,
 						   boolean drawBottom, boolean drawTop) {
 
@@ -478,7 +480,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 				append(" open");
 			}
 
-			appendMaterialOrName(material);
+			appendMaterialOrName(material.get());
 
 			append("}\n");
 
@@ -491,10 +493,10 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 	}
 
 	/**
-	 * variant of {@link #drawColumn(Material, Integer, VectorXYZ, double, double, double, boolean, boolean)}
+	 * variant of {@link #drawColumn(MaterialOrRef, Integer, VectorXYZ, double, double, double, boolean, boolean)}
 	 * that allows arbitrarily placed columns
 	 */
-	public void drawColumn(Material material, Integer corners, VectorXYZ base,
+	public void drawColumn(MaterialOrRef material, Integer corners, VectorXYZ base,
 			VectorXYZ cap, double radiusBottom, double radiusTop,
 			boolean drawBottom, boolean drawTop) {
 
@@ -536,7 +538,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 		}
 
-		appendMaterialOrName(material);
+		appendMaterialOrName(material.get());
 
 		append("}\n");
 

@@ -23,6 +23,7 @@ import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.MeshUtil;
@@ -42,14 +43,14 @@ public interface CommonTarget {
 	 * @param texCoordLists  one texture coordinate list per texture.
 	 *          Each must have three coordinates per triangle.
 	 */
-	default void drawTriangles(@Nonnull Material material,
+	default void drawTriangles(@Nonnull MaterialOrRef material,
 							   @Nonnull List<? extends TriangleXYZ> triangles,
 							   @Nonnull List<List<VectorXZ>> texCoordLists) {
-		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.getInterpolation(),
-				texCoordLists, null), material));
+		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.get().getInterpolation(),
+				texCoordLists, null), material.get()));
 	}
 
-	default void drawTriangles(@Nonnull Material material,
+	default void drawTriangles(@Nonnull MaterialOrRef material,
 							   @Nonnull List<? extends TriangleXYZ> triangles,
 							   @Nonnull List<VectorXYZ> normals,
 							   @Nonnull List<List<VectorXZ>> texCoordLists) {
@@ -63,7 +64,7 @@ public interface CommonTarget {
 	 * @param texCoordLists  one texture coordinate list per texture.
 	 *          Each must have the same length as the "vs" parameter.
 	 */
-	default void drawTriangleStrip(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	default void drawTriangleStrip(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								   @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		List<List<VectorXZ>> newTexCoordLists = texCoordLists.stream()
@@ -77,9 +78,9 @@ public interface CommonTarget {
 	/**
 	 * draws a triangle fan.
 	 *
-	 * @see #drawTriangleStrip(Material, List, List)
+	 * @see #drawTriangleStrip(MaterialOrRef, List, List)
 	 */
-	default void drawTriangleFan(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	default void drawTriangleFan(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 						 @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		List<List<VectorXZ>> newTexCoordLists = texCoordLists.stream()
@@ -93,9 +94,9 @@ public interface CommonTarget {
 	/**
 	 * draws a <em>convex</em> polygon
 	 *
-	 * @see #drawTriangleStrip(Material, List, List)
+	 * @see #drawTriangleStrip(MaterialOrRef, List, List)
 	 */
-	default void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	default void drawConvexPolygon(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								   @Nonnull List<List<VectorXZ>> texCoordLists) {
 		if (Objects.equals(vs.get(0), vs.get(vs.size() - 1))) {
 			vs = vs.subList(0, vs.size() - 1);
@@ -118,7 +119,7 @@ public interface CommonTarget {
 	 *                     Defines the shape's rotation along with frontVector; != null
 	 * @param scaleFactor  a factor to scale the shape by, 1.0 leaves the shape unscaled.
 	 */
-	default void drawShape(@Nonnull Material material, @Nonnull ClosedShapeXZ shape, @Nonnull VectorXYZ point,
+	default void drawShape(@Nonnull MaterialOrRef material, @Nonnull ClosedShapeXZ shape, @Nonnull VectorXYZ point,
 				   @Nonnull VectorXYZ frontVector, @Nonnull VectorXYZ upVector, double scaleFactor) {
 
 		for (TriangleXZ triangle : shape.getTriangulation()) {
@@ -138,7 +139,7 @@ public interface CommonTarget {
 
 			//TODO better default texture coordinate function
 			drawTriangleStrip(material, triangleVertices.subList(0, 3),
-					texCoordLists(triangleVertices.subList(0, 3), material, GLOBAL_X_Y));
+					texCoordLists(triangleVertices.subList(0, 3), material.get(), GLOBAL_X_Y));
 
 		}
 
@@ -170,17 +171,17 @@ public interface CommonTarget {
 	 *                                   from the path. This happens for completely vertical
 	 *                                   or otherwise ambiguous paths.
 	 */
-	default void drawExtrudedShape(@Nonnull Material material, @Nonnull ShapeXZ shape, @Nonnull List<VectorXYZ> path,
+	default void drawExtrudedShape(@Nonnull MaterialOrRef material, @Nonnull ShapeXZ shape, @Nonnull List<VectorXYZ> path,
 			@Nullable List<VectorXYZ> upVectors, @Nullable List<Double> scaleFactors,
 			@Nullable Set<ExtrudeOption> options) {
 
-		if (material.getInterpolation() == Material.Interpolation.SMOOTH) {
+		if (material.get().getInterpolation() == Material.Interpolation.SMOOTH) {
 			options = requireNonNullElse(options, EnumSet.noneOf(ExtrudeOption.class));
 			options.add(ExtrudeOption.SMOOTH_SIDES);
 		}
 
 		drawMesh(new Mesh(new ExtrusionGeometry(shape, path, upVectors, scaleFactors, null, options,
-				material.getTextureDimensions()), material));
+				material.get().getTextureDimensions()), material.get()));
 
 	}
 
@@ -189,11 +190,11 @@ public interface CommonTarget {
 	 *
 	 * @param faceDirection  direction for the "front" of the box
 	 */
-	default void drawBox(@Nonnull Material material, @Nonnull VectorXYZ bottomCenter, @Nonnull VectorXZ faceDirection,
+	default void drawBox(@Nonnull MaterialOrRef material, @Nonnull VectorXYZ bottomCenter, @Nonnull VectorXZ faceDirection,
 						 double height, double width, double depth) {
 
 		drawMesh(new Mesh(MeshUtil.createBox(bottomCenter, faceDirection, height, width, depth, null,
-				material.getTextureDimensions()), material));
+				material.get().getTextureDimensions()), material.get()));
 
 	}
 
@@ -208,12 +209,12 @@ public interface CommonTarget {
 	 * @param corners  number of corners; null creates a cylinder
 	 *  for radiusBottom == radiusTop or (truncated) cone otherwise
 	 */
-	default void drawColumn(@Nonnull Material material, @Nullable Integer corners,
+	default void drawColumn(@Nonnull MaterialOrRef material, @Nullable Integer corners,
 							@Nonnull VectorXYZ base, double height, double radiusBottom,
 							double radiusTop, boolean drawBottom, boolean drawTop) {
 
 		drawMesh(new Mesh(ExtrusionGeometry.createColumn(corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop,
-				null, material.getTextureDimensions()), material));
+				null, material.get().getTextureDimensions()), material.get()));
 
 	}
 

@@ -15,6 +15,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.world.data.WorldObject;
 
 import com.google.common.collect.HashMultimap;
@@ -29,7 +30,7 @@ import com.google.common.collect.Multimap;
  */
 public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutput {
 
-	abstract public void drawFace(Material material, List<VectorXYZ> vs,
+	abstract public void drawFace(MaterialOrRef material, List<VectorXYZ> vs,
 			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists);
 
 	/**
@@ -233,7 +234,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 			HashMultimap.create();
 
 	@Override
-	public void drawTriangles(@Nonnull Material material,
+	public void drawTriangles(@Nonnull MaterialOrRef material,
 							  @Nonnull List<? extends TriangleXYZ> triangles,
 							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
@@ -249,7 +250,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 					ConversionLog.error("Unexpected NaN value in FaceTarget.drawTriangles: " + n);
 				}
 
-				isolatedTriangles.put(material,
+				isolatedTriangles.put(material.get(),
 						new IsolatedTriangle(triangle, n, i*3, texCoordLists));
 
 			} else {
@@ -267,7 +268,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 	}
 
 	@Override
-	public void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	public void drawConvexPolygon(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		if (reconstructFaces()) {

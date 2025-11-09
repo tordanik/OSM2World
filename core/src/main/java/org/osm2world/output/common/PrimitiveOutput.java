@@ -11,8 +11,8 @@ import javax.annotation.Nonnull;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.scene.material.MaterialOrRef;
 
 /**
  * superclass for output formats that are based on OpenGL primitives.
@@ -28,39 +28,39 @@ public abstract class PrimitiveOutput extends AbstractOutput implements DrawBase
 	 * @param texCoordLists  texture coordinates for each texture layer,
 	 *                       each list has the same size as vs
 	 */
-	abstract protected void drawPrimitive(Primitive.Type type, Material material,
+	abstract protected void drawPrimitive(Primitive.Type type, MaterialOrRef material,
 			List<VectorXYZ> vs, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists);
 
 	@Override
-	public void drawTriangleStrip(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	public void drawTriangleStrip(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								  @Nonnull List<List<VectorXZ>> texCoordLists) {
-		boolean smooth = (material.getInterpolation() == Interpolation.SMOOTH);
+		boolean smooth = (material.get().getInterpolation() == Interpolation.SMOOTH);
 		drawPrimitive(TRIANGLE_STRIP, material, vs,
 				calculateTriangleStripNormals(vs, smooth),
 				texCoordLists);
 	}
 
 	@Override
-	public void drawTriangleFan(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+	public void drawTriangleFan(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								@Nonnull List<List<VectorXZ>> texCoordLists) {
-		boolean smooth = (material.getInterpolation() == Interpolation.SMOOTH);
+		boolean smooth = (material.get().getInterpolation() == Interpolation.SMOOTH);
 		drawPrimitive(TRIANGLE_FAN, material, vs,
 				calculateTriangleFanNormals(vs, smooth),
 				texCoordLists);
 	}
 
 	@Override
-	public void drawTriangles(@Nonnull Material material,
+	public void drawTriangles(@Nonnull MaterialOrRef material,
 							  @Nonnull List<? extends TriangleXYZ> triangles,
 							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 		drawTriangles(material, triangles,
-				calculateTriangleNormals(triangles, material.getInterpolation() == Interpolation.SMOOTH),
+				calculateTriangleNormals(triangles, material.get().getInterpolation() == Interpolation.SMOOTH),
 				texCoordLists);
 	}
 
 	@Override
-	public void drawTriangles(@Nonnull Material material,
+	public void drawTriangles(@Nonnull MaterialOrRef material,
 							  @Nonnull List<? extends TriangleXYZ> triangles,
 							  @Nonnull List<VectorXYZ> normals,
 							  @Nonnull List<List<VectorXZ>> texCoordLists) {

@@ -8,7 +8,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.FaceOutput;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -33,7 +33,7 @@ public class FaceDebugView extends StaticDebugView {
 		}
 
 		@Override
-		public void drawFace(Material material, List<VectorXYZ> vs,
+		public void drawFace(MaterialOrRef material, List<VectorXYZ> vs,
 				List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 			faces.add(vs);
 		}

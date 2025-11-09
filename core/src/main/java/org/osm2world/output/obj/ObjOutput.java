@@ -22,12 +22,9 @@ import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.common.FaceOutput;
 import org.osm2world.output.common.ResourceOutputSettings;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.*;
 import org.osm2world.scene.material.Material.Transparency;
-import org.osm2world.scene.material.Materials;
-import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureData.Wrap;
-import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.util.GlobalValues;
 import org.osm2world.world.data.WorldObject;
 
@@ -167,7 +164,7 @@ public class ObjOutput extends FaceOutput {
 	}
 
 	@Override
-	public void drawFace(Material material, List<VectorXYZ> vs,
+	public void drawFace(MaterialOrRef material, List<VectorXYZ> vs,
 			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 
 		int[] normalIndices = null;
@@ -177,9 +174,9 @@ public class ObjOutput extends FaceOutput {
 
 		VectorXYZ faceNormal = new TriangleXYZ(vs.get(0), vs.get(1), vs.get(2)).getNormal();
 
-		for (int layer = 0; layer < max(1, material.getNumTextureLayers()); layer++) {
+		for (int layer = 0; layer < max(1, material.get().getNumTextureLayers()); layer++) {
 
-			useMaterial(material, layer);
+			useMaterial(material.get(), layer);
 
 			int[] texCoordIndices = null;
 			if (texCoordLists != null && !texCoordLists.isEmpty()) {

@@ -17,7 +17,7 @@ import org.osm2world.scene.color.LColor;
 /**
  * describes the material/surface properties of an object for lighting
  */
-public abstract class Material {
+public abstract class Material implements MaterialOrRef {
 
 	/** maximum number of {@link TextureLayer}s any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 32;
@@ -314,6 +314,11 @@ public abstract class Material {
 
 	public List<TextureDataDimensions> getTextureDimensions() {
 		return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
+	}
+
+	@Override
+	public Material get() {
+		return this;
 	}
 
 	public boolean equals(@Nonnull Material other, boolean ignoreNormalMode, boolean ignoreColor) {
