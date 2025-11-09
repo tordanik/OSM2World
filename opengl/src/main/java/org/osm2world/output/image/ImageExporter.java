@@ -39,7 +39,7 @@ public class ImageExporter {
 	private final Consumer<JOGLOutput> renderToTarget;
 	private final O2WConfig config;
 
-	private File backgroundImage;
+	private final File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
 
 	private final Color clearColor;
@@ -90,14 +90,7 @@ public class ImageExporter {
 			this.clearColor = bgColor;
 		}
 
-		if (config.containsKey("backgroundImage")) {
-			backgroundImage = config.resolveFileConfigProperty(config.getString("backgroundImage"));
-			if (backgroundImage == null || !backgroundImage.exists()) {
-				System.err.println("background image file doesn't exist: "
-						+ backgroundImage);
-				backgroundImage = null;
-			}
-		}
+		backgroundImage = config.backgroundImage();
 
 		/* create GL canvas and set rendering parameters */
 

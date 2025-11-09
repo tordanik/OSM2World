@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
+import java.net.URI;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -35,8 +36,8 @@ public class O2WConfigTest {
 		assertEquals("baz", result.getString("stringProperty", "something"));
 		assertTrue(result.getBoolean("keepOsmElements"));
 
-		File texturePath = result.resolveFileConfigProperty("textures/test.png");
-		assertTrue(texturePath != null && texturePath.exists());
+		URI textureURI = result.resolveFileConfigProperty("textures/test.png");
+		assertTrue(textureURI != null && new File(textureURI).exists());
 
 	}
 

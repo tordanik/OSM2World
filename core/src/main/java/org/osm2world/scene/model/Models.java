@@ -2,6 +2,7 @@ package org.osm2world.scene.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,11 +80,12 @@ public class Models {
 				try {
 					List<Model> ms = new ArrayList<>(fileNames.size());
 					for (String fileName : fileNames) {
-						File modelFile = config.resolveFileConfigProperty(fileName);
-						if (modelFile == null) {
+						URI modelFileUri = config.resolveFileConfigProperty(fileName, true, true);
+						if (modelFileUri == null) {
 							System.err.println("Can't read model file " + fileName);
+						} else {
+							ms.add(GltfModel.loadFromFile(new File(modelFileUri)));
 						}
-						ms.add(GltfModel.loadFromFile(modelFile));
 					}
 					models.put(modelName.toLowerCase(Locale.ROOT), ms);
 				} catch (IOException e) {

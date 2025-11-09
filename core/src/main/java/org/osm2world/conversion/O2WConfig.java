@@ -55,7 +55,7 @@ public class O2WConfig {
 
 	/**
 	 * Constructs a configuration from a {@link Map} containing key-value options for OSM2World
-	 * and one or more config files obtained from file: URIs. Config files use the .properties format.
+	 * and one or more config files obtained from local or remote URIs. Config files use the .properties format.
 	 * For keys which are present multiple times, values from the map take precedence over values from the config files.
 	 * Among configFiles, those later in the list take precedence.
 	 */
@@ -98,7 +98,8 @@ public class O2WConfig {
 
 	/**
 	 * returns a modified copy of this config that has one key set to a new value.
-	 * @param value  the new value; can be set to null to delete an existing property
+	 *
+	 * @param value the new value; can be set to null to delete an existing property
 	 */
 	public O2WConfig withProperty(String key, @Nullable Object value) {
 		Properties copy = new Properties();
@@ -145,8 +146,9 @@ public class O2WConfig {
 	public Integer getInteger(String key, Integer defaultValue) {
 		String v = props.getProperty(key);
 		if (v == null) return defaultValue;
-		try { return Integer.parseInt(v.trim()); }
-		catch (NumberFormatException e) {
+		try {
+			return Integer.parseInt(v.trim());
+		} catch (NumberFormatException e) {
 			try {
 				return (int) Math.round(Double.parseDouble(v.trim()));
 			} catch (NumberFormatException e2) {
@@ -162,7 +164,11 @@ public class O2WConfig {
 	public Float getFloat(String key, Float defaultValue) {
 		String v = props.getProperty(key);
 		if (v == null) return defaultValue;
-		try { return Float.parseFloat(v.trim()); } catch (NumberFormatException ex) { return defaultValue; }
+		try {
+			return Float.parseFloat(v.trim());
+		} catch (NumberFormatException ex) {
+			return defaultValue;
+		}
 	}
 
 	public double getDouble(String key, double defaultValue) {
@@ -172,7 +178,11 @@ public class O2WConfig {
 	public Double getDouble(String key, Double defaultValue) {
 		String v = props.getProperty(key);
 		if (v == null) return defaultValue;
-		try { return Double.parseDouble(v.trim()); } catch (NumberFormatException ex) { return defaultValue; }
+		try {
+			return Double.parseDouble(v.trim());
+		} catch (NumberFormatException ex) {
+			return defaultValue;
+		}
 	}
 
 	public List<String> getList(String key) {
@@ -190,7 +200,8 @@ public class O2WConfig {
 		if (value != null) {
 			try {
 				return Enum.valueOf(enumClass, value.toUpperCase());
-			} catch (IllegalArgumentException ignored) {}
+			} catch (IllegalArgumentException ignored) {
+			}
 		}
 		return null;
 	}
@@ -207,7 +218,8 @@ public class O2WConfig {
 		for (String value : values) {
 			try {
 				result.add(Enum.valueOf(enumClass, value.toUpperCase()));
-			} catch (IllegalArgumentException ignored) {}
+			} catch (IllegalArgumentException ignored) {
+			}
 		}
 		return result;
 
@@ -288,6 +300,14 @@ public class O2WConfig {
 	}
 
 	/**
+	 * the background image for rendered images
+	 */
+	public @Nullable File backgroundImage() {
+		URI uri = resolveFileConfigProperty(getString("backgroundImage"), true, true);
+		return uri != null ? new File(uri) : null;
+	}
+
+	/**
 	 * Limit for the size of the canvas used for rendering an exported image.
 	 * The width and the height must each not exceed this value.
 	 * If the requested image is larger, it may be rendered in multiple passes and combined afterward.
@@ -346,7 +366,8 @@ public class O2WConfig {
 
 	/**
 	 * the algorithm to use for calculating elevations
-	 * @return  a function to create an instance of the calculation algorithm
+	 *
+	 * @return a function to create an instance of the calculation algorithm
 	 */
 	public Supplier<EleCalculator> eleCalculator() {
 		return switch (getString("eleCalculator", "")) {
@@ -380,14 +401,17 @@ public class O2WConfig {
 	/**
 	 * A value which indicates whether input data should be assumed to be at sea rather than on land.
 	 * This is necessary because coastline ways will often not be within the bounds of a dataset.
-	 * @return  true if the dataset is sea on all sides (it may contain islands as long as they are
-	 * 	        entirely within the bounds); false if it's on land or unknown/mixed
+	 *
+	 * @return true if the dataset is sea on all sides (it may contain islands as long as they are
+	 * entirely within the bounds); false if it's on land or unknown/mixed
 	 */
 	public boolean isAtSea() {
 		return getBoolean("isAtSea", false);
 	}
 
-	/** Can be set to the value "shader" to enable shaders for OpenGL rendering. */
+	/**
+	 * Can be set to the value "shader" to enable shaders for OpenGL rendering.
+	 */
 	public String joglImplementation() {
 		return getString("joglImplementation");
 	}
@@ -401,7 +425,9 @@ public class O2WConfig {
 		return getBoolean("keepOsmElements", true);
 	}
 
-	/** The {@link LevelOfDetail} at which models should be generated. */
+	/**
+	 * The {@link LevelOfDetail} at which models should be generated.
+	 */
 	public LevelOfDetail lod() {
 		return switch (this.getInt("lod", 4)) {
 			case 0 -> LOD0;
@@ -416,22 +442,25 @@ public class O2WConfig {
 	 * output directory for log files
 	 */
 	public @Nullable File logDir() {
-		return resolveFileConfigProperty(getString("logDir", null), false);
+		URI logDirURI = resolveFileConfigProperty(getString("logDir", null), true, false);
+		return logDirURI != null ? new File(logDirURI) : null;
 	}
 
 	/**
 	 * The type of map projection to use during conversion.
 	 *
-	 * @return  a factory method to create a MapProjection instance from an origin
+	 * @return a factory method to create a MapProjection instance from an origin
 	 */
-	public Function<LatLon,? extends MapProjection> mapProjection() {
+	public Function<LatLon, ? extends MapProjection> mapProjection() {
 		return switch (getString("mapProjection", "")) {
 			case "OrthographicAzimuthalMapProjection" -> OrthographicAzimuthalMapProjection::new;
 			default -> MetricMapProjection::new;
 		};
 	}
 
-	/** The maximum number of log entries to write to log files. */
+	/**
+	 * The maximum number of log entries to write to log files.
+	 */
 	public int maxLogEntries() {
 		return getInt("maxLogEntries", 100);
 	}
@@ -441,7 +470,8 @@ public class O2WConfig {
 	 * If there are multiple versions of a model, the highest version should be used.
 	 */
 	public @Nullable File model3dmrDir() {
-		return resolveFileConfigProperty(getString("3dmrDir", null));
+		URI uri = resolveFileConfigProperty(getString("3dmrDir", null), true, true);
+		return uri != null ? new File(uri) : null;
 	}
 
 	/**
@@ -453,14 +483,18 @@ public class O2WConfig {
 		return getString("3dmrUrl", null);
 	}
 
-	/** A directory with SRTM data in .hgt or .hgt.zip format */
+	/**
+	 * A directory with SRTM data in .hgt or .hgt.zip format
+	 */
 	public @Nullable File srtmDir() {
-		return resolveFileConfigProperty(getString("srtmDir", null));
+		URI srtmDirURI = resolveFileConfigProperty(getString("srtmDir", null), true, true);
+		return srtmDirURI != null ? new File(srtmDirURI) : null;
 	}
 
 	/**
 	 * The algorithm to use for interpolating terrain elevation between sites of known elevation
-	 * @return  a function to create an instance of the algorithm
+	 *
+	 * @return a function to create an instance of the algorithm
 	 */
 	public Supplier<TerrainInterpolator> terrainInterpolator() {
 		return switch (getString("terrainInterpolator", "")) {
@@ -472,12 +506,16 @@ public class O2WConfig {
 		};
 	}
 
-	/** Image quality for embedded textures. */
+	/**
+	 * Image quality for embedded textures.
+	 */
 	public float textureQuality() {
 		return getFloat("textureQuality", 0.75f);
 	}
 
-	/** Default tree density in forests. Large numbers of trees can negatively affect performance. */
+	/**
+	 * Default tree density in forests. Large numbers of trees can negatively affect performance.
+	 */
 	public double treesPerSquareMeter() {
 		return getDouble("treesPerSquareMeter", 0.01f);
 	}
@@ -486,14 +524,17 @@ public class O2WConfig {
 	 * if this config references some files by path, e.g. textures,
 	 * resolve file paths relative to the location of the config file used to load this config (if any)
 	 */
-	public @Nullable File resolveFileConfigProperty(@Nullable String fileName) {
-		return resolveFileConfigProperty(fileName, true);
+	public @Nullable URI resolveFileConfigProperty(@Nullable String fileName) {
+		return resolveFileConfigProperty(fileName, false, true);
 	}
 
 	/**
 	 * Variant of {@link #resolveFileConfigProperty(String)} which can optionally permit non-existing files.
+	 *
+	 * @param requireLocalFile  requires that the result is a file ("file" URI scheme)
+	 * @param requireFileExists if the result is a local file, requires that the file exists
 	 */
-	public @Nullable File resolveFileConfigProperty(@Nullable String fileName, boolean requireFileExists) {
+	public @Nullable URI resolveFileConfigProperty(@Nullable String fileName, boolean requireLocalFile, boolean requireFileExists) {
 
 		if (fileName == null) {
 			return null;
@@ -506,17 +547,27 @@ public class O2WConfig {
 			if (this.containsKey("configBaseURI")) {
 				URI base = new URI(this.getString("configBaseURI"));
 				fileURI = base.resolve(fileURI);
+			} else {
+				File file = new File(fileName);
+				if (file.isAbsolute()) {
+					fileURI = file.toURI();
+				}
 			}
 
-			// TODO: fails for non-file: URIs
-			File file = new File(fileURI);
-
-			if (requireFileExists && !file.exists()) {
-				System.err.println("File referenced in config does not exist: " + file);
-				return null;
+			if (!"file".equals(fileURI.getScheme())) {
+				if (requireLocalFile) {
+					System.err.println("File referenced in config is not a local file: " + fileURI);
+					return null;
+				}
+			} else {
+				File file = new File(fileURI);
+				if (requireFileExists && !file.exists()) {
+					System.err.println("File referenced in config does not exist: " + file);
+					return null;
+				}
 			}
 
-			return file;
+			return fileURI;
 
 		} catch (URISyntaxException e) {
 			System.err.println("Error resolving file path in config: " + fileName);

@@ -5,10 +5,14 @@ import static org.osm2world.scene.color.Color.*;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +27,7 @@ import org.osm2world.scene.material.TextTexture.FontStyle;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.util.functions.Factory;
 import org.osm2world.world.creation.WorldModule;
 
 /**
@@ -500,32 +505,69 @@ public final class Materials {
 
 	private static @Nullable TextureLayer createTextureLayer(O2WConfig config, String keyPrefix, boolean implicitColorTexture) {
 
-		File baseColorTexture = null;
-		File ormTexture = null;
-		File normalTexture = null;
-		File displacementTexture = null;
+		URI baseColorTexture = null;
+		URI ormTexture = null;
+		URI normalTexture = null;
+		URI displacementTexture = null;
 
 		if (config.containsKey(keyPrefix + "_dir")) {
 
-			File textureDir = config.resolveFileConfigProperty(config.getString(keyPrefix + "_dir"));
-			if (textureDir!= null && textureDir.exists() && textureDir.isDirectory()) {
-				for (File file : textureDir.listFiles()) {
+			URI textureDirURI = config.resolveFileConfigProperty(config.getString(keyPrefix + "_dir"));
+
+			if (textureDirURI != null && "file".equals(textureDirURI.getScheme())
+					&& new File(textureDirURI).exists() && new File(textureDirURI).isDirectory()) {
+
+				for (File file : new File(textureDirURI).listFiles()) {
 					if (file.getName().contains("_Color.")) {
-						baseColorTexture = file;
+						baseColorTexture = file.toURI();
 					} else if (file.getName().contains("_ORM.")) {
-						ormTexture = file;
+						ormTexture = file.toURI();
 					} else if (file.getName().contains("_Normal.")) {
-						normalTexture = file;
+						normalTexture = file.toURI();
 					} else if (file.getName().contains("_Displacement.")) {
-						displacementTexture = file;
+						displacementTexture = file.toURI();
 					}
 				}
+
+			} else if (textureDirURI != null && List.of("http", "https").contains(textureDirURI.getScheme())) {
+
+				URI parentURI = textureDirURI.toString().endsWith("/")
+						? textureDirURI
+						: URI.create(textureDirURI + "/");
+
+				String[] pathParts = textureDirURI.getPath().split("/");
+
+				if (pathParts.length >= 2) {
+
+					String materialName = pathParts[pathParts.length - 1];
+
+					BiFunction<URI, Factory<URI>, URI> uriIfExistsElse = (URI uri, Factory<URI> fallback) -> {
+						try {
+							HttpURLConnection huc = (HttpURLConnection) uri.toURL().openConnection();
+							huc.setRequestMethod("HEAD");
+							if (huc.getResponseCode() == HttpURLConnection.HTTP_OK) {
+								return uri;
+							}
+						} catch (IOException ignored) {}
+						return fallback.get();
+					};
+
+					baseColorTexture =
+							uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.png"),
+							() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.jpg"),
+							() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.jpeg"),
+							() -> null)));
+
+					// TODO other types
+
+				}
+
 			} else {
-				System.err.println("Not a directory: " + textureDir);
+				System.err.println("Not a directory: " + textureDirURI);
 			}
 		}
 
-		TextureData baseColorTextureData = createTextureData(
+		TextureData baseColorTextureData = createTexture(
 				config, keyPrefix + (implicitColorTexture ? "" : "_color"), baseColorTexture);
 
 		if (baseColorTextureData == null) {
@@ -534,20 +576,20 @@ public final class Materials {
 		} else {
 			return new TextureLayer(
 					baseColorTextureData,
-					createTextureData(config, keyPrefix + "_normal", normalTexture),
-					createTextureData(config, keyPrefix + "_orm", ormTexture),
-					createTextureData(config, keyPrefix + "_displacement", displacementTexture),
+					createTexture(config, keyPrefix + "_normal", normalTexture),
+					createTexture(config, keyPrefix + "_orm", ormTexture),
+					createTexture(config, keyPrefix + "_displacement", displacementTexture),
 					config.getBoolean(keyPrefix + "_colorable", false));
 		}
 
 	}
 
 	/**
-	 * @param defaultFile  texture file to use if there's no _file attribute
+	 * @param defaultImageURI  texture file to use if there's no _file attribute
 	 * @return  valid {@link TextureData} extracted from the config file, or null
 	 */
-	private static @Nullable TextureData createTextureData(O2WConfig config, String keyPrefix,
-			@Nullable File defaultFile) {
+	private static @Nullable TextureData createTexture(O2WConfig config, String keyPrefix,
+			@Nullable URI defaultImageURI) {
 
 		TextureDataDimensions dimensions = createTextureDataDimensions(config, keyPrefix);
 		Wrap wrap = getWrap(config.getString(keyPrefix + "_wrap"));
@@ -621,22 +663,30 @@ public final class Materials {
 					relativeFontSize, wrap, coordFunction);
 
 		} else if ("image".equals(type)) {
-			File file = config.resolveFileConfigProperty(config.getString(keyPrefix + "_file"));
-			
-			if (file == null || file.isDirectory()) {
-				file = null;
+
+			URI imageURI = config.resolveFileConfigProperty(config.getString(keyPrefix + "_file"));
+
+			if (imageURI != null) {
+				return createTexture(imageURI, dimensions, wrap, coordFunction);
+			} else if (defaultImageURI != null) {
+				return createTexture(defaultImageURI, dimensions, wrap, coordFunction);
+			} else {
+				return null;
 			}
-
-			if (file == null) { file = defaultFile; }
-			if (file == null) { return null; }
-
-			return ImageFileTexture.create(file, dimensions, wrap, coordFunction);
 
 		} else {
 			System.err.println("unknown type value: " + type);
 			return null;
 		}
 
+	}
+
+	private static TextureData createTexture(URI imageURI, TextureDataDimensions dimensions, Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> coordFunction) {
+		if ("file".equals(imageURI.getScheme())) {
+			return ImageFileTexture.create(new File(imageURI), dimensions, wrap, coordFunction);
+		} else {
+			return new UriTexture(imageURI, dimensions, wrap, coordFunction);
+		}
 	}
 
 	/**
