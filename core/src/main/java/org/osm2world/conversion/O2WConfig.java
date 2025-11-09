@@ -1,8 +1,15 @@
 package org.osm2world.conversion;
 
+import static java.util.Arrays.stream;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -48,24 +55,22 @@ public class O2WConfig {
 
 	/**
 	 * Constructs a configuration from a {@link Map} containing key-value options for OSM2World
-	 * and one or more config files. Config files use the .properties format.
+	 * and one or more config files obtained from file: URIs. Config files use the .properties format.
 	 * For keys which are present multiple times, values from the map take precedence over values from the config files.
 	 * Among configFiles, those later in the list take precedence.
 	 */
-	public O2WConfig(@Nullable Map<String, ?> properties, File... configFiles) {
+	public O2WConfig(@Nullable Map<String, ?> properties, URI... configFiles) {
 
 		props = new Properties();
 
 		try {
 
-			for (File configFile : configFiles) {
-				if (configFile != null && configFile.exists()) {
-					if (!props.containsKey("configPath")) {
-						String basePath = configFile.getAbsoluteFile().getParent();
-						props.setProperty("configPath", basePath);
-					}
-					loadFileWithIncludes(props, configFile, new HashSet<>());
+			for (URI configFileURI : configFiles) {
+				if (!props.containsKey("configBaseURI")) {
+					String basePath = getParentURI(configFileURI).toString();
+					props.setProperty("configBaseURI", basePath);
 				}
+				loadFileWithIncludes(props, configFileURI);
 			}
 
 			if (properties != null) {
@@ -78,10 +83,17 @@ public class O2WConfig {
 				}
 			}
 
-		} catch (IOException e) {
+		} catch (IOException | URISyntaxException e) {
 			throw new RuntimeException("Error loading configuration file", e);
 		}
 
+	}
+
+	/**
+	 * Variant of {@link #O2WConfig(Map, URI...)} which uses {@link File} objects rather than URIs.
+	 */
+	public O2WConfig(@Nullable Map<String, ?> properties, File... configFiles) {
+		this(properties, stream(configFiles).map(File::toURI).toArray(URI[]::new));
 	}
 
 	/**
@@ -487,20 +499,29 @@ public class O2WConfig {
 			return null;
 		}
 
-		File file = new File(fileName);
+		try {
 
-		if (this.containsKey("configPath")) {
-			File base = new File(this.getString("configPath"));
-			File combined = new File(base, fileName);
-			return combined.getAbsoluteFile();
-		}
+			URI fileURI = new URI(fileName);
 
-		if (requireFileExists && !file.exists()) {
-			System.err.println("File referenced in config does not exist: " + file);
+			if (this.containsKey("configBaseURI")) {
+				URI base = new URI(this.getString("configBaseURI"));
+				fileURI = base.resolve(fileURI);
+			}
+
+			// TODO: fails for non-file: URIs
+			File file = new File(fileURI);
+
+			if (requireFileExists && !file.exists()) {
+				System.err.println("File referenced in config does not exist: " + file);
+				return null;
+			}
+
+			return file;
+
+		} catch (URISyntaxException e) {
+			System.err.println("Error resolving file path in config: " + fileName);
 			return null;
 		}
-
-		return file;
 
 	}
 
@@ -513,15 +534,16 @@ public class O2WConfig {
 		return result;
 	}
 
-	private static void loadFileWithIncludes(Properties dest, File file, Set<File> visited) throws IOException {
+	private static URI getParentURI(URI uri) throws URISyntaxException, MalformedURLException {
+		return uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
+	}
 
-		// prevent loading the same file multiple times from different include directives
-		if (!visited.add(file.getCanonicalFile())) return;
+	private static void loadFileWithIncludes(Properties dest, URI configFileURI) throws IOException, URISyntaxException {
 
 		/* load properties from the file itself */
 
 		Properties current = new Properties();
-		try (var fileInputStream = new FileInputStream(file)) {
+		try (var fileInputStream = configFileURI.toURL().openStream()) {
 			current.load(fileInputStream);
 			current.remove("include"); // don't expose include directive
 		}
@@ -529,7 +551,7 @@ public class O2WConfig {
 		/* process include directives */
 
 		Pattern includePattern = Pattern.compile("^\\s*include\\s*[:=]\\s*(.+)\\s*$", Pattern.CASE_INSENSITIVE);
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(configFileURI.toURL().openStream()))) {
 			String line;
 			while ((line = br.readLine()) != null) {
 				Matcher m = includePattern.matcher(line);
@@ -544,11 +566,11 @@ public class O2WConfig {
 						matcher = variablePattern.matcher(includeValue);
 					}
 					// load properties from the included file
-					File includeFile = new File(includeValue);
+					URI includeFile = new URI(includeValue);
 					if (!includeFile.isAbsolute()) {
-						includeFile = new File(file.getParentFile(), includeValue);
+						includeFile = getParentURI(configFileURI).resolve(includeFile);
 					}
-					loadFileWithIncludes(dest, includeFile, visited);
+					loadFileWithIncludes(dest, includeFile);
 				}
 			}
 		}
