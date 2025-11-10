@@ -6,8 +6,10 @@ import static org.osm2world.scene.material.TextureData.Wrap;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -383,6 +385,8 @@ public class GltfModel implements Model {
 				URI bufferUri = new URI(buffer.uri);
 				if (source instanceof ExternalModelSource.LocalFileSource localFileSource) {
 					bufferUri = localFileSource.file().toURI().resolve(bufferUri);
+				} else if (source instanceof ExternalModelSource.HttpUrlSource httpUrlSource) {
+					bufferUri = httpUrlSource.url().toURI().resolve(bufferUri);
 				}
 				try (InputStream inputStream = bufferUri.toURL().openStream()) {
 					result = ByteBuffer.wrap(inputStream.readAllBytes());
@@ -576,6 +580,48 @@ public class GltfModel implements Model {
 		} catch (Exception e) {
 			throw new IOException("Could not read glTF model from file: " + gltfFile, e);
 		}
+	}
+
+	public static GltfModel loadFromHttpUrl(URL url, @Nullable GltfFlavor flavor,
+			@Nullable ExternalModelSource source) throws IOException {
+
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("GET");
+
+		if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+			try (InputStream inputStream = connection.getInputStream()) {
+
+				if (flavor == null) {
+					String mimeType = connection.getContentType();
+					if (mimeType != null && mimeType.contains("gltf+json")) {
+						flavor = GltfFlavor.GLTF;
+					} else if (mimeType != null && mimeType.contains("gltf-binary")) {
+						flavor = GltfFlavor.GLB;
+					} else {
+						flavor = url.getPath().toLowerCase().endsWith(".glb") ? GltfFlavor.GLB : GltfFlavor.GLTF;
+					}
+				}
+
+				return GltfModel.loadFromStream(inputStream, flavor,
+						source != null ? source : new ExternalModelSource.HttpUrlSource(url));
+
+			}
+		} else {
+			throw new IOException("Response code " + connection.getResponseCode()
+					+ " retrieving model from URL " + url);
+		}
+
+	}
+
+	public static GltfModel loadFromUri(URI uri, @Nullable GltfFlavor flavor,
+			@Nullable ExternalModelSource source) throws IOException {
+
+		return switch (uri.getScheme()) {
+			case "file" -> loadFromFile(new File(uri));
+			case "http", "https" -> loadFromHttpUrl(uri.toURL(), flavor, source);
+			default -> throw new UnsupportedOperationException("Unsupported URI scheme for GltfModel: " + uri);
+		};
+
 	}
 
 	public static GltfModel loadFromStream(InputStream inputStream, GltfFlavor flavor,

@@ -1,6 +1,7 @@
 package org.osm2world.scene.model;
 
 import java.io.File;
+import java.net.URL;
 
 import javax.annotation.Nonnull;
 
@@ -15,6 +16,13 @@ public interface ExternalModelSource {
 		@Override
 		public @Nonnull String toString() {
 			return file.getName();
+		}
+	}
+
+	record HttpUrlSource(URL url) implements ExternalModelSource {
+		@Override
+		public @Nonnull String toString() {
+			return url.toString();
 		}
 	}
 

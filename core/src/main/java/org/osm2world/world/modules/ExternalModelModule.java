@@ -4,8 +4,6 @@ import static java.lang.Math.PI;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -120,18 +118,9 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 			try {
 
 				URL url = new URL(urlPrefix + id);
-				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-				connection.setRequestMethod("GET");
+				var source = new ExternalModelSource.External3DMRSource(id);
 
-				if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-					try (InputStream inputStream = connection.getInputStream()) {
-						 return GltfModel.loadFromStream(inputStream, GltfFlavor.GLB,
-								 new ExternalModelSource.External3DMRSource(id));
-					}
-				} else {
-					ConversionLog.error("Response code " + connection.getResponseCode()
-							+ " retrieving 3DMR model '"  + id + "' from " + urlPrefix, element);
-				}
+				return GltfModel.loadFromHttpUrl(url, GltfFlavor.GLB, source);
 
 			} catch (IOException e) {
 				ConversionLog.error("Error loading 3DMR model '"  + id + "' from " + urlPrefix, element);

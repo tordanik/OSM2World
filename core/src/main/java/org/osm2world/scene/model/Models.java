@@ -1,6 +1,5 @@
 package org.osm2world.scene.model;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -80,11 +79,11 @@ public class Models {
 				try {
 					List<Model> ms = new ArrayList<>(fileNames.size());
 					for (String fileName : fileNames) {
-						URI modelFileUri = config.resolveFileConfigProperty(fileName, true, true);
-						if (modelFileUri == null) {
+						URI modelUri = config.resolveFileConfigProperty(fileName, false, true);
+						if (modelUri == null) {
 							System.err.println("Can't read model file " + fileName);
 						} else {
-							ms.add(GltfModel.loadFromFile(new File(modelFileUri)));
+							ms.add(GltfModel.loadFromUri(modelUri, null, null));
 						}
 					}
 					models.put(modelName.toLowerCase(Locale.ROOT), ms);
