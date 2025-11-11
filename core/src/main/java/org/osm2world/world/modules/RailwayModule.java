@@ -107,8 +107,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 			SimplePolygonShapeXZ box = new AxisAlignedRectangleXZ(NULL_VECTOR, sleeperWidth, SLEEPER_LENGTH);
 			box = box.rotatedCW(params.direction());
 
-			return singletonList(new Mesh(new ExtrusionGeometry(box, asList(position, position.addY(SLEEPER_HEIGHT)),
-					null, null, null, EnumSet.of(END_CAP), WOOD.getTextureDimensions()), WOOD, LOD4));
+			return List.of(new Mesh(new ExtrusionGeometry(box, List.of(position, position.addY(SLEEPER_HEIGHT)),
+					null, null, null, EnumSet.of(END_CAP), WOOD.get().getTextureDimensions()),
+					WOOD.get(), LOD4));
 
 		}
 	}
@@ -194,13 +195,13 @@ public class RailwayModule extends ConfigurableWorldModule {
 				TriangleGeometry.Builder lod4GroundBuilder = new TriangleGeometry.Builder(
 						texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
 				lod4GroundBuilder.addTriangleStrip(groundVs);
-				result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST, LOD4));
+				result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST.get(), LOD4));
 
 				// repeating texture containing ballast, sleepers and rails
 				TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(
 						texCoordFunctions(RAILWAY, STRIP_FIT_HEIGHT), null, Interpolation.SMOOTH);
 				lod3GroundBuilder.addTriangleStrip(groundVs);
-				result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY, LOD0, LOD3));
+				result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY.get(), LOD0, LOD3));
 
 			}
 
@@ -227,8 +228,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 						createLineBetween(getOutline(false), getOutline(true), 1 - (groundWidth - railDist) / groundWidth / 2)
 				)) {
 					result.add(new Mesh(new ExtrusionGeometry(shape, addYList(railLine, yOffset),
-							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions, STEEL.getTextureDimensions()),
-							STEEL, lod));
+							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions, STEEL.get().getTextureDimensions()),
+							STEEL.get(), lod));
 				}
 
 			}
@@ -293,7 +294,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vectors = getOutlinePolygon().vertices();
 
-			Material material = Materials.RAIL_BALLAST;
+			Material material = Materials.RAIL_BALLAST.get();
 
 			target.drawConvexPolygon(material, vectors,
 					texCoordLists(vectors, material, GLOBAL_X_Z));

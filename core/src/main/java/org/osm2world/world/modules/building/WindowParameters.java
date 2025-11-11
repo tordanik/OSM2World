@@ -207,7 +207,7 @@ public class WindowParameters {
 		windowMaterial = BuildingPart.buildMaterial(
 				materialString,
 				tags.getValue("window:colour"),
-				Materials.GLASS, false);
+				Materials.GLASS.get(), false);
 
 		numberWindows = parseUInt(tags.getValue("window:count"));
 		groupSize = parseUInt(tags.getValue("window:group_size"), 1);
@@ -361,7 +361,7 @@ public class WindowParameters {
 		frameMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:frame:material"),
 				tags.getValue("window:frame:colour"),
-				Materials.PLASTIC, false);
+				Materials.PLASTIC.get(), false);
 
 		/* shutters */
 
@@ -370,7 +370,7 @@ public class WindowParameters {
 		shutterMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:shutter:material"),
 				tags.getValue("window:shutter:colour"),
-				Materials.WOOD, false);
+				Materials.WOOD.get(), false);
 
 	}
 

@@ -170,7 +170,7 @@ public final class PowerModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			Material material = PLASTIC.withColor(new Color(184, 184, 184));
+			Material material = PLASTIC.get().withColor(new Color(184, 184, 184));
 			target.drawBox(material, getBase(), faceVector, 1.5, 0.8, 0.3);
 
 		}
@@ -239,7 +239,7 @@ public final class PowerModule extends AbstractModule {
 				double bladeLength = (params.height() == null ? 1 : params.height()) / 2;
 				double bladeWidth = 0.1 * bladeLength;
 
-				Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
+				Material bladeMaterial = Materials.STEEL.get(); // probably fibre, but color matches roughly :)
 
 				// define first blade
 				List<VectorXYZ> bladeFront = asList(
@@ -295,7 +295,7 @@ public final class PowerModule extends AbstractModule {
 			/* determine material */
 
 			Material poleMaterial = null;
-			Material nacelleMaterial = Materials.STEEL;
+			Material nacelleMaterial = Materials.STEEL.get();
 
 			//TODO parse color
 
@@ -360,8 +360,8 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> path = getBaseline();
 
 			return singletonList(new Mesh(new ExtrusionGeometry(powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.getTextureDimensions()),
-					PLASTIC, LevelOfDetail.LOD3, LevelOfDetail.LOD4));
+					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.get().getTextureDimensions()),
+					PLASTIC.get().get(), LevelOfDetail.LOD3, LevelOfDetail.LOD4));
 
 		}
 
@@ -370,7 +370,7 @@ public final class PowerModule extends AbstractModule {
 	private final static class PowerLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float CABLE_THICKNESS = 0.05f;
-		private static final Material CABLE_MATERIAL = PLASTIC;
+		private static final Material CABLE_MATERIAL = PLASTIC.get();
 		private static final double SLACK_SPAN = 6;
 		private static final Map<LODRange, Double> INTERPOLATION_STEPS = Map.of(
 				new LODRange(LevelOfDetail.LOD3), 3.0,
@@ -641,7 +641,7 @@ public final class PowerModule extends AbstractModule {
 				List<VectorXYZ> vs = new ArrayList<>();
 				List<VectorXZ> tex = new ArrayList<>();
 				List<List<VectorXZ>> texList =
-					nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
+					nCopies(Materials.POWER_TOWER_VERTICAL.get().getNumTextureLayers(), tex);
 
 				vs.add(high[a].xyz(height));
 				tex.add(new VectorXZ(0, 1));
@@ -668,7 +668,7 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 			List<VectorXZ> tex = new ArrayList<VectorXZ>();
 			List<List<VectorXZ>> texList =
-					nCopies(Materials.POWER_TOWER_HORIZONTAL.getNumTextureLayers(), tex);
+					nCopies(Materials.POWER_TOWER_HORIZONTAL.get().getNumTextureLayers(), tex);
 
 			vs.add(right.xyz(base));
 			vs.add(left.xyz(base));
@@ -694,7 +694,7 @@ public final class PowerModule extends AbstractModule {
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
 				List<List<VectorXZ>> texList =
-						nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
+						nCopies(Materials.POWER_TOWER_VERTICAL.get().getNumTextureLayers(), tex);
 
 				for (int i = 0; i < 2; i++) {
 					vs.add(frontPoints[a+i].xyz(base + height[a+i]));
@@ -945,7 +945,7 @@ public final class PowerModule extends AbstractModule {
 
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 
-			Material backMaterial = PLASTIC.withColor(new Color(184, 184, 184));
+			Material backMaterial = PLASTIC.get().withColor(new Color(184, 184, 184));
 			target.drawTriangleStrip(backMaterial, vs,
 					texCoordLists(vs, backMaterial, STRIP_WALL));
 

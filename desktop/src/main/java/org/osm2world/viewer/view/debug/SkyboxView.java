@@ -18,7 +18,7 @@ public class SkyboxView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return scene != null && Materials.SKYBOX.getNumTextureLayers() > 0;
+		return scene != null && Materials.SKYBOX.get().getNumTextureLayers() > 0;
 	}
 
 	@Override

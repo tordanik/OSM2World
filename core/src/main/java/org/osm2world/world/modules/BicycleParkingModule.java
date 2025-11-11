@@ -359,9 +359,9 @@ public class BicycleParkingModule extends AbstractModule {
 					toFront.invert().normalize());
 
 			Geometry geom = new ExtrusionGeometry(STAND_SHAPE, path, upVectors, null, null, null,
-					STEEL.getTextureDimensions());
+					STEEL.get().getTextureDimensions());
 
-			return List.of(new Mesh(geom, STEEL, LOD3, LOD4));
+			return List.of(new Mesh(geom, STEEL.get(), LOD3, LOD4));
 
 		}
 

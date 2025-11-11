@@ -23,6 +23,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
@@ -124,7 +125,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 			Material baseMaterial = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
 			List<List<VectorXZ>> baseTexCoords = triangleTexCoordLists(triangles, baseMaterial, GLOBAL_X_Z);
 
-			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.getTextureLayers());
+			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.get().getTextureLayers());
 			List<List<VectorXZ>> texCoords = new ArrayList<>(baseTexCoords);
 			texCoords.addAll(triangleTexCoordLists(triangles, HELIPAD_MARKING, localXZTexCoordFunction));
 
@@ -213,8 +214,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		@Override
 		Material getCenterlineSurface() {
-			if (getSurface() == ASPHALT || getSurface() == CONCRETE) {
-				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.getTextureLayers());
+			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface()))) {
+				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get().getTextureLayers());
 			} else {
 				return getSurface();
 			}
@@ -235,8 +236,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		@Override
 		Material getCenterlineSurface() {
-			if (getSurface() == ASPHALT || getSurface() == CONCRETE) {
-				return TAXIWAY_CENTER_MARKING;
+			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface()))) {
+				return TAXIWAY_CENTER_MARKING.get();
 			} else {
 				return getSurface();
 			}

@@ -153,18 +153,18 @@ public class TrafficSignModel implements Model {
 	private static Material getBackMaterial(TrafficSignType type) {
 
 		if (type.material.getNumTextureLayers() == 0) {
-			return STEEL;
+			return STEEL.get();
 		}
 
 		if (!backMaterials.containsKey(type)) {
 
 			// use the transparency information from the front of the sign to cut out the correct shape for the back
 			return new ImmutableMaterial(
-					FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
-						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).baseColorTexture),
-						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).normalTexture),
-						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).ormTexture),
-						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).displacementTexture),
+					FLAT, WHITE, Transparency.BINARY, List.of(new TextureLayer(
+						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).baseColorTexture),
+						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).normalTexture),
+						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).ormTexture),
+						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).displacementTexture),
 						false)));
 		}
 

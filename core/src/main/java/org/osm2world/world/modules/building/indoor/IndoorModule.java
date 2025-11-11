@@ -3,6 +3,7 @@ package org.osm2world.world.modules.building.indoor;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.scene.material.Materials.STEEL;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
@@ -20,7 +21,6 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -195,7 +195,7 @@ public class IndoorModule extends AbstractModule {
 
 					List<VectorXYZ> topPoints = new ArrayList<>(bottomPoints).stream().map(v -> v.addY(carHeight)).collect(toList());
 
-					WallSurface frontSurface = new WallSurface(Materials.STEEL, bottomPoints, topPoints);
+					WallSurface frontSurface = new WallSurface(STEEL.get(), bottomPoints, topPoints);
 
 					List<VectorXYZ> bottomPointsReverse = new ArrayList<>(bottomPoints);
 					List<VectorXYZ> topPointsReverse = new ArrayList<>(topPoints);
@@ -203,7 +203,7 @@ public class IndoorModule extends AbstractModule {
 					Collections.reverse(bottomPointsReverse);
 					Collections.reverse(topPointsReverse);
 
-					WallSurface backSurface = new WallSurface(Materials.STEEL, bottomPointsReverse, topPointsReverse);
+					WallSurface backSurface = new WallSurface(STEEL.get(), bottomPointsReverse, topPointsReverse);
 
 					LineSegmentXZ carSegment = new LineSegmentXZ(carOuterPoints.get((i + 1) % carOuterPoints.size()), carOuterPoints.get(i));
 					MapNode doorNode = lineSegIndexToDoorNode.get(i);
@@ -234,10 +234,10 @@ public class IndoorModule extends AbstractModule {
 				List<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon)
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle - 0.0001)).toList();
 
-				target.drawTriangles(Materials.STEEL, trianglesBottomDown,
-						triangleTexCoordLists(trianglesBottomDown, Materials.STEEL, GLOBAL_X_Z));
-				target.drawTriangles(Materials.STEEL, trianglesBottomUp,
-						triangleTexCoordLists(trianglesBottomUp, Materials.STEEL, GLOBAL_X_Z));
+				target.drawTriangles(STEEL, trianglesBottomDown,
+						triangleTexCoordLists(trianglesBottomDown, STEEL, GLOBAL_X_Z));
+				target.drawTriangles(STEEL, trianglesBottomUp,
+						triangleTexCoordLists(trianglesBottomUp, STEEL, GLOBAL_X_Z));
 
 
 				/* draw ceiling */
@@ -248,10 +248,10 @@ public class IndoorModule extends AbstractModule {
 				List<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon)
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle + carHeight)).toList();
 
-				target.drawTriangles(Materials.STEEL, trianglesTopDown,
-						triangleTexCoordLists(trianglesTopDown, Materials.STEEL, GLOBAL_X_Z));
-				target.drawTriangles(Materials.STEEL, trianglesTopUp,
-						triangleTexCoordLists(trianglesTopUp, Materials.STEEL, GLOBAL_X_Z));
+				target.drawTriangles(STEEL, trianglesTopDown,
+						triangleTexCoordLists(trianglesTopDown, STEEL, GLOBAL_X_Z));
+				target.drawTriangles(STEEL, trianglesTopUp,
+						triangleTexCoordLists(trianglesTopUp, STEEL, GLOBAL_X_Z));
 
 
 				/* draw cable */
@@ -260,10 +260,10 @@ public class IndoorModule extends AbstractModule {
 
 				VectorXZ sideDirection = carPolygon.getSegments().get(0).getDirection();
 
-				target.drawBox(Materials.STEEL, centroid.xyz(cableTopEle - 0.25), sideDirection.normalize(), 0.25, 0.25, 0.4);
+				target.drawBox(STEEL, centroid.xyz(cableTopEle - 0.25), sideDirection.normalize(), 0.25, 0.25, 0.4);
 
 				for (int i = 1; i < 5; i++) {
-					target.drawBox(Materials.STEEL,
+					target.drawBox(STEEL,
 							centroid.xyz(cableTopEle - 0.25).add(sideDirection.mult(-0.2)).add(sideDirection.mult(0.08 * i)),
 							sideDirection.normalize(),
 							- (cableTopEle - carBaseEle - carHeight - 0.25),
@@ -271,7 +271,7 @@ public class IndoorModule extends AbstractModule {
 							0.01);
 				}
 
-				target.drawBox(Materials.STEEL, centroid.xyz(carBaseEle + carHeight), sideDirection.normalize(), 0.25, 0.25, 0.4);
+				target.drawBox(STEEL, centroid.xyz(carBaseEle + carHeight), sideDirection.normalize(), 0.25, 0.25, 0.4);
 
 			}
 		}

@@ -36,7 +36,7 @@ public class RoofBuildingPart extends BuildingPart {
 		if (!tags.containsKey("building:material") && tags.containsKey("roof:material")) {
 			// use a roof-dependent default material for the small bit of "wall" below the roof
 			if ("glass".equals(tags.getValue("roof:material"))) {
-				result = GLASS_WALL;
+				result = GLASS_WALL.get();
 			}
 		}
 

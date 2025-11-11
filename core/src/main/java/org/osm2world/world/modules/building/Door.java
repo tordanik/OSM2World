@@ -50,16 +50,11 @@ public class Door implements WallElement {
 	@Override
 	public void renderTo(CommonTarget target, WallSurface surface) {
 
-		Material doorMaterial = ENTRANCE_DEFAULT;
-
-		switch (parameters.type) {
-		case "no":
-			doorMaterial = VOID;
-			break;
-		case "overhead":
-			doorMaterial = GARAGE_DOOR;
-			break;
-		}
+		Material doorMaterial = switch (parameters.type) {
+			case "no" -> VOID.get();
+			case "overhead" -> GARAGE_DOOR.get();
+			default -> ENTRANCE_DEFAULT.get();
+		};
 
 		doorMaterial = doorMaterial.withColor(parameters.color);
 

@@ -7,7 +7,7 @@ import static java.util.Collections.emptyList;
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.Materials.TERRAIN_DEFAULT;
 import static org.osm2world.scene.mesh.MeshStore.*;
 import static org.osm2world.scene.mesh.MeshStore.MergeMeshes.MergeOption.*;
 import static org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
@@ -43,11 +43,9 @@ import org.osm2world.output.frontend_pbf.FrontendPbf.Material.Transparency;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Shape.ShapeType;
 import org.osm2world.output.gltf.GltfModel;
 import org.osm2world.scene.color.LColor;
-import org.osm2world.scene.material.ImageFileTexture;
+import org.osm2world.scene.material.*;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Shadow;
-import org.osm2world.scene.material.RuntimeTexture;
-import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.mesh.*;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
@@ -95,14 +93,15 @@ public class FrontendPbfOutput extends MeshOutput {
 	 * i.e. triangle's normal is roughly equal to Y_UNIT. With terrain enabled, this wouldn't necessarily be the case.
 	 * TODO: find a solution (e.g. check triangle normal) that works with terrain and can be used for all outputs
 	 */
-	private static final List<Material> DEFAULT_SHADOWLESS_MATERIALS = asList(ASPHALT, CARPET, EARTH, GRASS,
-			GRASS_PAVER, GRAVEL, HELIPAD_MARKING, ICE, PAVING_STONE, PEBBLESTONE, PITCH_BEACHVOLLEYBALL, PITCH_SOCCER,
-			PITCH_TENNIS_ASPHALT, PITCH_TENNIS_CLAY, PITCH_TENNIS_GRASS, PITCH_TENNIS_SINGLES_ASPHALT,
-			PITCH_TENNIS_SINGLES_CLAY, PITCH_TENNIS_SINGLES_GRASS, RAILWAY, RAIL_BALLAST, RED_ROAD_MARKING,
-			ROAD_MARKING, ROAD_MARKING_ARROW_RIGHT, ROAD_MARKING_ARROW_RIGHT_LEFT, ROAD_MARKING_ARROW_THROUGH,
-			ROAD_MARKING_ARROW_THROUGH_RIGHT, ROAD_MARKING_CROSSING, ROAD_MARKING_DASHED, ROAD_MARKING_ZEBRA, ROCK,
-			ROOF_DEFAULT, RUNWAY_CENTER_MARKING, SAND, SCREE, SCRUB, SETT, SKYBOX, SNOW, SOLAR_PANEL, TARTAN,
-			TAXIWAY_CENTER_MARKING, TERRAIN_DEFAULT, UNHEWN_COBBLESTONE, WATER);
+	private static final List<String> DEFAULT_SHADOWLESS_MATERIALS = List.of("ASPHALT", "CARPET", "EARTH",
+			"GRASS", "GRASS_PAVER", "GRAVEL", "HELIPAD_MARKING", "ICE", "PAVING_STONE", "PEBBLESTONE",
+			"PITCH_BEACHVOLLEYBALL", "PITCH_SOCCER", "PITCH_TENNIS_ASPHALT", "PITCH_TENNIS_CLAY", "PITCH_TENNIS_GRASS",
+			"PITCH_TENNIS_SINGLES_ASPHALT",	"PITCH_TENNIS_SINGLES_CLAY", "PITCH_TENNIS_SINGLES_GRASS", "RAILWAY",
+			"RAIL_BALLAST", "RED_ROAD_MARKING", "ROAD_MARKING", "ROAD_MARKING_ARROW_RIGHT",
+			"ROAD_MARKING_ARROW_RIGHT_LEFT", "ROAD_MARKING_ARROW_THROUGH", "ROAD_MARKING_ARROW_THROUGH_RIGHT",
+			"ROAD_MARKING_CROSSING", "ROAD_MARKING_DASHED", "ROAD_MARKING_ZEBRA", "ROCK", "ROOF_DEFAULT",
+			"RUNWAY_CENTER_MARKING", "SAND", "SCREE", "SCRUB", "SETT", "SKYBOX", "SNOW", "SOLAR_PANEL", "TARTAN",
+			"TAXIWAY_CENTER_MARKING", "TERRAIN_DEFAULT", "UNHEWN_COBBLESTONE", "WATER");
 
 	/**
 	 * a block containing all elements of a particular type.
@@ -351,7 +350,8 @@ public class FrontendPbfOutput extends MeshOutput {
 			default: throw new Error("unsupported transparency: " + material.getTransparency());
 		}
 
-		if (material.getShadow() == Shadow.FALSE || DEFAULT_SHADOWLESS_MATERIALS.contains(material)) {
+		if (material.getShadow() == Shadow.FALSE
+				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(Materials.getUniqueName(material), ""))) {
 			materialBuilder.setCastShadow(false);
 		}
 

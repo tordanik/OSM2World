@@ -23,7 +23,7 @@ import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.world.data.AbstractAreaWorldObject;
@@ -99,7 +99,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Material material;
+			MaterialOrRef material;
 
 			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				material = Materials.TERRAIN_DEFAULT;

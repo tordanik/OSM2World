@@ -38,6 +38,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.LevelOfDetail;
@@ -257,7 +258,7 @@ public class BarrierModule extends AbstractModule {
 
 	public static class Wall extends ColoredWall {
 
-		private final static Material DEFAULT_MATERIAL = Materials.STONE;
+		private final static MaterialOrRef DEFAULT_MATERIAL = STONE;
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "wall");
@@ -268,23 +269,23 @@ public class BarrierModule extends AbstractModule {
 			Material material = null;
 
 			if ("gabion".equals(tags.getValue("wall"))) {
-				material = Materials.WALL_GABION;
+				material = WALL_GABION.get();
 			} else if ("brick".equals(tags.getValue("wall"))) {
-				material = BRICK;
+				material = BRICK.get();
 			} else if ( tags.containsKey("material") ) {
-				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
+				material = Materials.resolveMaterial(tags.getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
-				material = DEFAULT_MATERIAL;
+				material = DEFAULT_MATERIAL.get();
 			}
 
 			String colorString = tags.getValue("colour");
-			boolean colorable = material.getNumTextureLayers() == 0
-					|| material.getTextureLayers().get(0).colorable;
+			boolean colorable = material.get().getNumTextureLayers() == 0
+					|| material.get().getTextureLayers().get(0).colorable;
 
 			if (colorString != null && colorable) {
-				material = material.withColor(parseColor(colorString, CSS_COLORS));
+				material = material.get().withColor(parseColor(colorString, CSS_COLORS));
 			}
 
 			return material;
@@ -302,7 +303,7 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "city_wall");
 		}
 		public CityWall(MapWaySegment segment) {
-			super(Wall.DEFAULT_MATERIAL, segment, 10, 2);
+			super(Wall.DEFAULT_MATERIAL.get(), segment, 10, 2);
 		}
 	}
 
@@ -311,7 +312,7 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "hedge");
 		}
 		public Hedge(MapWaySegment segment) {
-			super(Materials.HEDGE, segment, 1f, 0.5f);
+			super(HEDGE.get(), segment, 1f, 0.5f);
 		}
 		@Override
 		public Collection<AttachmentSurface> getAttachmentSurfaces() {
@@ -341,7 +342,7 @@ public class BarrierModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD2, LOD4);
 
-			Material material = METAL_FENCE;
+			Material material = METAL_FENCE.get();
 
 			List<VectorXYZ> polePositions = equallyDistributePointsAlong(2.4, true, getCenterline());
 
@@ -426,12 +427,12 @@ public class BarrierModule extends AbstractModule {
 			Material material = null;
 
 			if (segment.getTags().containsKey("material")) {
-				material = Materials.getMaterial(segment.getTags().getValue("material").toUpperCase());
+				material = resolveMaterial(segment.getTags().getValue("material").toUpperCase());
 				//TODO also look at fence:material
 			}
 
 			if (material == null) {
-				material = CONCRETE;
+				material = CONCRETE.get();
 			}
 
 			material = material.withColor(parseColor(segment.getTags().getValue("colour"), CSS_COLORS));
@@ -494,7 +495,7 @@ public class BarrierModule extends AbstractModule {
 			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence,
 					texCoordLists(vsFence, CHAIN_LINK_FENCE, STRIP_WALL));
 
-			if (!CHAIN_LINK_FENCE.isDoubleSided()) {
+			if (!CHAIN_LINK_FENCE.get().isDoubleSided()) {
 
 				List<VectorXYZ> pointsWithEleBack = new ArrayList<>(pointsWithEle);
 				Collections.reverse(pointsWithEleBack);
@@ -514,7 +515,7 @@ public class BarrierModule extends AbstractModule {
 
 			for (VectorXYZ base : polePositions) {
 
-				target.drawColumn(Materials.METAL_FENCE_POST, null, base,
+				target.drawColumn(METAL_FENCE_POST, null, base,
 						height, width, width, false, true);
 
 			}
@@ -535,8 +536,8 @@ public class BarrierModule extends AbstractModule {
 		protected float barGap;
 		protected float barOffset;
 		protected int bars;
-		protected Material defaultFenceMaterial = Materials.WOOD;
-		protected Material defaultPoleMaterial = Materials.WOOD;
+		protected Material defaultFenceMaterial = WOOD.get();
+		protected Material defaultPoleMaterial = WOOD.get();
 		protected Material poleMaterial;
 
 		public static boolean fits(TagSet tags) {
@@ -546,7 +547,7 @@ public class BarrierModule extends AbstractModule {
 		public PoleFence(MapWaySegment segment) {
 			super(segment, 1f, 0.02f);
 			if (segment.getTags().containsKey("material")){
-				material = getMaterial(segment.getTags().getValue("material").toUpperCase());
+				material = resolveMaterial(segment.getTags().getValue("material").toUpperCase());
 				poleMaterial = material;
 			}
 
@@ -701,8 +702,8 @@ public class BarrierModule extends AbstractModule {
 			this.bars = 4;
 			this.barOffset = barGap/2;
 
-			this.defaultFenceMaterial = Materials.METAL_FENCE;
-			this.defaultPoleMaterial = Materials.METAL_FENCE_POST;
+			this.defaultFenceMaterial = METAL_FENCE.get();
+			this.defaultPoleMaterial = METAL_FENCE_POST.get();
 		}
 	}
 
@@ -720,8 +721,8 @@ public class BarrierModule extends AbstractModule {
 			this.bars = 1;
 			this.barOffset = 0;
 
-			this.defaultFenceMaterial = Materials.HANDRAIL_DEFAULT;
-			this.defaultPoleMaterial = Materials.HANDRAIL_DEFAULT;
+			this.defaultFenceMaterial = HANDRAIL_DEFAULT.get();
+			this.defaultPoleMaterial = HANDRAIL_DEFAULT.get();
 		}
 
 	}
@@ -777,7 +778,7 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> centerline = getCenterline();
 
-			Material material = STEEL.makeSmooth();
+			Material material = STEEL.get().makeSmooth();
 
 			/* draw the rail itself */
 
@@ -960,8 +961,8 @@ public class BarrierModule extends AbstractModule {
 			super(line);
 
 			this.barWidth = 0.05f;
-			this.defaultPoleMaterial = STEEL;
-			this.defaultFenceMaterial = STEEL;
+			this.defaultPoleMaterial = STEEL.get();
+			this.defaultFenceMaterial = STEEL.get();
 			this.barGap = 1.5f;
 		}
 
@@ -1020,7 +1021,8 @@ public class BarrierModule extends AbstractModule {
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position(), height,
-					width/2, width/2, false, true, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
+					width/2, width/2, false, true, null,
+					CONCRETE.get().getTextureDimensions()), CONCRETE.get(), LOD2, LOD4));
 		}
 
 		@Override
@@ -1099,7 +1101,8 @@ public class BarrierModule extends AbstractModule {
 			heights.forEach(it -> path.add(params.position().addY(it)));
 
 			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
-					path, null, scaleFactors, null, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
+					path, null, scaleFactors, null, null,
+					CONCRETE.get().getTextureDimensions()), CONCRETE.get(), LOD2, LOD4));
 
 		}
 

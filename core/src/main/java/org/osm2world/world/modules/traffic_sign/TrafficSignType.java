@@ -1,14 +1,14 @@
 package org.osm2world.world.modules.traffic_sign;
 
 import static org.osm2world.scene.color.Color.WHITE;
-import static org.osm2world.scene.material.Materials.getMaterial;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.scene.material.ConfMaterial;
+import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.scene.material.Materials;
 
 /**
  * a type of traffic sign, characterized by a name (country and id, by OSM convention) and information that might be
@@ -61,7 +61,7 @@ public class TrafficSignType {
 				config.getFloat("defaultTrafficSignHeight", 2));
 
 		String materialName = config.getString(keyPrefix + "_material", configKey).toUpperCase();
-		Material material = getMaterial(materialName);
+		Material material = Materials.resolveMaterial(materialName);
 
 		if (material == null) {
 			return null;
@@ -72,7 +72,7 @@ public class TrafficSignType {
 	}
 
 	public static TrafficSignType blankSign() {
-		return new TrafficSignType("", new ConfMaterial(Interpolation.FLAT, WHITE), 1, 2);
+		return new TrafficSignType("", new ImmutableMaterial(Interpolation.FLAT, WHITE), 1, 2);
 	}
 
 }

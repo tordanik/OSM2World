@@ -1,7 +1,8 @@
 package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.math.VectorXYZ.*;
+import static org.osm2world.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.math.VectorXYZ.addYList;
 import static org.osm2world.scene.material.Materials.BRICK;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
@@ -24,7 +25,7 @@ public class WallSurfaceTest {
 				new VectorXYZ(10, 0, 5));
 		List<VectorXYZ> upperBoundary = addYList(lowerBoundary, 10);
 
-		rectangularWallSurface = new WallSurface(BRICK, lowerBoundary, upperBoundary);
+		rectangularWallSurface = new WallSurface(BRICK.get(), lowerBoundary, upperBoundary);
 	}
 
 	@Test

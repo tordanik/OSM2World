@@ -8,21 +8,16 @@ import org.osm2world.scene.color.Color;
 /**
  * a material whose attributes can be configured at runtime.
  */
-public class ConfMaterial extends Material {
+class MutableMaterial extends Material {
 
-	public ConfMaterial(Interpolation interpolation, Color color, boolean doubleSided,
+	public MutableMaterial(Interpolation interpolation, Color color, boolean doubleSided,
 			Transparency transparency, Shadow shadow, AmbientOcclusion ambientOcclusion,
 			List<TextureLayer> textureLayers) {
 		super(interpolation, color, doubleSided,
 				transparency, shadow, ambientOcclusion, textureLayers);
 	}
 
-	public ConfMaterial(Interpolation interpolation, Color color,
-			Transparency transparency, List<TextureLayer> textureLayers) {
-		super(interpolation, color, transparency, textureLayers);
-	}
-
-	public ConfMaterial(Interpolation interpolation, Color color) {
+	public MutableMaterial(Interpolation interpolation, Color color) {
 		super(interpolation, color);
 	}
 

@@ -2,6 +2,7 @@ package org.osm2world.world.modules.building;
 
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.Materials;
 
 /** default properties for a particular building or building:part type. Immutable. */
@@ -41,8 +42,8 @@ public class BuildingDefaults {
 
 		int levels = 3;
 		double heightPerLevel = 2.5;
-		Material materialWall = Materials.BUILDING_DEFAULT;
-		Material materialRoof = Materials.ROOF_DEFAULT;
+		MaterialOrRef materialWall = Materials.BUILDING_DEFAULT;
+		MaterialOrRef materialRoof = Materials.ROOF_DEFAULT;
 		boolean hasWindows = true;
 		boolean hasWalls = true;
 		String roofShape = "flat";
@@ -122,7 +123,7 @@ public class BuildingDefaults {
 		/* return an object populated with the results */
 
     	return new BuildingDefaults(levels, heightPerLevel, roofShape,
-    			materialWall, materialRoof, hasWindows, hasWalls);
+    			materialWall.get(), materialRoof.get(), hasWindows, hasWalls);
 
 	}
 

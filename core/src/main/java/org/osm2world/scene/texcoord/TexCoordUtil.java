@@ -12,7 +12,7 @@ import java.util.function.Function;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
@@ -29,10 +29,10 @@ public final class TexCoordUtil {
 	 * returns the texture coordinate functions based on the
 	 * {@link TexCoordFunction} associated with each {@link TextureLayer} and a default
 	 */
-	public static final List<TexCoordFunction> texCoordFunctions(Material material,
+	public static final List<TexCoordFunction> texCoordFunctions(MaterialOrRef material,
 			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
 
-		List<TextureLayer> textureLayers = material.getTextureLayers();
+		List<TextureLayer> textureLayers = material.get().getTextureLayers();
 
 		if (textureLayers.size() == 0) {
 
@@ -75,7 +75,7 @@ public final class TexCoordUtil {
 	 * calculates the texture coordinate lists based on the
 	 * {@link TexCoordFunction} associated with each {@link TextureLayer}
 	 */
-	public static final List<List<VectorXZ>> texCoordLists(List<VectorXYZ> vs, Material material,
+	public static final List<List<VectorXZ>> texCoordLists(List<VectorXYZ> vs, MaterialOrRef material,
 			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
 
 		List<TexCoordFunction> texCoordFunctions = texCoordFunctions(material, defaultCoordFunctionGenerator);
@@ -89,11 +89,11 @@ public final class TexCoordUtil {
 	}
 
 	/**
-	 * equivalent of {@link #texCoordLists(List, Material, Function)}
+	 * equivalent of {@link #texCoordLists(List, MaterialOrRef, Function)}
 	 * for a collection of triangle objects.
 	 */
 	public static final List<List<VectorXZ>> triangleTexCoordLists(
-			Collection<TriangleXYZ> triangles, Material material,
+			Collection<TriangleXYZ> triangles, MaterialOrRef material,
 			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
 
 		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(triangles.size() * 3);

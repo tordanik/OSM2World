@@ -118,9 +118,9 @@ public class ExteriorBuildingWall {
 				hasWindows = false;
 			}
 
-			if (material == Materials.GLASS_WALL) {
+			if ("GLASS_WALL".equals(Materials.getUniqueName(material))) {
 				// avoid placing windows into a glass front
-				// TODO: the == currently only works if GLASS_WALL is not colorable
+				// TODO: the check currently only works if GLASS_WALL is not colorable
 				hasWindows = false;
 			}
 

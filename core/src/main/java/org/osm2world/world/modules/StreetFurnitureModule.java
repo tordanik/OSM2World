@@ -5,7 +5,6 @@ import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNullElse;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.math.NumberUtils.max;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
@@ -224,7 +223,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			double height = parseMeasure(node.getTags().getValue("height"), 5.0);
 			double radius = parseMeasure(node.getTags().getValue("width"), 0.2) / 2;
 
-			Material material = Materials.getMaterial(node.getTags().getValue("material"), STEEL);
+			Material material = resolveMaterial(node.getTags().getValue("material"), STEEL);
 			Color color = parseColor(node.getTags().getValue("colour"));
 
 			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
@@ -288,7 +287,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (flag == null && node.getTags().containsKey("flag:colour")) {
 				Color color = parseColor(node.getTags().getValue("flag:colour"), CSS_COLORS);
 				if (color != null) {
-					flag = new TexturedFlag(2 / 3.0, FLAGCLOTH.withColor(color));
+					flag = new TexturedFlag(2 / 3.0, FLAGCLOTH.get().withColor(color));
 				}
 			}
 
@@ -324,11 +323,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		 * @param flagId  the ID of the flag, e.g. a country code or Wikidata ID
 		 */
 		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
-			Material material = Materials.getMaterial("FLAG_" + flagId);
-			if (material != null && material.getNumTextureLayers() > 0 && FLAGCLOTH.getNumTextureLayers() > 0) {
-				List<TextureLayer> textureLayers = new ArrayList<>(FLAGCLOTH.getTextureLayers());
+			Material material = resolveMaterial("FLAG_" + flagId);
+			Material flagcloth = FLAGCLOTH.get();
+			if (material != null && material.getNumTextureLayers() > 0 && flagcloth.getNumTextureLayers() > 0) {
+				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.getTextureLayers());
 				TextureLayer flag0 = material.getTextureLayers().get(0);
-				TextureLayer cloth0 = FLAGCLOTH.getTextureLayers().get(0);
+				TextureLayer cloth0 = flagcloth.getTextureLayers().get(0);
 				textureLayers.set(0, new TextureLayer(
 						flag0.baseColorTexture,
 						requireNonNullElse(flag0.normalTexture, cloth0.normalTexture),
@@ -336,7 +336,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						requireNonNullElse(flag0.displacementTexture, cloth0.displacementTexture),
 						flag0.colorable));
 				return new ImmutableMaterial(Interpolation.SMOOTH, WHITE, true,
-						FLAGCLOTH.getTransparency(), FLAGCLOTH.getShadow(), FLAGCLOTH.getAmbientOcclusion(),
+						flagcloth.getTransparency(), flagcloth.getShadow(), flagcloth.getAmbientOcclusion(),
 						textureLayers);
 			} else {
 				return material;
@@ -552,7 +552,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			 * creates a material for each colored stripe
 			 */
 			private static List<Material> createStripeMaterials(List<Color> colors) {
-				return colors.stream().map(FLAGCLOTH::withColor).collect(toList());
+				return colors.stream().map(FLAGCLOTH.get()::withColor).toList();
 			}
 
 		}
@@ -731,13 +731,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			if (node.getTags().contains("two_sided", "yes")) {
 
-				Material backMaterial = ADVERTISING_POSTER;
+				Material backMaterial = ADVERTISING_POSTER.get();
 				target.drawTriangleStrip(backMaterial, vsBoard,
 						texCoordLists(vsBoard, backMaterial, STRIP_FIT));
 
 			} else {
 
-				Material backMaterial = CONCRETE;
+				Material backMaterial = CONCRETE.get();
 				target.drawTriangleStrip(backMaterial, vsBoard,
 						texCoordLists(vsBoard, backMaterial, STRIP_WALL));
 
@@ -813,11 +813,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
+				material = resolveMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
-				material = WOOD;
+				material = WOOD.get();
 			}
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
@@ -914,11 +914,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
+				material = resolveMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
-				material = WOOD;
+				material = WOOD.get();
 			}
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
@@ -964,15 +964,15 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	public static final class Table extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		private final ConfMaterial defaultMaterial;
+		private final Material defaultMaterial;
 
 		public Table(MapNode node) {
 			super(node);
 
 			if (node.getTags().contains("leisure", "picnic_table")) {
-				defaultMaterial = Materials.WOOD;
+				defaultMaterial = WOOD.get();
 			} else {
-				defaultMaterial = Materials.STEEL;
+				defaultMaterial = STEEL.get();
 			}
 		}
 
@@ -997,12 +997,12 @@ public class StreetFurnitureModule extends AbstractModule {
 			//TODO parse color
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
+				material = getSurfaceMaterial(
 						node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
+				material = getSurfaceMaterial(
 						node.getTags().getValue("surface"), defaultMaterial);
 			}
 
@@ -1117,13 +1117,13 @@ public class StreetFurnitureModule extends AbstractModule {
 			//TODO parse color
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
+				material = getSurfaceMaterial(
 						node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.WOOD);
+				material = getSurfaceMaterial(
+						node.getTags().getValue("surface"), WOOD);
 			}
 
 			double directionAngle = parseDirection(node.getTags(), PI);
@@ -1224,7 +1224,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				PolygonWithHolesXZ ring = new PolygonWithHolesXZ(asSimplePolygon(outerCircle),
 						asList(asSimplePolygon(innerCircle).reverse()));
 
-				target.drawExtrudedShape(PLASTIC.withColor(BLACK), ring,
+				target.drawExtrudedShape(PLASTIC.get().withColor(BLACK), ring,
 						asList(params.position(), frontCenter),
 						nCopies(2, Y_UNIT), null, EnumSet.of(ExtrudeOption.END_CAP));
 
@@ -1243,7 +1243,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				ShapeXZ handShape = new AxisAlignedRectangleXZ(-width/2, -width/2, width/2, length - width/2);
 				handShape = handShape.rotatedCW(angleRad);
 
-				target.drawExtrudedShape(PLASTIC.withColor(BLACK), handShape,
+				target.drawExtrudedShape(PLASTIC.get().withColor(BLACK), handShape,
 						asList(origin, origin.add(faceNormal.mult(thickness))),
 						nCopies(2, Y_UNIT), null, EnumSet.of(ExtrudeOption.END_CAP));
 
@@ -1376,11 +1376,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
+				material = resolveMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
-				material = STEEL;
+				material = STEEL.get();
 			}
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
@@ -1455,8 +1455,8 @@ public class StreetFurnitureModule extends AbstractModule {
 				color = new Color(0.3f, 0.5f, 0.4f);
 			}
 
-			Material material = Materials.getSurfaceMaterial(node.getTags().getValue("material"),
-					Materials.getSurfaceMaterial(node.getTags().getValue("surface"), PLASTIC))
+			Material material = getSurfaceMaterial(node.getTags().getValue("material"),
+					getSurfaceMaterial(node.getTags().getValue("surface"), PLASTIC))
 					.withColor(color);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
@@ -1500,9 +1500,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			Material roofMaterial = null;
-			Material poleMaterial = null;
-			Type type = null;
+			MaterialOrRef roofMaterial;
+			MaterialOrRef poleMaterial;
+			Type type;
 
 			// get Type of Phone
 			if (isInWall(node)) {
@@ -1638,8 +1638,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			Material boxMaterial = null;
-			Material poleMaterial = null;
+			MaterialOrRef boxMaterial = null;
+			MaterialOrRef poleMaterial = null;
 			Type type = null;
 
 
@@ -1713,13 +1713,11 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.setCurrentAttachmentTypes("bus_stop", "pole");
 
-			Material poleMaterial = STEEL;
-
 			double directionAngle = parseDirection(node.getTags(), PI);
 
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			target.drawColumn(poleMaterial, null,
+			target.drawColumn(STEEL, null,
 					getBase(),
 					height - signHeight, 0.05, 0.05, false, true);
 
@@ -1730,7 +1728,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase().addY(height - signHeight),
 					faceVector, signHeight, signWidth, 0.02);
 			/*  draw timetable */
-			target.drawBox(poleMaterial,
+			target.drawBox(STEEL,
 					getBase().addY(1.2f).add(new VectorXYZ(0.055f, 0, 0f).rotateY(directionAngle)),
 					faceVector, 0.31, 0.01, 0.43);
 
@@ -1749,8 +1747,8 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			Material boxMaterial = POSTBOX_DEUTSCHEPOST;
-			Material otherMaterial = STEEL;
+			Material boxMaterial = POSTBOX_DEUTSCHEPOST.get();
+			Material otherMaterial = STEEL.get();
 
 			VectorXZ faceVector = VectorXZ.fromAngle(params.direction());
 			VectorXZ rightVector = faceVector.rightNormal();
@@ -1866,12 +1864,12 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
+				material = getSurfaceMaterial(
 						node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
+				material = getSurfaceMaterial(
 						node.getTags().getValue("surface"), STEEL);
 			}
 

@@ -282,12 +282,12 @@ public class SportsModule extends AbstractModule {
 
 		@Override
 		protected Material getPitchMaterial() {
-			return PITCH_SOCCER;
+			return PITCH_SOCCER.get();
 		}
 
 		@Override
 		protected Material getFallbackPitchMaterial() {
-			return GRASS;
+			return GRASS.get();
 		}
 
 	}
@@ -306,7 +306,7 @@ public class SportsModule extends AbstractModule {
 			public List<Mesh> buildMeshes(InstanceParameters params) {
 				return singletonList(new Mesh(ExtrusionGeometry.createColumn(
 						null, params.position(), netHeightAtPosts, postRadius, postRadius, false, true,
-						new Color(184, 184, 184), PLASTIC.getTextureDimensions()), PLASTIC,
+						new Color(184, 184, 184), PLASTIC.get().getTextureDimensions()), PLASTIC.get(),
 						LevelOfDetail.LOD2, LevelOfDetail.LOD4));
 			}
 		};
@@ -345,11 +345,11 @@ public class SportsModule extends AbstractModule {
 			String surface = area.getTags().getValue("surface");
 
 			if ("grass".equals(surface)) {
-				return singles ? PITCH_TENNIS_SINGLES_GRASS : PITCH_TENNIS_GRASS;
+				return singles ? PITCH_TENNIS_SINGLES_GRASS.get() : PITCH_TENNIS_GRASS.get();
 			} else if ("asphalt".equals(surface)) {
-				return singles ? PITCH_TENNIS_SINGLES_ASPHALT : PITCH_TENNIS_ASPHALT;
+				return singles ? PITCH_TENNIS_SINGLES_ASPHALT.get() : PITCH_TENNIS_ASPHALT.get();
 			} else {
-				return singles ? PITCH_TENNIS_SINGLES_CLAY : PITCH_TENNIS_CLAY;
+				return singles ? PITCH_TENNIS_SINGLES_CLAY.get() : PITCH_TENNIS_CLAY.get();
 			}
 
 		}
@@ -360,11 +360,11 @@ public class SportsModule extends AbstractModule {
 			String surface = area.getTags().getValue("surface");
 
 			if ("grass".equals(surface)) {
-				return GRASS;
+				return GRASS.get();
 			} else if ("asphalt".equals(surface)) {
-				return ASPHALT;
+				return ASPHALT.get();
 			} else {
-				return EARTH;
+				return EARTH.get();
 			}
 
 		}
@@ -455,7 +455,7 @@ public class SportsModule extends AbstractModule {
 				target.drawTriangleStrip(TENNIS_NET, verticesNet,
 						texCoordLists(verticesNet, TENNIS_NET, STRIP_FIT_HEIGHT));
 
-				if (!TENNIS_NET.isDoubleSided()) {
+				if (!TENNIS_NET.get().isDoubleSided()) {
 					target.drawTriangleStrip(TENNIS_NET, verticesNetBack,
 							texCoordLists(verticesNetBack, TENNIS_NET, STRIP_FIT_HEIGHT));
 				}
@@ -497,12 +497,12 @@ public class SportsModule extends AbstractModule {
 
 		@Override
 		protected Material getPitchMaterial() {
-			return PITCH_BEACHVOLLEYBALL;
+			return PITCH_BEACHVOLLEYBALL.get();
 		}
 
 		@Override
 		protected Material getFallbackPitchMaterial() {
-			return SAND;
+			return SAND.get();
 		}
 
 	}

@@ -40,10 +40,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
-import org.osm2world.scene.material.TextureDataDimensions;
-import org.osm2world.scene.material.TextureLayer;
+import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.enums.LeftRight;
@@ -231,11 +228,11 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		if (tags.containsKey("tracktype")) {
 			if (tags.contains("tracktype", "grade1")) {
-				result = ASPHALT;
+				result = ASPHALT.get();
 			} else if (tags.contains("tracktype", "grade2")) {
-				result = GRAVEL;
+				result = GRAVEL.get();
 			} else {
-				result = EARTH;
+				result = EARTH.get();
 			}
 		} else {
 			result = defaultSurface;
@@ -245,10 +242,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static Material getSurfaceMiddleForRoad(TagSet tags,
+	private static MaterialOrRef getSurfaceMiddleForRoad(TagSet tags,
 			Material defaultSurface) {
 
-		Material result;
+		MaterialOrRef result;
 
 		if ((tags.contains("tracktype", "grade4") || tags.contains("tracktype", "grade5"))
 				&& !tags.containsKey("surface")) {
@@ -260,7 +257,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		result = getSurfaceMaterial(tags.getValue("surface:middle"), result);
 
-		if (result == GRASS) {
+		if ("GRASS".equals(Materials.getUniqueName(result))) {
 			result = TERRAIN_DEFAULT;
 		}
 
@@ -758,9 +755,9 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			return switch (markingType) {
-				case "zebra" -> ROAD_MARKING_ZEBRA;
+				case "zebra" -> ROAD_MARKING_ZEBRA.get();
 				case "surface", "no" -> null;
-				default -> ROAD_MARKING_CROSSING;
+				default -> ROAD_MARKING_CROSSING.get();
 			};
 
 		}
@@ -1319,7 +1316,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		public Material getSurface() {
-			return getSurfaceForRoad(tags, ASPHALT);
+			return getSurfaceForRoad(tags, ASPHALT.get());
 		}
 
 		public LaneLayout getLaneLayout() {
@@ -1360,7 +1357,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = null;
 
 			if (tags.containsKey("material")) {
-				material = Materials.getMaterial(tags.getValue("material"));
+				material = Materials.resolveMaterial(tags.getValue("material"));
 			}
 
 			if (material == null && tags.containsKey("surface")) {
@@ -1368,7 +1365,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			if (material == null) {
-				material = CONCRETE;
+				material = CONCRETE.get();
 			}
 
 			material = material.withColor(parseColor(tags.getValue("colour"), CSS_COLORS));
@@ -2099,7 +2096,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
 
 			return getSurfaceMaterial(laneTags.getValue("surface"),
-					getSurfaceForRoad(roadTags, ASPHALT));
+					getSurfaceForRoad(roadTags, ASPHALT.get()));
 
 		}
 
@@ -2159,7 +2156,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
 			Material material = super.getSurface(roadTags, laneTags);
-			if (material == ASPHALT) return RED_ROAD_MARKING;
+			if ("ASPHALT".equals(getUniqueName(material))) return RED_ROAD_MARKING.get();
 			else return material;
 		}
 
@@ -2185,7 +2182,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
-			return ROAD_MARKING;
+			return ROAD_MARKING.get();
 		}
 
 	};
@@ -2203,12 +2200,12 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			@Nullable Material baseSurface = getSurfaceMaterial(laneTags.getValue("surface"),
 					getSurfaceForRoad(roadTags, null));
-			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.getTextureLayers();
+			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.get().getTextureLayers();
 
 			if (baseSurface != null && markingLayers.size() > 1) {
 				return baseSurface.withAddedLayers(markingLayers.subList(1, markingLayers.size()));
 			} else {
-				return ROAD_MARKING_DASHED;
+				return ROAD_MARKING_DASHED.get();
 			}
 
 		}
@@ -2296,27 +2293,27 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			if (turn.contains("through") && turn.contains("right")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT;
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT.get();
 
 			} else if (turn.contains("through") && turn.contains("left")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT;
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT.get();
 
 			} else if (turn.contains("through")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_THROUGH;
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH.get();
 
 			} else if (turn.contains("right") && turn.contains("left")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_RIGHT_LEFT;
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT_LEFT.get();
 
 			} else if (turn.contains("right")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_RIGHT;
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT.get();
 
 			} else if (turn.contains("left")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_RIGHT;
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT.get();
 
 			}
 

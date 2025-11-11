@@ -132,7 +132,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.ROCK;
+			return Materials.ROCK.get();
 		}
 
 	}
@@ -150,7 +150,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.CONCRETE;
+			return Materials.CONCRETE.get();
 		}
 
 	}

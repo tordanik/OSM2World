@@ -53,7 +53,7 @@ public class GltfOutputTest {
 
 		var mesh = new Mesh(ExtrusionGeometry.createColumn(
 				null, NULL_VECTOR, 10, 2, 0, true, false, null,
-						Materials.STEEL.getTextureDimensions()), Materials.STEEL);
+						Materials.STEEL.get().getTextureDimensions()), Materials.STEEL.get());
 
 		MapDataBuilder dataBuilder = new MapDataBuilder();
 		MapNode node = dataBuilder.createNode(0, 0);

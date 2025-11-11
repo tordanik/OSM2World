@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.util.ValueParseUtil.parseColor;
@@ -29,7 +30,6 @@ import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -602,19 +602,19 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 		if (materialString != null) {
 			if ("brick".equals(materialString)) {
-				material = Materials.BRICK;
+				material = BRICK.get();
 			} else if ("glass".equals(materialString)
 					|| "mirror".equals(materialString)) {
-				material = roof ? Materials.GLASS_ROOF : Materials.GLASS_WALL;
+				material = roof ? GLASS_ROOF.get() : GLASS_WALL.get();
 			} else if ("copper".equals(materialString) && roof) {
-				material = Materials.COPPER_ROOF;
+				material = COPPER_ROOF.get();
 			} else if ("wood".equals(materialString)
 					|| "bamboo".equals(materialString)) {
-				material = Materials.WOOD_WALL;
-			} else if (Materials.getSurfaceMaterial(materialString) != null) {
-				material = Materials.getSurfaceMaterial(materialString);
-			} else if (Materials.getMaterial(materialString) != null) {
-				material = Materials.getMaterial(materialString);
+				material = WOOD_WALL.get();
+			} else if (getSurfaceMaterial(materialString) != null) {
+				material = getSurfaceMaterial(materialString);
+			} else if (resolveMaterial(materialString) != null) {
+				material = resolveMaterial(materialString);
 			}
 		}
 

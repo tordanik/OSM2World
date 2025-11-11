@@ -276,7 +276,7 @@ public class GolfModule extends AbstractModule {
 
 			String surfaceValue = area.getTags().getValue("surface");
 
-			Material material = Materials.GRASS;
+			Material material = Materials.GRASS.get();
 
 			if (surfaceValue != null && !"grass".equals(surfaceValue)) {
 				material = Materials.getSurfaceMaterial(surfaceValue, material);
@@ -316,7 +316,7 @@ public class GolfModule extends AbstractModule {
 
 			List<VectorXYZ> vs = createTriangleStripBetween(lowerHoleRing, upperHoleRing);
 
-			Material groundMaterial = Materials.EARTH.makeSmooth();
+			Material groundMaterial = Materials.EARTH.get().makeSmooth();
 
 			target.drawTriangleStrip(groundMaterial, vs,
 					texCoordLists(vs, groundMaterial, STRIP_WALL));
@@ -326,7 +326,7 @@ public class GolfModule extends AbstractModule {
 
 			/* draw pole and flag */
 
-			Material flagPoleMaterial = PLASTIC.withColor(new Color(184, 184, 184));
+			Material flagPoleMaterial = PLASTIC.get().withColor(new Color(184, 184, 184));
 			target.drawColumn(flagPoleMaterial, null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 

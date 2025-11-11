@@ -26,6 +26,7 @@ import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -50,7 +51,7 @@ public class IndoorWall {
 
     private final IndoorObjectData data;
 
-    private static final Material defaultInnerMaterial = Materials.CONCRETE;
+    private static final MaterialOrRef defaultInnerMaterial = Materials.CONCRETE;
 
     //TODO account for height of wall
     public IndoorWall(IndoorObjectData objectData){
@@ -792,7 +793,7 @@ public class IndoorWall {
 
 		double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
-		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
+		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK.get(), false);
 
 		for (Integer level : data.getRenderableLevels()) {
 

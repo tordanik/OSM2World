@@ -289,7 +289,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			Material material = getMaterial();
+			Material material = getMaterial().get();
 
 			return WorldModuleBillboardUtil.buildCrosstree(material, params.position(),
 					dimensions != null ? dimensions.crownDiameter : defaultHeightToWidth() * params.height(),
@@ -297,7 +297,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		}
 
-		private Material getMaterial() {
+		private MaterialOrRef getMaterial() {
 			return species == TreeSpecies.APPLE_TREE
 					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
 					: leafType == LeafType.NEEDLELEAVED
@@ -307,7 +307,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		@Override
 		public double defaultHeightToWidth() {
-			List<TextureLayer> textureLayers = getMaterial().getTextureLayers();
+			List<TextureLayer> textureLayers = getMaterial().get().getTextureLayers();
 			if (!textureLayers.isEmpty()) {
 				TextureData texture = textureLayers.get(0).baseColorTexture;
 				TextureDataDimensions textureDimensions = texture.dimensions();
@@ -350,16 +350,16 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			ExtrusionGeometry trunk = ExtrusionGeometry.createColumn(null,
 					posXYZ, height*stemRatio,trunkRadius, 0.8 * trunkRadius,
-					false, true, null, TREE_TRUNK.getTextureDimensions());
+					false, true, null, TREE_TRUNK.get().getTextureDimensions());
 
 			ExtrusionGeometry crown = ExtrusionGeometry.createColumn(null,
 					posXYZ.addY(height*stemRatio), height*(1-stemRatio), width / 2,
 					coniferous ? 0 : width / 2, true, true, null,
-					TREE_CROWN.getTextureDimensions());
+					TREE_CROWN.get().getTextureDimensions());
 
 			return List.of(
-					new Mesh(trunk, TREE_TRUNK),
-					new Mesh(crown, TREE_CROWN)
+					new Mesh(trunk, TREE_TRUNK.get()),
+					new Mesh(crown, TREE_CROWN.get())
 			);
 
 		}

@@ -4,7 +4,6 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.world.modules.RoadModule.findMatchingLanes;
 import static org.osm2world.world.modules.RoadModule.getSurfaceForNode;
 
@@ -17,6 +16,7 @@ import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.world.modules.RoadModule.Lane;
 import org.osm2world.world.modules.RoadModule.RoadPart;
 
@@ -42,35 +42,35 @@ public class RoadModuleTest {
 				TagSet.of("highway", "residential", "surface", "asphalt"),
 				TagSet.of("highway", "residential", "surface", "asphalt")));
 		new RoadModule().applyTo(noPathData1);
-		assertEquals(ASPHALT, getSurfaceForNode(noPathData1.getMapNodes().stream().findAny().get()));
+		assertEquals("ASPHALT", Materials.getUniqueName(getSurfaceForNode(noPathData1.getMapNodes().stream().findAny().get())));
 
 		MapData noPathData = createStarJunction(TagSet.of(), List.of(
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "residential", "surface", "asphalt")));
 		new RoadModule().applyTo(noPathData);
-		assertEquals(CONCRETE, getSurfaceForNode(noPathData.getMapNodes().stream().findAny().get()));
+		assertEquals("CONCRETE", Materials.getUniqueName(getSurfaceForNode(noPathData.getMapNodes().stream().findAny().get())));
 
 		MapData mixedData = createStarJunction(TagSet.of(), List.of(
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "service", "surface", "asphalt"),
 				TagSet.of("highway", "footway", "surface", "asphalt")));
 		new RoadModule().applyTo(mixedData);
-		assertEquals(CONCRETE, getSurfaceForNode(mixedData.getMapNodes().stream().findAny().get()));
+		assertEquals("CONCRETE", Materials.getUniqueName(getSurfaceForNode(mixedData.getMapNodes().stream().findAny().get())));
 
 		MapData allPathsData = createStarJunction(TagSet.of(), List.of(
 				TagSet.of("highway", "path", "surface", "concrete"),
 				TagSet.of("highway", "path", "surface", "asphalt"),
 				TagSet.of("highway", "path", "surface", "asphalt")));
 		new RoadModule().applyTo(allPathsData);
-		assertEquals(ASPHALT, getSurfaceForNode(allPathsData.getMapNodes().stream().findAny().get()));
+		assertEquals("ASPHALT", Materials.getUniqueName(getSurfaceForNode(allPathsData.getMapNodes().stream().findAny().get())));
 
 		MapData nodeTagData = createStarJunction(TagSet.of("surface", "gravel"), List.of(
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "residential", "surface", "asphalt"),
 				TagSet.of("highway", "residential", "surface", "asphalt")));
 		new RoadModule().applyTo(nodeTagData);
-		assertEquals(GRAVEL, getSurfaceForNode(nodeTagData.getMapNodes().stream().findAny().get()));
+		assertEquals("GRAVEL", Materials.getUniqueName(getSurfaceForNode(nodeTagData.getMapNodes().stream().findAny().get())));
 
 	}
 

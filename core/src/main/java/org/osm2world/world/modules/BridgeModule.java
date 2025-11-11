@@ -141,7 +141,7 @@ public class BridgeModule extends AbstractModule {
 			SimplePolygonShapeXZ defaultShape = new AxisAlignedRectangleXZ(NULL_VECTOR, defaultWidth, defaultLength);
 			defaultShape = defaultShape.rotatedCW(primaryRep.getPrimaryMapElement().getDirection().angle());
 
-			Material defaultMaterial = Materials.BRIDGE_PILLAR_DEFAULT;
+			Material defaultMaterial = Materials.BRIDGE_PILLAR_DEFAULT.get();
 
 			/* look for explicitly mapped supports among the way's nodes and overlapping features */
 
@@ -180,10 +180,10 @@ public class BridgeModule extends AbstractModule {
 
 						Material material = null;
 						if (element.getTags().containsKey("material")) {
-							material = Materials.getMaterial(element.getTags().getValue("material").toUpperCase());
+							material = Materials.resolveMaterial(element.getTags().getValue("material").toUpperCase());
 						}
 						if (material == null) {
-							material = Materials.BRIDGE_PILLAR_DEFAULT;
+							material = Materials.BRIDGE_PILLAR_DEFAULT.get();
 						}
 						material = material.withColor(parseColor(element.getTags().getValue("colour"), CSS_COLORS));
 

@@ -1,23 +1,19 @@
 package org.osm2world.world.modules.building;
 
 import static com.google.common.collect.Iterables.getLast;
+import static java.lang.Math.*;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.*;
-import static java.util.Collections.min;
 import static java.util.Collections.*;
+import static java.util.Collections.min;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.scene.material.Materials.BUILDING_WINDOWS;
-import static org.osm2world.scene.material.Materials.GLASS_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -27,6 +23,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
@@ -219,7 +216,7 @@ public class WallSurface {
 		/* determine the material depending on whether a window texture should be applied */
 
 		Material material = applyWindowTexture
-				? this.material.withAddedLayers(BUILDING_WINDOWS.getTextureLayers())
+				? this.material.withAddedLayers(BUILDING_WINDOWS.get().getTextureLayers())
 				: this.material;
 
 		/* calculate texture coordinates */
@@ -242,7 +239,7 @@ public class WallSurface {
 
 			if (windowHeight != null
 					&& (texLayer >= this.material.getNumTextureLayers()
-						|| this.material == GLASS_WALL)) {
+						|| Objects.equals(Materials.getUniqueName(this.material), "GLASS_WALL"))) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}
