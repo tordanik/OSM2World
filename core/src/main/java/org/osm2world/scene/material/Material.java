@@ -17,14 +17,14 @@ import org.osm2world.scene.color.LColor;
 /**
  * describes the material/surface properties of an object for lighting
  */
-public abstract class Material implements MaterialOrRef {
+public final class Material implements MaterialOrRef {
 
 	/** maximum number of {@link TextureLayer}s any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 32;
 
-	public static enum Interpolation {FLAT, SMOOTH}
+	public enum Interpolation {FLAT, SMOOTH}
 
-	public static enum Transparency {
+	public enum Transparency {
 		/** arbitrary transparency, including partially transparent pixels */
 		TRUE,
 		/** only allow pixels to be either fully transparent or fully opaque */
@@ -33,14 +33,14 @@ public abstract class Material implements MaterialOrRef {
 		FALSE
 	}
 
-	public static enum Shadow {
+	public enum Shadow {
 		/** casts shadows */
 		TRUE,
 		/** casts no shadows */
 		FALSE
 	}
 
-	public static enum AmbientOcclusion {
+	public enum AmbientOcclusion {
 		/** casts AO */
 		TRUE,
 		/** casts no AO */
@@ -50,14 +50,14 @@ public abstract class Material implements MaterialOrRef {
 	/**
 	 * Interpolation of normals
 	 */
-	protected Interpolation interpolation;
-	protected Color color;
-	protected boolean doubleSided;
-	protected Transparency transparency;
-	protected Shadow shadow;
-	protected AmbientOcclusion ambientOcclusion;
+	private final Interpolation interpolation;
+	private final Color color;
+	private final boolean doubleSided;
+	private final Transparency transparency;
+	private final Shadow shadow;
+	private final AmbientOcclusion ambientOcclusion;
 
-	protected List<TextureLayer> textureLayers;
+	private final List<TextureLayer> textureLayers;
 
 	public Material(Interpolation interpolation, Color color, boolean doubleSided,
 			Transparency transparency, Shadow shadow, AmbientOcclusion ambientOcclusion,
@@ -73,7 +73,7 @@ public abstract class Material implements MaterialOrRef {
 		this.transparency = transparency;
 		this.shadow = shadow;
 		this.ambientOcclusion = ambientOcclusion;
-		this.textureLayers = textureLayers != null ? textureLayers : emptyList();
+		this.textureLayers = textureLayers != null ? List.copyOf(textureLayers) : List.of();
 
 	}
 
@@ -102,51 +102,42 @@ public abstract class Material implements MaterialOrRef {
 		return doubleSided;
 	}
 
-	public static final Color multiplyColor(Color c, float factor) {
-		float[] colorComponents = new float[3];
-		c.getColorComponents(colorComponents);
 
-		return new Color(
-				colorComponents[0] * factor,
-				colorComponents[1] * factor,
-				colorComponents[2] * factor);
+	public Transparency getTransparency() {
+		return transparency;
+	}
+
+	public Shadow getShadow() {
+		return shadow;
+	}
+
+	public AmbientOcclusion getAmbientOcclusion() {
+		return ambientOcclusion;
+	}
+
+	public List<TextureLayer> getTextureLayers() {
+		return textureLayers;
+	}
+
+	public int getNumTextureLayers() {
+		return textureLayers.size();
+	}
+
+	public List<TextureDataDimensions> getTextureDimensions() {
+		return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
+	}
+
+	/**
+	 * returns a material that is the same as this one, except with a different interpolation setting.
+	 */
+	public Material withInterpolation(Interpolation interpolation) {
+		if (interpolation == this.interpolation) return this;
+		return new Material(interpolation, getColor(), isDoubleSided(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
 	}
 
 	public Material makeSmooth() {
-		return new ImmutableMaterial(Interpolation.SMOOTH, getColor(), isDoubleSided(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
-	}
-
-	public Material makeDoubleSided() {
-		return new ImmutableMaterial(getInterpolation(), getColor(), true,
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
-	}
-
-	/**
-	 * returns a material that is like this one,
-	 * except with a different list of {@link TextureLayer}s
-	 */
-	public Material withLayers(List<TextureLayer> textureLayers) {
-		if (textureLayers.equals(this.textureLayers)) {
-			return this;
-		} else {
-		    return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
-		    		getTransparency(), getShadow(), getAmbientOcclusion(), textureLayers);
-		}
-	}
-
-	/**
-	 * returns a material that is like this one,
-	 * except with additional {@link TextureLayer}s stacked on top
-	 */
-	public Material withAddedLayers(List<TextureLayer> additionalTextureLayers) {
-
-		if (additionalTextureLayers.isEmpty()) return this;
-
-		List<TextureLayer> newTextureLayerList = new ArrayList<>(getTextureLayers());
-		newTextureLayerList.addAll(additionalTextureLayers);
-	    return this.withLayers(newTextureLayerList);
-
+		return withInterpolation(Interpolation.SMOOTH);
 	}
 
 	/**
@@ -155,11 +146,24 @@ public abstract class Material implements MaterialOrRef {
 	 */
 	public Material withColor(Color color) {
 
-		if (color == null) return this;
+		if (color == null || color.equals(this.color)) return this;
 
-		return new ImmutableMaterial(getInterpolation(), color, isDoubleSided(),
+		return new Material(getInterpolation(), color, isDoubleSided(),
 				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
 
+	}
+
+	/**
+	 * returns a material that is the same as this one, except with a different double-sided setting.
+	 */
+	public Material withDoubleSided(boolean doubleSided) {
+		if (this.doubleSided == doubleSided) return this;
+		return new Material(getInterpolation(), getColor(), doubleSided,
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
+	}
+
+	public Material makeDoubleSided() {
+		return withDoubleSided(true);
 	}
 
 	/**
@@ -167,11 +171,55 @@ public abstract class Material implements MaterialOrRef {
 	 * @param transparency  the transparency setting to use. Can be null, in which case this material is returned unaltered.
 	 */
 	public Material withTransparency(Transparency transparency) {
-
-		if (transparency == null) return this;
-
-		return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
+		if (transparency == null || transparency == this.transparency) return this;
+		return new Material(getInterpolation(), getColor(), isDoubleSided(),
 				transparency, getShadow(), getAmbientOcclusion(), getTextureLayers());
+	}
+
+	/**
+	 * returns a material that is the same as this one, except with a different shadow setting.
+	 * @param shadow  the shadow setting to use. Can be null, in which case this material is returned unaltered.
+	 */
+	public Material withShadow(Shadow shadow) {
+		if (shadow == null || shadow == this.shadow) return this;
+		return new Material(getInterpolation(), getColor(), isDoubleSided(),
+				getTransparency(), shadow, getAmbientOcclusion(), getTextureLayers());
+	}
+
+	/**
+	 * returns a material that is the same as this one, except with a different ambient occlusion setting.
+	 * @param ambientOcclusion  the ambient occlusion setting to use.
+	 *                          Can be null, in which case this material is returned unaltered.
+	 */
+	public Material withAmbientOcclusion(AmbientOcclusion ambientOcclusion) {
+		if (ambientOcclusion == null || ambientOcclusion == this.ambientOcclusion) return this;
+		return new Material(getInterpolation(), getColor(), isDoubleSided(),
+				getTransparency(), getShadow(), ambientOcclusion, getTextureLayers());
+	}
+
+	/**
+	 * returns a material that is the same as this one, except with a different list of {@link TextureLayer}s
+	 */
+	public Material withLayers(List<TextureLayer> textureLayers) {
+		if (textureLayers.equals(this.textureLayers)) {
+			return this;
+		} else {
+			return new Material(getInterpolation(), getColor(), isDoubleSided(),
+					getTransparency(), getShadow(), getAmbientOcclusion(), textureLayers);
+		}
+	}
+
+	/**
+	 * returns a material that is the same as this one,
+	 * except with additional {@link TextureLayer}s stacked on top
+	 */
+	public Material withAddedLayers(List<TextureLayer> additionalTextureLayers) {
+
+		if (additionalTextureLayers.isEmpty()) return this;
+
+		List<TextureLayer> newTextureLayerList = new ArrayList<>(getTextureLayers());
+		newTextureLayerList.addAll(additionalTextureLayers);
+		return this.withLayers(newTextureLayerList);
 
 	}
 
@@ -190,9 +238,7 @@ public abstract class Material implements MaterialOrRef {
 
 		for (TextureLayer layer : getTextureLayers()) {
 
-			if (layer.baseColorTexture instanceof TextTexture) {
-
-				TextTexture texture = (TextTexture)layer.baseColorTexture;
+			if (layer.baseColorTexture instanceof TextTexture texture) {
 
 				if(counter==numberOfTextLayer) {
 
@@ -206,7 +252,7 @@ public abstract class Material implements MaterialOrRef {
 							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
 
 					//return a copy of the material with the new textureDataList
-					return new ImmutableMaterial(getInterpolation(),getColor(), isDoubleSided(),
+					return new Material(getInterpolation(),getColor(), isDoubleSided(),
 							getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
 
 				}
@@ -249,9 +295,7 @@ public abstract class Material implements MaterialOrRef {
 
 	private static TextureData withPlaceholdersFilledIn(TextureData texture, Map<String, String> map, TagSet tags) {
 
-		if (texture instanceof TextTexture) {
-
-			TextTexture textTexture = (TextTexture) texture;
+		if (texture instanceof TextTexture textTexture) {
 
 			Pattern pattern = Pattern.compile("%\\{([^,\\}]+)(?:,\\s*([^\\}]+))?\\}");
 
@@ -292,30 +336,6 @@ public abstract class Material implements MaterialOrRef {
 
 	}
 
-	public Transparency getTransparency() {
-		return transparency;
-	}
-
-	public Shadow getShadow() {
-		return shadow;
-	}
-
-	public AmbientOcclusion getAmbientOcclusion() {
-		return ambientOcclusion;
-	}
-
-	public List<TextureLayer> getTextureLayers() {
-		return textureLayers;
-	}
-
-	public int getNumTextureLayers() {
-		return textureLayers.size();
-	}
-
-	public List<TextureDataDimensions> getTextureDimensions() {
-		return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
-	}
-
 	@Override
 	public Material get() {
 		return this;
@@ -332,6 +352,24 @@ public abstract class Material implements MaterialOrRef {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof Material other
+				&& equals(other, false, false);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = interpolation.hashCode();
+		result = 31 * result + Objects.hashCode(color);
+		result = 31 * result + Boolean.hashCode(doubleSided);
+		result = 31 * result + transparency.hashCode();
+		result = 31 * result + shadow.hashCode();
+		result = 31 * result + ambientOcclusion.hashCode();
+		result = 31 * result + textureLayers.hashCode();
+		return result;
+	}
+
+	@Override
 	public String toString() {
 		String colorString = String.format(Locale.ROOT, "#%06x", color.getRGB() & 0x00ffffff);
 		if (textureLayers.isEmpty() || textureLayers.stream().anyMatch(it -> it.colorable)) {
@@ -339,6 +377,16 @@ public abstract class Material implements MaterialOrRef {
 		} else {
 			return textureLayers.toString();
 		}
+	}
+
+	public static Color multiplyColor(Color c, float factor) {
+		float[] colorComponents = new float[3];
+		c.getColorComponents(colorComponents);
+
+		return new Color(
+				colorComponents[0] * factor,
+				colorComponents[1] * factor,
+				colorComponents[2] * factor);
 	}
 
 }

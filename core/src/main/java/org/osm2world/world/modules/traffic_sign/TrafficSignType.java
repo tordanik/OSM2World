@@ -5,7 +5,6 @@ import static org.osm2world.scene.color.Color.WHITE;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.Materials;
@@ -72,7 +71,7 @@ public class TrafficSignType {
 	}
 
 	public static TrafficSignType blankSign() {
-		return new TrafficSignType("", new ImmutableMaterial(Interpolation.FLAT, WHITE), 1, 2);
+		return new TrafficSignType("", new Material(Interpolation.FLAT, WHITE), 1, 2);
 	}
 
 }

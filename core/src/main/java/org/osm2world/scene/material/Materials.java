@@ -40,220 +40,220 @@ public final class Materials {
 
 	/** material for "empty" ground */
 	public static final MaterialRef TERRAIN_DEFAULT = new MaterialRef("TERRAIN_DEFAULT",
-		new ImmutableMaterial(Interpolation.SMOOTH, Color.GREEN));
+		new Material(Interpolation.SMOOTH, Color.GREEN));
 
 	public static final MaterialRef WATER = new MaterialRef("WATER",
-		new ImmutableMaterial(Interpolation.SMOOTH, Color.BLUE));
+		new Material(Interpolation.SMOOTH, Color.BLUE));
 
 	public static final MaterialRef ASPHALT = new MaterialRef("ASPHALT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef BRICK = new MaterialRef("BRICK",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f)));
+		new Material(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f)));
 	public static final MaterialRef CONCRETE = new MaterialRef("CONCRETE",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f)));
+		new Material(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f)));
 	public static final MaterialRef COPPER_ROOF = new MaterialRef("COPPER_ROOF",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(195, 219, 185)));
+		new Material(Interpolation.FLAT, new Color(195, 219, 185)));
 	public static final MaterialRef CORRUGATED_STEEL = new MaterialRef("CORRUGATED_STEEL",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(200, 200, 200)));
+		new Material(Interpolation.FLAT, new Color(200, 200, 200)));
 	public static final MaterialRef EARTH = new MaterialRef("EARTH",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.3f, 0, 0)));
+		new Material(Interpolation.SMOOTH, new Color(0.3f, 0, 0)));
 	public static final MaterialRef GLASS = new MaterialRef("GLASS",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+		new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef GRASS = new MaterialRef("GRASS",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
 	public static final MaterialRef GRASS_PAVER = new MaterialRef("GRASS_PAVER",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f)));
 	public static final MaterialRef GRAVEL = new MaterialRef("GRAVEL",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.4f, 0.4f, 0.4f)));
+		new Material(Interpolation.SMOOTH, new Color(0.4f, 0.4f, 0.4f)));
 	public static final MaterialRef ICE = new MaterialRef("ICE",
-			new ImmutableMaterial(Interpolation.SMOOTH, WHITE));
+			new Material(Interpolation.SMOOTH, WHITE));
 	public static final MaterialRef SCRUB = new MaterialRef("SCRUB",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
 	public static final MaterialRef SETT = new MaterialRef("SETT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef SLATE = new MaterialRef("SLATE",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.1f, 0.1f, 0.1f)));
+			new Material(Interpolation.FLAT, new Color(0.1f, 0.1f, 0.1f)));
 	public static final MaterialRef PAVING_STONE = new MaterialRef("PAVING_STONE",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f)));
+			new Material(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f)));
 	public static final MaterialRef PEBBLESTONE = new MaterialRef("PEBBLESTONE",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f)));
+			new Material(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f)));
 	public static final MaterialRef PLASTIC = new MaterialRef("PLASTIC",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(255, 255, 255)));
+			new Material(Interpolation.FLAT, new Color(255, 255, 255)));
 	public static final MaterialRef ROCK = new MaterialRef("ROCK",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(160, 166, 155)));
+			new Material(Interpolation.FLAT, new Color(160, 166, 155)));
 	public static final MaterialRef SAND = new MaterialRef("SAND",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(241, 233, 80)));
+		new Material(Interpolation.SMOOTH, new Color(241, 233, 80)));
 	public static final MaterialRef SANDSTONE = new MaterialRef("SANDSTONE",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(241, 233, 80)));
+			new Material(Interpolation.FLAT, new Color(241, 233, 80)));
 	public static final MaterialRef SCREE = new MaterialRef("SCREE",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(160, 166, 155)));
+			new Material(Interpolation.FLAT, new Color(160, 166, 155)));
 	public static final MaterialRef SNOW = new MaterialRef("SNOW",
-			new ImmutableMaterial(Interpolation.SMOOTH, WHITE));
+			new Material(Interpolation.SMOOTH, WHITE));
 	public static final MaterialRef STEEL = new MaterialRef("STEEL",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(200, 200, 200)));
+		new Material(Interpolation.FLAT, new Color(200, 200, 200)));
 	public static final MaterialRef STONE = new MaterialRef("STONE",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(160, 166, 155)));
+			new Material(Interpolation.FLAT, new Color(160, 166, 155)));
 	public static final MaterialRef UNHEWN_COBBLESTONE = new MaterialRef("UNHEWN_COBBLESTONE",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef WOOD = new MaterialRef("WOOD",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
 	public static final MaterialRef WOOD_WALL = new MaterialRef("WOOD_WALL",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
 	public static final MaterialRef TARTAN = new MaterialRef("TARTAN",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(206, 109, 90)));
+		new Material(Interpolation.SMOOTH, new Color(206, 109, 90)));
 	public static final MaterialRef TILES = new MaterialRef("TILES",
-			new ImmutableMaterial(Interpolation.FLAT, WHITE));
+			new Material(Interpolation.FLAT, WHITE));
 	public static final MaterialRef MARBLE = new MaterialRef("MARBLE",
-			new ImmutableMaterial(Interpolation.SMOOTH, WHITE));
+			new Material(Interpolation.SMOOTH, WHITE));
 	public static final MaterialRef CARPET = new MaterialRef("CARPET",
-			new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.5f, 0.5f, 1.0f)));
+			new Material(Interpolation.SMOOTH, new Color(0.5f, 0.5f, 1.0f)));
 
 	public static final MaterialRef ROAD_MARKING = new MaterialRef("ROAD_MARKING",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+		new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_DASHED = new MaterialRef("ROAD_MARKING_DASHED",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_ZEBRA = new MaterialRef("ROAD_MARKING_ZEBRA",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_CROSSING = new MaterialRef("ROAD_MARKING_CROSSING",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_ARROW_THROUGH = new MaterialRef("ROAD_MARKING_ARROW_THROUGH",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_ARROW_THROUGH_RIGHT = new MaterialRef("ROAD_MARKING_ARROW_THROUGH_RIGHT",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_ARROW_RIGHT = new MaterialRef("ROAD_MARKING_ARROW_RIGHT",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ROAD_MARKING_ARROW_RIGHT_LEFT = new MaterialRef("ROAD_MARKING_ARROW_RIGHT_LEFT",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef RED_ROAD_MARKING = new MaterialRef("RED_ROAD_MARKING",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.6f, 0.3f, 0.3f)));
+			new Material(Interpolation.FLAT, new Color(0.6f, 0.3f, 0.3f)));
 	public static final MaterialRef KERB = new MaterialRef("KERB",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f)));
+			new Material(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f)));
 	public static final MaterialRef HANDRAIL_DEFAULT = new MaterialRef("HANDRAIL_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, Color.LIGHT_GRAY));
+		new Material(Interpolation.FLAT, Color.LIGHT_GRAY));
 
 	public static final MaterialRef RAIL_BALLAST = new MaterialRef("RAIL_BALLAST",
-		new ImmutableMaterial(Interpolation.SMOOTH, Color.DARK_GRAY));
+		new Material(Interpolation.SMOOTH, Color.DARK_GRAY));
 	public static final MaterialRef RAILWAY = new MaterialRef("RAILWAY",
-			new ImmutableMaterial(Interpolation.SMOOTH, Color.DARK_GRAY));
+			new Material(Interpolation.SMOOTH, Color.DARK_GRAY));
 
 	public static final MaterialRef RUNWAY_CENTER_MARKING = new MaterialRef("RUNWAY_CENTER_MARKING",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef TAXIWAY_CENTER_MARKING = new MaterialRef("TAXIWAY_CENTER_MARKING",
-			new ImmutableMaterial(Interpolation.FLAT, YELLOW));
+			new Material(Interpolation.FLAT, YELLOW));
 	public static final MaterialRef HELIPAD_MARKING = new MaterialRef("HELIPAD_MARKING",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 
 	public static final MaterialRef BUILDING_DEFAULT = new MaterialRef("BUILDING_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f)));
+		new Material(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f)));
 	public static final MaterialRef BUILDING_WINDOWS = new MaterialRef("BUILDING_WINDOWS",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f)));
+		new Material(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f)));
 	public static final MaterialRef SINGLE_WINDOW = new MaterialRef("SINGLE_WINDOW",
-			new ImmutableMaterial(Interpolation.FLAT, WHITE));
+			new Material(Interpolation.FLAT, WHITE));
 	public static final MaterialRef ROOF_DEFAULT = new MaterialRef("ROOF_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0)));
+		new Material(Interpolation.FLAT, new Color(0.8f, 0, 0)));
 	public static final MaterialRef GLASS_ROOF = new MaterialRef("GLASS_ROOF",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef GLASS_WALL = new MaterialRef("GLASS_WALL",
-			new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ENTRANCE_DEFAULT = new MaterialRef("ENTRANCE_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.2f, 0, 0)));
+		new Material(Interpolation.FLAT, new Color(0.2f, 0, 0)));
 	public static final MaterialRef GARAGE_DOOR = new MaterialRef("GARAGE_DOOR",
-		new ImmutableMaterial(Interpolation.FLAT, WHITE));
+		new Material(Interpolation.FLAT, WHITE));
 
 	public static final MaterialRef GLASS_TRANSPARENT = new MaterialRef("GLASS_TRANSPARENT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f), Transparency.TRUE, List.of()));
+		new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f), Transparency.TRUE, List.of()));
 
 	public static final MaterialRef WALL_GABION = new MaterialRef("WALL_GABION",
-		new ImmutableMaterial(Interpolation.FLAT, Color.GRAY));
+		new Material(Interpolation.FLAT, Color.GRAY));
 
 	public static final MaterialRef HEDGE = new MaterialRef("HEDGE",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0,0.5f,0)));
+		new Material(Interpolation.FLAT, new Color(0,0.5f,0)));
 
 	public static final MaterialRef FENCE_DEFAULT = new MaterialRef("FENCE_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
 	public static final MaterialRef SPLIT_RAIL_FENCE = new MaterialRef("SPLIT_RAIL_FENCE",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
+		new Material(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
 	public static final MaterialRef CHAIN_LINK_FENCE = new MaterialRef("CHAIN_LINK_FENCE",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(188, 198, 204)));
+		new Material(Interpolation.FLAT, new Color(188, 198, 204)));
 	public static final MaterialRef METAL_FENCE = new MaterialRef("METAL_FENCE",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(188, 198, 204)));
+		new Material(Interpolation.FLAT, new Color(188, 198, 204)));
 	public static final MaterialRef METAL_FENCE_POST = new MaterialRef("METAL_FENCE_POST",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(188, 198, 204)));
+		new Material(Interpolation.FLAT, new Color(188, 198, 204)));
 
 	public static final MaterialRef BRIDGE_DEFAULT = new MaterialRef("BRIDGE_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, Color.GRAY));
+		new Material(Interpolation.FLAT, Color.GRAY));
 	public static final MaterialRef BRIDGE_PILLAR_DEFAULT = new MaterialRef("BRIDGE_PILLAR_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, Color.GRAY));
+		new Material(Interpolation.FLAT, Color.GRAY));
 
 	public static final MaterialRef TUNNEL_DEFAULT = new MaterialRef("TUNNEL_DEFAULT",
-		new ImmutableMaterial(Interpolation.FLAT, Color.GRAY));
+		new Material(Interpolation.FLAT, Color.GRAY));
 
 	public static final MaterialRef TREE_TRUNK = new MaterialRef("TREE_TRUNK",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.3f, 0.2f, 0.2f)));
+		new Material(Interpolation.SMOOTH, new Color(0.3f, 0.2f, 0.2f)));
 	public static final MaterialRef TREE_CROWN = new MaterialRef("TREE_CROWN",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0, 0.5f, 0)));
+		new Material(Interpolation.SMOOTH, new Color(0, 0.5f, 0)));
 	public static final MaterialRef TREE_BILLBOARD_BROAD_LEAVED = new MaterialRef("TREE_BILLBOARD_BROAD_LEAVED",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0)));
+		new Material(Interpolation.FLAT, new Color(0, 0.5f, 0)));
 	public static final MaterialRef TREE_BILLBOARD_BROAD_LEAVED_FRUIT = new MaterialRef("TREE_BILLBOARD_BROAD_LEAVED_FRUIT",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0)));
+		new Material(Interpolation.FLAT, new Color(0, 0.5f, 0)));
 	public static final MaterialRef TREE_BILLBOARD_CONIFEROUS = new MaterialRef("TREE_BILLBOARD_CONIFEROUS",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0)));
+		new Material(Interpolation.FLAT, new Color(0, 0.5f, 0)));
 
 	public static final MaterialRef POWER_TOWER_VERTICAL = new MaterialRef("POWER_TOWER_VERTICAL",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(.7f, .7f, .7f),
+		new Material(Interpolation.FLAT, new Color(.7f, .7f, .7f),
 				Transparency.BINARY, List.of()));
 	public static final MaterialRef POWER_TOWER_HORIZONTAL = new MaterialRef("POWER_TOWER_HORIZONTAL",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(.7f, .7f, .7f),
+		new Material(Interpolation.FLAT, new Color(.7f, .7f, .7f),
 				Transparency.BINARY, List.of()));
 
 	public static final MaterialRef ADVERTISING_POSTER = new MaterialRef("ADVERTISING_POSTER",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(1, 1, 0.8f)));
+		new Material(Interpolation.FLAT, new Color(1, 1, 0.8f)));
 
 	public static final MaterialRef BUS_STOP_SIGN = new MaterialRef("BUS_STOP_SIGN",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.98f, 0.90f, 0.05f)));
+		new Material(Interpolation.FLAT, new Color(0.98f, 0.90f, 0.05f)));
 
 	public static final MaterialRef POSTBOX_DEUTSCHEPOST = new MaterialRef("POSTBOX_DEUTSCHEPOST",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(1f, 0.8f, 0f)));
+		new Material(Interpolation.FLAT, new Color(1f, 0.8f, 0f)));
 	public static final MaterialRef POSTBOX_ROYALMAIL = new MaterialRef("POSTBOX_ROYALMAIL",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.8f, 0, 0)));
+		new Material(Interpolation.SMOOTH, new Color(0.8f, 0, 0)));
 	public static final MaterialRef TELEKOM_MANGENTA = new MaterialRef("TELEKOM_MANGENTA",
-		new ImmutableMaterial(Interpolation.FLAT, new Color(0.883f, 0f, 0.453f)));
+		new Material(Interpolation.FLAT, new Color(0.883f, 0f, 0.453f)));
 
 	public static final MaterialRef FIREHYDRANT = new MaterialRef("FIREHYDRANT",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.8f, 0, 0)));
+		new Material(Interpolation.SMOOTH, new Color(0.8f, 0, 0)));
 
 	public static final MaterialRef FLAGCLOTH = new MaterialRef("FLAGCLOTH",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(1f, 1f, 1f)));
+		new Material(Interpolation.SMOOTH, new Color(1f, 1f, 1f)));
 
 	public static final MaterialRef SOLAR_PANEL = new MaterialRef("SOLAR_PANEL",
-		new ImmutableMaterial(Interpolation.FLAT, Color.BLUE));
+		new Material(Interpolation.FLAT, Color.BLUE));
 
 	public static final MaterialRef PITCH_BEACHVOLLEYBALL = new MaterialRef("PITCH_BEACHVOLLEYBALL",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(241, 233, 80)));
+		new Material(Interpolation.SMOOTH, new Color(241, 233, 80)));
 	public static final MaterialRef PITCH_SOCCER = new MaterialRef("PITCH_SOCCER",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
 	public static final MaterialRef PITCH_TENNIS_ASPHALT = new MaterialRef("PITCH_TENNIS_ASPHALT",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.3f, 0.3f, 0.3f)));
+		new Material(Interpolation.SMOOTH, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef PITCH_TENNIS_CLAY = new MaterialRef("PITCH_TENNIS_CLAY",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.8f, 0.0f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.8f, 0.0f, 0.0f)));
 	public static final MaterialRef PITCH_TENNIS_GRASS = new MaterialRef("PITCH_TENNIS_GRASS",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
 	public static final MaterialRef PITCH_TENNIS_SINGLES_ASPHALT = new MaterialRef("PITCH_TENNIS_SINGLES_ASPHALT",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.3f, 0.3f, 0.3f)));
+		new Material(Interpolation.SMOOTH, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef PITCH_TENNIS_SINGLES_CLAY = new MaterialRef("PITCH_TENNIS_SINGLES_CLAY",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.8f, 0.0f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.8f, 0.0f, 0.0f)));
 	public static final MaterialRef PITCH_TENNIS_SINGLES_GRASS = new MaterialRef("PITCH_TENNIS_SINGLES_GRASS",
-		new ImmutableMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
+		new Material(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
 
 	public static final MaterialRef TENNIS_NET = new MaterialRef("TENNIS_NET",
-		new ImmutableMaterial(Interpolation.SMOOTH, Color.WHITE));
+		new Material(Interpolation.SMOOTH, Color.WHITE));
 
 	public static final MaterialRef SKYBOX = new MaterialRef("SKYBOX",
-		new ImmutableMaterial(Interpolation.FLAT, Color.BLUE));
+		new Material(Interpolation.FLAT, Color.BLUE));
 
 	/** material for "nothingness" which reflects no light. Used e.g. for openings into buildings without indoor. */
 	public static final MaterialRef VOID = new MaterialRef("VOID",
-			new ImmutableMaterial(Interpolation.FLAT, BLACK));
+			new Material(Interpolation.FLAT, BLACK));
 
 	private static final Map<String, MaterialRef> surfaceMaterialMap;
 
@@ -440,16 +440,12 @@ public final class Materials {
 			String materialName = entry.getKey();
 			Set<String> attributes = entry.getValue();
 
-			MutableMaterial material = new MutableMaterial(Interpolation.FLAT, WHITE);
+			Material material = new Material(Interpolation.FLAT, WHITE);
 
 			// apply defaults
 			if (materialRefMap.containsKey(materialName)) {
-				Material m = materialRefMap.get(materialName).get();
-				material = new MutableMaterial(m.getInterpolation(), m.getColor(), m.doubleSided, m.getTransparency(),
-						m.getShadow(), m.getAmbientOcclusion(), m.getTextureLayers());
+				material = materialRefMap.get(materialName).get();
 			}
-
-			materialsByName.put(materialName, material);
 
 			String keyPrefix = "material_" + materialName + "_";
 
@@ -460,28 +456,28 @@ public final class Materials {
 				switch (attribute) {
 					case "doubleSided" -> {
 						boolean doubleSided = config.getBoolean(key);
-						material.setDoubleSided(doubleSided);
+						material = material.withDoubleSided(doubleSided);
 					}
 					case "interpolation" -> {
 						Interpolation interpolation = config.getEnum(Interpolation.class, key);
-						if (interpolation != null) { material.setInterpolation(interpolation); }
+						if (interpolation != null) { material = material.withInterpolation(interpolation); }
 					}
 					case "shadow" -> {
 						Material.Shadow shadow = config.getEnum(Material.Shadow.class, key);
-						if (shadow != null) { material.setShadow(shadow); }
+						if (shadow != null) { material = material.withShadow(shadow); }
 					}
 					case "ssao" -> {
 						Material.AmbientOcclusion ao = config.getEnum(Material.AmbientOcclusion.class, key);
-						if (ao != null) { material.setAmbientOcclusion(ao); }
+						if (ao != null) { material = material.withAmbientOcclusion(ao); }
 					}
 					case "transparency" -> {
 						Transparency transparency = config.getEnum(Transparency.class, key);
-						if (transparency != null) { material.setTransparency(transparency); }
+						if (transparency != null) { material = material.withTransparency(transparency); }
 					}
 					case "color" -> {
 						Color color = config.getColor(key);
 						if (color != null) {
-							material.setColor(color);
+							material = material.withColor(color);
 						} else {
 							System.err.println("incorrect color value: " + config.getString(key));
 						}
@@ -512,7 +508,11 @@ public final class Materials {
 				}
 			}
 
-			material.setTextureLayers(textureLayers);
+			material = material.withLayers(textureLayers);
+
+			/* store the finished material */
+
+			materialsByName.put(materialName, material);
 
 		}
 

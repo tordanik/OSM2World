@@ -11,7 +11,6 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -43,7 +42,7 @@ public class AttachmentSurfaceDebugView extends StaticDebugView {
 
 				for (FlatSimplePolygonShapeXYZ face : surface.getFaces()) {
 
-					Material material = new ImmutableMaterial(Interpolation.FLAT, color);
+					Material material = new Material(Interpolation.FLAT, color);
 					output.drawConvexPolygon(material, face.vertices(), emptyList());
 
 					//draw base ele

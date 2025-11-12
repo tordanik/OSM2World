@@ -48,7 +48,7 @@ public class TextureCamTest {
 		geometryBuilder.addTriangles(asList(tFront), emptyList(), asList(RED, RED, GREEN));
 		geometryBuilder.addTriangles(tBack);
 
-		List<Mesh> meshes = asList(new Mesh(geometryBuilder.build(), new ImmutableMaterial(Interpolation.FLAT, WHITE)));
+		List<Mesh> meshes = List.of(new Mesh(geometryBuilder.build(), new Material(Interpolation.FLAT, WHITE)));
 
 		TextureLayer result = TextureCam.renderTextures(meshes, ViewDirection.FROM_FRONT, "test",
 				new TextureDataDimensions(1.0, 1.0),

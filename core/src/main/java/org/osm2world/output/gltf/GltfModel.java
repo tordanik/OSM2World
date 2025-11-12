@@ -469,7 +469,7 @@ public class GltfModel implements Model {
 			default -> throw new IllegalArgumentException("Unsupported alphaMode " + m.alphaMode);
 		};
 
-		return new ImmutableMaterial(
+		return new Material(
 				Material.Interpolation.FLAT,
 				color,
 				m.doubleSided != null && m.doubleSided,

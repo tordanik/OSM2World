@@ -45,8 +45,11 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.*;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.scene.material.MaterialOrRef;
+import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
@@ -335,7 +338,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						requireNonNullElse(flag0.ormTexture, cloth0.ormTexture),
 						requireNonNullElse(flag0.displacementTexture, cloth0.displacementTexture),
 						flag0.colorable));
-				return new ImmutableMaterial(Interpolation.SMOOTH, WHITE, true,
+				return new Material(Interpolation.SMOOTH, WHITE, true,
 						flagcloth.getTransparency(), flagcloth.getShadow(), flagcloth.getAmbientOcclusion(),
 						textureLayers);
 			} else {
@@ -1313,7 +1316,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		private void drawContainer(Target target, String trash, VectorXYZ pos) {
 
 			if ("clothes".equals(trash)) {
-				target.drawBox(new ImmutableMaterial(Interpolation.FLAT, new Color(0.82f, 0.784f, 0.75f)),
+				target.drawBox(new Material(Interpolation.FLAT, new Color(0.82f, 0.784f, 0.75f)),
 						pos,
 						faceVector, 2, 1, 1);
 			} else { // "paper" || "white_glass" || "coloured_glass"
@@ -1324,14 +1327,14 @@ public class StreetFurnitureModule extends AbstractModule {
 				Material colourBack = null;
 
 				if ("paper".equals(trash)) {
-					colourFront = new ImmutableMaterial(Interpolation.FLAT, Color.BLUE);
-					colourBack = new ImmutableMaterial(Interpolation.FLAT, Color.BLUE);
+					colourFront = new Material(Interpolation.FLAT, Color.BLUE);
+					colourBack = new Material(Interpolation.FLAT, Color.BLUE);
 				} else if ("white_glass".equals(trash)) {
-					colourFront = new ImmutableMaterial(Interpolation.FLAT, Color.WHITE);
-					colourBack = new ImmutableMaterial(Interpolation.FLAT, Color.WHITE);
+					colourFront = new Material(Interpolation.FLAT, Color.WHITE);
+					colourBack = new Material(Interpolation.FLAT, Color.WHITE);
 				} else { // "coloured_glass"
-					colourFront = new ImmutableMaterial(Interpolation.FLAT, new Color(0.18f, 0.32f, 0.14f));
-					colourBack = new ImmutableMaterial(Interpolation.FLAT, new Color(0.39f, 0.15f, 0.11f));
+					colourFront = new Material(Interpolation.FLAT, new Color(0.18f, 0.32f, 0.14f));
+					colourBack = new Material(Interpolation.FLAT, new Color(0.39f, 0.15f, 0.11f));
 				}
 
 				target.drawBox(STEEL,
@@ -1590,15 +1593,15 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			if (node.getTags().contains("vending", "bicycle_tube")
 					&& node.getTags().containsAny(asList("operator"), asList("Continental", "continental"))) {
-				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, Color.ORANGE);
+				machineMaterial = new Material(Interpolation.FLAT, Color.ORANGE);
 			} else if (node.getTags().contains("vending", "bicycle_tube")) {
-				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, Color.BLUE);
+				machineMaterial = new Material(Interpolation.FLAT, Color.BLUE);
 			} else if (node.getTags().contains("vending", "cigarettes")) {
-				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, new Color(0.8f, 0.73f, 0.5f));
+				machineMaterial = new Material(Interpolation.FLAT, new Color(0.8f, 0.73f, 0.5f));
 			} else if (node.getTags().contains("vending", "condoms")) {
-				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, new Color(0.39f, 0.15f, 0.11f));
+				machineMaterial = new Material(Interpolation.FLAT, new Color(0.39f, 0.15f, 0.11f));
 			} else {
-				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, LIGHT_GRAY);
+				machineMaterial = new Material(Interpolation.FLAT, LIGHT_GRAY);
 			}
 
 			double height = parseHeight(node.getTags(), 1.8f);

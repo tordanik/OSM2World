@@ -19,9 +19,12 @@ import java.util.Map;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
-import org.osm2world.scene.material.*;
+import org.osm2world.scene.material.CompositeTexture;
 import org.osm2world.scene.material.CompositeTexture.CompositeMode;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.model.InstanceParameters;
@@ -159,7 +162,7 @@ public class TrafficSignModel implements Model {
 		if (!backMaterials.containsKey(type)) {
 
 			// use the transparency information from the front of the sign to cut out the correct shape for the back
-			return new ImmutableMaterial(
+			return new Material(
 					FLAT, WHITE, Transparency.BINARY, List.of(new TextureLayer(
 						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).baseColorTexture),
 						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).normalTexture),
@@ -189,8 +192,8 @@ public class TrafficSignModel implements Model {
 			List<TextureData> displacementTextures = material.getTextureLayers().stream().map(t -> t.displacementTexture)
 					.filter(t -> t != null).collect(toList());
 
-			return new ImmutableMaterial(
-					FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
+			return new Material(
+					FLAT, WHITE, Transparency.BINARY, List.of(new TextureLayer(
 						CompositeTexture.stackOf(baseColorTextures),
 						normalTextures.isEmpty() ? null : CompositeTexture.stackOf(normalTextures),
 						ormTextures.isEmpty() ? null : CompositeTexture.stackOf(ormTextures),

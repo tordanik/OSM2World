@@ -24,7 +24,6 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.data.AbstractAreaWorldObject;
@@ -187,7 +186,7 @@ public class PoolModule extends AbstractModule {
 				color = DEFAULT_COLOR;
 			}
 
-			Material material = new ImmutableMaterial(Interpolation.SMOOTH, color);
+			Material material = new Material(Interpolation.SMOOTH, color);
 
 			/* construct the baseline */
 

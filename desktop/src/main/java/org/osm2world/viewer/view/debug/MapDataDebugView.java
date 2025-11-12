@@ -20,7 +20,7 @@ import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 
 /**
@@ -53,7 +53,7 @@ public class MapDataDebugView extends StaticDebugView {
 			Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(area.getPolygon());
 
 			output.drawTriangles(
-					new ImmutableMaterial(Interpolation.FLAT, AREA_COLOR),
+					new Material(Interpolation.FLAT, AREA_COLOR),
 					triangles.stream().map(t -> t.xyz(-0.1)).toList(),
 					emptyList());
 

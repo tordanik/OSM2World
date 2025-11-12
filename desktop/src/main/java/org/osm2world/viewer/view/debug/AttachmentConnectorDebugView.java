@@ -7,7 +7,7 @@ import static org.osm2world.scene.color.Color.RED;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.WorldObject;
@@ -30,14 +30,14 @@ public class AttachmentConnectorDebugView extends StaticDebugView {
 				if (connector.isAttached()) {
 
 					VectorXYZ pos = connector.getAttachedPos();
-					output.drawBox(new ImmutableMaterial(Interpolation.FLAT, ATTACHED_COLOUR),
+					output.drawBox(new Material(Interpolation.FLAT, ATTACHED_COLOUR),
 							pos.addY(-0.1), Z_UNIT, 0.2, 0.2, 0.2);
 					drawArrow(output, ATTACHED_COLOUR, 0.2f, pos,
 							pos.add(connector.getAttachedSurfaceNormal()));
 
 				} else {
 
-					output.drawBox(new ImmutableMaterial(Interpolation.FLAT, FAILED_COLOUR),
+					output.drawBox(new Material(Interpolation.FLAT, FAILED_COLOUR),
 							connector.originalPos.addY(-0.1), Z_UNIT, 0.2, 0.2, 0.2);
 
 				}

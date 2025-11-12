@@ -115,7 +115,7 @@ public class TextureCam {
 								LColor.fromRGB(tg.colors.get(3 * i + 2)));
 					} else if (mesh.material.getNumTextureLayers() == 0
 							|| mesh.material.getTextureLayers().get(0).colorable) {
-						colors = nCopies(3, LColor.fromRGB(mesh.material.color));
+						colors = nCopies(3, LColor.fromRGB(mesh.material.getColor()));
 					} else {
 						colors = nCopies(3, LColor.WHITE);
 					}

@@ -20,7 +20,7 @@ import org.osm2world.output.jogl.JOGLOutputShader;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.ImmutableMaterial;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 
 import com.jogamp.opengl.GL;
@@ -164,7 +164,7 @@ public abstract class DebugView {
 		VectorXYZ endNormal = endDirXZ.rightNormal().xyz(0);
 		VectorXYZ endNormal2 = endDir.crossNormalized(endNormal);
 
-		var colorMaterial = new ImmutableMaterial(Interpolation.FLAT, color);
+		var colorMaterial = new Material(Interpolation.FLAT, color);
 
 		output.drawTriangles(colorMaterial, List.of(
 				new TriangleXYZ(

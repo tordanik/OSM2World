@@ -10,7 +10,6 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.ImmutableMaterial;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.TriangleGeometry;
@@ -34,7 +33,7 @@ public class ObjOutputTest {
 				new VectorXYZ(0, 0, 2),
 				new VectorXYZ(1, 0, 2)));
 
-		var testMesh = new Mesh(geometryBuilder.build(), new ImmutableMaterial(Material.Interpolation.FLAT, Color.RED));
+		var testMesh = new Mesh(geometryBuilder.build(), new Material(Material.Interpolation.FLAT, Color.RED));
 
 		target.drawMesh(testMesh);
 
