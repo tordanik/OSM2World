@@ -106,7 +106,8 @@ public class SportsModule extends AbstractModule {
 			List<TriangleXYZ> triangles = getTriangulation();
 
 			List<TextureLayer> layers = getPitchMaterial().getTextureLayers();
-			TexCoordFunction texFunction = configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
+			TexCoordFunction texFunction = layers.isEmpty() ? null
+					: configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
 
 			if (texFunction != null) {
 
@@ -379,7 +380,8 @@ public class SportsModule extends AbstractModule {
 			/* add a net with posts */
 
 			List<TextureLayer> layers = getPitchMaterial().getTextureLayers();
-			PitchTexFunction texFunction = configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
+			PitchTexFunction texFunction = layers.isEmpty() ? null
+					: configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
 
 			//TODO: support this feature when elevation is enabled
 
