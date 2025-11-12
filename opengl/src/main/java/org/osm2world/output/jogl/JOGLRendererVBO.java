@@ -10,10 +10,10 @@ import java.util.*;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.CardinalDirection;
 import org.osm2world.output.common.Primitive;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Material.Transparency;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Transparency;
 
 /**
  * Base class for renderer that use vertex buffer objects (VBO).
@@ -68,7 +68,7 @@ public abstract class JOGLRendererVBO {
 
 		int numValues = 6; // vertex coordinates and normals
 
-		numValues += 2 * material.getNumTextureLayers();
+		numValues += 2 * material.textureLayers().size();
 
 		if (false /*material.hasBumpMap()*/) {
 			numValues += 4; // tangent vectors are 4D
@@ -90,7 +90,7 @@ public abstract class JOGLRendererVBO {
 
 		for (Material material : primitiveBuffer.getMaterials()) {
 
-			if (material.getTransparency() == Transparency.TRUE) {
+			if (material.transparency() == Transparency.TRUE) {
 
 				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 					transparentPrimitives.add(new PrimitiveWithMaterial(

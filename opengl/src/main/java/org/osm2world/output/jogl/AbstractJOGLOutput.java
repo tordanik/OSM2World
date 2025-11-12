@@ -61,8 +61,8 @@ public abstract class AbstractJOGLOutput extends PrimitiveOutput implements JOGL
 
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
-		if (material.get().getNumTextureLayers() > 0) {
-			for (TextureLayer layer : material.get().getTextureLayers()) {
+		if (material.get().textureLayers().size() > 0) {
+			for (TextureLayer layer : material.get().textureLayers()) {
 				textureManager.getTextureForTextureData(layer.baseColorTexture);
 			}
 		}

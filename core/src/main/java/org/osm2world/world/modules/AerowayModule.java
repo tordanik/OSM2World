@@ -125,7 +125,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 			Material baseMaterial = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
 			List<List<VectorXZ>> baseTexCoords = triangleTexCoordLists(triangles, baseMaterial, GLOBAL_X_Z);
 
-			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.get().getTextureLayers());
+			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.get().textureLayers());
 			List<List<VectorXZ>> texCoords = new ArrayList<>(baseTexCoords);
 			texCoords.addAll(triangleTexCoordLists(triangles, HELIPAD_MARKING, localXZTexCoordFunction));
 
@@ -215,7 +215,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		Material getCenterlineSurface() {
 			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface()))) {
-				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get().getTextureLayers());
+				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get().textureLayers());
 			} else {
 				return getSurface();
 			}

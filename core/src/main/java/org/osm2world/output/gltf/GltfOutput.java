@@ -190,10 +190,10 @@ public class GltfOutput extends AbstractOutput {
 		/* convert material */
 
 		int materialIndex;
-		if (material.getNumTextureLayers() == 0) {
+		if (material.textureLayers().size() == 0) {
 			materialIndex = createMaterial(material, null);
 		} else {
-			materialIndex = createMaterial(material, material.getTextureLayers().get(0));
+			materialIndex = createMaterial(material, material.textureLayers().get(0));
 		}
 		primitive.material = materialIndex;
 
@@ -206,10 +206,10 @@ public class GltfOutput extends AbstractOutput {
 		triangles.forEach(t -> positions.addAll(t.verticesNoDup()));
 		primitive.attributes.put("POSITION", createAccessor(3, positions));
 
-		List<VectorXYZ> normals = calculateTriangleNormals(triangles, material.getInterpolation() == SMOOTH);
+		List<VectorXYZ> normals = calculateTriangleNormals(triangles, material.interpolation() == SMOOTH);
 		primitive.attributes.put("NORMAL", createAccessor(3, normals));
 
-		if (material.getNumTextureLayers() > 0) {
+		if (material.textureLayers().size() > 0) {
 			primitive.attributes.put("TEXCOORD_0", createAccessor(2, texCoordLists.get(0)));
 		}
 
@@ -305,13 +305,13 @@ public class GltfOutput extends AbstractOutput {
 
 		material.name = getMaterialName(m, textureLayer);
 
-		material.alphaMode = switch (m.getTransparency()) {
+		material.alphaMode = switch (m.transparency()) {
 			case FALSE -> "OPAQUE";
 			case BINARY -> "MASK";
 			case TRUE -> "BLEND";
 		};
 
-		material.doubleSided = m.isDoubleSided();
+		material.doubleSided = m.doubleSided();
 
 		if (textureLayer != null) {
 
@@ -651,8 +651,10 @@ public class GltfOutput extends AbstractOutput {
 					name = textureLayer.toString();
 				}
 			}
-		} else if (textureLayer != null && m.getNumTextureLayers() > 1) {
-			name += "_layer" + m.getTextureLayers().indexOf(textureLayer);
+		} else {
+			if (textureLayer != null && m.textureLayers().size() > 1) {
+				name += "_layer" + m.textureLayers().indexOf(textureLayer);
+			}
 		}
 
 		return name;

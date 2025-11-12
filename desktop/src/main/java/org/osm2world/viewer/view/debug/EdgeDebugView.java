@@ -18,7 +18,7 @@ public class EdgeDebugView extends StaticDebugView {
 
 		for (Mesh mesh : scene.getMeshes(config)) {
 			for (LineSegmentXYZ edge : mesh.geometry.asTriangles().edges()) {
-				output.drawLineLoop(mesh.material.getColor(), 2, edge.vertices());
+				output.drawLineLoop(mesh.material.color(), 2, edge.vertices());
 			}
 		}
 

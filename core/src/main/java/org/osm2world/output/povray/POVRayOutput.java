@@ -268,9 +268,9 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 			appendMaterial(material);
 			append("#end\n\n");
 
-			if (material.getNumTextureLayers() == 1) {
+			if (material.textureLayers().size() == 1) {
 
-				TextureLayer layer = material.getTextureLayers().get(0);
+				TextureLayer layer = material.textureLayers().get(0);
 				TextureData td = layer.baseColorTexture;
 
 				if (!layer.colorable) {
@@ -297,11 +297,11 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 			performNaNCheck(triangle);
 		}
 
-		if (material.getNumTextureLayers() > 1) {
+		if (material.textureLayers().size() > 1) {
 
 			int count = 0;
 
-			for (TextureLayer textureLayer : material.getTextureLayers()) {
+			for (TextureLayer textureLayer : material.textureLayers()) {
 
 				if(!(textureLayer.baseColorTexture instanceof TextTexture)) { //temporarily ignore TextTextureData layers
 					append("mesh {\n");
@@ -638,11 +638,11 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 	private void appendMaterial(Material material) {
 
-		if (material.getNumTextureLayers() == 0) {
+		if (material.textureLayers().size() == 0) {
 
 			append("  texture {\n");
 			append("    pigment { ");
-			appendRGBColor(material.getColor());
+			appendRGBColor(material.color());
 			append(" }\n    finish {\n");
 			append("      ambient " + AMBIENT_FACTOR + "\n");
 			append("      diffuse " + (1 - AMBIENT_FACTOR) + "\n");
@@ -651,7 +651,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 		} else {
 
-			for (TextureLayer textureLayer : material.getTextureLayers()) {
+			for (TextureLayer textureLayer : material.textureLayers()) {
 				if(!(textureLayer.baseColorTexture instanceof TextTexture)) { //temporarily ignore TextTextureData layers
 					appendMaterial(material, textureLayer.baseColorTexture, textureLayer.colorable);
 				}
@@ -669,7 +669,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 				if (colorable) {
 					append("  texture {\n");
 					append("    pigment { ");
-					appendRGBColor(material.getColor());
+					appendRGBColor(material.color());
 					append(" }\n    finish {\n");
 					append("      ambient " + AMBIENT_FACTOR + "\n");
 					append("      diffuse " + (1 - AMBIENT_FACTOR) + "\n");

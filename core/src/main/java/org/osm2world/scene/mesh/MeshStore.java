@@ -185,10 +185,10 @@ public class MeshStore {
 			 */
 			MERGE_ELEMENTS,
 
-			/** whether meshes should be kept separate if they have different {@link Material#getInterpolation()} */
+			/** whether meshes should be kept separate if they have different {@link Material#interpolation()} */
 			SEPARATE_NORMAL_MODES,
 
-			/** whether meshes should be kept separate if they have different {@link Material#getColor()} */
+			/** whether meshes should be kept separate if they have different {@link Material#color()} */
 			SINGLE_COLOR_MESHES,
 
 			/**
@@ -241,7 +241,7 @@ public class MeshStore {
 			meshLoop:
 			for (MeshWithMetadata mesh : meshStore.meshesWithMetadata()) {
 
-				int hashCode = mesh.mesh().material.getTextureLayers().hashCode();
+				int hashCode = mesh.mesh().material.textureLayers().hashCode();
 				if (!options.contains(MergeOption.MERGE_ELEMENTS)) {
 					hashCode ^= mesh.metadata().hashCode();
 				}
@@ -300,13 +300,13 @@ public class MeshStore {
 
 				Mesh mesh = meshWithMetadata.mesh();
 
-				if (mesh.material.getNumTextureLayers() <= 1) {
+				if (mesh.material.textureLayers().size() <= 1) {
 					result.add(meshWithMetadata);
 				} else {
 
 					TriangleGeometry tg = mesh.geometry.asTriangles();
 
-					for (int layer = 0; layer < min(maxLayers, mesh.material.getNumTextureLayers()); layer++) {
+					for (int layer = 0; layer < min(maxLayers, mesh.material.textureLayers().size()); layer++) {
 
 						double offset = layer * OFFSET_PER_LAYER;
 
@@ -320,7 +320,7 @@ public class MeshStore {
 
 						Material singleLayerMaterial = mesh.material
 								.withTransparency(layer > 0 ? Material.Transparency.BINARY : null)
-								.withLayers(List.of(mesh.material.getTextureLayers().get(layer)));
+								.withLayers(List.of(mesh.material.textureLayers().get(layer)));
 
 						Mesh newMesh = new Mesh(newGeometry, singleLayerMaterial, mesh.lodRange);
 
@@ -347,8 +347,8 @@ public class MeshStore {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
-				if (!meshWithMetadata.mesh().material.getTextureLayers().isEmpty()
-						&& meshWithMetadata.mesh().material.getTextureLayers().stream().noneMatch(it -> it.colorable)) {
+				if (!meshWithMetadata.mesh().material.textureLayers().isEmpty()
+						&& meshWithMetadata.mesh().material.textureLayers().stream().noneMatch(it -> it.colorable)) {
 					result.add(meshWithMetadata);
 					continue;
 				}
@@ -360,7 +360,7 @@ public class MeshStore {
 				if (mesh.geometry instanceof TriangleGeometry tg) {
 
 					List<Color> colors = (tg.colors != null) ? tg.colors
-							: nCopies(tg.vertices().size(), mesh.material.getColor());
+							: nCopies(tg.vertices().size(), mesh.material.color());
 
 					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(tg.texCoords.size(), null, null);
 					builder.addTriangles(tg.triangles, tg.texCoords, colors, tg.normalData.normals());
@@ -369,7 +369,7 @@ public class MeshStore {
 				} else if (mesh.geometry instanceof ShapeGeometry sg) {
 
 					LColor existingColor = sg.color == null ? LColor.WHITE : LColor.fromRGB(sg.color);
-					LColor newColor = existingColor.multiply(mesh.material.getLColor());
+					LColor newColor = existingColor.multiply(LColor.fromRGB(mesh.material.color()));
 
 					newGeometry = new ShapeGeometry(sg.shape, sg.point, sg.frontVector, sg.upVector, sg.scaleFactor,
 							newColor.toRGB(), sg.normalMode, sg.textureDimensions);
@@ -377,7 +377,7 @@ public class MeshStore {
 				} else if (mesh.geometry instanceof ExtrusionGeometry eg) {
 
 					LColor existingColor = eg.color == null ? LColor.WHITE : LColor.fromRGB(eg.color);
-					LColor newColor = existingColor.multiply(LColor.fromRGB(mesh.material.getColor()));
+					LColor newColor = existingColor.multiply(LColor.fromRGB(mesh.material.color()));
 
 					newGeometry = new ExtrusionGeometry(eg.shape, eg.path, eg.upVectors, eg.scaleFactors,
 							newColor.toRGB(), eg.options, eg.textureDimensions);
@@ -492,7 +492,7 @@ public class MeshStore {
 			Set<TextureLayer> textureLayersForAtlas = new HashSet<>();
 			for (MeshStore meshStore : meshStores) {
 				for (Mesh mesh : meshStore.meshes()) {
-					for (TextureLayer textureLayer : mesh.material.getTextureLayers()) {
+					for (TextureLayer textureLayer : mesh.material.textureLayers()) {
 						if (textureLayer.textures().stream().noneMatch(excludeFromAtlas)) {
 							textureLayersForAtlas.add(textureLayer);
 						}
@@ -503,10 +503,10 @@ public class MeshStore {
 			for (MeshStore meshStore : meshStores) {
 				for (Mesh mesh : meshStore.meshes()) {
 					List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords;
-					for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
+					for (int layer = 0; layer < mesh.material.textureLayers().size(); layer++) {
 						if (texCoordLists.get(layer).stream().anyMatch(t -> t.x < 0 || t.x > 1 || t.z < 0 || t.z > 1)) {
 							// texture is accessed at a tex coordinate outside the [0;1] range, it should not be in an atlas
-							textureLayersForAtlas.remove(mesh.material.getTextureLayers().get(layer));
+							textureLayersForAtlas.remove(mesh.material.textureLayers().get(layer));
 						}
 					}
 				}
@@ -529,13 +529,13 @@ public class MeshStore {
 
 				Mesh mesh = meshWithMetadata.mesh();
 
-				if (!mesh.material.getTextureLayers().stream().anyMatch(atlasGroup::canReplaceLayer)) {
+				if (!mesh.material.textureLayers().stream().anyMatch(atlasGroup::canReplaceLayer)) {
 					result.add(meshWithMetadata);
 				} else {
 
 					TriangleGeometry tg = mesh.geometry.asTriangles();
 
-					List<TextureLayer> newTextureLayers = new ArrayList<>(mesh.material.getTextureLayers());
+					List<TextureLayer> newTextureLayers = new ArrayList<>(mesh.material.textureLayers());
 					List<List<VectorXZ>> newTexCoords = new ArrayList<>(tg.texCoords);
 
 					for (int layer = 0; layer < newTextureLayers.size(); layer ++) {
@@ -784,7 +784,7 @@ public class MeshStore {
 
 				Material oldMaterial = m.mesh().material;
 
-				Material newMaterial = oldMaterial.withLayers(oldMaterial.getTextureLayers().stream().map(
+				Material newMaterial = oldMaterial.withLayers(oldMaterial.textureLayers().stream().map(
 						l -> new TextureLayer(
 								l.baseColorTexture,
 								textureTypesToRemove.contains(TextureLayer.TextureType.NORMAL) ? null : l.normalTexture,

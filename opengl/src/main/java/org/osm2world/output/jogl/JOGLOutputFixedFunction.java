@@ -302,11 +302,11 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 	static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 
-		int numTexLayers = material.getNumTextureLayers();
+		int numTexLayers = material.textureLayers().size();
 
 		/* handle back-face culling and double-sided materials */
 
-		if (frontFaceWinding == null || material.isDoubleSided()) {
+		if (frontFaceWinding == null || material.doubleSided()) {
 			gl.glDisable(GL_CULL_FACE);
 		} else {
 			gl.glFrontFace(frontFaceWinding.glConstant);
@@ -314,7 +314,7 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 			gl.glEnable(GL_CULL_FACE);
 		}
 
-		if (material.isDoubleSided()) {
+		if (material.doubleSided()) {
 			gl.glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 		} else {
 			gl.glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
@@ -335,9 +335,9 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 		Color c = WHITE;
 
 		if (numTexLayers == 0) {
-			c = material.getColor();
-		} else if (material.getTextureLayers().get(0).colorable) {
-			c = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromRGB(material.getColor())).toRGB();
+			c = material.color();
+		} else if (material.textureLayers().get(0).colorable) {
+			c = material.textureLayers().get(0).clampedBaseColorFactor(LColor.fromRGB(material.color())).toRGB();
 		}
 
 		//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
@@ -348,7 +348,7 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 		gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
 				getFloatBuffer(multiplyColor(c, 1 - AMBIENT_FACTOR)));
 
-		if (material.isDoubleSided()) {
+		if (material.doubleSided()) {
 			gl.glMaterialfv(GL_BACK, GL_AMBIENT,
 					getFloatBuffer(multiplyColor(c, AMBIENT_FACTOR)));
 			gl.glMaterialfv(GL_BACK, GL_DIFFUSE,
@@ -374,13 +374,13 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 
 				gl.glEnable(GL_TEXTURE_2D);
 
-				if (material.getTransparency() == TRUE) {
+				if (material.transparency() == TRUE) {
 					gl.glEnable(GL.GL_BLEND);
 					/* GL.GL_SRC_ALPHA and GL.GL_ONE_MINUS_SRC_ALPHA for color blending produces correct results for color, while
 					 * GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA produces correct alpha blended results: the blendfunction is in fact equal to 1-(1-SRC_APLHA)*(1-DST_APLHA)
 					 */
 					gl.glBlendFuncSeparate(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA, GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
-				} else if (material.getTransparency() == BINARY) {
+				} else if (material.transparency() == BINARY) {
 					gl.glAlphaFunc(GL_GREATER, 0.5f);
 					gl.glEnable(GL_ALPHA_TEST);
 				} else {
@@ -388,7 +388,7 @@ public final class JOGLOutputFixedFunction extends AbstractJOGLOutput implements
 					gl.glDisable(GL_ALPHA_TEST);
 				}
 
-				TextureData textureData = material.getTextureLayers().get(i).baseColorTexture;
+				TextureData textureData = material.textureLayers().get(i).baseColorTexture;
 
 				Texture texture = textureManager.getTextureForTextureData(textureData);
 				texture.enable(gl); //TODO: should this be called every time?

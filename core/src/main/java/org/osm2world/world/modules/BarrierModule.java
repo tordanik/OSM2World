@@ -281,8 +281,8 @@ public class BarrierModule extends AbstractModule {
 			}
 
 			String colorString = tags.getValue("colour");
-			boolean colorable = material.get().getNumTextureLayers() == 0
-					|| material.get().getTextureLayers().get(0).colorable;
+			boolean colorable = material.get().textureLayers().size() == 0
+					|| material.get().textureLayers().get(0).colorable;
 
 			if (colorString != null && colorable) {
 				material = material.get().withColor(parseColor(colorString, CSS_COLORS));
@@ -495,7 +495,7 @@ public class BarrierModule extends AbstractModule {
 			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence,
 					texCoordLists(vsFence, CHAIN_LINK_FENCE, STRIP_WALL));
 
-			if (!CHAIN_LINK_FENCE.get().isDoubleSided()) {
+			if (!CHAIN_LINK_FENCE.get().doubleSided()) {
 
 				List<VectorXYZ> pointsWithEleBack = new ArrayList<>(pointsWithEle);
 				Collections.reverse(pointsWithEleBack);
@@ -1022,7 +1022,7 @@ public class BarrierModule extends AbstractModule {
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position(), height,
 					width/2, width/2, false, true, null,
-					CONCRETE.get().getTextureDimensions()), CONCRETE.get(), LOD2, LOD4));
+					CONCRETE.get().textureDimensions()), CONCRETE.get(), LOD2, LOD4));
 		}
 
 		@Override
@@ -1102,7 +1102,7 @@ public class BarrierModule extends AbstractModule {
 
 			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
 					path, null, scaleFactors, null, null,
-					CONCRETE.get().getTextureDimensions()), CONCRETE.get(), LOD2, LOD4));
+					CONCRETE.get().textureDimensions()), CONCRETE.get(), LOD2, LOD4));
 
 		}
 

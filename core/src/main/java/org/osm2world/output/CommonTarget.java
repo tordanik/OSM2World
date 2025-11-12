@@ -46,7 +46,7 @@ public interface CommonTarget {
 	default void drawTriangles(@Nonnull MaterialOrRef material,
 							   @Nonnull List<? extends TriangleXYZ> triangles,
 							   @Nonnull List<List<VectorXZ>> texCoordLists) {
-		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.get().getInterpolation(),
+		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.get().interpolation(),
 				texCoordLists, null), material.get()));
 	}
 
@@ -175,13 +175,13 @@ public interface CommonTarget {
 			@Nullable List<VectorXYZ> upVectors, @Nullable List<Double> scaleFactors,
 			@Nullable Set<ExtrudeOption> options) {
 
-		if (material.get().getInterpolation() == Material.Interpolation.SMOOTH) {
+		if (material.get().interpolation() == Material.Interpolation.SMOOTH) {
 			options = requireNonNullElse(options, EnumSet.noneOf(ExtrudeOption.class));
 			options.add(ExtrudeOption.SMOOTH_SIDES);
 		}
 
 		drawMesh(new Mesh(new ExtrusionGeometry(shape, path, upVectors, scaleFactors, null, options,
-				material.get().getTextureDimensions()), material.get()));
+				material.get().textureDimensions()), material.get()));
 
 	}
 
@@ -194,7 +194,7 @@ public interface CommonTarget {
 						 double height, double width, double depth) {
 
 		drawMesh(new Mesh(MeshUtil.createBox(bottomCenter, faceDirection, height, width, depth, null,
-				material.get().getTextureDimensions()), material.get()));
+				material.get().textureDimensions()), material.get()));
 
 	}
 
@@ -214,7 +214,7 @@ public interface CommonTarget {
 							double radiusTop, boolean drawBottom, boolean drawTop) {
 
 		drawMesh(new Mesh(ExtrusionGeometry.createColumn(corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop,
-				null, material.get().getTextureDimensions()), material.get()));
+				null, material.get().textureDimensions()), material.get()));
 
 	}
 

@@ -94,16 +94,16 @@ public class TrafficSignModel implements Model {
 	}
 
 	public double getSignHeight() {
-		if (material.getNumTextureLayers() > 0) {
-			return material.getTextureLayers().get(0).baseColorTexture.dimensions().height();
+		if (material.textureLayers().size() > 0) {
+			return material.textureLayers().get(0).baseColorTexture.dimensions().height();
 		} else {
 			return 0.6;
 		}
 	}
 
 	public double getSignWidth() {
-		if (material.getNumTextureLayers() > 0) {
-			return material.getTextureLayers().get(0).baseColorTexture.dimensions().width();
+		if (material.textureLayers().size() > 0) {
+			return material.textureLayers().get(0).baseColorTexture.dimensions().width();
 		} else {
 			return 0.6;
 		}
@@ -155,7 +155,7 @@ public class TrafficSignModel implements Model {
 
 	private static Material getBackMaterial(TrafficSignType type) {
 
-		if (type.material.getNumTextureLayers() == 0) {
+		if (type.material.textureLayers().size() == 0) {
 			return STEEL.get();
 		}
 
@@ -164,10 +164,10 @@ public class TrafficSignModel implements Model {
 			// use the transparency information from the front of the sign to cut out the correct shape for the back
 			return new Material(
 					FLAT, WHITE, Transparency.BINARY, List.of(new TextureLayer(
-						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).baseColorTexture),
-						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).normalTexture),
-						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).ormTexture),
-						textureWithAlphaMask(type.material, STEEL.get().getTextureLayers().get(0).displacementTexture),
+						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).baseColorTexture),
+						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).normalTexture),
+						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).ormTexture),
+						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).displacementTexture),
 						false)));
 		}
 
@@ -177,19 +177,19 @@ public class TrafficSignModel implements Model {
 
 	private static Material getFrontMaterial(Material material) {
 
-		if (material.getNumTextureLayers() <= 0) {
+		if (material.textureLayers().size() <= 0) {
 			return material;
 		}
 
 		if (!frontMaterials.containsKey(material)) {
 
-			List<TextureData> baseColorTextures = material.getTextureLayers().stream().map(t -> t.baseColorTexture)
+			List<TextureData> baseColorTextures = material.textureLayers().stream().map(t -> t.baseColorTexture)
 					.collect(toList());
-			List<TextureData> normalTextures = material.getTextureLayers().stream().map(t -> t.normalTexture)
+			List<TextureData> normalTextures = material.textureLayers().stream().map(t -> t.normalTexture)
 					.filter(t -> t != null).collect(toList());
-			List<TextureData> ormTextures = material.getTextureLayers().stream().map(t -> t.ormTexture)
+			List<TextureData> ormTextures = material.textureLayers().stream().map(t -> t.ormTexture)
 					.filter(t -> t != null).collect(toList());
-			List<TextureData> displacementTextures = material.getTextureLayers().stream().map(t -> t.displacementTexture)
+			List<TextureData> displacementTextures = material.textureLayers().stream().map(t -> t.displacementTexture)
 					.filter(t -> t != null).collect(toList());
 
 			return new Material(
@@ -207,7 +207,7 @@ public class TrafficSignModel implements Model {
 
 	private static CompositeTexture textureWithAlphaMask(Material alphaMaterial, TextureData textureB) {
 		return new CompositeTexture(CompositeMode.ALPHA_FROM_A, false,
-				alphaMaterial.getTextureLayers().get(0).baseColorTexture, textureB);
+				alphaMaterial.textureLayers().get(0).baseColorTexture, textureB);
 	}
 
 	@Override

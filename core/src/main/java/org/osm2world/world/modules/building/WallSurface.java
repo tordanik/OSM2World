@@ -216,12 +216,12 @@ public class WallSurface {
 		/* determine the material depending on whether a window texture should be applied */
 
 		Material material = applyWindowTexture
-				? this.material.withAddedLayers(BUILDING_WINDOWS.get().getTextureLayers())
+				? this.material.withAddedLayers(BUILDING_WINDOWS.get().textureLayers())
 				: this.material;
 
 		/* calculate texture coordinates */
 
-		List<TextureLayer> textureLayers = material.getTextureLayers();
+		List<TextureLayer> textureLayers = material.textureLayers();
 
 		List<List<VectorXZ>> texCoordLists = new ArrayList<>(textureLayers.size());
 
@@ -237,9 +237,8 @@ public class WallSurface {
 
 			Double fixedHeight = null;
 
-			if (windowHeight != null
-					&& (texLayer >= this.material.getNumTextureLayers()
-						|| Objects.equals(Materials.getUniqueName(this.material), "GLASS_WALL"))) {
+			if (windowHeight != null && (texLayer >= this.material.textureLayers().size()
+					|| Objects.equals(Materials.getUniqueName(this.material), "GLASS_WALL"))) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

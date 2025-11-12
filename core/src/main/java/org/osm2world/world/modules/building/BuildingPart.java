@@ -618,8 +618,8 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			}
 		}
 
-		boolean colorable = material.getNumTextureLayers() == 0
-				|| material.getTextureLayers().get(0).colorable;
+		boolean colorable = material.textureLayers().size() == 0
+				|| material.textureLayers().get(0).colorable;
 
 		if (colorString != null && colorable) {
 

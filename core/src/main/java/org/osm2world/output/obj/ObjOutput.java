@@ -174,7 +174,7 @@ public class ObjOutput extends FaceOutput {
 
 		VectorXYZ faceNormal = new TriangleXYZ(vs.get(0), vs.get(1), vs.get(2)).getNormal();
 
-		for (int layer = 0; layer < max(1, material.get().getNumTextureLayers()); layer++) {
+		for (int layer = 0; layer < max(1, material.get().textureLayers().size()); layer++) {
 
 			useMaterial(material.get(), layer);
 
@@ -326,19 +326,19 @@ public class ObjOutput extends FaceOutput {
 
 	private void writeMaterial(Material material, String name) {
 
-		for (int i = 0; i < max(1, material.getNumTextureLayers()); i++) {
+		for (int i = 0; i < max(1, material.textureLayers().size()); i++) {
 
 			TextureLayer textureLayer = null;
-			if (material.getNumTextureLayers() > 0) {
-				textureLayer = material.getTextureLayers().get(i);
+			if (material.textureLayers().size() > 0) {
+				textureLayer = material.textureLayers().get(i);
 			}
 
 			mtlWriter.println("newmtl " + name + "_" + i);
 			mtlWriter.println("Ns 92.156863");
 
 			if (textureLayer == null || textureLayer.colorable) {
-				writeColorLine("Ka", multiplyColor(material.getColor(), AMBIENT_FACTOR));
-				writeColorLine("Kd", multiplyColor(material.getColor(), 1 - AMBIENT_FACTOR));
+				writeColorLine("Ka", multiplyColor(material.color(), AMBIENT_FACTOR));
+				writeColorLine("Kd", multiplyColor(material.color(), 1 - AMBIENT_FACTOR));
 			} else {
 				writeColorLine("Ka", multiplyColor(WHITE, AMBIENT_FACTOR));
 				writeColorLine("Kd", multiplyColor(WHITE, 1 - AMBIENT_FACTOR));
@@ -356,7 +356,7 @@ public class ObjOutput extends FaceOutput {
 					mtlWriter.println("map_Ka " + clamp + textureToPath(textureLayer.baseColorTexture));
 					mtlWriter.println("map_Kd " + clamp + textureToPath(textureLayer.baseColorTexture));
 
-					if (material.getTransparency() != Transparency.FALSE) {
+					if (material.transparency() != Transparency.FALSE) {
 						mtlWriter.println("map_d " + clamp + textureToPath(textureLayer.baseColorTexture));
 					}
 

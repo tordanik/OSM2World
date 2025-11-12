@@ -231,7 +231,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
 					height, radius, radius, false, true,
-					color, material.getTextureDimensions());
+					color, material.textureDimensions());
 
 			return singletonList(new Mesh(geometry, material, height >= 10 ? LOD2 : LOD3, LOD4));
 
@@ -328,10 +328,10 @@ public class StreetFurnitureModule extends AbstractModule {
 		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
 			Material material = resolveMaterial("FLAG_" + flagId);
 			Material flagcloth = FLAGCLOTH.get();
-			if (material != null && material.getNumTextureLayers() > 0 && flagcloth.getNumTextureLayers() > 0) {
-				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.getTextureLayers());
-				TextureLayer flag0 = material.getTextureLayers().get(0);
-				TextureLayer cloth0 = flagcloth.getTextureLayers().get(0);
+			if (material != null && material.textureLayers().size() > 0 && flagcloth.textureLayers().size() > 0) {
+				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.textureLayers());
+				TextureLayer flag0 = material.textureLayers().get(0);
+				TextureLayer cloth0 = flagcloth.textureLayers().get(0);
 				textureLayers.set(0, new TextureLayer(
 						flag0.baseColorTexture,
 						requireNonNullElse(flag0.normalTexture, cloth0.normalTexture),
@@ -339,7 +339,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						requireNonNullElse(flag0.displacementTexture, cloth0.displacementTexture),
 						flag0.colorable));
 				return new Material(Interpolation.SMOOTH, WHITE, true,
-						flagcloth.getTransparency(), flagcloth.getShadow(), flagcloth.getAmbientOcclusion(),
+						flagcloth.transparency(), flagcloth.shadow(), flagcloth.ambientOcclusion(),
 						textureLayers);
 			} else {
 				return material;
@@ -443,7 +443,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					target.drawTriangleStrip(material, vsFront, texCoordLists(
 							vsFront, material, t -> texCoordFunction));
 
-					if (!material.isDoubleSided()) {
+					if (!material.doubleSided()) {
 						target.drawTriangleStrip(material, vsBack, texCoordLists(
 								vsBack, material, t -> texCoordFunction));
 					}
@@ -576,8 +576,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			 * otherwise an unreliable default is used.
 			 */
 			public TexturedFlag(Material material) {
-				this(material.getTextureLayers().isEmpty() ? 3 / 5.0
-						: 1.0 / material.getTextureLayers().get(0).baseColorTexture.getAspectRatio(),
+				this(material.textureLayers().isEmpty() ? 3 / 5.0
+						: 1.0 / material.textureLayers().get(0).baseColorTexture.getAspectRatio(),
 						material);
 			}
 
@@ -1770,15 +1770,15 @@ public class StreetFurnitureModule extends AbstractModule {
 						/* rondel */
 						new Mesh(createColumn(null, params.position().add(rightVector.mult(-rondelWidth / 2)),
 								height, rondelWidth / 2, rondelWidth / 2, false, true,
-								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+								boxMaterial.color(), boxMaterial.textureDimensions()), boxMaterial),
 						/* box */
 						new Mesh(createBox(params.position().add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
 								faceVector, height, boxWidth, boxWidth,
-								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+								boxMaterial.color(), boxMaterial.textureDimensions()), boxMaterial),
 						/* roof */
 						new Mesh(createColumn(null, params.position().addY(height),
 								0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true,
-								otherMaterial.getColor(), otherMaterial.getTextureDimensions()), otherMaterial));
+								otherMaterial.color(), otherMaterial.textureDimensions()), otherMaterial));
 
 			} else if (tags.containsAny(asList("parcel_locker:type", "packstation_type", "type"),
 					asList("Paketbox", "parcel_box"))) {
@@ -1788,7 +1788,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				double depth = width;
 
 				return asList(new Mesh(createBox(params.position(), faceVector, height, width * 2, depth * 2,
-						boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
+						boxMaterial.color(), boxMaterial.textureDimensions()), boxMaterial));
 
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
 
@@ -1801,11 +1801,11 @@ public class StreetFurnitureModule extends AbstractModule {
 						/* box */
 						new Mesh(createBox(params.position(),
 								faceVector, height, width, depth,
-								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+								boxMaterial.color(), boxMaterial.textureDimensions()), boxMaterial),
 						/* small roof */
 						new Mesh(createBox(params.position().add(faceVector.mult(roofOverhang)).addY(height),
 								faceVector, 0.1, width, depth + roofOverhang * 2,
-								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
+								boxMaterial.color(), boxMaterial.textureDimensions()), boxMaterial));
 
 			}
 

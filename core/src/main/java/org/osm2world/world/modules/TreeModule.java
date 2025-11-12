@@ -307,7 +307,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		@Override
 		public double defaultHeightToWidth() {
-			List<TextureLayer> textureLayers = getMaterial().get().getTextureLayers();
+			List<TextureLayer> textureLayers = getMaterial().get().textureLayers();
 			if (!textureLayers.isEmpty()) {
 				TextureData texture = textureLayers.get(0).baseColorTexture;
 				TextureDataDimensions textureDimensions = texture.dimensions();
@@ -350,12 +350,12 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			ExtrusionGeometry trunk = ExtrusionGeometry.createColumn(null,
 					posXYZ, height*stemRatio,trunkRadius, 0.8 * trunkRadius,
-					false, true, null, TREE_TRUNK.get().getTextureDimensions());
+					false, true, null, TREE_TRUNK.get().textureDimensions());
 
 			ExtrusionGeometry crown = ExtrusionGeometry.createColumn(null,
 					posXYZ.addY(height*stemRatio), height*(1-stemRatio), width / 2,
 					coniferous ? 0 : width / 2, true, true, null,
-					TREE_CROWN.get().getTextureDimensions());
+					TREE_CROWN.get().textureDimensions());
 
 			return List.of(
 					new Mesh(trunk, TREE_TRUNK.get()),

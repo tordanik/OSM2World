@@ -32,9 +32,9 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 	 */
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 
-		if (!renderSemiTransparent && material.getTransparency() == Transparency.TRUE) {
+		if (!renderSemiTransparent && material.transparency() == Transparency.TRUE) {
 			return false;
-		} else if (renderOnlySemiTransparent && material.getTransparency() != Transparency.TRUE) {
+		} else if (renderOnlySemiTransparent && material.transparency() != Transparency.TRUE) {
 			return false;
 		}
 		return true;

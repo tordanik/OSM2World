@@ -105,7 +105,7 @@ public class SportsModule extends AbstractModule {
 
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			List<TextureLayer> layers = getPitchMaterial().getTextureLayers();
+			List<TextureLayer> layers = getPitchMaterial().textureLayers();
 			TexCoordFunction texFunction = layers.isEmpty() ? null
 					: configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
 
@@ -307,7 +307,7 @@ public class SportsModule extends AbstractModule {
 			public List<Mesh> buildMeshes(InstanceParameters params) {
 				return singletonList(new Mesh(ExtrusionGeometry.createColumn(
 						null, params.position(), netHeightAtPosts, postRadius, postRadius, false, true,
-						new Color(184, 184, 184), PLASTIC.get().getTextureDimensions()), PLASTIC.get(),
+						new Color(184, 184, 184), PLASTIC.get().textureDimensions()), PLASTIC.get(),
 						LevelOfDetail.LOD2, LevelOfDetail.LOD4));
 			}
 		};
@@ -379,7 +379,7 @@ public class SportsModule extends AbstractModule {
 
 			/* add a net with posts */
 
-			List<TextureLayer> layers = getPitchMaterial().getTextureLayers();
+			List<TextureLayer> layers = getPitchMaterial().textureLayers();
 			PitchTexFunction texFunction = layers.isEmpty() ? null
 					: configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
 
@@ -457,7 +457,7 @@ public class SportsModule extends AbstractModule {
 				target.drawTriangleStrip(TENNIS_NET, verticesNet,
 						texCoordLists(verticesNet, TENNIS_NET, STRIP_FIT_HEIGHT));
 
-				if (!TENNIS_NET.get().isDoubleSided()) {
+				if (!TENNIS_NET.get().doubleSided()) {
 					target.drawTriangleStrip(TENNIS_NET, verticesNetBack,
 							texCoordLists(verticesNetBack, TENNIS_NET, STRIP_FIT_HEIGHT));
 				}

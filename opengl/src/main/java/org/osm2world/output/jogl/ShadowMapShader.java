@@ -16,10 +16,10 @@ import javax.imageio.ImageIO;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
+import org.osm2world.output.common.rendering.PerspectiveProjection;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Shadow;
 import org.osm2world.scene.material.Material.Transparency;
-import org.osm2world.output.common.rendering.PerspectiveProjection;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
@@ -451,10 +451,10 @@ public class ShadowMapShader extends DepthBufferShader {
 	 */
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
-		if (!renderOpaque && material.getTransparency() == Transparency.FALSE) {
+		if (!renderOpaque && material.transparency() == Transparency.FALSE) {
 			return false;
 		}
-		if (material.getShadow() == Shadow.FALSE) {
+		if (material.shadow() == Shadow.FALSE) {
 			return false;
 		}
 		return super.setMaterial(material, textureManager);

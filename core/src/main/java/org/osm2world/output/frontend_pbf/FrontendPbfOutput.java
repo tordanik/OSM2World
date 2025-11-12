@@ -335,31 +335,31 @@ public class FrontendPbfOutput extends MeshOutput {
 
 		FrontendPbf.Material.Builder materialBuilder = FrontendPbf.Material.newBuilder();
 
-		float[] baseColorFactor = material.getNumTextureLayers() == 0
+		float[] baseColorFactor = material.textureLayers().size() == 0
 				? new float[] {1f, 1f, 1f}
-				: material.getTextureLayers().get(0).baseColorFactor(LColor.fromRGB(material.getColor()), 1f);
+				: material.textureLayers().get(0).baseColorFactor(LColor.fromRGB(material.color()), 1f);
 
 		materialBuilder.setBaseColorR(round(baseColorFactor[0] * 255));
 		materialBuilder.setBaseColorG(round(baseColorFactor[1] * 255));
 		materialBuilder.setBaseColorB(round(baseColorFactor[2] * 255));
 
-		switch (material.getTransparency()) {
+		switch (material.transparency()) {
 			case TRUE: materialBuilder.setTransparency(Transparency.TRUE); break;
 			case BINARY: materialBuilder.setTransparency(Transparency.BINARY); break;
 			case FALSE: break; //default value – not setting it saves bandwidth in proto2
-			default: throw new Error("unsupported transparency: " + material.getTransparency());
+			default: throw new Error("unsupported transparency: " + material.transparency());
 		}
 
-		if (material.getShadow() == Shadow.FALSE
+		if (material.shadow() == Shadow.FALSE
 				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(Materials.getUniqueName(material), ""))) {
 			materialBuilder.setCastShadow(false);
 		}
 
-		if (material.isDoubleSided()) {
+		if (material.doubleSided()) {
 			materialBuilder.setDoubleSided(true);
 		}
 
-		for (org.osm2world.scene.material.TextureLayer textureLayer : material.getTextureLayers()) {
+		for (org.osm2world.scene.material.TextureLayer textureLayer : material.textureLayers()) {
 			materialBuilder.addTextureLayer(convertTextureLayer(textureLayer));
 		}
 
@@ -630,7 +630,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		for (int layer = 0; layer < geom.texCoords.size(); layer++) {
 
 			// check if the tex coords can be calculated in the client
-			if (!(material.getTextureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
+			if (!(material.textureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
 
 				// append the texture coordinates for this layer
 				texCoords.addAll(geom.texCoords.get(layer));

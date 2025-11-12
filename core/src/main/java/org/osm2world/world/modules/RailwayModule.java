@@ -108,7 +108,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			box = box.rotatedCW(params.direction());
 
 			return List.of(new Mesh(new ExtrusionGeometry(box, List.of(position, position.addY(SLEEPER_HEIGHT)),
-					null, null, null, EnumSet.of(END_CAP), WOOD.get().getTextureDimensions()),
+					null, null, null, EnumSet.of(END_CAP), WOOD.get().textureDimensions()),
 					WOOD.get(), LOD4));
 
 		}
@@ -228,7 +228,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 						createLineBetween(getOutline(false), getOutline(true), 1 - (groundWidth - railDist) / groundWidth / 2)
 				)) {
 					result.add(new Mesh(new ExtrusionGeometry(shape, addYList(railLine, yOffset),
-							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions, STEEL.get().getTextureDimensions()),
+							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions, STEEL.get().textureDimensions()),
 							STEEL.get(), lod));
 				}
 

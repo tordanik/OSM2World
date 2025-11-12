@@ -35,7 +35,7 @@ public abstract class PrimitiveOutput extends AbstractOutput implements DrawBase
 	@Override
 	public void drawTriangleStrip(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								  @Nonnull List<List<VectorXZ>> texCoordLists) {
-		boolean smooth = (material.get().getInterpolation() == Interpolation.SMOOTH);
+		boolean smooth = (material.get().interpolation() == Interpolation.SMOOTH);
 		drawPrimitive(TRIANGLE_STRIP, material, vs,
 				calculateTriangleStripNormals(vs, smooth),
 				texCoordLists);
@@ -44,7 +44,7 @@ public abstract class PrimitiveOutput extends AbstractOutput implements DrawBase
 	@Override
 	public void drawTriangleFan(@Nonnull MaterialOrRef material, @Nonnull List<VectorXYZ> vs,
 								@Nonnull List<List<VectorXZ>> texCoordLists) {
-		boolean smooth = (material.get().getInterpolation() == Interpolation.SMOOTH);
+		boolean smooth = (material.get().interpolation() == Interpolation.SMOOTH);
 		drawPrimitive(TRIANGLE_FAN, material, vs,
 				calculateTriangleFanNormals(vs, smooth),
 				texCoordLists);
@@ -55,7 +55,7 @@ public abstract class PrimitiveOutput extends AbstractOutput implements DrawBase
 							  @Nonnull List<? extends TriangleXYZ> triangles,
 							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 		drawTriangles(material, triangles,
-				calculateTriangleNormals(triangles, material.get().getInterpolation() == Interpolation.SMOOTH),
+				calculateTriangleNormals(triangles, material.get().interpolation() == Interpolation.SMOOTH),
 				texCoordLists);
 	}
 

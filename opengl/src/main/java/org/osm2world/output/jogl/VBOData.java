@@ -137,7 +137,7 @@ public abstract class VBOData<BufferT extends Buffer> {
 
 			primVertices = triangleVertexListFromTriangleStrip(primVertices);
 
-			if (material.getInterpolation() == Interpolation.FLAT) {
+			if (material.interpolation() == Interpolation.FLAT) {
 				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			} else {
 				primNormals = triangleVertexListFromTriangleStrip(primNormals);
@@ -155,7 +155,7 @@ public abstract class VBOData<BufferT extends Buffer> {
 
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
 
-			if (material.getInterpolation() == Interpolation.FLAT) {
+			if (material.interpolation() == Interpolation.FLAT) {
 				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			} else {
 				primNormals = triangleVertexListFromTriangleFan(primNormals);
@@ -176,12 +176,12 @@ public abstract class VBOData<BufferT extends Buffer> {
 		for (int i = 0; i < primVertices.size(); i++) {
 
 			assert (primTexCoordLists == null
-					&& material.getNumTextureLayers() == 0)
+					&& material.textureLayers().size() == 0)
 				|| (primTexCoordLists != null
-					&& primTexCoordLists.size() == material.getNumTextureLayers())
+					&& primTexCoordLists.size() == material.textureLayers().size())
 				: "WorldModules need to provide the correct number of tex coords";
 
-			for (int t = 0; t < material.getNumTextureLayers(); t++) {
+			for (int t = 0; t < material.textureLayers().size(); t++) {
 				if (primTexCoordLists == null || primTexCoordLists.get(t) == null) {
 					put(buffer, VectorXZ.NULL_VECTOR);
 					//TODO print some kind of warning (or do it earlier, in AbstractJoglTarget.drawPrimitive)

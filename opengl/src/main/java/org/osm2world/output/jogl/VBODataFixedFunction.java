@@ -34,7 +34,7 @@ abstract class VBODataFixedFunction<BufferT extends Buffer> extends VBOData<Buff
 
 			gl.glClientActiveTexture(JOGLOutputFixedFunction.getGLTextureConstant(i));
 
-			if (i >= material.getNumTextureLayers()) {
+			if (i >= material.textureLayers().size()) {
 
 				gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
@@ -64,7 +64,7 @@ abstract class VBODataFixedFunction<BufferT extends Buffer> extends VBOData<Buff
 
 		int offset = 0;
 
-		for (int i = 0; i < material.getNumTextureLayers(); i++) {
+		for (int i = 0; i < material.textureLayers().size(); i++) {
 
 			gl.glClientActiveTexture(JOGLOutputFixedFunction.getGLTextureConstant(i));
 			gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);

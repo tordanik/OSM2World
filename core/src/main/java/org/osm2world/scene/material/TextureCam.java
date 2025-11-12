@@ -113,9 +113,9 @@ public class TextureCam {
 								LColor.fromRGB(tg.colors.get(3 * i)),
 								LColor.fromRGB(tg.colors.get(3 * i + 1)),
 								LColor.fromRGB(tg.colors.get(3 * i + 2)));
-					} else if (mesh.material.getNumTextureLayers() == 0
-							|| mesh.material.getTextureLayers().get(0).colorable) {
-						colors = nCopies(3, LColor.fromRGB(mesh.material.getColor()));
+					} else if (mesh.material.textureLayers().size() == 0
+							|| mesh.material.textureLayers().get(0).colorable) {
+						colors = nCopies(3, LColor.fromRGB(mesh.material.color()));
 					} else {
 						colors = nCopies(3, LColor.WHITE);
 					}
@@ -319,15 +319,15 @@ public class TextureCam {
 
 		LColor c = baseColor;
 
-		if (material.getNumTextureLayers() > 0) { // TODO support multiple texture layers
+		if (material.textureLayers().size() > 0) { // TODO support multiple texture layers
 
-			TextureData texture = material.getTextureLayers().get(0).getTexture(textureType);
+			TextureData texture = material.textureLayers().get(0).getTexture(textureType);
 
 			if (texture != null && texCoord != null) {
 
 				LColor textureColor = texture.getColorAt(texCoord, Wrap.REPEAT);
 
-				if (textureType == TextureType.BASE_COLOR && material.getTextureLayers().get(0).colorable) {
+				if (textureType == TextureType.BASE_COLOR && material.textureLayers().get(0).colorable) {
 					c = c.multiply(textureColor);
 				} else {
 					c = textureColor;

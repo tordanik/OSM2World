@@ -60,7 +60,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 			primVertices = triangleVertexListFromTriangleStrip(primVertices);
 
-			if (material.getInterpolation() == Interpolation.FLAT) {
+			if (material.interpolation() == Interpolation.FLAT) {
 				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			} else {
 				primNormals = triangleVertexListFromTriangleStrip(primNormals);
@@ -78,7 +78,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
 
-			if (material.getInterpolation() == Interpolation.FLAT) {
+			if (material.interpolation() == Interpolation.FLAT) {
 				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			} else {
 				primNormals = triangleVertexListFromTriangleFan(primNormals);
@@ -105,16 +105,16 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 			int count = 0;
 			assert (primTexCoordLists == null
-					&& material.getNumTextureLayers() == 0)
+					&& material.textureLayers().size() == 0)
 				|| (primTexCoordLists != null
-					&& primTexCoordLists.size() == material.getNumTextureLayers())
+					&& primTexCoordLists.size() == material.textureLayers().size())
 				: "WorldModules need to provide the correct number of tex coords";
 
-			if (primTexCoordLists == null && material.getNumTextureLayers() > 0) {
+			if (primTexCoordLists == null && material.textureLayers().size() > 0) {
 				System.out.println(material);
 			}
 
-			for (int t = 0; t < material.getNumTextureLayers(); t++) {
+			for (int t = 0; t < material.textureLayers().size(); t++) {
 				if (true /* TODO layer has color */) {
 					VectorXZ textureCoord =	primTexCoordLists.get(t).get(i);
 					put(buffer, textureCoord);
@@ -162,7 +162,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 		int offset = 0;
 
-		for (int i = 0; i < material.getNumTextureLayers(); i++) {
+		for (int i = 0; i < material.textureLayers().size(); i++) {
 
 			if (true /* TODO layer has base colour texture */) {
 				shader.glEnableVertexAttribArray(shader.getVertexTexCoordID(i));

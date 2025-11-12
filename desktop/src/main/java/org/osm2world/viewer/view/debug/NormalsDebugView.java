@@ -26,7 +26,7 @@ public class NormalsDebugView extends StaticDebugView {
 
 		for (Material material : primitiveBuffer .getMaterials()) {
 
-			Color color = material.getInterpolation() == Interpolation.FLAT ?
+			Color color = material.interpolation() == Interpolation.FLAT ?
 					FLAT_NORMALS_COLOR : SMOOTH_NORMALS_COLOR;
 
 			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {

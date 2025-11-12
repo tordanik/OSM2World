@@ -1,6 +1,7 @@
 package org.osm2world.output.jogl;
 
-import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL.GL_DEPTH_BUFFER_BIT;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
 
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.AmbientOcclusion;
@@ -191,7 +192,7 @@ public class SSAOShader extends DepthBufferShader {
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 
-		if (material.getAmbientOcclusion() == AmbientOcclusion.FALSE) {
+		if (material.ambientOcclusion() == AmbientOcclusion.FALSE) {
 			return false;
 		}
 

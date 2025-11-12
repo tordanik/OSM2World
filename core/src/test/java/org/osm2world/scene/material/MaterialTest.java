@@ -28,7 +28,7 @@ public class MaterialTest {
 
 		Material newMat = originalMat.withPlaceholdersFilledIn(emptyMap(), tags);
 
-		TextTexture result = (TextTexture)newMat.getTextureLayers().get(0).baseColorTexture;
+		TextTexture result = (TextTexture)newMat.textureLayers().get(0).baseColorTexture;
 		assertEquals("test success", result.text);
 
 	}
@@ -44,7 +44,7 @@ public class MaterialTest {
 
 		Material newMat = originalMat.withPlaceholdersFilledIn(map, TagSet.of());
 
-		TextTexture result = (TextTexture)newMat.getTextureLayers().get(0).baseColorTexture;
+		TextTexture result = (TextTexture)newMat.textureLayers().get(0).baseColorTexture;
 		assertEquals("success1 success2", result.text);
 
 	}
@@ -71,7 +71,7 @@ public class MaterialTest {
 
 		Material newMat = originalMat.withPlaceholdersFilledIn(emptyMap(), TagSet.of());
 
-		TextTexture result = (TextTexture)newMat.getTextureLayers().get(0).baseColorTexture;
+		TextTexture result = (TextTexture)newMat.textureLayers().get(0).baseColorTexture;
 		assertEquals("30 t", result.text);
 
 	}

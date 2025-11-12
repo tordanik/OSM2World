@@ -170,16 +170,16 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (!super.setMaterial(material, textureManager))
 			return false;
 
-		int numTexLayers = material.getNumTextureLayers();
+		int numTexLayers = material.textureLayers().size();
 
 		/* set color / lighting */
 
 		Color color;
 
 		if (numTexLayers == 0) {
-			color = material.getColor();
-		} else if (material.getTextureLayers().get(0).colorable) {
-			color = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromRGB(material.getColor())).toRGB();
+			color = material.color();
+		} else if (material.textureLayers().get(0).colorable) {
+			color = material.textureLayers().get(0).clampedBaseColorFactor(LColor.fromRGB(material.color())).toRGB();
 		} else {
 			color = Color.WHITE;
 		}
@@ -193,8 +193,8 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useBumpMaps"), false /*material.hasBumpMap()*/ ? 1 : 0);
-		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);
-		if (material.getTransparency() == Transparency.FALSE) {
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.transparency() == Transparency.BINARY ? 1 : 0);
+		if (material.transparency() == Transparency.FALSE) {
 			gl.glDisable(GL.GL_BLEND);
 		} else {
 			gl.glEnable(GL.GL_BLEND);
@@ -202,14 +202,14 @@ public class DefaultShader extends AbstractPrimitiveShader {
 			 * GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA produces correct alpha blended results: the blendfunction is in fact equal to 1-(1-SRC_APLHA)*(1-DST_APLHA)
 			 */
 			gl.glBlendFuncSeparate(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA, GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
-			if (material.getTransparency() == Transparency.BINARY) {
+			if (material.transparency() == Transparency.BINARY) {
 				gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "alphaTreshold"), 0.5f );
 			}
 		}
 	    for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
 	    	if (i < numTexLayers) {
 				gl.glActiveTexture(getGLTextureConstant(i));
-				TextureLayer textureLayer = material.getTextureLayers().get(i);
+				TextureLayer textureLayer = material.textureLayers().get(i);
 				TextureData colorTexture = textureLayer.baseColorTexture;
 
 				Texture texture = textureManager.getTextureForTextureData(colorTexture);

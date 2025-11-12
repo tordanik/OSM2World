@@ -12,52 +12,57 @@ import javax.annotation.Nonnull;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.color.LColor;
 
 /**
  * describes the material/surface properties of an object for lighting
  */
-public final class Material implements MaterialOrRef {
+public record Material(Interpolation interpolation, Color color, boolean doubleSided, Transparency transparency,
+					   Shadow shadow, AmbientOcclusion ambientOcclusion,
+					   List<TextureLayer> textureLayers) implements MaterialOrRef {
 
-	/** maximum number of {@link TextureLayer}s any material can use */
+	/**
+	 * maximum number of {@link TextureLayer}s any material can use
+	 */
 	public static final int MAX_TEXTURE_LAYERS = 32;
 
 	public enum Interpolation {FLAT, SMOOTH}
 
 	public enum Transparency {
-		/** arbitrary transparency, including partially transparent pixels */
+		/**
+		 * arbitrary transparency, including partially transparent pixels
+		 */
 		TRUE,
-		/** only allow pixels to be either fully transparent or fully opaque */
+		/**
+		 * only allow pixels to be either fully transparent or fully opaque
+		 */
 		BINARY,
-		/** all pixels are opaque */
+		/**
+		 * all pixels are opaque
+		 */
 		FALSE
 	}
 
 	public enum Shadow {
-		/** casts shadows */
+		/**
+		 * casts shadows
+		 */
 		TRUE,
-		/** casts no shadows */
+		/**
+		 * casts no shadows
+		 */
 		FALSE
 	}
 
 	public enum AmbientOcclusion {
-		/** casts AO */
+		/**
+		 * casts AO
+		 */
 		TRUE,
-		/** casts no AO */
+		/**
+		 * casts no AO
+		 */
 		FALSE
 	}
-
-	/**
-	 * Interpolation of normals
-	 */
-	private final Interpolation interpolation;
-	private final Color color;
-	private final boolean doubleSided;
-	private final Transparency transparency;
-	private final Shadow shadow;
-	private final AmbientOcclusion ambientOcclusion;
-
-	private final List<TextureLayer> textureLayers;
 
 	public Material(Interpolation interpolation, Color color, boolean doubleSided,
 			Transparency transparency, Shadow shadow, AmbientOcclusion ambientOcclusion,
@@ -86,44 +91,8 @@ public final class Material implements MaterialOrRef {
 		this(interpolation, color, Transparency.FALSE, emptyList());
 	}
 
-	public Interpolation getInterpolation() {
-		return interpolation;
-	}
 
-	public Color getColor() {
-		return color;
-	}
-
-	public LColor getLColor() {
-		return LColor.fromRGB(getColor());
-	}
-
-	public boolean isDoubleSided() {
-		return doubleSided;
-	}
-
-
-	public Transparency getTransparency() {
-		return transparency;
-	}
-
-	public Shadow getShadow() {
-		return shadow;
-	}
-
-	public AmbientOcclusion getAmbientOcclusion() {
-		return ambientOcclusion;
-	}
-
-	public List<TextureLayer> getTextureLayers() {
-		return textureLayers;
-	}
-
-	public int getNumTextureLayers() {
-		return textureLayers.size();
-	}
-
-	public List<TextureDataDimensions> getTextureDimensions() {
+	public List<TextureDataDimensions> textureDimensions() {
 		return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
 	}
 
@@ -132,8 +101,8 @@ public final class Material implements MaterialOrRef {
 	 */
 	public Material withInterpolation(Interpolation interpolation) {
 		if (interpolation == this.interpolation) return this;
-		return new Material(interpolation, getColor(), isDoubleSided(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
+		return new Material(interpolation, color(), doubleSided(),
+				transparency(), shadow(), ambientOcclusion(), textureLayers());
 	}
 
 	public Material makeSmooth() {
@@ -142,14 +111,15 @@ public final class Material implements MaterialOrRef {
 
 	/**
 	 * returns a material that is the same as this one, except with a different color.
-	 * @param color  the color to use. Can be null, in which case this material is returned unaltered.
+	 *
+	 * @param color the color to use. Can be null, in which case this material is returned unaltered.
 	 */
 	public Material withColor(Color color) {
 
 		if (color == null || color.equals(this.color)) return this;
 
-		return new Material(getInterpolation(), color, isDoubleSided(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
+		return new Material(interpolation(), color, doubleSided(),
+				transparency(), shadow(), ambientOcclusion(), textureLayers());
 
 	}
 
@@ -158,8 +128,8 @@ public final class Material implements MaterialOrRef {
 	 */
 	public Material withDoubleSided(boolean doubleSided) {
 		if (this.doubleSided == doubleSided) return this;
-		return new Material(getInterpolation(), getColor(), doubleSided,
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
+		return new Material(interpolation(), color(), doubleSided,
+				transparency(), shadow(), ambientOcclusion(), textureLayers());
 	}
 
 	public Material makeDoubleSided() {
@@ -168,33 +138,36 @@ public final class Material implements MaterialOrRef {
 
 	/**
 	 * returns a material that is the same as this one, except with a different transparency setting.
-	 * @param transparency  the transparency setting to use. Can be null, in which case this material is returned unaltered.
+	 *
+	 * @param transparency the transparency setting to use. Can be null, in which case this material is returned unaltered.
 	 */
 	public Material withTransparency(Transparency transparency) {
 		if (transparency == null || transparency == this.transparency) return this;
-		return new Material(getInterpolation(), getColor(), isDoubleSided(),
-				transparency, getShadow(), getAmbientOcclusion(), getTextureLayers());
+		return new Material(interpolation(), color(), doubleSided(),
+				transparency, shadow(), ambientOcclusion(), textureLayers());
 	}
 
 	/**
 	 * returns a material that is the same as this one, except with a different shadow setting.
-	 * @param shadow  the shadow setting to use. Can be null, in which case this material is returned unaltered.
+	 *
+	 * @param shadow the shadow setting to use. Can be null, in which case this material is returned unaltered.
 	 */
 	public Material withShadow(Shadow shadow) {
 		if (shadow == null || shadow == this.shadow) return this;
-		return new Material(getInterpolation(), getColor(), isDoubleSided(),
-				getTransparency(), shadow, getAmbientOcclusion(), getTextureLayers());
+		return new Material(interpolation(), color(), doubleSided(),
+				transparency(), shadow, ambientOcclusion(), textureLayers());
 	}
 
 	/**
 	 * returns a material that is the same as this one, except with a different ambient occlusion setting.
-	 * @param ambientOcclusion  the ambient occlusion setting to use.
-	 *                          Can be null, in which case this material is returned unaltered.
+	 *
+	 * @param ambientOcclusion the ambient occlusion setting to use.
+	 *                         Can be null, in which case this material is returned unaltered.
 	 */
 	public Material withAmbientOcclusion(AmbientOcclusion ambientOcclusion) {
 		if (ambientOcclusion == null || ambientOcclusion == this.ambientOcclusion) return this;
-		return new Material(getInterpolation(), getColor(), isDoubleSided(),
-				getTransparency(), getShadow(), ambientOcclusion, getTextureLayers());
+		return new Material(interpolation(), color(), doubleSided(),
+				transparency(), shadow(), ambientOcclusion, textureLayers());
 	}
 
 	/**
@@ -204,8 +177,8 @@ public final class Material implements MaterialOrRef {
 		if (textureLayers.equals(this.textureLayers)) {
 			return this;
 		} else {
-			return new Material(getInterpolation(), getColor(), isDoubleSided(),
-					getTransparency(), getShadow(), getAmbientOcclusion(), textureLayers);
+			return new Material(interpolation(), color(), doubleSided(),
+					transparency(), shadow(), ambientOcclusion(), textureLayers);
 		}
 	}
 
@@ -217,7 +190,7 @@ public final class Material implements MaterialOrRef {
 
 		if (additionalTextureLayers.isEmpty()) return this;
 
-		List<TextureLayer> newTextureLayerList = new ArrayList<>(getTextureLayers());
+		List<TextureLayer> newTextureLayerList = new ArrayList<>(textureLayers());
 		newTextureLayerList.addAll(additionalTextureLayers);
 		return this.withLayers(newTextureLayerList);
 
@@ -229,18 +202,18 @@ public final class Material implements MaterialOrRef {
 	 */
 	public Material withTextColor(Color color, int numberOfTextLayer) {
 
-		if (getTextureLayers().isEmpty()) return this;
+		if (textureLayers().isEmpty()) return this;
 
 		//copy of the material textureDataList
-		List<TextureLayer> textureDataList = new ArrayList<>(getTextureLayers());
+		List<TextureLayer> textureDataList = new ArrayList<>(textureLayers());
 
 		int counter = 0;
 
-		for (TextureLayer layer : getTextureLayers()) {
+		for (TextureLayer layer : textureLayers()) {
 
 			if (layer.baseColorTexture instanceof TextTexture texture) {
 
-				if(counter==numberOfTextLayer) {
+				if (counter == numberOfTextLayer) {
 
 					//create a new TextTextureData instance with different textColor
 					TextTexture newTextTexture = new TextTexture(texture.text, texture.font, texture.dimensions,
@@ -252,8 +225,8 @@ public final class Material implements MaterialOrRef {
 							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
 
 					//return a copy of the material with the new textureDataList
-					return new Material(getInterpolation(),getColor(), isDoubleSided(),
-							getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
+					return new Material(interpolation(), color(), doubleSided(),
+							transparency(), shadow(), ambientOcclusion(), textureDataList);
 
 				}
 
@@ -270,15 +243,15 @@ public final class Material implements MaterialOrRef {
 	 * Fallback values in placeholders are supported as well, using <code>%{name, fallback}</code> syntax.
 	 *
 	 * @param map  map from placeholder variables to the text they should be replaced with
-	 * @param tags  the {@link TagSet} to extract values from
-	 * @return  a replica of this material with a modified list of {@link TextureLayer}s,
+	 * @param tags the {@link TagSet} to extract values from
+	 * @return a replica of this material with a modified list of {@link TextureLayer}s,
 	 * or this material itself if it has no {@link TextTexture}s with placeholders.
 	 */
 	public Material withPlaceholdersFilledIn(Map<String, String> map, TagSet tags) {
 
 		List<TextureLayer> newLayers = new ArrayList<>();
 
-		for (TextureLayer layer : this.getTextureLayers()) {
+		for (TextureLayer layer : this.textureLayers()) {
 
 			newLayers.add(new TextureLayer(
 					withPlaceholdersFilledIn(layer.baseColorTexture, map, tags),
@@ -352,25 +325,7 @@ public final class Material implements MaterialOrRef {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof Material other
-				&& equals(other, false, false);
-	}
-
-	@Override
-	public int hashCode() {
-		int result = interpolation.hashCode();
-		result = 31 * result + Objects.hashCode(color);
-		result = 31 * result + Boolean.hashCode(doubleSided);
-		result = 31 * result + transparency.hashCode();
-		result = 31 * result + shadow.hashCode();
-		result = 31 * result + ambientOcclusion.hashCode();
-		result = 31 * result + textureLayers.hashCode();
-		return result;
-	}
-
-	@Override
-	public String toString() {
+	public @Nonnull String toString() {
 		String colorString = String.format(Locale.ROOT, "#%06x", color.getRGB() & 0x00ffffff);
 		if (textureLayers.isEmpty() || textureLayers.stream().anyMatch(it -> it.colorable)) {
 			return colorString + ", " + textureLayers;

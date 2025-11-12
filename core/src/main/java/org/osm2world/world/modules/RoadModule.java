@@ -717,7 +717,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material markingMaterial = getMarkingMaterial(node.getTags());
 
 			if (markingMaterial != null) {
-				surface = surface.withAddedLayers(markingMaterial.getTextureLayers());
+				surface = surface.withAddedLayers(markingMaterial.textureLayers());
 			}
 
 			/* draw crossing */
@@ -2200,7 +2200,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			@Nullable Material baseSurface = getSurfaceMaterial(laneTags.getValue("surface"),
 					getSurfaceForRoad(roadTags, null));
-			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.get().getTextureLayers();
+			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.get().textureLayers();
 
 			if (baseSurface != null && markingLayers.size() > 1) {
 				return baseSurface.withAddedLayers(markingLayers.subList(1, markingLayers.size()));
@@ -2322,7 +2322,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		/* apply the results */
 
 		if (arrowMaterial != null) {
-			material = material.withAddedLayers(arrowMaterial.getTextureLayers());
+			material = material.withAddedLayers(arrowMaterial.textureLayers());
 		}
 
 		return material;

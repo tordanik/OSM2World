@@ -32,7 +32,7 @@ public final class TexCoordUtil {
 	public static final List<TexCoordFunction> texCoordFunctions(MaterialOrRef material,
 			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
 
-		List<TextureLayer> textureLayers = material.get().getTextureLayers();
+		List<TextureLayer> textureLayers = material.get().textureLayers();
 
 		if (textureLayers.size() == 0) {
 

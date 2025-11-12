@@ -150,7 +150,7 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 				}
 
 				ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, position, height,
-						postRadius, postRadius, false, true, null, STEEL.get().getTextureDimensions());
+						postRadius, postRadius, false, true, null, STEEL.get().textureDimensions());
 				resultMeshes = List.of(new Mesh(geometry, STEEL.get(), LOD3, LOD4));
 
 			}

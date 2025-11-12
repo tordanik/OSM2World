@@ -360,7 +360,7 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> path = getBaseline();
 
 			return singletonList(new Mesh(new ExtrusionGeometry(powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.get().getTextureDimensions()),
+					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.get().textureDimensions()),
 					PLASTIC.get().get(), LevelOfDetail.LOD3, LevelOfDetail.LOD4));
 
 		}
@@ -539,7 +539,7 @@ public final class PowerModule extends AbstractModule {
 					}
 
 					result.add(new Mesh(new ExtrusionGeometry(powerlineShape, path, nCopies(path.size(), Y_UNIT),
-							null, BLACK, null, CABLE_MATERIAL.getTextureDimensions()),
+							null, BLACK, null, CABLE_MATERIAL.textureDimensions()),
 							CABLE_MATERIAL, lodRange.min(), lodRange.max()));
 
 				}
@@ -641,7 +641,7 @@ public final class PowerModule extends AbstractModule {
 				List<VectorXYZ> vs = new ArrayList<>();
 				List<VectorXZ> tex = new ArrayList<>();
 				List<List<VectorXZ>> texList =
-					nCopies(Materials.POWER_TOWER_VERTICAL.get().getNumTextureLayers(), tex);
+					nCopies(Materials.POWER_TOWER_VERTICAL.get().textureLayers().size(), tex);
 
 				vs.add(high[a].xyz(height));
 				tex.add(new VectorXZ(0, 1));
@@ -668,7 +668,7 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 			List<VectorXZ> tex = new ArrayList<VectorXZ>();
 			List<List<VectorXZ>> texList =
-					nCopies(Materials.POWER_TOWER_HORIZONTAL.get().getNumTextureLayers(), tex);
+					nCopies(Materials.POWER_TOWER_HORIZONTAL.get().textureLayers().size(), tex);
 
 			vs.add(right.xyz(base));
 			vs.add(left.xyz(base));
@@ -694,7 +694,7 @@ public final class PowerModule extends AbstractModule {
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
 				List<List<VectorXZ>> texList =
-						nCopies(Materials.POWER_TOWER_VERTICAL.get().getNumTextureLayers(), tex);
+						nCopies(Materials.POWER_TOWER_VERTICAL.get().textureLayers().size(), tex);
 
 				for (int i = 0; i < 2; i++) {
 					vs.add(frontPoints[a+i].xyz(base + height[a+i]));

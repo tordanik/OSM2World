@@ -182,9 +182,9 @@ public class GltfModel implements Model {
 					/* build the geometry */
 
 					var geometryBuilder = new TriangleGeometry.Builder(
-							material.getNumTextureLayers(),
+							material.textureLayers().size(),
 							null,
-							normals == null ? material.getInterpolation() : null);
+							normals == null ? material.interpolation() : null);
 
 					if (indices == null) {
 
@@ -196,7 +196,7 @@ public class GltfModel implements Model {
 						}
 
 						geometryBuilder.addTriangles(triangles,
-								texCoords == null || material.getNumTextureLayers() == 0 ? List.of()
+								texCoords == null || material.textureLayers().size() == 0 ? List.of()
 										: List.of(texCoords),
 								colors, normals);
 
@@ -213,7 +213,7 @@ public class GltfModel implements Model {
 							try {
 								geometryBuilder.addTriangles(
 										List.of(new TriangleXYZ(positions.get(i0), positions.get(i1), positions.get(i2))),
-										texCoords == null || material.getNumTextureLayers() == 0 ? List.of()
+										texCoords == null || material.textureLayers().size() == 0 ? List.of()
 												: List.of(List.of(texCoords.get(i0), texCoords.get(i1), texCoords.get(i2))),
 										colors == null ? null : List.of(colors.get(i0), colors.get(i1), colors.get(i2)),
 										normals == null ? null : List.of(normals.get(i0), normals.get(i1), normals.get(i2))

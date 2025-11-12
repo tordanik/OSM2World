@@ -26,7 +26,7 @@ public class Mesh {
 		this.material = material;
 		this.lodRange = lodRange;
 
-		if (geometry instanceof TriangleGeometry tg && tg.texCoords.size() != material.getNumTextureLayers()) {
+		if (geometry instanceof TriangleGeometry tg && tg.texCoords.size() != material.textureLayers().size()) {
 			throw new IllegalArgumentException("incorrect number of texCoord layers");
 		}
 

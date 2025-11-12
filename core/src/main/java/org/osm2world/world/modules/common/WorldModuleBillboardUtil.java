@@ -32,11 +32,11 @@ public final class WorldModuleBillboardUtil {
 	public static List<Mesh> buildCrosstree(Material material, VectorXYZ pos,
 			double width, double height, boolean mirroredTextures) {
 
-		var builder = new TriangleGeometry.Builder(material.getNumTextureLayers(), null, Material.Interpolation.FLAT);
+		var builder = new TriangleGeometry.Builder(material.textureLayers().size(), null, Material.Interpolation.FLAT);
 
 		/* With alpha blending, each billboard needs to consist of two halves,
 		 * separated at the billboards' line of intersection, to allow sorting of primitives. */
-		boolean centerSplit = material.getTransparency() == Transparency.TRUE;
+		boolean centerSplit = material.transparency() == Transparency.TRUE;
 
 		double halfWidth = 0.5 * width;
 
@@ -55,48 +55,48 @@ public final class WorldModuleBillboardUtil {
 			VectorXYZ posTop = pos.addY(height);
 
 			builder.addTriangleStrip(List.of(xNegTop, xNegBottom, posTop, pos),
-					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
+					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.textureLayers().size()));
 
 			builder.addTriangleStrip(List.of(xPosBottom, xPosTop, pos, posTop),
-					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
+					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.textureLayers().size()));
 
 			builder.addTriangleStrip(List.of(zNegTop, zNegBottom, posTop, pos),
-					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
+					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.textureLayers().size()));
 
 			builder.addTriangleStrip(List.of(zPosBottom, zPosTop, pos, posTop),
-					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
+					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.textureLayers().size()));
 
-			if (!material.isDoubleSided()) {
+			if (!material.doubleSided()) {
 
 				builder.addTriangleStrip(List.of(xPosTop, xPosBottom, posTop, pos),
-						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
+						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.textureLayers().size()));
 
 				builder.addTriangleStrip(List.of(xNegBottom, xNegTop, pos, posTop),
-						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
+						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.textureLayers().size()));
 
 				builder.addTriangleStrip(List.of(zPosTop, zPosBottom, posTop, pos),
-						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getNumTextureLayers()));
+						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.textureLayers().size()));
 
 				builder.addTriangleStrip(List.of(zNegBottom, zNegTop, pos, posTop),
-						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getNumTextureLayers()));
+						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.textureLayers().size()));
 
 			}
 
 		} else {
 
 			builder.addTriangleStrip(List.of(xNegTop, xNegBottom, xPosTop, xPosBottom),
-					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
+					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.textureLayers().size()));
 
 			builder.addTriangleStrip(List.of(zNegTop, zNegBottom, zPosTop, zPosBottom),
-					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
+					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.textureLayers().size()));
 
-			if (!material.isDoubleSided()) {
+			if (!material.doubleSided()) {
 
 				builder.addTriangleStrip(List.of(xPosTop, xPosBottom, xNegTop, xNegBottom),
-						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
+						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.textureLayers().size()));
 
 				builder.addTriangleStrip(List.of(zPosTop, zPosBottom, zNegTop, zNegBottom),
-						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getNumTextureLayers()));
+						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.textureLayers().size()));
 			}
 
 		}
