@@ -7,7 +7,6 @@ import static org.osm2world.scene.color.Color.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.*;
@@ -398,23 +397,6 @@ public final class Materials {
 
 		materialsByName.clear();
 
-		/* collect the material references as a source of default values */
-
-		Map<String, MaterialRef> materialRefMap = new HashMap<>();
-
-		try {
-			for (Field field : Materials.class.getFields()) {
-				if (field.getType().equals(MaterialRef.class)) {
-					String materialName = field.getName();
-					MaterialRef materialRef = (MaterialRef) field.get(null);
-					materialRefMap.put(materialName, materialRef);
-					materialsByName.put(materialName, materialRef.get());
-				}
-			}
-		} catch (Exception e) {
-			throw new Error(e);
-		}
-
 		/* find all material-related properties and organize them by material */
 
 		Map<String, Set<String>> attributesPerMaterialName = new HashMap<>();
@@ -441,11 +423,6 @@ public final class Materials {
 			Set<String> attributes = entry.getValue();
 
 			Material material = new Material(Interpolation.FLAT, WHITE);
-
-			// apply defaults
-			if (materialRefMap.containsKey(materialName)) {
-				material = materialRefMap.get(materialName).get();
-			}
 
 			String keyPrefix = "material_" + materialName + "_";
 
