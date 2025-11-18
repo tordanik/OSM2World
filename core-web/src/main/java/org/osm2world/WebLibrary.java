@@ -19,10 +19,16 @@ import org.osm2world.scene.material.UriTexture;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.util.uri.BrowserHttpClient;
+import org.osm2world.util.uri.LoadUriUtil;
 import org.teavm.jso.JSExport;
 import org.teavm.jso.JSTopLevel;
 
 public class WebLibrary {
+
+	static {
+		LoadUriUtil.setClientFactory(BrowserHttpClient::new);
+	}
 
 	@JSTopLevel
 	public static class WebMesh {
