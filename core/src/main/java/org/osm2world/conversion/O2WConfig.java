@@ -1,12 +1,10 @@
 package org.osm2world.conversion;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +24,7 @@ import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.enums.LeftRight;
+import org.osm2world.util.uri.LoadUriUtil;
 
 /**
  * A set of configuration options for OSM2World.
@@ -63,28 +62,26 @@ public class O2WConfig {
 
 		props = new Properties();
 
-		try {
-
-			for (URI configFileURI : configFiles) {
+		for (URI configFileURI : configFiles) {
+			try {
 				if (!props.containsKey("configBaseURI")) {
 					String basePath = getParentURI(configFileURI).toString();
 					props.setProperty("configBaseURI", basePath);
 				}
 				loadFileWithIncludes(props, configFileURI);
+			} catch (IOException | URISyntaxException e) {
+				throw new RuntimeException("Error loading configuration file " + configFileURI, e);
 			}
+		}
 
-			if (properties != null) {
-				for (Map.Entry<String, ?> e : properties.entrySet()) {
-					if (e.getValue() == null) {
-						props.remove(e.getKey());
-					} else {
-						props.setProperty(e.getKey(), String.valueOf(e.getValue()));
-					}
+		if (properties != null) {
+			for (Map.Entry<String, ?> e : properties.entrySet()) {
+				if (e.getValue() == null) {
+					props.remove(e.getKey());
+				} else {
+					props.setProperty(e.getKey(), String.valueOf(e.getValue()));
 				}
 			}
-
-		} catch (IOException | URISyntaxException e) {
-			throw new RuntimeException("Error loading configuration file", e);
 		}
 
 	}
@@ -591,39 +588,49 @@ public class O2WConfig {
 
 	private static void loadFileWithIncludes(Properties dest, URI configFileURI) throws IOException, URISyntaxException {
 
+		String configFileContents = LoadUriUtil.fetchText(configFileURI);
+
+		if (configFileContents == null) {
+			throw new IOException("Failed to load config file: " + configFileURI);
+		}
+		
 		/* load properties from the file itself */
 
 		Properties current = new Properties();
-		try (var fileInputStream = configFileURI.toURL().openStream()) {
-			current.load(fileInputStream);
+		try (ByteArrayInputStream inStream = new ByteArrayInputStream(configFileContents.getBytes(UTF_8))) {
+			current.load(inStream);
 			current.remove("include"); // don't expose include directive
 		}
 
 		/* process include directives */
 
 		Pattern includePattern = Pattern.compile("^\\s*include\\s*[:=]\\s*(.+)\\s*$", Pattern.CASE_INSENSITIVE);
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(configFileURI.toURL().openStream()))) {
-			String line;
-			while ((line = br.readLine()) != null) {
-				Matcher m = includePattern.matcher(line);
-				if (m.matches()) {
-					String includeValue = m.group(1).trim();
-					// replace variables enclosed in curly braces
-					Pattern variablePattern = Pattern.compile("\\$\\{([^}]+)}");
-					Matcher matcher = variablePattern.matcher(includeValue);
-					while (matcher.find()) {
-						String key = matcher.group(1);
-						includeValue = includeValue.replaceAll("\\$\\{" + Pattern.quote(key) + "}", current.getOrDefault(key, "").toString());
-						matcher = variablePattern.matcher(includeValue);
-					}
-					// load properties from the included file
-					URI includeFile = new URI(includeValue);
-					if (!includeFile.isAbsolute()) {
-						includeFile = getParentURI(configFileURI).resolve(includeFile);
-					}
-					loadFileWithIncludes(dest, includeFile);
+
+		List<String> includeValues = new ArrayList<>();
+
+		new BufferedReader(new StringReader(configFileContents)).lines().forEachOrdered(line -> {
+			Matcher m = includePattern.matcher(line);
+			if (m.matches()) {
+				String includeValue = m.group(1).trim();
+				// replace variables enclosed in curly braces
+				Pattern variablePattern = Pattern.compile("\\$\\{([^}]+)}");
+				Matcher matcher = variablePattern.matcher(includeValue);
+				while (matcher.find()) {
+					String key = matcher.group(1);
+					includeValue = includeValue.replaceAll("\\$\\{" + Pattern.quote(key) + "}", current.getOrDefault(key, "").toString());
+					matcher = variablePattern.matcher(includeValue);
 				}
+				includeValues.add(includeValue);
 			}
+		});
+
+		for (String includeValue : includeValues) {
+			// load properties from the included file
+			URI includeFileURI = new URI(includeValue);
+			if (!includeFileURI.isAbsolute()) {
+				includeFileURI = getParentURI(configFileURI).resolve(includeFileURI);
+			}
+			loadFileWithIncludes(dest, includeFileURI);
 		}
 
 		/* merge properties (override previously loaded values) */
