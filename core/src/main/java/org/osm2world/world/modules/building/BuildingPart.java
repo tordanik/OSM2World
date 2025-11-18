@@ -613,8 +613,8 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 				material = WOOD_WALL.get();
 			} else if (getSurfaceMaterial(materialString) != null) {
 				material = getSurfaceMaterial(materialString);
-			} else if (resolveMaterial(materialString) != null) {
-				material = resolveMaterial(materialString);
+			} else if (getMaterial(materialString) != null) {
+				material = getMaterial(materialString);
 			}
 		}
 

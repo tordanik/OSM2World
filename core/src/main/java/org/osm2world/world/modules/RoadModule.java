@@ -1357,7 +1357,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = null;
 
 			if (tags.containsKey("material")) {
-				material = Materials.resolveMaterial(tags.getValue("material"));
+				material = Materials.getMaterial(tags.getValue("material"));
 			}
 
 			if (material == null && tags.containsKey("surface")) {

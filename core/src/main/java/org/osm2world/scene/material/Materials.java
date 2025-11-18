@@ -306,20 +306,20 @@ public final class Materials {
 	 *
 	 * @param name  case-insensitive name of the material
 	 */
-	synchronized public static @Nullable Material resolveMaterial(@Nullable String name) {
+	synchronized public static @Nullable Material getMaterial(@Nullable String name) {
 		if (name == null) return null;
 		return materialsByName.get(name);
 	}
 
-	/** variant of {@link #resolveMaterial(String)} with a default value */
-	synchronized public static Material resolveMaterial(@Nullable String name, MaterialOrRef defaultValue) {
-		Material result = resolveMaterial(name);
+	/** variant of {@link #getMaterial(String)} with a default value */
+	synchronized public static Material getMaterial(@Nullable String name, MaterialOrRef defaultValue) {
+		Material result = getMaterial(name);
 		return result == null ? defaultValue.get() : result;
 	}
 
 	public static Material resolveMaterial(MaterialOrRef materialOrRef) {
 		if (materialOrRef instanceof MaterialRef materialRef) {
-			Material material = resolveMaterial(materialRef.name());
+			Material material = getMaterial(materialRef.name());
 			return material != null ? material : materialRef.defaultAppearance();
 		} else {
 			return (Material) materialOrRef;
@@ -380,8 +380,8 @@ public final class Materials {
 	public static @Nullable Material getTransparentVariant(MaterialOrRef material) {
 		return switch (requireNonNullElse(getUniqueName(material), "")) {
 			case "GLASS" -> GLASS_TRANSPARENT.get();
-			case "GLASS_WALL" -> resolveMaterial("GLASS_WALL_TRANSPARENT", null);
-			case "GLASS_ROOF" -> resolveMaterial("GLASS_ROOF_TRANSPARENT", null);
+			case "GLASS_WALL" -> getMaterial("GLASS_WALL_TRANSPARENT", null);
+			case "GLASS_ROOF" -> getMaterial("GLASS_ROOF_TRANSPARENT", null);
 			default -> null;
 		};
 	}

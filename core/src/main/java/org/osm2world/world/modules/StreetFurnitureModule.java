@@ -226,7 +226,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			double height = parseMeasure(node.getTags().getValue("height"), 5.0);
 			double radius = parseMeasure(node.getTags().getValue("width"), 0.2) / 2;
 
-			Material material = resolveMaterial(node.getTags().getValue("material"), STEEL);
+			Material material = getMaterial(node.getTags().getValue("material"), STEEL);
 			Color color = parseColor(node.getTags().getValue("colour"));
 
 			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
@@ -326,7 +326,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		 * @param flagId  the ID of the flag, e.g. a country code or Wikidata ID
 		 */
 		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
-			Material material = resolveMaterial("FLAG_" + flagId);
+			Material material = getMaterial("FLAG_" + flagId);
 			Material flagcloth = FLAGCLOTH.get();
 			if (material != null && material.textureLayers().size() > 0 && flagcloth.textureLayers().size() > 0) {
 				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.textureLayers());
@@ -816,7 +816,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = resolveMaterial(node.getTags().getValue("material").toUpperCase());
+				material = getMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
@@ -917,7 +917,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = resolveMaterial(node.getTags().getValue("material").toUpperCase());
+				material = getMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
@@ -1379,7 +1379,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = resolveMaterial(node.getTags().getValue("material").toUpperCase());
+				material = getMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {

@@ -180,7 +180,7 @@ public class BridgeModule extends AbstractModule {
 
 						Material material = null;
 						if (element.getTags().containsKey("material")) {
-							material = Materials.resolveMaterial(element.getTags().getValue("material").toUpperCase());
+							material = Materials.getMaterial(element.getTags().getValue("material").toUpperCase());
 						}
 						if (material == null) {
 							material = Materials.BRIDGE_PILLAR_DEFAULT.get();

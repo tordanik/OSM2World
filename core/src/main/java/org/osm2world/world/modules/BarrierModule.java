@@ -273,7 +273,7 @@ public class BarrierModule extends AbstractModule {
 			} else if ("brick".equals(tags.getValue("wall"))) {
 				material = BRICK.get();
 			} else if ( tags.containsKey("material") ) {
-				material = Materials.resolveMaterial(tags.getValue("material").toUpperCase());
+				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
@@ -427,7 +427,7 @@ public class BarrierModule extends AbstractModule {
 			Material material = null;
 
 			if (segment.getTags().containsKey("material")) {
-				material = resolveMaterial(segment.getTags().getValue("material").toUpperCase());
+				material = getMaterial(segment.getTags().getValue("material").toUpperCase());
 				//TODO also look at fence:material
 			}
 
@@ -547,7 +547,7 @@ public class BarrierModule extends AbstractModule {
 		public PoleFence(MapWaySegment segment) {
 			super(segment, 1f, 0.02f);
 			if (segment.getTags().containsKey("material")){
-				material = resolveMaterial(segment.getTags().getValue("material").toUpperCase());
+				material = getMaterial(segment.getTags().getValue("material").toUpperCase());
 				poleMaterial = material;
 			}
 
