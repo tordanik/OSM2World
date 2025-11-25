@@ -360,7 +360,7 @@ public final class Materials {
 
 		// check by object equality second
 		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue() == material.get()) {
+			if (entry.getValue().equals(material.get())) {
 				return entry.getKey();
 			}
 		}
