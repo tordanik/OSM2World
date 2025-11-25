@@ -368,9 +368,9 @@ public class OSMToMapDataConverter {
 
 				if (incompleteMembers != null) {
 
-					StringJoiner memberList = new StringJoiner(", ");
-					incompleteMembers.forEach(m -> memberList.add(
-							"'" + m.getRole() + "': " + m.getType() + " " + m.getId()));
+					List<String> memberList = incompleteMembers.stream()
+							.map(m -> "'" + m.getRole() + "': " + m.getType() + " " + m.getId())
+							.toList();
 					ConversionLog.warn("Relation is incomplete, missing members: " + memberList, relation);
 
 					if (relation.getMembers().isEmpty()) continue;
