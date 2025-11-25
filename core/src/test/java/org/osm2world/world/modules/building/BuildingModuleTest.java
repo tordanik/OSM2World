@@ -148,8 +148,9 @@ public class BuildingModuleTest {
 		ArrayList<Building> buildings = Lists.newArrayList(scene.getWorldObjects(Building.class));
 
 		assertSame(1, buildings.size());
-		assertTrue(buildings.get(0).buildMeshes().stream()
-				.anyMatch(it -> "ROOF_DEFAULT".equals(Materials.getUniqueName(it.material))));
+
+		assertTrue(buildings.get(0).buildMeshes().stream().anyMatch(it ->
+				Materials.ROOF_DEFAULT.get().equals(it.material)));
 
 		assertFalse(scene.getMeshes().isEmpty());
 
