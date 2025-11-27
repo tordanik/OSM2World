@@ -49,6 +49,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 		boolean mbtiles = osmFile.getName().endsWith(".mbtiles");
 		boolean geodesk = osmFile.getName().endsWith(".gol");
+		boolean json = osmFile.getName().endsWith(".json");
 
 		if (!mbtiles && !geodesk) {
 
@@ -69,7 +70,8 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 			}
 
-			loadOSMData(new OSMDataReaderView(new OSMFileReader(osmFile)), resetCamera);
+			OSMDataReader reader = json ? new JsonFileReader(osmFile) : new OSMFileReader(osmFile);
+			loadOSMData(new OSMDataReaderView(reader), resetCamera);
 
 		} else {
 
@@ -99,7 +101,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		JFileChooser chooser = new JFileChooser(lastPath);
 		chooser.setDialogTitle("Open OSM file");
 		chooser.setFileFilter(new FileNameExtensionFilter(
-				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf", "mbtiles", "gol"));
+				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf", "json", "mbtiles", "gol"));
 
 		int returnVal = chooser.showOpenDialog(null);
 

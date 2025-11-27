@@ -21,7 +21,7 @@ final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
 	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, WEB_PBF, WEB_PBF_GZ, PNG, PPM, GD}
-	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
+	public static enum InputFileType {SIMPLE_FILE, JSON, MBTILES, GEODESK}
 
 	private CLIArgumentsUtil() { }
 
@@ -38,7 +38,8 @@ final class CLIArgumentsUtil {
 			case FILE:
 				if (!args.isInput()) {
 					return "input file parameter is required (or choose a different input mode)";
-				} else if (getInputFileType(args) != InputFileType.SIMPLE_FILE && !args.isTile()) {
+				} else if (!List.of(InputFileType.SIMPLE_FILE, InputFileType.JSON).contains(getInputFileType(args))
+						&& !args.isTile()) {
 					return "the --tile parameter is required for database input files";
 				}
 				break;
@@ -134,6 +135,8 @@ final class CLIArgumentsUtil {
 			return InputFileType.MBTILES;
 		} else if (inputName.endsWith(".gol")) {
 			return InputFileType.GEODESK;
+		} else if (inputName.endsWith(".json")) {
+			return InputFileType.JSON;
 		} else {
 			return InputFileType.SIMPLE_FILE;
 		}
@@ -187,6 +190,7 @@ final class CLIArgumentsUtil {
 				File inputFile = args.getInput();
 				return switch (CLIArgumentsUtil.getInputFileType(args)) {
 					case SIMPLE_FILE -> new OSMFileReader(inputFile);
+					case JSON -> new JsonFileReader(inputFile);
 					case MBTILES -> new MbtilesReader(inputFile);
 					case GEODESK -> new GeodeskReader(inputFile);
 				};

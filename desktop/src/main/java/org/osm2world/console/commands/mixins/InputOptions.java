@@ -45,6 +45,8 @@ public class InputOptions {
 					yield new MbtilesReader(inputFile);
 				} else if (inputName.endsWith(".gol")) {
 					yield new GeodeskReader(inputFile);
+				} else if (inputName.endsWith(".json")) {
+					yield new JsonFileReader(inputFile);
 				} else {
 					yield new OSMFileReader(inputFile);
 				}

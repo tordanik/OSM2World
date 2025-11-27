@@ -22,6 +22,7 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.*;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.osm.creation.JsonFileReader;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.output.common.compression.Compression;
@@ -286,7 +287,8 @@ public class ConvertCommand implements Callable<Integer> {
 					return "input file parameter is required (or choose a different input mode)";
 				} else {
 					OSMDataReaderView input = buildInput();
-					if (!(input.reader instanceof OSMFileReader) && inputBbox == null && tile == null) {
+					if (!(input.reader instanceof OSMFileReader || input.reader instanceof JsonFileReader)
+							&& inputBbox == null && tile == null) {
 						return "a tile number or input bounding box is required for database input files";
 					}
 				}
