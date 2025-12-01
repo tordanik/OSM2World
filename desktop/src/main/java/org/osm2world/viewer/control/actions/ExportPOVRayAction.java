@@ -1,7 +1,7 @@
 package org.osm2world.viewer.control.actions;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class ExportPOVRayAction extends AbstractExportAction {
 		putValue(SHORT_DESCRIPTION, "Writes a source file for the POVRay raytracer");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_P);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-				KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+				KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
 
 	}
 

@@ -1,6 +1,7 @@
 package org.osm2world.viewer.control.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Observable;
 import java.util.Observer;
@@ -28,7 +29,7 @@ public class ReloadOSMAction extends AbstractAction implements Observer {
 				" and the configuration file");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_R);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-				KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+				KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 
 		this.viewerFrame = viewerFrame;
 		this.data = data;

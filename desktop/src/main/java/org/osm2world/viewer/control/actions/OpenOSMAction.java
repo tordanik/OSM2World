@@ -1,6 +1,7 @@
 package org.osm2world.viewer.control.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
@@ -26,7 +27,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		putValue(SHORT_DESCRIPTION, "Opens a file with OpenStreetMap data");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_O);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-				KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+				KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 
 		this.viewerFrame = viewerFrame;
 		this.data = data;

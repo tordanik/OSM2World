@@ -1,15 +1,14 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.HeadlessException;
-import java.awt.event.ActionEvent;
+import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.viewer.model.Data;
@@ -29,7 +28,7 @@ public class ExportScreenshotAction extends AbstractExportAction {
 		super("Export Screenshot", viewerFrame, data, messageManager, renderOptions);
 		putValue(SHORT_DESCRIPTION, "Writes the current display content to an image file");
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-				KeyEvent.VK_PRINTSCREEN, ActionEvent.CTRL_MASK));
+				KeyEvent.VK_PRINTSCREEN, InputEvent.CTRL_DOWN_MASK));
 
 	}
 
