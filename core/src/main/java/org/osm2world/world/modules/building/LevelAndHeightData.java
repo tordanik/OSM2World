@@ -28,6 +28,7 @@ import org.osm2world.world.modules.building.roof.FlatRoof;
 import org.osm2world.world.modules.building.roof.Roof;
 
 import com.google.common.collect.Lists;
+import com.google.common.math.DoubleMath;
 
 /**
  * immutable representation of level and height info for a building part.
@@ -117,7 +118,7 @@ public class LevelAndHeightData {
 		final int buildingMinLevel = parseInt(tags.getValue("building:min_level"), 0);
 		final int buildingUndergroundLevels = parseUInt(tags.getValue("building:levels:underground"), 0);
 
-		final int buildingMinLevelWithUnderground = (buildingMinLevel > 0)
+		int buildingMinLevelWithUnderground = (buildingMinLevel > 0)
 				? buildingMinLevel
 				: min(buildingMinLevel, -1 * buildingUndergroundLevels);
 
@@ -125,7 +126,12 @@ public class LevelAndHeightData {
 
 		int buildingLevels;
 		if (parsedLevels != null) {
-			buildingLevels = max(0, (int)(double)parsedLevels);
+			if (DoubleMath.isMathematicalInteger(parsedLevels)) {
+				buildingLevels = max(0, (int) (double) parsedLevels);
+			} else {
+				ConversionLog.warn("Non-integer building:levels value: " + parsedLevels, element);
+				buildingLevels = max(0, (int) Math.ceil(parsedLevels));
+			}
 		} else if (parseHeight(tags, -1) > 0) {
 			buildingLevels = max(buildingMinLevelWithUnderground + 1,
 					max(1, (int) (parseHeight(tags, -1) / defaults.heightPerLevel)));
@@ -170,7 +176,8 @@ public class LevelAndHeightData {
 
 
 		if (buildingLevels + roofLevels < buildingMinLevelWithUnderground + 1) {
-			throw new IllegalArgumentException("Min level exceeds total building levels for " + element);
+			ConversionLog.error("Min level exceeds total building levels", element);
+			buildingMinLevelWithUnderground = buildingLevels + roofLevels - 1;
 		}
 
 		/* determine building height */
