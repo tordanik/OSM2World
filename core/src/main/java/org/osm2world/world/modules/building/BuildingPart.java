@@ -29,6 +29,7 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.color.Color;
+import org.osm2world.scene.color.ColorNameDefinition;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.exception.InvalidGeometryException;
@@ -622,51 +623,8 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 				|| material.textureLayers().get(0).colorable;
 
 		if (colorString != null && colorable) {
-
-			Color color;
-
-			if ("white".equals(colorString)) {
-				color = new Color(240, 240, 240);
-			} else if ("black".equals(colorString)) {
-				color = new Color(76, 76, 76);
-			} else if ("grey".equals(colorString) || "gray".equals(colorString)) {
-				color = new Color(100, 100, 100);
-			} else if ("red".equals(colorString)) {
-				if (roof) {
-					color = new Color(204, 0, 0);
-				} else {
-					color = new Color(255, 190, 190);
-				}
-			} else if ("green".equals(colorString)) {
-				if (roof) {
-					color = new Color(150, 200, 130);
-				} else {
-					color = new Color(190, 255, 190);
-				}
-			} else if ("blue".equals(colorString)) {
-				if (roof) {
-					color = new Color(100, 50, 200);
-				} else {
-					color = new Color(190, 190, 255);
-				}
-			} else if ("yellow".equals(colorString)) {
-				color = new Color(255, 255, 175);
-			} else if ("pink".equals(colorString)) {
-				color = new Color(225, 175, 225);
-			} else if ("orange".equals(colorString)) {
-				color = new Color(255, 225, 150);
-			} else if ("brown".equals(colorString)) {
-				if (roof) {
-					color = new Color(120, 110, 110);
-				} else {
-					color = new Color(170, 130, 80);
-				}
-			} else {
-				color = parseColor(colorString, CSS_COLORS);
-			}
-
+			Color color = parseColor(colorString, roof ? ROOF_COLORS : BUILDING_COLORS);
 			material = material.withColor(color);
-
 		}
 
 		return material;
@@ -711,5 +669,27 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		};
 
 	}
+
+	private static final ColorNameDefinition BUILDING_COLORS = (String name) -> switch (name) {
+		case "white" -> new Color(240, 240, 240);
+		case "black" -> new Color(76, 76, 76);
+		case "grey", "gray" -> new Color(100, 100, 100);
+		case "red" -> new Color(255, 190, 190);
+		case "green" -> new Color(190, 255, 190);
+		case "blue" -> new Color(190, 190, 255);
+		case "yellow" -> new Color(255, 255, 175);
+		case "pink" -> new Color(225, 175, 225);
+		case "orange" -> new Color(255, 225, 150);
+		case "brown" -> new Color(170, 130, 80);
+		default -> CSS_COLORS.get(name);
+	};
+
+	private static final ColorNameDefinition ROOF_COLORS = (String name) -> switch (name) {
+		case "red" -> new Color(204, 0, 0);
+		case "green" -> new Color(150, 200, 130);
+		case "blue" -> new Color(100, 50, 200);
+		case "brown" -> new Color(120, 110, 110);
+		default -> BUILDING_COLORS.get(name);
+	};
 
 }
