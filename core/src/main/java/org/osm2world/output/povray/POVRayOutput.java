@@ -1,5 +1,7 @@
 package org.osm2world.output.povray;
 
+import static java.util.Locale.ROOT;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -201,13 +203,13 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 	private void appendLightingDefinition(GlobalLightingParameters parameters) {
 
-		append(String.format(Locale.ENGLISH,
+		append(String.format(ROOT,
 				"global_settings { ambient_light rgb <%f,%f,%f> }\n",
 				parameters.globalAmbientColor.getRed() / 255f,
 				parameters.globalAmbientColor.getGreen() / 255f,
 				parameters.globalAmbientColor.getBlue() / 255f));
 
-		append(String.format(Locale.ENGLISH,
+		append(String.format(ROOT,
 				"light_source{ <%f,%f,%f> color rgb <%f,%f,%f> parallel point_at <0,0,0> fade_power 0 }\n\n",
 				parameters.lightFromDirection.x * 100000,
 				parameters.lightFromDirection.y * 100000,

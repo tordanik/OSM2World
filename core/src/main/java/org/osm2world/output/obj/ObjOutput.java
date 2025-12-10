@@ -2,6 +2,7 @@ package org.osm2world.output.obj;
 
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
+import static java.util.Locale.ROOT;
 import static org.osm2world.scene.color.Color.WHITE;
 import static org.osm2world.scene.material.Material.multiplyColor;
 
@@ -345,8 +346,8 @@ public class ObjOutput extends FaceOutput {
 			}
 
 			float specularFactor = 0f;
-			mtlWriter.println(String.format(Locale.US ,"Ks %f %f %f", specularFactor, specularFactor, specularFactor));
-			mtlWriter.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
+			mtlWriter.println(String.format(ROOT ,"Ks %f %f %f", specularFactor, specularFactor, specularFactor));
+			mtlWriter.println(String.format(ROOT ,"Ke %f %f %f", 0f, 0f, 0f));
 
 			if (textureLayer != null) {
 				try {
@@ -366,7 +367,7 @@ public class ObjOutput extends FaceOutput {
 			}
 
 			int shininess = 1;
-			mtlWriter.println(String.format("Ni %d", shininess));
+			mtlWriter.println(String.format(ROOT, "Ni %d", shininess));
 			mtlWriter.println("illum 2");
 
 			mtlWriter.println();

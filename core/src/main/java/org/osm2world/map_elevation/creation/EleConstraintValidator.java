@@ -2,7 +2,9 @@ package org.osm2world.map_elevation.creation;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
-import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
+import static java.util.Locale.ROOT;
+import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,7 +166,7 @@ public class EleConstraintValidator implements EleConstraintEnforcer {
 			double inclineDiffPerMeter = inclineDiff / dist;
 
 			if (inclineDiffPerMeter > 200) {
-				log.append(String.format("%.1f%% over %.1fm at ", inclineDiff * 100,
+				log.append(String.format(ROOT, "%.1f%% over %.1fm at ", inclineDiff * 100,
 						dist));
 				appendEleConnectorString(log, triple.get(1));
 				log.append('\n');

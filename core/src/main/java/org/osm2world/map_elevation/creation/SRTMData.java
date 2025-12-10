@@ -2,6 +2,7 @@ package org.osm2world.map_elevation.creation;
 
 import static java.lang.Math.*;
 import static java.util.Arrays.stream;
+import static java.util.Locale.ROOT;
 import static java.util.Objects.requireNonNullElse;
 
 import java.io.File;
@@ -85,15 +86,15 @@ public class SRTMData implements TerrainElevationData {
 			String fileNameRegex = "";
 
 			if (lat >= 0) {
-				fileNameRegex += String.format("N%02d", lat);
+				fileNameRegex += String.format(ROOT, "N%02d", lat);
 			} else {
-				fileNameRegex += String.format("S%02d", -lat);
+				fileNameRegex += String.format(ROOT, "S%02d", -lat);
 			}
 
 			if (lon >= 0) {
-				fileNameRegex += String.format("E%03d", lon);
+				fileNameRegex += String.format(ROOT, "E%03d", lon);
 			} else {
-				fileNameRegex += String.format("W%03d", -lon);
+				fileNameRegex += String.format(ROOT, "W%03d", -lon);
 			}
 
 			fileNameRegex += "(?:\\.SRTMGL3)?\\.hgt(?:\\.zip)?";

@@ -2,6 +2,7 @@ package org.osm2world.map_elevation.creation;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.util.Locale.ROOT;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.*;
@@ -256,7 +257,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 
 		@Override
 		public String toString() {
-			return String.format(Locale.US,
+			return String.format(ROOT,
 					"%.3f + %.3fx + %.3fz + %.3fx^2 + %.3fxz + %.3fz^2",
 					coeffs[0], coeffs[1], coeffs[2],
 					coeffs[3], coeffs[4], coeffs[5]);

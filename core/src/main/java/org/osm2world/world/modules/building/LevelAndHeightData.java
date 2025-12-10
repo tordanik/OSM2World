@@ -5,6 +5,7 @@ import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Locale.ROOT;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
@@ -93,7 +94,7 @@ public class LevelAndHeightData {
 
 		@Override
 		public String toString() {
-			return String.format("%3d %c " + relativeEle + " .. " + relativeEleTop() + " m (%s)",
+			return String.format(ROOT, "%3d %c " + relativeEle + " .. " + relativeEleTop() + " m (%s)",
 					level, type.toString().charAt(0), label());
 		}
 
