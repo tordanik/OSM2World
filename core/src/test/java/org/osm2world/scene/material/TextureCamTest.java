@@ -22,6 +22,7 @@ import org.osm2world.scene.material.TextureCam.ViewDirection;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.util.test.TestFileUtil;
 
 public class TextureCamTest {
 
@@ -54,8 +55,7 @@ public class TextureCamTest {
 				new TextureDataDimensions(1.0, 1.0),
 				Wrap.CLAMP, new VectorXYZ(0.5, 0.5, 0), 0.0);
 
-		String tmpDir = System. getProperty("java.io.tmpdir");
-		result.writeToFiles(new File(tmpDir, "texturecam-test_$INFIX.png"));
+		result.writeToFiles(new File(TestFileUtil.createTempDirectory(), "texture-cam-test_$INFIX.png"));
 
 		/* check some pixels of the result */
 
