@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.MapProjection;
@@ -237,13 +238,13 @@ public class ObjOutput extends FaceOutput {
 		return vectorsToIndices(texCoordsIndexMap, "vt ", texCoords);
 	}
 
-	private <V> int[] vectorsToIndices(Map<V, Integer> indexMap,
+	private <V extends Vector3D> int[] vectorsToIndices(Map<V, Integer> indexMap,
 			String objLineStart, List<? extends V> vectors) {
 
 		int[] indices = new int[vectors.size()];
 
 		for (int i=0; i<vectors.size(); i++) {
-			final V v = vectors.get(i);
+			final V v = Vector3D.withoutNegativeZero(vectors.get(i));
 			Integer index = indexMap.get(v);
 			if (index == null) {
 				index = indexMap.size();
@@ -260,7 +261,7 @@ public class ObjOutput extends FaceOutput {
 	private String formatVector(Object v) {
 
 		if (v instanceof VectorXYZ vXYZ) {
-			return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
+			return vXYZ.x + " " + vXYZ.y + " " + (vXYZ.z == 0.0 ? 0.0 : -vXYZ.z);
 		} else {
 			VectorXZ vXZ = (VectorXZ)v;
 			return vXZ.x + " " + vXZ.z;
