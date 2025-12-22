@@ -42,10 +42,14 @@ public class ObjOutputTest {
 
 		assertEquals(1, obj.lines().filter(it -> it.startsWith("usemtl ")).count());
 		assertEquals(6, obj.lines().filter(it -> it.startsWith("v ")).count());
+		assertEquals(1, obj.lines().filter(it -> it.startsWith("vn ")).count());
 		assertEquals(4, obj.lines().filter(it -> it.startsWith("f ")).count());
 
 		assertTrue(obj.lines().anyMatch(it ->
 				Arrays.equals(it.split("\\s+"), new String[] {"v", "1.0", "0.0", "-2.0"})));
+
+		assertTrue(obj.lines().anyMatch(it ->
+				Arrays.equals(it.split("\\s+"), new String[] {"vn", "0.0", "1.0", "0.0"})));
 
 		assertEquals(1, mtl.lines().filter(it -> it.startsWith("newmtl ")).count());
 

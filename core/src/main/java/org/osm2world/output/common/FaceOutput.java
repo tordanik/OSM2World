@@ -235,8 +235,9 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 
 	@Override
 	public void drawTriangles(@Nonnull MaterialOrRef material,
-							  @Nonnull List<? extends TriangleXYZ> triangles,
-							  @Nonnull List<List<VectorXZ>> texCoordLists) {
+				@Nonnull List<? extends TriangleXYZ> triangles,
+				@Nonnull List<VectorXYZ> normals,
+				@Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		int i = 0;
 
@@ -260,7 +261,7 @@ public abstract class FaceOutput extends AbstractOutput implements DrawBasedOutp
 					subLists.add(list.subList(3*i, 3*(i+1)));
 				}
 
-				drawFace(material, triangle.verticesNoDup(), null, subLists);
+				drawFace(material, triangle.verticesNoDup(), normals.subList(3*i, 3*(i+1)), subLists);
 			}
 
 			i++;
