@@ -6,8 +6,6 @@ import static org.osm2world.scene.color.Color.*;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.*;
 import java.util.List;
@@ -27,6 +25,7 @@ import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.functions.Factory;
+import org.osm2world.util.uri.LoadUriUtil;
 import org.osm2world.world.creation.WorldModule;
 
 /**
@@ -544,14 +543,11 @@ public final class Materials {
 					String materialName = pathParts[pathParts.length - 1];
 
 					BiFunction<URI, Factory<URI>, URI> uriIfExistsElse = (URI uri, Factory<URI> fallback) -> {
-						try {
-							HttpURLConnection huc = (HttpURLConnection) uri.toURL().openConnection();
-							huc.setRequestMethod("HEAD");
-							if (huc.getResponseCode() == HttpURLConnection.HTTP_OK) {
-								return uri;
-							}
-						} catch (IOException ignored) {}
-						return fallback.get();
+						if (LoadUriUtil.checkExists(uri)) {
+							return uri;
+						} else {
+							return fallback.get();
+						}
 					};
 
 					baseColorTexture =
