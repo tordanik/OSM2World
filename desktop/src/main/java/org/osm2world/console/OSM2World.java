@@ -8,10 +8,7 @@ import org.osm2world.console.commands.converters.LatLonBoundsConverter;
 import org.osm2world.console.commands.converters.LodConverter;
 import org.osm2world.console.commands.converters.TileBoundsConverter;
 import org.osm2world.console.legacy.LegacyCLI;
-import org.osm2world.math.geo.LatLon;
-import org.osm2world.math.geo.LatLonBounds;
-import org.osm2world.math.geo.TileBounds;
-import org.osm2world.math.geo.TileNumber;
+import org.osm2world.math.geo.*;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.Resolution;
 
@@ -66,6 +63,7 @@ public class OSM2World {
 		commandLine.setCaseInsensitiveEnumValuesAllowed(true);
 		commandLine.registerConverter(LatLon.class, LatLon::new);
 		commandLine.registerConverter(LatLonBounds.class, new LatLonBoundsConverter());
+		commandLine.registerConverter(LatLonEle.class, LatLonEle::new);
 		commandLine.registerConverter(LevelOfDetail.class, new LodConverter());
 		commandLine.registerConverter(Resolution.class, Resolution::new);
 		commandLine.registerConverter(TileBounds.class, new TileBoundsConverter());
