@@ -994,7 +994,8 @@ public class RoadModule extends ConfigurableWorldModule {
 							: TagSet.of();
 
 					layout.getLanes(roadPart).add(new Lane(this,
-							VEHICLE_LANE, roadPart, tags));
+							(tags.contains("cycleway", "yes")) ? CYCLEWAY : VEHICLE_LANE,
+							roadPart, tags));
 
 				}
 
@@ -1004,13 +1005,13 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			//TODO: reduce code duplication by iterating over special lane types
 
-			if (leftCycleway) {
+			if (leftCycleway && layout.leftLanes.stream().noneMatch(it -> it.type.equals(CYCLEWAY))) {
 				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, TagSet.of()));
 				layout.leftLanes.add(new Lane(this, CYCLEWAY, RoadPart.LEFT, inheritTags(
 						getTagsWithPrefix(tags, "cycleway:left:", null),
 						getTagsWithPrefix(tags, "cycleway:both:", null))));
 			}
-			if (rightCycleway) {
+			if (rightCycleway && layout.rightLanes.stream().noneMatch(it -> it.type.equals(CYCLEWAY))) {
 				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, TagSet.of()));
 				layout.rightLanes.add(new Lane(this, CYCLEWAY, RoadPart.RIGHT, inheritTags(
 						getTagsWithPrefix(tags, "cycleway:right:", null),
