@@ -296,16 +296,6 @@ public class ObjOutput extends FaceOutput {
 		assert normalIndices == null
 				|| vertexIndices.length == normalIndices.length;
 
-		//Don't add faces with duplicate vertices.
-		HashSet<Integer> set = new HashSet<Integer>();
-		for(int element : vertexIndices)
-		{
-			if(!set.add(element))
-			{
-				return;
-			}
-		}
-
 		objWriter.print("f");
 
 		for (int i = 0; i < vertexIndices.length; i++) {
