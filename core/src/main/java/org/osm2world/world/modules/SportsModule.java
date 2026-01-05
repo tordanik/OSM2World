@@ -23,6 +23,7 @@ import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
@@ -288,7 +289,7 @@ public class SportsModule extends AbstractModule {
 
 		@Override
 		protected Material getFallbackPitchMaterial() {
-			return GRASS.get();
+			return Materials.getSurfaceMaterial(area.getTags().getValue("surface"), GRASS);
 		}
 
 	}
