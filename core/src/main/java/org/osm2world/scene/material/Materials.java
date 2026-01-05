@@ -44,6 +44,8 @@ public final class Materials {
 	public static final MaterialRef WATER = new MaterialRef("WATER",
 		new Material(Interpolation.SMOOTH, Color.BLUE));
 
+	public static final MaterialRef ADOBE = new MaterialRef("ADOBE",
+		new Material(Interpolation.FLAT, Color.decode("#c7a17a")));
 	public static final MaterialRef ASPHALT = new MaterialRef("ASPHALT",
 		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef BRICK = new MaterialRef("BRICK",
@@ -94,6 +96,8 @@ public final class Materials {
 		new Material(Interpolation.FLAT, new Color(200, 200, 200)));
 	public static final MaterialRef STONE = new MaterialRef("STONE",
 			new Material(Interpolation.FLAT, new Color(160, 166, 155)));
+	public static final MaterialRef THATCH_ROOF = new MaterialRef("THATCH_ROOF",
+			new Material(Interpolation.FLAT, Color.decode("#7c7062")));
 	public static final MaterialRef UNHEWN_COBBLESTONE = new MaterialRef("UNHEWN_COBBLESTONE",
 		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef WOOD = new MaterialRef("WOOD",

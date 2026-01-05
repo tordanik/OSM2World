@@ -602,13 +602,18 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		Material material = defaultMaterial;
 
 		if (materialString != null) {
-			if ("brick".equals(materialString)) {
+			if (List.of("adobe", "clay", "mud", "rammed_earth").contains(materialString)) {
+				material = ADOBE.get();
+			} else if ("brick".equals(materialString)) {
 				material = BRICK.get();
 			} else if ("glass".equals(materialString)
 					|| "mirror".equals(materialString)) {
 				material = roof ? GLASS_ROOF.get() : GLASS_WALL.get();
 			} else if ("copper".equals(materialString) && roof) {
 				material = COPPER_ROOF.get();
+			} else if ("thatch".equals(materialString)
+					|| "reed".equals(materialString)) {
+				material = THATCH_ROOF.get();
 			} else if ("wood".equals(materialString)
 					|| "bamboo".equals(materialString)) {
 				material = WOOD_WALL.get();
