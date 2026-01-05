@@ -70,6 +70,8 @@ public final class Materials {
 		new Material(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f)));
 	public static final MaterialRef SETT = new MaterialRef("SETT",
 		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
+	public static final MaterialRef SHELLS = new MaterialRef("SHELLS",
+			new Material(Interpolation.SMOOTH, Color.decode("#9ea5ad")));
 	public static final MaterialRef SLATE = new MaterialRef("SLATE",
 			new Material(Interpolation.FLAT, new Color(0.1f, 0.1f, 0.1f)));
 	public static final MaterialRef PAVING_STONE = new MaterialRef("PAVING_STONE",
@@ -96,6 +98,8 @@ public final class Materials {
 		new Material(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f)));
 	public static final MaterialRef WOOD = new MaterialRef("WOOD",
 		new Material(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
+	public static final MaterialRef WOODCHIPS = new MaterialRef("WOODCHIPS",
+		new Material(Interpolation.SMOOTH, Color.decode("#b09166")));
 	public static final MaterialRef WOOD_WALL = new MaterialRef("WOOD_WALL",
 		new Material(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f)));
 	public static final MaterialRef TARTAN = new MaterialRef("TARTAN",
@@ -285,6 +289,7 @@ public final class Materials {
 		surfaceMaterialMap.put("sand", SAND);
 		surfaceMaterialMap.put("scree", SCREE);
 		surfaceMaterialMap.put("sett", SETT);
+		surfaceMaterialMap.put("shells", SHELLS);
 		surfaceMaterialMap.put("snow", SNOW);
 		surfaceMaterialMap.put("steel", STEEL);
 		surfaceMaterialMap.put("tartan", TARTAN);
@@ -292,6 +297,7 @@ public final class Materials {
 		surfaceMaterialMap.put("unpaved", EARTH);
 		surfaceMaterialMap.put("unhewn_cobblestone", UNHEWN_COBBLESTONE);
 		surfaceMaterialMap.put("wood", WOOD);
+		surfaceMaterialMap.put("woodchips", WOODCHIPS);
 		surfaceMaterialMap.put("scrub", SCRUB);
 
 	}
