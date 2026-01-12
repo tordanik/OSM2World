@@ -1,11 +1,14 @@
 package org.osm2world;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-import org.osm2world.conversion.O2WConfig;
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.TagSet;
@@ -25,12 +28,34 @@ import org.osm2world.util.uri.BrowserHttpClient;
 import org.osm2world.util.uri.LoadUriUtil;
 import org.teavm.jso.JSExport;
 import org.teavm.jso.JSTopLevel;
+import org.teavm.jso.core.JSArray;
+import org.teavm.jso.function.JSConsumer;
 
 public class WebLibrary {
 
 	static {
 		LoadUriUtil.setClientFactory(BrowserHttpClient::new);
 		JsonUtil.setImplementation(new JsonImplementationBrowser());
+	}
+
+	@JSTopLevel
+	public static class O2WConfig {
+
+		private final org.osm2world.conversion.O2WConfig config;
+
+		O2WConfig(org.osm2world.conversion.O2WConfig config) {
+			this.config = config;
+		}
+
+		private org.osm2world.conversion.O2WConfig getConfig() {
+			return config;
+		}
+
+		@JSExport
+		public String getProperty(String key) {
+			return config.getString(key);
+		}
+
 	}
 
 	@JSTopLevel
@@ -105,7 +130,7 @@ public class WebLibrary {
 			/* material fields */
 
 			TextureLayer textureLayer = (!material.textureLayers().isEmpty())
-				? material.textureLayers().get(0) : null;
+					? material.textureLayers().get(0) : null;
 
 			if (textureLayer != null && textureLayer.baseColorTexture instanceof UriTexture t) {
 				this.baseColorTexture = t.getUri().getPath();
@@ -170,66 +195,88 @@ public class WebLibrary {
 
 	}
 
-	// TODO: add a config object
+	@JSExport
+	public static void loadConfig(String uri, JSConsumer<O2WConfig> onSuccess, @Nullable JSConsumer<String> onError) {
+
+		JSConsumer<String> handleError = (onError != null) ? onError : System.err::println;
+
+		new Thread(() -> {
+			try {
+				var config = new org.osm2world.conversion.O2WConfig(Map.of(), new URI(uri));
+				onSuccess.accept(new O2WConfig(config));
+			} catch (URISyntaxException e) {
+				handleError.accept(e.getMessage());
+			}
+		}).start();
+
+	}
 
 	@JSExport
-	public static WebMesh[] convert(String elementType, String[] tags) {
+	public static void convert(O2WConfig config, String elementType, String[] tags,
+			JSConsumer<JSArray<WebMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
 
 		if (tags.length % 2 != 0) {
 			throw new IllegalArgumentException("tags must have an even number of strings (key-value pairs)");
 		}
 
-		var o2w = new O2WConverterImpl(new O2WConfig(Map.of("lod", "4")), List.of());
+		new Thread(() -> {
 
-		var builder = new MapDataBuilder();
+			var o2w = new O2WConverterImpl(config != null ? config.getConfig() : null, List.of());
 
-		switch (elementType) {
-			case "node" -> builder.createNode(0, 0, TagSet.of(tags));
-			case "way" -> {
-				var wayNodes = List.of(
-						builder.createNode(-7.5, -5.0),
-						builder.createNode(7.5, 5.0)
-				);
-				builder.createWay(wayNodes, TagSet.of(tags));
-			}
-			case "area" -> {
-				var wayNodes = List.of(
-						builder.createNode(-7.5, -5.0),
-						builder.createNode(7.5, -5.0),
-						builder.createNode(7.5, 5.0),
-						builder.createNode(-7.5, 5.0)
-				);
-				builder.createWayArea(wayNodes, TagSet.of(tags));
-			}
-			default -> throw new IllegalArgumentException("elementType must be 'node', 'way' or 'area'");
-		}
+			var builder = new MapDataBuilder();
 
-		MapData mapData = builder.build();
-
-		try {
-
-			Scene scene = o2w.convert(mapData, null);
-
-			var meshStore = new MeshStore(scene.getMeshesWithMetadata());
-
-			meshStore = meshStore.process(List.of(
-					new MeshStore.EmulateDoubleSidedMaterials(),
-					new MeshStore.EmulateTextureLayers(),
-					new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
-			));
-			List<Mesh> meshes = meshStore.meshes();
-
-			List<WebMesh> webMeshes = new ArrayList<>();
-
-			for (Mesh mesh : meshes) {
-				webMeshes.add(new WebMesh(mesh.material, mesh.geometry.asTriangles()));
+			switch (elementType) {
+				case "node" -> builder.createNode(0, 0, TagSet.of(tags));
+				case "way" -> {
+					var wayNodes = List.of(
+							builder.createNode(-7.5, -5.0),
+							builder.createNode(7.5, 5.0)
+					);
+					builder.createWay(wayNodes, TagSet.of(tags));
+				}
+				case "area" -> {
+					var wayNodes = List.of(
+							builder.createNode(-7.5, -5.0),
+							builder.createNode(7.5, -5.0),
+							builder.createNode(7.5, 5.0),
+							builder.createNode(-7.5, 5.0)
+					);
+					builder.createWayArea(wayNodes, TagSet.of(tags));
+				}
+				default -> throw new IllegalArgumentException("elementType must be 'node', 'way' or 'area'");
 			}
 
-			return webMeshes.toArray(WebMesh[]::new);
+			MapData mapData = builder.build();
 
-		} catch (Exception e) {
-			return null;
-		}
+			try {
+
+				Scene scene = o2w.convert(mapData, null);
+
+				var meshStore = new MeshStore(scene.getMeshesWithMetadata());
+
+				meshStore = meshStore.process(List.of(
+						new MeshStore.EmulateDoubleSidedMaterials(),
+						new MeshStore.EmulateTextureLayers(),
+						new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
+				));
+				List<Mesh> meshes = meshStore.meshes();
+
+				List<WebMesh> webMeshes = new ArrayList<>();
+
+				for (Mesh mesh : meshes) {
+					webMeshes.add(new WebMesh(mesh.material, mesh.geometry.asTriangles()));
+				}
+
+				WebMesh[] meshArray = webMeshes.toArray(WebMesh[]::new);
+				onSuccess.accept(JSArray.of(meshArray));
+
+			} catch (Exception e) {
+				if (onError != null) {
+					onError.accept(e.getMessage());
+				}
+			}
+
+		}).start();
 
 	}
 
