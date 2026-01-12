@@ -20,6 +20,11 @@ public class UriTexture extends RuntimeTexture {
 		this.imageUri = imageUri;
 	}
 
+	/** returns the URI of the texture image */
+	public URI getUri() {
+		return imageUri;
+	}
+
 	@Override protected BufferedImage createBufferedImage() {
 		try {
 			return ImageIO.read(imageUri.toURL());
