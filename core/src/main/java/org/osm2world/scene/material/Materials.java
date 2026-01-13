@@ -9,7 +9,6 @@ import java.io.File;
 import java.net.URI;
 import java.util.*;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +23,6 @@ import org.osm2world.scene.material.TextTexture.FontStyle;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
-import org.osm2world.util.functions.Factory;
 import org.osm2world.util.uri.LoadUriUtil;
 import org.osm2world.world.creation.WorldModule;
 
@@ -542,21 +540,20 @@ public final class Materials {
 
 					String materialName = pathParts[pathParts.length - 1];
 
-					BiFunction<URI, Factory<URI>, URI> uriIfExistsElse = (URI uri, Factory<URI> fallback) -> {
-						if (LoadUriUtil.checkExists(uri)) {
-							return uri;
-						} else {
-							return fallback.get();
+					Function<String, URI> buildAndCheckTextureUri = (String suffix) -> {
+						for (String extension : List.of (".jpg", ".png", ".jpeg")) { // check more likely ones first
+							URI uri = parentURI.resolve(materialName + suffix + extension);
+							if (LoadUriUtil.checkExists(uri)) {
+								return uri;
+							}
 						}
+						return null;
 					};
 
-					baseColorTexture =
-							uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.png"),
-							() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.jpg"),
-							() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.jpeg"),
-							() -> null)));
-
-					// TODO other types
+					baseColorTexture = buildAndCheckTextureUri.apply("_Color");
+					normalTexture = buildAndCheckTextureUri.apply("_Normal");
+					ormTexture = buildAndCheckTextureUri.apply("_ORM");
+					displacementTexture = buildAndCheckTextureUri.apply("_Displacement");
 
 				}
 
