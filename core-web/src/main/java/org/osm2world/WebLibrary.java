@@ -19,6 +19,8 @@ import org.osm2world.scene.material.UriTexture;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.util.json.JsonImplementationBrowser;
+import org.osm2world.util.json.JsonUtil;
 import org.osm2world.util.uri.BrowserHttpClient;
 import org.osm2world.util.uri.LoadUriUtil;
 import org.teavm.jso.JSExport;
@@ -28,6 +30,7 @@ public class WebLibrary {
 
 	static {
 		LoadUriUtil.setClientFactory(BrowserHttpClient::new);
+		JsonUtil.setImplementation(new JsonImplementationBrowser());
 	}
 
 	@JSTopLevel
