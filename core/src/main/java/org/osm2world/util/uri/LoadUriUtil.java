@@ -49,4 +49,16 @@ public class LoadUriUtil {
 
 	}
 
+	public static byte[] fetchBinary(URI uri) throws IOException {
+
+		if (uri.getScheme().equals("data")) {
+			// TODO implement data uris
+			throw new UnsupportedOperationException("data URIs are not implemented yet");
+		}
+
+		HttpClient client = clientFactory.get();
+		return client.fetchBinary(uri);
+
+	}
+
 }

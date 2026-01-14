@@ -1,15 +1,15 @@
 package org.osm2world.map_elevation.creation;
 
 import java.io.*;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.nio.channels.FileChannel;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.Nonnull;
+
+import org.osm2world.util.uri.LoadUriUtil;
 
 /**
  * a single SRTM data tile.
@@ -61,7 +61,6 @@ class SRTMTile {
 						// convert bytes to string
 						byte[] zipFileBytes = bos.toByteArray();
 						payloadData = ByteBuffer.wrap(zipFileBytes);
-						payloadData.position(zipFileBytes.length);
 
 						break;
 
@@ -78,25 +77,14 @@ class SRTMTile {
 
 		} else {
 
-			try (
-				FileInputStream fis = new FileInputStream(file);
-				FileChannel fc = fis.getChannel()
-			) {
-
-				ByteBuffer bb = ByteBuffer.allocateDirect((int) fc.size());
-				while (bb.remaining() > 0) fc.read(bb);
-
-				return loadDataFromByteBuffer(bb);
-
-			}
+			byte[] bytes = LoadUriUtil.fetchBinary(file.toURI());
+			return loadDataFromByteBuffer(ByteBuffer.wrap(bytes));
 
 		}
 
 	}
 
 	private static ShortBuffer loadDataFromByteBuffer(@Nonnull ByteBuffer data) throws IOException {
-
-		((Buffer)data).flip();
 
 		// choose the right endianness
 		ShortBuffer shortBuffer = data.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
