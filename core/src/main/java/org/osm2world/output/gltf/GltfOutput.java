@@ -55,10 +55,10 @@ import org.osm2world.scene.mesh.MeshStore.MergeMeshes.MergeOption;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.GlobalValues;
+import org.osm2world.util.json.JsonUtil;
 
 import com.google.common.collect.Multimap;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
+
 
 /**
  * builds a glTF or glb (binary glTF) output file
@@ -146,7 +146,7 @@ public class GltfOutput extends AbstractOutput {
 						writeGlb(outputStream, jsonChunkData, binChunkData);
 					}
 				}
-			} catch (IOException | JsonIOException e) {
+			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 
@@ -494,7 +494,7 @@ public class GltfOutput extends AbstractOutput {
 				try {
 					int index = createNode(createMesh(mesh), null);
 					meshNodeIndizes.add(index);
-				} catch (JsonIOException | IOException e) {
+				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
 			});
@@ -559,7 +559,7 @@ public class GltfOutput extends AbstractOutput {
 		/* write the JSON file */
 
 		try (var writer = new OutputStreamWriter(outputStream)) {
-			new GsonBuilder().setPrettyPrinting().create().toJson(gltf, writer);
+			JsonUtil.serialize(gltf, writer, true);
 		}
 
 	}

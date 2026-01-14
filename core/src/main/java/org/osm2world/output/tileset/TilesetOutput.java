@@ -3,7 +3,7 @@ package org.osm2world.output.tileset;
 import static java.util.Objects.requireNonNullElse;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,9 +27,7 @@ import org.osm2world.output.tileset.tiles_data.TilesetEntry;
 import org.osm2world.output.tileset.tiles_data.TilesetParentEntry;
 import org.osm2world.output.tileset.tiles_data.TilesetRoot;
 import org.osm2world.scene.mesh.MeshStore;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.osm2world.util.json.JsonUtil;
 
 /**
  * creates tiles according to the Cesium 3D Tiles specification.
@@ -202,10 +200,9 @@ public class TilesetOutput extends MeshOutput {
 		}
 
 		try (var writer = new PrintWriter(outFile)) {
-			Gson gson = new GsonBuilder().create();
-			gson.toJson(tileset, writer);
-		} catch (FileNotFoundException fnfe) {
-			fnfe.printStackTrace();
+			JsonUtil.serialize(tileset, writer, false);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

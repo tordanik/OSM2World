@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 
 import org.osm2world.util.functions.CheckedConsumer;
 
-import com.google.gson.JsonIOException;
-
 public final class CompressionUtil {
 
 	private CompressionUtil() {}
@@ -34,7 +32,7 @@ public final class CompressionUtil {
 
 			writeWithCompression(fileOutputStream, compression, outputFile.getName(), writeToStream);
 
-		} catch (JsonIOException | IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 
@@ -77,7 +75,7 @@ public final class CompressionUtil {
 
 			}
 
-		} catch (JsonIOException | IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 

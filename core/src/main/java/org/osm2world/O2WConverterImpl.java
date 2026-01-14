@@ -53,6 +53,7 @@ import org.osm2world.scene.Scene;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.model.Models;
 import org.osm2world.util.FaultTolerantIterationUtil;
+import org.osm2world.util.json.JsonUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.creation.WorldCreator;
@@ -66,8 +67,6 @@ import org.osm2world.world.modules.traffic_sign.TrafficSignModule;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
 
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
@@ -457,9 +456,9 @@ class O2WConverterImpl {
 					"timePerPhase", timePerPhase
 			);
 
-			new GsonBuilder().setPrettyPrinting().create().toJson(jsonRoot, writer);
+			JsonUtil.serialize(jsonRoot, writer, true);
 
-		} catch (JsonIOException | IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 
