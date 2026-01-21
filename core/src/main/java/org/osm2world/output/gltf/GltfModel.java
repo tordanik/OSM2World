@@ -35,8 +35,7 @@ import org.osm2world.scene.model.ExternalModelSource;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.util.exception.InvalidGeometryException;
-
-import com.google.gson.Gson;
+import org.osm2world.util.json.JsonUtil;
 
 public class GltfModel implements Model {
 
@@ -639,7 +638,7 @@ public class GltfModel implements Model {
 
 	private static Gltf loadFromGltf(InputStream inputStream) throws Exception {
 		try (var reader = new InputStreamReader(inputStream)) {
-			return new Gson().fromJson(reader, Gltf.class);
+			return JsonUtil.deserialize(reader, Gltf.class);
 		}
 	}
 
@@ -674,7 +673,7 @@ public class GltfModel implements Model {
 
 			byte[] jsonData = inputStream.readNBytes(jsonChunkLength);
 			String jsonStr = new String(jsonData, StandardCharsets.UTF_8);
-			Gltf gltf = new Gson().fromJson(jsonStr, Gltf.class);
+			Gltf gltf = JsonUtil.deserialize(jsonStr, Gltf.class);
 
 			// Read BIN chunk if present
 			if (inputStream.available() > 0) {

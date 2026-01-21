@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonValue;
+import org.apache.commons.io.IOUtils;
 
 /**
  * implementation of {@link JsonReader} which reads OSM JSON from a file
@@ -20,8 +19,8 @@ public class JsonFileReader extends JsonReader {
 	}
 
 	@Override
-	protected JsonValue getJsonRoot() throws IOException {
-		return Json.parse(new FileReader(jsonFile));
+	protected String getJsonString() throws IOException {
+		return IOUtils.toString(new FileReader(jsonFile));
 	}
 
 }

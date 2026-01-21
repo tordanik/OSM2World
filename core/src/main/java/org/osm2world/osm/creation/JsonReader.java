@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.osm2world.osm.data.OSMData;
+import org.osm2world.util.json.JsonUtil;
 
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
 import com.slimjars.dist.gnu.trove.list.TLongList;
 import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
 
@@ -21,18 +21,18 @@ import de.topobyte.osm4j.core.model.impl.*;
  */
 public abstract class JsonReader implements OSMDataReader {
 
-	protected abstract JsonValue getJsonRoot() throws IOException;
+	protected abstract String getJsonString() throws IOException;
 
 	@Override
 	public OSMData getAllData() throws IOException {
 
 		try {
 
-			JsonValue rootValue = getJsonRoot();
-			JsonObject root = rootValue.asObject();
+			String json = getJsonString();
+			OsmJson root = JsonUtil.deserialize(json, OsmJson.class);
 
-			if (0.6 != root.getDouble("version", 0)) {
-				throw new IOException("Unsupported OSM JSON version");
+			if (0.6 != root.version) {
+				throw new IOException("Unsupported OSM JSON version: " + root.version);
 			}
 
 			Collection<OsmBounds> bounds = new ArrayList<>();
@@ -41,62 +41,50 @@ public abstract class JsonReader implements OSMDataReader {
 			Collection<OsmWay> ways = new ArrayList<>();
 			Collection<OsmRelation> relations = new ArrayList<>();
 
-			for (JsonValue element : root.get("elements").asArray()) {
-				if (element instanceof JsonObject e) {
+			for (OsmJsonElement e : root.elements) {
 
-					if (e.get("id") == null || !e.get("id").isNumber()) continue;
+				long id = e.id;
 
-					long id = e.getLong("id", Long.MIN_VALUE);
+				List<Tag> tags = new ArrayList<>();
+				for (var t : e.tags.entrySet()) {
+					tags.add(new Tag(t.getKey(), t.getValue()));
+				}
 
-					List<Tag> tags = new ArrayList<>();
-					if (e.get("tags") instanceof JsonObject ts) {
-						for (var t : ts) {
-							tags.add(new Tag(t.getName(), t.getValue().asString()));
+				switch (e.type) {
+
+					case "node" ->
+						nodes.add(new Node(id,
+								e.lon,
+								e.lat,
+								tags));
+
+					case "way" -> {
+						TLongList nodeIds = new TLongArrayList();
+						for (long nodeId : e.nodes) {
+							nodeIds.add(nodeId);
 						}
+						ways.add(new Way(id, nodeIds, tags));
 					}
 
-					switch (e.get("type").asString()) {
-
-						case "node" ->
-							nodes.add(new Node(id,
-									e.getDouble("lon", Double.NaN),
-									e.getDouble("lat", Double.NaN),
-									tags));
-
-						case "way" -> {
-							TLongList nodeIds = new TLongArrayList();
-							for (JsonValue node : e.get("nodes").asArray()) {
-								nodeIds.add(node.asLong());
-							}
-							ways.add(new Way(id, nodeIds, tags));
+					case "relation" -> {
+						List<OsmRelationMember> members = new ArrayList<>();
+						for (OsmJsonMember m : e.members) {
+							EntityType entityType = switch (m.type) {
+								case "node" -> EntityType.Node;
+								case "way" -> EntityType.Way;
+								case "relation" -> EntityType.Relation;
+								default -> throw new IOException("Invalid member type for r " + id + ": " + m.type);
+							};
+							long ref = m.ref;
+							members.add(new RelationMember(
+									ref,
+									entityType,
+									m.role));
 						}
-
-						case "relation" -> {
-							List<OsmRelationMember> members = new ArrayList<>();
-							for (JsonValue member : e.get("members").asArray()) {
-								if (member instanceof JsonObject m) {
-									EntityType entityType = switch (m.get("type").asString()) {
-										case "node" -> EntityType.Node;
-										case "way" -> EntityType.Way;
-										case "relation" -> EntityType.Relation;
-										default -> throw new IOException("Invalid member type for r " + id + ": "
-												+ member.asString());
-									};
-									long ref = m.getLong("ref", Long.MIN_VALUE);
-									if (ref != Long.MIN_VALUE) {
-										members.add(new RelationMember(
-												ref,
-												entityType,
-												m.getString("role", "")));
-									}
-								}
-							}
-							relations.add(new Relation(id, members, tags));
-						}
-
-						default -> throw new IOException("Unsupported OSM element type: " + e);
-
+						relations.add(new Relation(id, members, tags));
 					}
+
+					default -> throw new IOException("Unsupported OSM element type: " + e);
 
 				}
 			}
@@ -108,6 +96,28 @@ public abstract class JsonReader implements OSMDataReader {
 			throw new IOException(e);
 		}
 
+	}
+
+	private static class OsmJson {
+		public Double version;
+		public String generator;
+		public List<OsmJsonElement> elements;
+	}
+
+	private static class OsmJsonElement {
+		public String type;
+		public long id;
+		public Map<String, String> tags;
+		public Double lat;
+		public Double lon;
+		public List<Long> nodes;
+		public List<OsmJsonMember> members;
+	}
+
+	private static class OsmJsonMember {
+		public String type;
+		public long ref;
+		public String role;
 	}
 
 }

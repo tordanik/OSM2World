@@ -8,9 +8,7 @@ import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.math.geo.TileNumber;
-
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
+import org.osm2world.util.json.JsonUtil;
 
 /**
  * additional information associated with a {@link MapData} dataset that goes beyond what's directly part of the data.
@@ -69,9 +67,7 @@ public record MapMetadata (@Nullable String locale, @Nullable Boolean land) {
 	}
 
 	private static MapMetadata metadataFromJson(Reader metadataReader) throws IOException {
-		try (var jsonReader = new JsonReader(metadataReader)) {
-			return new Gson().fromJson(jsonReader, MapMetadata.class);
-		}
+		return JsonUtil.deserialize(metadataReader, MapMetadata.class);
 	}
 
 }
