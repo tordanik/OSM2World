@@ -559,7 +559,7 @@ public class GltfOutput extends AbstractOutput {
 		/* write the JSON file */
 
 		try (var writer = new OutputStreamWriter(outputStream)) {
-			JsonUtil.serialize(gltf, writer, true);
+			JsonUtil.toJson(gltf, writer, true);
 		}
 
 	}

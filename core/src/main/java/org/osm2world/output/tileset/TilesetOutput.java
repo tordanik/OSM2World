@@ -200,7 +200,7 @@ public class TilesetOutput extends MeshOutput {
 		}
 
 		try (var writer = new PrintWriter(outFile)) {
-			JsonUtil.serialize(tileset, writer, false);
+			JsonUtil.toJson(tileset, writer, false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

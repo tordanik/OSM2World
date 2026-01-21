@@ -456,7 +456,7 @@ class O2WConverterImpl {
 					"timePerPhase", timePerPhase
 			);
 
-			JsonUtil.serialize(jsonRoot, writer, true);
+			JsonUtil.toJson(jsonRoot, writer, true);
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);

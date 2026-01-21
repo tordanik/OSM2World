@@ -67,7 +67,7 @@ public record MapMetadata (@Nullable String locale, @Nullable Boolean land) {
 	}
 
 	private static MapMetadata metadataFromJson(Reader metadataReader) throws IOException {
-		return JsonUtil.deserialize(metadataReader, MapMetadata.class);
+		return JsonUtil.fromJson(metadataReader, MapMetadata.class);
 	}
 
 }

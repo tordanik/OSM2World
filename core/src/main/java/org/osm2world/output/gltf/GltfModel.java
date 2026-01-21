@@ -638,7 +638,7 @@ public class GltfModel implements Model {
 
 	private static Gltf loadFromGltf(InputStream inputStream) throws Exception {
 		try (var reader = new InputStreamReader(inputStream)) {
-			return JsonUtil.deserialize(reader, Gltf.class);
+			return JsonUtil.fromJson(reader, Gltf.class);
 		}
 	}
 
@@ -673,7 +673,7 @@ public class GltfModel implements Model {
 
 			byte[] jsonData = inputStream.readNBytes(jsonChunkLength);
 			String jsonStr = new String(jsonData, StandardCharsets.UTF_8);
-			Gltf gltf = JsonUtil.deserialize(jsonStr, Gltf.class);
+			Gltf gltf = JsonUtil.fromJson(jsonStr, Gltf.class);
 
 			// Read BIN chunk if present
 			if (inputStream.available() > 0) {

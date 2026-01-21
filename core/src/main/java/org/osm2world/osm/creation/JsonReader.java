@@ -29,7 +29,7 @@ public abstract class JsonReader implements OSMDataReader {
 		try {
 
 			String json = getJsonString();
-			OsmJson root = JsonUtil.deserialize(json, OsmJson.class);
+			OsmJson root = JsonUtil.fromJson(json, OsmJson.class);
 
 			if (0.6 != root.version) {
 				throw new IOException("Unsupported OSM JSON version: " + root.version);

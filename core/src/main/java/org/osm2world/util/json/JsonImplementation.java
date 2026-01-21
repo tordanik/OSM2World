@@ -11,13 +11,13 @@ import org.apache.commons.io.IOUtils;
  */
 public interface JsonImplementation {
 
-	void serialize(Object obj, Writer writer, boolean prettyPrinting) throws IOException;
+	void toJson(Object obj, Writer writer, boolean prettyPrinting) throws IOException;
 
-	<T> T deserialize(String json, Class<T> type) throws IOException;
+	<T> T fromJson(String json, Class<T> type) throws IOException;
 
-	default <T> T deserialize(Reader reader, Class<T> type) throws IOException {
+	default <T> T fromJson(Reader reader, Class<T> type) throws IOException {
 		String json = IOUtils.toString(reader);
-		return deserialize(json, type);
+		return fromJson(json, type);
 	}
 
 }

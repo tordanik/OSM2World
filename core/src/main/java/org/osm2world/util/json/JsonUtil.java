@@ -21,16 +21,16 @@ public class JsonUtil {
 		JsonUtil.implementation = implementation;
 	}
 
-	public static void serialize(Object obj, Writer writer, boolean prettyPrinting) throws IOException {
-		implementation.serialize(obj, writer, prettyPrinting);
+	public static void toJson(Object obj, Writer writer, boolean prettyPrinting) throws IOException {
+		implementation.toJson(obj, writer, prettyPrinting);
 	}
 
-	public static <T> T deserialize(String json, Class<T> type) throws IOException {
-		return implementation.deserialize(json, type);
+	public static <T> T fromJson(String json, Class<T> type) throws IOException {
+		return implementation.fromJson(json, type);
 	}
 
-	public static <T> T deserialize(Reader reader, Class<T> type) throws IOException {
-		return implementation.deserialize(reader, type);
+	public static <T> T fromJson(Reader reader, Class<T> type) throws IOException {
+		return implementation.fromJson(reader, type);
 	}
 
 }
