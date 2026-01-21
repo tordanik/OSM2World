@@ -398,12 +398,27 @@ public class GltfModel implements Model {
 
 		int byteOffset = bufferView.byteOffset == null ? 0 : bufferView.byteOffset;
 		int byteLength = bufferView.byteLength;
-		result = result.slice(byteOffset, byteLength);
+		result = sliceBuffer(result, byteOffset, byteLength);
 
 		result.order(ByteOrder.LITTLE_ENDIAN);
 
 		return result;
 
+	}
+
+	/**
+	 * Alternative to {@link ByteBuffer#slice()}, which is not available with TeaVM.
+	 */
+	static ByteBuffer sliceBuffer(ByteBuffer buffer, int byteOffset, int byteLength) {
+		if (byteOffset < 0 || byteLength < 0 || byteOffset + byteLength > buffer.capacity()) {
+			throw new IllegalArgumentException("Invalid byte offset or length: " + byteOffset + ", " + byteLength);
+		}
+		byte[] copy = new byte[byteLength];
+		int originalPosition = buffer.position();
+		buffer.position(byteOffset);
+		buffer.get(copy, 0, byteLength);
+		buffer.position(originalPosition); // Restore original position
+		return ByteBuffer.wrap(copy);
 	}
 
 	private Material convertMaterial(GltfMaterial m, @Nullable Color instanceColor) throws IOException {

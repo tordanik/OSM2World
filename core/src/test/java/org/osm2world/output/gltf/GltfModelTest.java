@@ -2,6 +2,7 @@ package org.osm2world.output.gltf;
 
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.output.gltf.GltfModel.readComponent;
+import static org.osm2world.output.gltf.GltfModel.sliceBuffer;
 import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
@@ -37,6 +38,18 @@ public class GltfModelTest {
 		assertEquals(4242, readComponent(b, GltfAccessor.TYPE_UNSIGNED_SHORT, false), 0.001f);
 		assertEquals(42424242, readComponent(b, GltfAccessor.TYPE_UNSIGNED_INT, false), 0.001f);
 		assertEquals(-42.3f, readComponent(b, GltfAccessor.TYPE_FLOAT, false), 0.001f);
+
+	}
+
+	@Test
+	public void testSliceBuffer() {
+
+		var buffer = ByteBuffer.wrap(new byte[] {0, 1, 2, 3, 4, 5});
+
+		assertEquals(6, sliceBuffer(buffer, 0, 6).capacity());
+
+		assertEquals(4, sliceBuffer(buffer, 1, 4).capacity());
+		assertEquals(1, sliceBuffer(buffer, 1, 4).get(0));
 
 	}
 
