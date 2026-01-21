@@ -1,8 +1,10 @@
 package org.osm2world.util.json;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class JsonImplementationJvm implements JsonImplementation {
@@ -14,6 +16,16 @@ public class JsonImplementationJvm implements JsonImplementation {
 			gsonBuilder.setPrettyPrinting();
 		}
 		gsonBuilder.create().toJson(obj, writer);
+	}
+
+	@Override
+	public <T> T deserialize(String json, Class<T> type) throws IOException {
+		return new Gson().fromJson(json, type);
+	}
+
+	@Override
+	public <T> T deserialize(Reader reader, Class<T> type) throws IOException {
+		return new Gson().fromJson(reader, type);
 	}
 
 }

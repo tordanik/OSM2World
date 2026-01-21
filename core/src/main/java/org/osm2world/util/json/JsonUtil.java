@@ -1,6 +1,7 @@
 package org.osm2world.util.json;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 
 /**
@@ -22,6 +23,14 @@ public class JsonUtil {
 
 	public static void serialize(Object obj, Writer writer, boolean prettyPrinting) throws IOException {
 		implementation.serialize(obj, writer, prettyPrinting);
+	}
+
+	public static <T> T deserialize(String json, Class<T> type) throws IOException {
+		return implementation.deserialize(json, type);
+	}
+
+	public static <T> T deserialize(Reader reader, Class<T> type) throws IOException {
+		return implementation.deserialize(reader, type);
 	}
 
 }
