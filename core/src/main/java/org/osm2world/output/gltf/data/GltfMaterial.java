@@ -4,8 +4,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
+@JsonPersistable
 public class GltfMaterial {
 
+	@JsonPersistable
 	public static class TextureInfo {
 
 		public int index;
@@ -16,14 +20,17 @@ public class GltfMaterial {
 
 	}
 
+	@JsonPersistable
 	public static class NormalTextureInfo extends TextureInfo {
 		public @Nullable Float scale;
 	}
 
+	@JsonPersistable
 	public static class OcclusionTextureInfo extends TextureInfo {
 		public @Nullable Float strength;
 	}
 
+	@JsonPersistable
 	public static class PbrMetallicRoughness {
 
 		public @Nullable float[] baseColorFactor;

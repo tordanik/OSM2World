@@ -4,6 +4,9 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
+@JsonPersistable
 public class GltfAnimation {
 
 	// TODO implement (stub class)

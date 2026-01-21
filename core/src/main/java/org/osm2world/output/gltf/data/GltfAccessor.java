@@ -4,6 +4,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonPersistable
 public class GltfAccessor {
 
 	public static final int TYPE_BYTE = 5120;
@@ -27,7 +33,10 @@ public class GltfAccessor {
 	public @Nullable Map<String, Object> extensions;
 	public @Nullable Object extras;
 
-	public GltfAccessor(int componentType, int count, String type) {
+	@JsonCreator
+	public GltfAccessor(@JsonProperty(value = "componentType") int componentType,
+			@JsonProperty(value = "count") int count,
+			@JsonProperty(value = "type") String type) {
 
 		if (count <= 0) { throw new IllegalArgumentException("invalid count: " + count); }
 

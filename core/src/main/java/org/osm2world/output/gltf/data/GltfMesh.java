@@ -7,6 +7,9 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
+@JsonPersistable
 public class GltfMesh {
 
 	public static final int POINTS = 0;
@@ -17,6 +20,7 @@ public class GltfMesh {
 	public static final int TRIANGLE_STRIP = 5;
 	public static final int TRIANGLE_FAN = 6;
 
+	@JsonPersistable
 	public static class Primitive {
 
 		public Map<String, Integer> attributes = new HashMap<>();

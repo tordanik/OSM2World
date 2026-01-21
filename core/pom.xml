@@ -122,6 +122,19 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.frequal.flavour</groupId>
+			<artifactId>teavm-flavour-json</artifactId>
+			<version>0.3.2</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>3.0-rc5</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>com.geodesk</groupId>
 			<artifactId>geodesk</artifactId>
 			<version>1.0.2</version>

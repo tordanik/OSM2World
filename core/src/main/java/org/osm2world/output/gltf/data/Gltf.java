@@ -4,10 +4,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
 /**
  * a glTF asset. This is a simple mutable "struct" holding all data.
  * Refer to the spec at https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md for documentation.
  */
+@JsonPersistable
 public class Gltf {
 
 	public GltfAsset asset;

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.util.json.JsonUtil;
+import org.teavm.flavour.json.JsonPersistable;
 
 import com.slimjars.dist.gnu.trove.list.TLongList;
 import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
@@ -98,12 +99,14 @@ public abstract class JsonReader implements OSMDataReader {
 
 	}
 
+	@JsonPersistable
 	private static class OsmJson {
 		public Double version;
 		public String generator;
 		public List<OsmJsonElement> elements;
 	}
 
+	@JsonPersistable
 	private static class OsmJsonElement {
 		public String type;
 		public long id;
@@ -114,6 +117,7 @@ public abstract class JsonReader implements OSMDataReader {
 		public List<OsmJsonMember> members;
 	}
 
+	@JsonPersistable
 	private static class OsmJsonMember {
 		public String type;
 		public long ref;

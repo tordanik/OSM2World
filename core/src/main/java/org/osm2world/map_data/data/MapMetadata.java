@@ -9,6 +9,10 @@ import org.imintel.mbtiles4j.MBTilesReader;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.util.json.JsonUtil;
+import org.teavm.flavour.json.JsonPersistable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * additional information associated with a {@link MapData} dataset that goes beyond what's directly part of the data.
@@ -17,7 +21,15 @@ import org.osm2world.util.json.JsonUtil;
  *
  * @param land  whether the dataset is at sea (false), on land (true), or unknown/mixed (null)
  */
+@JsonPersistable
 public record MapMetadata (@Nullable String locale, @Nullable Boolean land) {
+
+	@JsonCreator
+	public MapMetadata(@JsonProperty(value="locale", required=false) @Nullable String locale,
+			@JsonProperty(value="land", required=false) @Nullable Boolean land) {
+		this.locale = locale;
+		this.land = land;
+	}
 
 	public synchronized static MapMetadata metadataForTile(TileNumber tile, File tileMetadataDb)
 			throws MBTilesReadException, IOException {

@@ -4,6 +4,9 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
+@JsonPersistable
 public class GltfSampler {
 
 	//TODO more constants, turn into enums with int field

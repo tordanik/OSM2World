@@ -4,6 +4,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.teavm.flavour.json.JsonPersistable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonPersistable
 public class GltfBufferView {
 
 	public static final int TARGET_ARRAY_BUFFER = 34962;
@@ -19,7 +25,9 @@ public class GltfBufferView {
 	public @Nullable Map<String, Object> extensions;
 	public @Nullable Object extras;
 
-	public GltfBufferView(int buffer, int byteLength) {
+	@JsonCreator
+	public GltfBufferView(@JsonProperty(value = "buffer") int buffer,
+			@JsonProperty(value = "byteLength") int byteLength) {
 		this.buffer = buffer;
 		this.byteLength = byteLength;
 	}
