@@ -448,7 +448,7 @@ class O2WConverterImpl {
 
 		/* write a json file with performance stats */
 
-		try (FileWriter writer = new FileWriter(logDir.toPath().resolve(fileNameBase + ".json").toFile())) {
+		try (FileWriter writer = new FileWriter(new File(logDir, fileNameBase + ".json"))) {
 
 			Map<String, Object> jsonRoot = Map.of(
 					"startTime", perfListener.startTime.toString(),
@@ -465,7 +465,7 @@ class O2WConverterImpl {
 		/* write a gz-compressed text file with the error log */
 
 		Compression compression = Compression.GZ;
-		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
+		File outputFile = new File(logDir, fileNameBase + ".txt.gz");
 		CompressionUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
 			try (var printStream = new PrintStream(outputStream)) {
 
