@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonBounds;
@@ -11,6 +12,7 @@ import org.osm2world.osm.data.OSMData;
 
 public class OverpassReaderTest {
 
+	@Ignore // disabled to avoid depending on external resources for unit tests
 	@Test
 	public void testBoundingBox() throws IOException {
 
