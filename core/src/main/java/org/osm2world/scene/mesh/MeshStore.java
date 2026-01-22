@@ -12,6 +12,7 @@ import static org.osm2world.scene.mesh.Geometry.combine;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -804,8 +805,71 @@ public class MeshStore {
 
 	}
 
+	/**
+	 * Makes the MeshStore suitable for consumers without support for double-sided materials.
+	 * This is achieved by duplicating the geometry and flipping the normals for back-facing triangles,
+	 * then using single-sided material on each of the two copies.
+	 */
+	public record EmulateDoubleSidedMaterials() implements MeshProcessingStep {
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata m : meshStore.meshesWithMetadata()) {
+
+				Material origMaterial = m.mesh().material;
+				Geometry origGeometry = m.mesh().geometry;
+
+				if (!origMaterial.doubleSided()) {
+					result.add(m);
+				} else {
+
+					Material newMaterial = origMaterial.withDoubleSided(false);
+
+					var origTG = origGeometry.asTriangles();
+
+					int numTriangles = origTG.triangles.size();
+
+					List<TriangleXYZ> flippedTriangles = new ArrayList<>(numTriangles);
+					List<Color> flippedColors = origTG.colors == null ? null : new ArrayList<>(numTriangles * 3);
+					List<List<VectorXZ>> flippedTexCoords = IntStream.range(0, origTG.texCoords.size())
+							.mapToObj(i -> (List<VectorXZ>) new ArrayList<VectorXZ>(numTriangles * 3))
+							.toList();
+
+					for (int i = 0; i < numTriangles; i++) {
+						TriangleXYZ t = origTG.triangles.get(i);
+						flippedTriangles.add(new TriangleXYZ(t.v1, t.v3, t.v2));
+						if (origTG.colors != null) {
+							flippedColors.add(origTG.colors.get(i * 3));
+							flippedColors.add(origTG.colors.get(i * 3 + 2));
+							flippedColors.add(origTG.colors.get(i * 3 + 1));
+						}
+						for (int layer = 0; layer < origTG.texCoords.size(); layer++) {
+							flippedTexCoords.get(layer).add(origTG.texCoords.get(layer).get(i * 3));
+							flippedTexCoords.get(layer).add(origTG.texCoords.get(layer).get(i * 3 + 2));
+							flippedTexCoords.get(layer).add(origTG.texCoords.get(layer).get(i * 3 + 1));
+						}
+					}
+
+					var flippedGeometry = new TriangleGeometry(flippedTriangles,
+							newMaterial.interpolation(), flippedTexCoords, flippedColors);
+
+					result.add(new MeshWithMetadata(new Mesh(origGeometry, newMaterial), m.metadata()));
+					result.add(new MeshWithMetadata(new Mesh(flippedGeometry, newMaterial), m.metadata()));
+
+				}
+
+			}
+
+			return new MeshStore(result);
+
+		}
+
+	}
+
 	// TODO: implement additional processing steps
-	// * EmulateDoubleSidedMaterials
 	// * ReplaceAlmostBlankTextures(threshold)
 	// * BakeDisplacement
 
