@@ -56,10 +56,10 @@ public class ParkingModule extends AbstractModule {
 		}
 	}
 
-	private class SurfaceParking extends AbstractAreaWorldObject
+	class SurfaceParking extends AbstractAreaWorldObject
 			implements ProceduralWorldObject {
 
-		private final List<MapArea> parkingSpaces = new ArrayList<>();
+		final List<MapArea> parkingSpaces = new ArrayList<>();
 
 		public SurfaceParking(MapArea area) {
 
@@ -68,12 +68,11 @@ public class ParkingModule extends AbstractModule {
 			/* find explicitly mapped parking spaces within */
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-
-				if (overlap.type == MapOverlapType.CONTAIN
-						&& overlap.e2 == area
-						&& overlap.e1.getTags().contains("amenity", "parking_space")
-						&& overlap.e1 instanceof MapArea) {
-					parkingSpaces.add((MapArea)overlap.e1);
+				if (overlap.getOther(area) instanceof MapArea otherArea
+						&& otherArea.getTags().contains("amenity", "parking_space")
+						&& (overlap.type == MapOverlapType.CONTAIN && overlap.e2 == area ||
+							area.getPolygon().contains(otherArea.getOuterPolygon().getPointInside()))) {
+					parkingSpaces.add(otherArea);
 				}
 
 			}
