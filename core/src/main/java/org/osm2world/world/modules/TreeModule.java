@@ -2,6 +2,7 @@ package org.osm2world.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.scene.material.Materials.TREE_CROWN;
 import static org.osm2world.scene.material.Materials.TREE_TRUNK;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
@@ -314,7 +315,8 @@ public class TreeModule extends ConfigurableWorldModule {
 				if (textureDimensions.widthPerEntity() != null && textureDimensions.heightPerEntity() != null) {
 					return textureDimensions.heightPerEntity() / textureDimensions.widthPerEntity();
 				} else {
-					return 1.0 / texture.getAspectRatio();
+					float aspectRatio = requireNonNullElse(texture.getAspectRatio(), texture.dimensions().getAspectRatio());
+					return 1.0 / aspectRatio;
 				}
 			} else {
 				return 2;

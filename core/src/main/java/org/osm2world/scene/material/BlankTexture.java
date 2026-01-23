@@ -30,7 +30,7 @@ public final class BlankTexture extends RuntimeTexture {
 	}
 
 	@Override
-	public float getAspectRatio() {
+	public Float getAspectRatio() {
 		return RESOLUTION.getAspectRatio();
 	}
 

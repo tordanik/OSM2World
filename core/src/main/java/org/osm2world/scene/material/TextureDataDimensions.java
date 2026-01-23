@@ -46,6 +46,13 @@ public record TextureDataDimensions(double width, double height,
 	}
 
 	/**
+	 * Returns this texture's aspect ratio (the ratio of width to height).
+	 */
+	public float getAspectRatio() {
+		return (float) (width / height);
+	}
+
+	/**
 	 * takes raw texture coordinates (for an idealized 1m x 1m texture) and scales them to fit an actual texture
 	 * based on these {@link TextureDataDimensions}.
 	 * Also implements padding based on ({@link #padding()})

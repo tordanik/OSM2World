@@ -577,7 +577,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			 */
 			public TexturedFlag(Material material) {
 				this(material.textureLayers().isEmpty() ? 3 / 5.0
-						: 1.0 / material.textureLayers().get(0).baseColorTexture.getAspectRatio(),
+						: 1.0 / requireNonNullElse(material.textureLayers().get(0).baseColorTexture.getAspectRatio(),
+								material.textureLayers().get(0).baseColorTexture.dimensions().getAspectRatio()),
 						material);
 			}
 

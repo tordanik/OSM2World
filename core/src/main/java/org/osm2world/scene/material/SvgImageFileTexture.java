@@ -18,6 +18,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.TranscodingHints;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
 
@@ -31,11 +32,12 @@ public class SvgImageFileTexture extends ImageFileTexture {
 	}
 
 	@Override
-	public float getAspectRatio() {
+	public Float getAspectRatio() {
 		try {
 			return (float) getSvgAspectRatio(file);
 		} catch (IOException | TranscoderException e) {
-			throw new Error("Could not read texture file " + file, e);
+			ConversionLog.error("Could not read texture file " + file, e);
+			return null;
 		}
 	}
 

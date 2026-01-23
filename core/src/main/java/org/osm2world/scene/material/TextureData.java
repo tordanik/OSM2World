@@ -180,8 +180,11 @@ public abstract class TextureData {
 	/**
 	 * Returns this texture's aspect ratio (same definition as {@link Resolution#getAspectRatio()}).
 	 * Where possible and applicable, this will return the aspect ratio of the original underlying image.
+	 *
+	 * @return aspect ratio of this texture, null if the aspect ratio cannot be determined
+	 *         (e.g. because the texture cannot be loaded in the current environment)
 	 */
-	public float getAspectRatio() {
+	public Float getAspectRatio() {
 		return Resolution.of(getBufferedImage()).getAspectRatio();
 	}
 

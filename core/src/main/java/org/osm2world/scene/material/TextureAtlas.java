@@ -103,7 +103,7 @@ public class TextureAtlas extends RuntimeTexture {
 	}
 
 	@Override
-	public float getAspectRatio() {
+	public Float getAspectRatio() {
 		return getResolution().getAspectRatio();
 	}
 
@@ -115,8 +115,7 @@ public class TextureAtlas extends RuntimeTexture {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof TextureAtlas)) return false;
-		TextureAtlas other = (TextureAtlas) obj;
+		if (!(obj instanceof TextureAtlas other)) return false;
 		return dimensions().equals(other.dimensions())
 				&& Objects.equal(wrap, other.wrap)
 				&& Objects.equal(coordFunction, other.coordFunction)
