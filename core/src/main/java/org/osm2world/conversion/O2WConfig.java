@@ -23,6 +23,8 @@ import org.osm2world.math.geo.MetricMapProjection;
 import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.mesh.LevelOfDetail;
+import org.osm2world.style.PropertyStyle;
+import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.uri.LoadUriUtil;
 
@@ -33,6 +35,8 @@ import org.osm2world.util.uri.LoadUriUtil;
 public class O2WConfig {
 
 	private final Properties props;
+
+	private Style style;
 
 	private O2WConfig(Properties props) {
 		this.props = props;
@@ -441,6 +445,16 @@ public class O2WConfig {
 	public @Nullable File logDir() {
 		URI logDirURI = resolveFileConfigProperty(getString("logDir", null), true, false);
 		return logDirURI != null ? new File(logDirURI) : null;
+	}
+
+	/**
+	 * Returns the map style which should be used to control the visual appearance of the scene
+	 */
+	public Style mapStyle() {
+		if (style == null) {
+			style = new PropertyStyle(this);
+		}
+		return style;
 	}
 
 	/**

@@ -1,29 +1,20 @@
 package org.osm2world.scene.material;
 
-import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElse;
+import static org.osm2world.conversion.ConversionContext.mapStyle;
 import static org.osm2world.scene.color.Color.*;
 
-import java.awt.*;
-import java.io.File;
-import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.conversion.ConversionContext;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.Material.Transparency;
-import org.osm2world.scene.material.TextTexture.FontStyle;
-import org.osm2world.scene.material.TextureData.Wrap;
-import org.osm2world.scene.texcoord.NamedTexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordFunction;
-import org.osm2world.util.uri.LoadUriUtil;
 import org.osm2world.world.creation.WorldModule;
 
 /**
@@ -259,9 +250,8 @@ public final class Materials {
 	public static final MaterialRef VOID = new MaterialRef("VOID",
 			new Material(Interpolation.FLAT, BLACK));
 
-	private static final Map<String, MaterialRef> surfaceMaterialMap;
 
-	private static final Map<String, Material> materialsByName = new HashMap<>();
+	private static final Map<String, MaterialRef> surfaceMaterialMap;
 
 	static {
 
@@ -303,43 +293,29 @@ public final class Materials {
 
 	}
 
-	/** returns all materials defined here */
-	synchronized public static Collection<Material> getMaterials() {
-		return materialsByName.values();
+	public static Collection<Material> getMaterials() {
+		return mapStyle().getMaterials();
 	}
 
-	/**
-	 * returns a material defined here based on its name
-	 *
-	 * @param name  case-insensitive name of the material
-	 */
-	synchronized public static @Nullable Material getMaterial(@Nullable String name) {
-		if (name == null) return null;
-		return materialsByName.get(name);
+	public static @Nullable Material getMaterial(@Nullable String name) {
+		return mapStyle().resolveMaterial(name);
 	}
 
-	/** variant of {@link #getMaterial(String)} with a default value */
-	synchronized public static Material getMaterial(@Nullable String name, MaterialOrRef defaultValue) {
-		Material result = getMaterial(name);
-		return result == null ? defaultValue.get() : result;
+	public static Material getMaterial(@Nullable String name, MaterialOrRef defaultValue) {
+		return mapStyle().resolveMaterial(name, defaultValue);
 	}
 
 	public static Material resolveMaterial(MaterialOrRef materialOrRef) {
-		if (materialOrRef instanceof MaterialRef materialRef) {
-			Material material = getMaterial(materialRef.name());
-			return material != null ? material : materialRef.defaultAppearance();
-		} else {
-			return (Material) materialOrRef;
-		}
+		return mapStyle().resolveMaterial(materialOrRef);
 	}
 
 	/** returns a material for a surface value; null if none is found */
-	synchronized public static Material getSurfaceMaterial(String value) {
+	public static Material getSurfaceMaterial(String value) {
 		return getSurfaceMaterial(value, null);
 	}
 
 	/** same as {@link #getSurfaceMaterial(String)}, but with fallback value */
-	synchronized public static Material getSurfaceMaterial(String value, MaterialOrRef fallback) {
+	public static Material getSurfaceMaterial(String value, MaterialOrRef fallback) {
 		MaterialRef materialRef = value == null ? null : surfaceMaterialMap.get(value);
 		if (materialRef != null) {
 			return materialRef.get();
@@ -348,389 +324,16 @@ public final class Materials {
 		}
 	}
 
-	/**
-	 * Returns a human-readable, unique name for a material known within this class,
-	 * null for all other materials.
-	 * To handle equal materials known under different names,
-	 * it attempts to look for object identity before object equality.
-	 */
-	synchronized public static String getUniqueName(MaterialOrRef material) {
-
-		if (material == null) return null;
-
-		// check by object identity first
-		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue() == material.get()) {
-				return entry.getKey();
-			}
-		}
-
-		// check by object equality second
-		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue().equals(material.get())) {
-				return entry.getKey();
-			}
-		}
-
-		// no match found
-		return null;
-
+	public static String getUniqueName(MaterialOrRef material) {
+		return mapStyle().getUniqueName(material);
 	}
 
-	/**
-	 * Returns the transparent variant of a material, if available.
-	 * For example, there may be an equivalent of GLASS_WALL that has partially transparent glass panes
-	 * and should be used if the space behind the wall is also modeled in 3D.
-	 *
-	 * @return the transparent variant of the material, or null if none is available
-	 */
 	public static @Nullable Material getTransparentVariant(MaterialOrRef material) {
-		return switch (requireNonNullElse(getUniqueName(material), "")) {
-			case "GLASS" -> GLASS_TRANSPARENT.get();
-			case "GLASS_WALL" -> getMaterial("GLASS_WALL_TRANSPARENT", null);
-			case "GLASS_ROOF" -> getMaterial("GLASS_ROOF_TRANSPARENT", null);
-			default -> null;
-		};
+		return mapStyle().getTransparentVariant(material);
 	}
 
-	private static final Pattern CONF_KEY_PATTERN = Pattern.compile(
-					"material_(.+)_(interpolation|color|doubleSided|shadow|ssao|transparency|texture\\d*_.+)");
-
-	/**
-	 * configures the attributes of the materials within this class
-	 * based on external configuration settings
-	 */
-	synchronized public static void configureMaterials(O2WConfig config) {
-
-		materialsByName.clear();
-
-		/* find all material-related properties and organize them by material */
-
-		Map<String, Set<String>> attributesPerMaterialName = new HashMap<>();
-
-		Iterator<String> keyIterator = config.getKeys();
-
-		while (keyIterator.hasNext()) {
-			String key = keyIterator.next();
-			Matcher matcher = CONF_KEY_PATTERN.matcher(key);
-			if (matcher.matches()) {
-				String materialName = matcher.group(1);
-				if (!attributesPerMaterialName.containsKey(materialName)) {
-					attributesPerMaterialName.put(materialName, new HashSet<>());
-				}
-				attributesPerMaterialName.get(materialName).add(matcher.group(2));
-			}
-		}
-
-		/* create each material */
-
-		for (var entry : attributesPerMaterialName.entrySet()) {
-
-			String materialName = entry.getKey();
-			Set<String> attributes = entry.getValue();
-
-			Material material = new Material(Interpolation.FLAT, WHITE);
-
-			String keyPrefix = "material_" + materialName + "_";
-
-			for (String attribute : attributes) {
-
-				String key = keyPrefix + attribute;
-
-				switch (attribute) {
-					case "doubleSided" -> {
-						boolean doubleSided = config.getBoolean(key);
-						material = material.withDoubleSided(doubleSided);
-					}
-					case "interpolation" -> {
-						Interpolation interpolation = config.getEnum(Interpolation.class, key);
-						if (interpolation != null) { material = material.withInterpolation(interpolation); }
-					}
-					case "shadow" -> {
-						Material.Shadow shadow = config.getEnum(Material.Shadow.class, key);
-						if (shadow != null) { material = material.withShadow(shadow); }
-					}
-					case "ssao" -> {
-						Material.AmbientOcclusion ao = config.getEnum(Material.AmbientOcclusion.class, key);
-						if (ao != null) { material = material.withAmbientOcclusion(ao); }
-					}
-					case "transparency" -> {
-						Transparency transparency = config.getEnum(Transparency.class, key);
-						if (transparency != null) { material = material.withTransparency(transparency); }
-					}
-					case "color" -> {
-						Color color = config.getColor(key);
-						if (color != null) {
-							material = material.withColor(color);
-						} else {
-							System.err.println("incorrect color value: " + config.getString(key));
-						}
-					}
-					default -> {
-						if (!attribute.startsWith("texture")) {
-							System.err.println("unknown material attribute '" + attribute + "' for material " + materialName);
-						}
-					}
-				}
-
-			}
-
-			/* configure texture layers */
-
-			List<TextureLayer> textureLayers = new ArrayList<>();
-
-			for (int i = 0; i < Material.MAX_TEXTURE_LAYERS; i++) {
-				String attribute = "texture" + i;
-				if (attributes.stream().anyMatch(a -> a.startsWith(attribute))) {
-					boolean implicitColorTexture = attributes.stream().noneMatch(a -> a.startsWith(attribute + "_color_"));
-					TextureLayer textureLayer = createTextureLayer(config, keyPrefix + attribute, implicitColorTexture);
-					if (textureLayer != null) {
-						textureLayers.add(textureLayer);
-					}
-				} else {
-					break;
-				}
-			}
-
-			material = material.withLayers(textureLayers);
-
-			/* store the finished material */
-
-			materialsByName.put(materialName, material);
-
-		}
-
-	}
-
-	private static @Nullable TextureLayer createTextureLayer(O2WConfig config, String keyPrefix, boolean implicitColorTexture) {
-
-		URI baseColorTexture = null;
-		URI ormTexture = null;
-		URI normalTexture = null;
-		URI displacementTexture = null;
-
-		if (config.containsKey(keyPrefix + "_dir")) {
-
-			URI textureDirURI = config.resolveFileConfigProperty(config.getString(keyPrefix + "_dir"));
-
-			if (textureDirURI != null && "file".equals(textureDirURI.getScheme())
-					&& new File(textureDirURI).exists() && new File(textureDirURI).isDirectory()) {
-
-				for (File file : requireNonNull(new File(textureDirURI).listFiles())) {
-					if (file.getName().contains("_Color.")) {
-						baseColorTexture = file.toURI();
-					} else if (file.getName().contains("_ORM.")) {
-						ormTexture = file.toURI();
-					} else if (file.getName().contains("_Normal.")) {
-						normalTexture = file.toURI();
-					} else if (file.getName().contains("_Displacement.")) {
-						displacementTexture = file.toURI();
-					}
-				}
-
-			} else if (textureDirURI != null && List.of("http", "https").contains(textureDirURI.getScheme())) {
-
-				URI parentURI = textureDirURI.toString().endsWith("/")
-						? textureDirURI
-						: URI.create(textureDirURI + "/");
-
-				String[] pathParts = textureDirURI.getPath().split("/");
-
-				if (pathParts.length >= 2) {
-
-					String materialName = pathParts[pathParts.length - 1];
-
-					Function<String, URI> buildAndCheckTextureUri = (String suffix) -> {
-						for (String extension : List.of (".jpg", ".png", ".jpeg")) { // check more likely ones first
-							URI uri = parentURI.resolve(materialName + suffix + extension);
-							if (LoadUriUtil.checkExists(uri)) {
-								return uri;
-							}
-						}
-						return null;
-					};
-
-					baseColorTexture = buildAndCheckTextureUri.apply("_Color");
-					normalTexture = buildAndCheckTextureUri.apply("_Normal");
-					ormTexture = buildAndCheckTextureUri.apply("_ORM");
-					displacementTexture = buildAndCheckTextureUri.apply("_Displacement");
-
-				}
-
-			} else {
-				System.err.println("Not a directory: " + textureDirURI);
-			}
-		}
-
-		TextureData baseColorTextureData = createTexture(
-				config, keyPrefix + (implicitColorTexture ? "" : "_color"), baseColorTexture);
-
-		if (baseColorTextureData == null) {
-			System.err.println("Config is missing base color texture for " + keyPrefix);
-			return null;
-		} else {
-			return new TextureLayer(
-					baseColorTextureData,
-					createTexture(config, keyPrefix + "_normal", normalTexture),
-					createTexture(config, keyPrefix + "_orm", ormTexture),
-					createTexture(config, keyPrefix + "_displacement", displacementTexture),
-					config.getBoolean(keyPrefix + "_colorable", false));
-		}
-
-	}
-
-	/**
-	 * @param defaultImageURI  texture file to use if there's no _file attribute
-	 * @return  valid {@link TextureData} extracted from the config file, or null
-	 */
-	private static @Nullable TextureData createTexture(O2WConfig config, String keyPrefix,
-			@Nullable URI defaultImageURI) {
-
-		TextureDataDimensions dimensions = createTextureDataDimensions(config, keyPrefix);
-		Wrap wrap = getWrap(config.getString(keyPrefix + "_wrap"));
-		@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
-				getCoordFunction(config.getString(keyPrefix + "_coord_function"));
-
-		//get texture layer type
-		String type = config.getString(keyPrefix + "_type", "image");
-
-		if ("text".equals(type)) {
-
-			String fontKey = keyPrefix + "_font";
-			String textKey = keyPrefix + "_text";
-			String topOffsetKey = keyPrefix + "_topOffset";
-			String leftOffsetKey = keyPrefix + "_leftOffset";
-			String relativeFontSizeKey = keyPrefix + "_relative_font_size";
-			String textColorKey = keyPrefix + "_textColor";
-
-			String text = "";
-
-			//get text configuration
-			if (config.getString(textKey) != null) {
-				text = config.getString(textKey);
-			}
-
-			//get font configuration
-			Font font = null;
-			if (config.getString(fontKey) == null) {
-
-				font = new Font("Dialog", Font.PLAIN, 100);
-
-			} else {
-
-				String[] values = config.getString(fontKey).split(",", 2);
-
-				if (values.length == 2) {
-					int fontStyle = FontStyle.getStyle(values[1].toUpperCase());
-					font = new Font(values[0], fontStyle, 100);
-				} else {
-					font = new Font("Dialog", Font.PLAIN, 100);
-				}
-			}
-
-			//get top/left offset configuration
-			String topOffset = config.getString(topOffsetKey);
-			if (topOffset != null) {
-				if (topOffset.endsWith("%")) {
-					topOffset = topOffset.substring(0, topOffset.length() - 1);
-				}
-			} else {
-				topOffset = Integer.toString(50);
-			}
-
-			String leftOffset = config.getString(leftOffsetKey);
-			if (leftOffset != null) {
-				if (leftOffset.endsWith("%")) {
-					leftOffset = leftOffset.substring(0, leftOffset.length() - 1);
-				}
-			} else {
-				leftOffset = Integer.toString(50);
-			}
-
-			//get text color configuration
-			Color color = config.getColor(textColorKey, Color.BLACK);
-
-			//get relative font size
-			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
-
-			return new TextTexture(text, font, dimensions,
-					Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
-					relativeFontSize, wrap, coordFunction);
-
-		} else if ("image".equals(type)) {
-
-			URI imageURI = config.resolveFileConfigProperty(config.getString(keyPrefix + "_file"));
-
-			if (imageURI != null) {
-				return createTexture(imageURI, dimensions, wrap, coordFunction);
-			} else if (defaultImageURI != null) {
-				return createTexture(defaultImageURI, dimensions, wrap, coordFunction);
-			} else {
-				return null;
-			}
-
-		} else {
-			System.err.println("unknown type value: " + type);
-			return null;
-		}
-
-	}
-
-	private static TextureData createTexture(URI imageURI, TextureDataDimensions dimensions, Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> coordFunction) {
-		if ("file".equals(imageURI.getScheme())) {
-			return ImageFileTexture.create(new File(imageURI), dimensions, wrap, coordFunction);
-		} else {
-			return new UriTexture(imageURI, dimensions, wrap, coordFunction);
-		}
-	}
-
-	/**
-	 * @return  valid {@link TextureDataDimensions} extracted from the config file, possibly using default values
-	 */
-	private static TextureDataDimensions createTextureDataDimensions(O2WConfig config, String keyPrefix) {
-
-		keyPrefix  = keyPrefix.replaceFirst("_(?:color|normal|orm|displacement)$", "");
-
-		double width = config.getDouble(keyPrefix + "_width", 1.0);
-		double height = config.getDouble(keyPrefix + "_height", 1.0);
-
-		Double widthPerEntity = config.getDouble(keyPrefix + "_widthPerEntity", null);
-		Double heightPerEntity = config.getDouble(keyPrefix + "_heightPerEntity", null);
-
-		double padding = config.getDouble(keyPrefix + "_padding", 0);
-
-		if (width <= 0) {
-			System.err.println("Error: illegal width for texture " + keyPrefix);
-			width = 1;
-		}
-
-		if (height <= 0) {
-			System.err.println("Error: illegal height for texture " + keyPrefix);
-			height = 1;
-		}
-
-		return new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity, padding);
-
-	}
-
-	private static Wrap getWrap(String wrapString) {
-		if (wrapString != null && wrapString.toLowerCase().startsWith("clamp")) {
-			return Wrap.CLAMP;
-		} else {
-			return Wrap.REPEAT;
-		}
-	}
-
-	private static @Nullable Function<TextureDataDimensions, TexCoordFunction> getCoordFunction(
-			String coordFunctionString) {
-
-		Function<TextureDataDimensions, TexCoordFunction> result = null;
-
-		if (coordFunctionString != null) {
-			result = NamedTexCoordFunction.valueOf(coordFunctionString.toUpperCase());
-		}
-
-		return result;
+	public static void configureMaterials(O2WConfig config) {
+		ConversionContext.setConfig(config);
 	}
 
 }
