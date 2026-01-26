@@ -14,10 +14,11 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.output.statistics.StatisticsOutput.Stat;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Materials;
 
 
 public class StatisticsDialog extends JDialog {
@@ -36,7 +37,7 @@ public class StatisticsDialog extends JDialog {
 //			entry(VBO_VALUE_COUNT, "vbo values")
 	);
 
-	public StatisticsDialog(JFrame owner, StatisticsOutput stats) {
+	public StatisticsDialog(JFrame owner, StatisticsOutput stats, O2WConfig config) {
 		super(owner, "Statistics");
 
 		/* collect content for tables */
@@ -72,7 +73,7 @@ public class StatisticsDialog extends JDialog {
 			for (int row = 0; row < numMaterials; ++row) {
 
 				if (col == 0) {
-					String name = Materials.getUniqueName(materialList.get(row));
+					String name = Materials.getUniqueName(materialList.get(row), config);
 					if (name == null) {
 						name = materialList.get(row).toString();
 					}

@@ -284,12 +284,12 @@ public class SportsModule extends AbstractModule {
 
 		@Override
 		protected Material getPitchMaterial() {
-			return PITCH_SOCCER.get();
+			return PITCH_SOCCER.get(config);
 		}
 
 		@Override
 		protected Material getFallbackPitchMaterial() {
-			return Materials.getSurfaceMaterial(area.getTags().getValue("surface"), GRASS);
+			return Materials.getSurfaceMaterial(area.getTags().getValue("surface"), GRASS, config);
 		}
 
 	}
@@ -308,7 +308,7 @@ public class SportsModule extends AbstractModule {
 			public List<Mesh> buildMeshes(InstanceParameters params) {
 				return singletonList(new Mesh(ExtrusionGeometry.createColumn(
 						null, params.position(), netHeightAtPosts, postRadius, postRadius, false, true,
-						new Color(184, 184, 184), PLASTIC.get().textureDimensions()), PLASTIC.get(),
+						new Color(184, 184, 184), PLASTIC.get(config).textureDimensions()), PLASTIC.get(config),
 						LevelOfDetail.LOD2, LevelOfDetail.LOD4));
 			}
 		};
@@ -347,11 +347,11 @@ public class SportsModule extends AbstractModule {
 			String surface = area.getTags().getValue("surface");
 
 			if ("grass".equals(surface)) {
-				return singles ? PITCH_TENNIS_SINGLES_GRASS.get() : PITCH_TENNIS_GRASS.get();
+				return singles ? PITCH_TENNIS_SINGLES_GRASS.get(config) : PITCH_TENNIS_GRASS.get(config);
 			} else if ("asphalt".equals(surface)) {
-				return singles ? PITCH_TENNIS_SINGLES_ASPHALT.get() : PITCH_TENNIS_ASPHALT.get();
+				return singles ? PITCH_TENNIS_SINGLES_ASPHALT.get(config) : PITCH_TENNIS_ASPHALT.get(config);
 			} else {
-				return singles ? PITCH_TENNIS_SINGLES_CLAY.get() : PITCH_TENNIS_CLAY.get();
+				return singles ? PITCH_TENNIS_SINGLES_CLAY.get(config) : PITCH_TENNIS_CLAY.get(config);
 			}
 
 		}
@@ -362,11 +362,11 @@ public class SportsModule extends AbstractModule {
 			String surface = area.getTags().getValue("surface");
 
 			if ("grass".equals(surface)) {
-				return GRASS.get();
+				return GRASS.get(config);
 			} else if ("asphalt".equals(surface)) {
-				return ASPHALT.get();
+				return ASPHALT.get(config);
 			} else {
-				return EARTH.get();
+				return EARTH.get(config);
 			}
 
 		}
@@ -455,12 +455,12 @@ public class SportsModule extends AbstractModule {
 
 				}
 
-				target.drawTriangleStrip(TENNIS_NET, verticesNet,
-						texCoordLists(verticesNet, TENNIS_NET, STRIP_FIT_HEIGHT));
+				target.drawTriangleStrip(TENNIS_NET.get(config), verticesNet,
+						texCoordLists(verticesNet, TENNIS_NET.get(config), STRIP_FIT_HEIGHT));
 
-				if (!TENNIS_NET.get().doubleSided()) {
-					target.drawTriangleStrip(TENNIS_NET, verticesNetBack,
-							texCoordLists(verticesNetBack, TENNIS_NET, STRIP_FIT_HEIGHT));
+				if (!TENNIS_NET.get(config).doubleSided()) {
+					target.drawTriangleStrip(TENNIS_NET.get(config), verticesNetBack,
+							texCoordLists(verticesNetBack, TENNIS_NET.get(config), STRIP_FIT_HEIGHT));
 				}
 
 			}
@@ -500,12 +500,12 @@ public class SportsModule extends AbstractModule {
 
 		@Override
 		protected Material getPitchMaterial() {
-			return PITCH_BEACHVOLLEYBALL.get();
+			return PITCH_BEACHVOLLEYBALL.get(config);
 		}
 
 		@Override
 		protected Material getFallbackPitchMaterial() {
-			return SAND.get();
+			return SAND.get(config);
 		}
 
 	}

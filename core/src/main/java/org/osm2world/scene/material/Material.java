@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.scene.color.Color;
+import org.osm2world.style.Style;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -310,7 +311,7 @@ public record Material(Interpolation interpolation, Color color, boolean doubleS
 	}
 
 	@Override
-	public Material get() {
+	public Material get(Style mapStyle) {
 		return this;
 	}
 

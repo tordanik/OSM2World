@@ -641,7 +641,7 @@ public class GltfOutput extends AbstractOutput {
 
 	private @Nullable String getMaterialName(Material m, @Nullable TextureLayer textureLayer) {
 
-		String name = Materials.getUniqueName(m);
+		String name = Materials.getUniqueName(m, config);
 
 		if (name == null) {
 			if (textureLayer != null) {

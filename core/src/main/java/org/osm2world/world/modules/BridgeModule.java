@@ -77,7 +77,7 @@ public class BridgeModule extends AbstractModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
-	private static class Bridge extends BridgeOrTunnel {
+	private class Bridge extends BridgeOrTunnel {
 
 		public Bridge(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
@@ -119,12 +119,12 @@ public class BridgeModule extends AbstractModule {
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					rightOutline, belowRightOutline);
 
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip1,
-					texCoordLists(strip1, BRIDGE_DEFAULT, NamedTexCoordFunction.STRIP_WALL));
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip2,
-					texCoordLists(strip2, BRIDGE_DEFAULT, NamedTexCoordFunction.STRIP_WALL));
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip3,
-					texCoordLists(strip3, BRIDGE_DEFAULT, NamedTexCoordFunction.STRIP_WALL));
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT.get(config), strip1,
+					texCoordLists(strip1, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT.get(config), strip2,
+					texCoordLists(strip2, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT.get(config), strip3,
+					texCoordLists(strip3, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
 
 		}
 
@@ -141,7 +141,7 @@ public class BridgeModule extends AbstractModule {
 			SimplePolygonShapeXZ defaultShape = new AxisAlignedRectangleXZ(NULL_VECTOR, defaultWidth, defaultLength);
 			defaultShape = defaultShape.rotatedCW(primaryRep.getPrimaryMapElement().getDirection().angle());
 
-			Material defaultMaterial = Materials.BRIDGE_PILLAR_DEFAULT.get();
+			Material defaultMaterial = Materials.BRIDGE_PILLAR_DEFAULT.get(config);
 
 			/* look for explicitly mapped supports among the way's nodes and overlapping features */
 
@@ -180,10 +180,10 @@ public class BridgeModule extends AbstractModule {
 
 						Material material = null;
 						if (element.getTags().containsKey("material")) {
-							material = Materials.getMaterial(element.getTags().getValue("material").toUpperCase());
+							material = Materials.getMaterial(element.getTags().getValue("material").toUpperCase(), config);
 						}
 						if (material == null) {
-							material = Materials.BRIDGE_PILLAR_DEFAULT.get();
+							material = Materials.BRIDGE_PILLAR_DEFAULT.get(config);
 						}
 						material = material.withColor(parseColor(element.getTags().getValue("colour"), CSS_COLORS));
 

@@ -155,16 +155,18 @@ public class PropertyStyle implements Style {
 
 		if (material == null) return null;
 
+		Material m = resolveMaterial(material);
+
 		// check by object identity first
 		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue() == material.get()) {
+			if (entry.getValue().equals(m)) {
 				return entry.getKey();
 			}
 		}
 
 		// check by object equality second
 		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue() == material.get()) {
+			if (entry.getValue().equals(m)) {
 				return entry.getKey();
 			}
 		}

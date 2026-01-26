@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
@@ -18,7 +19,7 @@ public class IndoorArea implements AreaWorldObject, ProceduralWorldObject {
 
     private final IndoorObjectData data;
 
-    IndoorArea(IndoorObjectData data){
+    IndoorArea(IndoorObjectData data, O2WConfig config) {
 
     	((MapArea) data.getMapElement()).addRepresentation(this);
 
@@ -27,7 +28,7 @@ public class IndoorArea implements AreaWorldObject, ProceduralWorldObject {
         PolygonWithHolesXZ polygon = data.getPolygon();
         double floorHeight = data.getLevelHeightAboveBase();
 
-        floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight,
+        floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(config), polygon, floorHeight,
                 data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
     }
 

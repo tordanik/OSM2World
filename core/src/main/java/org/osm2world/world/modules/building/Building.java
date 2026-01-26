@@ -193,7 +193,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	@Override
 	public void buildMeshesAndModels(Target target) {
 		forEach(parts, part -> part.buildMeshesAndModels(target));
-		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments);
+		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments, config);
 	}
 
 	@Override

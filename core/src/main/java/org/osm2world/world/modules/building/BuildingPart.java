@@ -31,6 +31,7 @@ import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.ColorNameDefinition;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -115,7 +116,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		Material materialRoof = createRoofMaterial(tags, config);
 
 		try {
-			roof = Roof.createRoofForShape(roofShape, area, polygon, tags, materialRoof);
+			roof = Roof.createRoofForShape(roofShape, area, polygon, tags, materialRoof, config);
 		} catch (InvalidGeometryException e) {
 			throw new InvalidGeometryException("error constructing roof for " + area + ": " + e);
 		}
@@ -453,7 +454,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		}
 
 		if (!config.getBoolean("noOuterWalls", false)){
-			walls.forEach(w -> w.renderTo(target));
+			walls.forEach(w -> w.renderTo(target, config));
 		}
 
 		if (!config.getBoolean("noRoofs", false)) {
@@ -547,10 +548,10 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			return buildMaterial(
 					tags.getValue("building:material"),
 					tags.getValue("building:colour"),
-					defaults.materialWall, false);
+					defaults.materialWall, false, config);
 
 		} else {
-			return defaults.materialWall;
+			return defaults.materialWall.get(config);
 		}
 
 	}
@@ -564,9 +565,9 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			return buildMaterial(
 						tags.getValue("roof:material"),
 						tags.getValue("roof:colour"),
-						defaults.materialRoof, true);
+						defaults.materialRoof, true, config);
 		} else {
-			return defaults.materialRoof;
+			return defaults.materialRoof.get(config);
 		}
 
 	}
@@ -587,44 +588,46 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			return buildMaterial(
 					materialValue,
 					colorValue,
-					defaults.materialWall, false);
+					defaults.materialWall, false, config);
 
 		} else {
-			return defaults.materialWall;
+			return defaults.materialWall.get(config);
 		}
 
 	}
 
 	public static Material buildMaterial(String materialString,
-										 String colorString, Material defaultMaterial,
-										 boolean roof) {
+										 String colorString, MaterialOrRef defaultMaterial,
+										 boolean roof, O2WConfig config) {
 
-		Material material = defaultMaterial;
+		MaterialOrRef materialRef = defaultMaterial;
 
 		if (materialString != null) {
 			if (List.of("adobe", "clay", "mud", "rammed_earth").contains(materialString)) {
-				material = ADOBE.get();
+				materialRef = ADOBE;
 			} else if ("brick".equals(materialString)) {
-				material = BRICK.get();
+				materialRef = BRICK;
 			} else if ("glass".equals(materialString)
 					|| "mirror".equals(materialString)) {
-				material = roof ? GLASS_ROOF.get() : GLASS_WALL.get();
+				materialRef = roof ? GLASS_ROOF : GLASS_WALL;
 			} else if ("copper".equals(materialString) && roof) {
-				material = COPPER_ROOF.get();
+				materialRef = COPPER_ROOF;
 			} else if ("thatch".equals(materialString)
 					|| "reed".equals(materialString)) {
-				material = THATCH_ROOF.get();
+				materialRef = THATCH_ROOF;
 			} else if ("wood".equals(materialString)
 					|| "bamboo".equals(materialString)) {
-				material = WOOD_WALL.get();
-			} else if (getSurfaceMaterial(materialString) != null) {
-				material = getSurfaceMaterial(materialString);
-			} else if (getMaterial(materialString) != null) {
-				material = getMaterial(materialString);
+				materialRef = WOOD_WALL;
+			} else if (getSurfaceMaterial(materialString, config) != null) {
+				materialRef = getSurfaceMaterial(materialString, config);
+			} else if (getMaterial(materialString, config) != null) {
+				materialRef = getMaterial(materialString, config);
 			}
 		}
 
-		boolean colorable = material.textureLayers().size() == 0
+		Material material = materialRef.get(config);
+
+		boolean colorable = material.textureLayers().isEmpty()
 				|| material.textureLayers().get(0).colorable;
 
 		if (colorString != null && colorable) {

@@ -7,6 +7,7 @@ import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
@@ -43,7 +44,7 @@ class TexturedWindow implements Window {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, WallSurface surface) {
+	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config) {
 
 		PolygonXYZ frontOutline = surface.convertTo3D(outline());
 
@@ -60,8 +61,8 @@ class TexturedWindow implements Window {
 
 		List<VectorXYZ> vsWindow = asList(topLeft, bottomLeft, topRight, bottomRight);
 
-		target.drawTriangleStrip(SINGLE_WINDOW, vsWindow,
-				texCoordLists(vsWindow, SINGLE_WINDOW, STRIP_FIT));
+		target.drawTriangleStrip(SINGLE_WINDOW.get(config), vsWindow,
+				texCoordLists(vsWindow, SINGLE_WINDOW.get(config), STRIP_FIT));
 
 	}
 

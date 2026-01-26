@@ -119,7 +119,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Cliff extends AbstractCliff {
+	public class Cliff extends AbstractCliff {
 
 		protected Cliff(MapWaySegment segment) {
 			super(segment);
@@ -132,12 +132,12 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.ROCK.get();
+			return Materials.ROCK.get(config);
 		}
 
 	}
 
-	public static class RetainingWall extends AbstractCliff {
+	public class RetainingWall extends AbstractCliff {
 
 		protected RetainingWall(MapWaySegment segment) {
 			super(segment);
@@ -150,7 +150,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.CONCRETE.get();
+			return Materials.CONCRETE.get(config);
 		}
 
 	}

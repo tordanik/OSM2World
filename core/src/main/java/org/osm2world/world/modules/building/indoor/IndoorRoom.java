@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import java.util.Collection;
 
 import org.apache.commons.lang3.IntegerRange;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -21,22 +22,22 @@ public class IndoorRoom implements AreaWorldObject, ProceduralWorldObject {
 
     private final IndoorObjectData data;
 
-    IndoorRoom(IndoorObjectData data){
+    IndoorRoom(IndoorObjectData data, O2WConfig config) {
 
     	((MapArea) data.getMapElement()).addRepresentation(this);
 
         this.data = data;
 
-        this.wall = new IndoorWall(data.getBuildingPart(), data.getMapElement());
+        this.wall = new IndoorWall(data.getBuildingPart(), data.getMapElement(), config);
 
         floor = new IndoorFloor(data.getBuildingPart(),
-                data.getSurface(),
+                data.getSurface(config),
                 data.getPolygon(),
                 data.getLevelHeightAboveBase(),
                 data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
 
         ceiling = new Ceiling(data.getBuildingPart(),
-                data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall),
+                data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall, config),
                 data.getPolygon(),
                 data.getTopOfTopLevelHeightAboveBase(),
                 data.getRenderableLevels().contains(data.getMaxLevel()), data.getMaxLevel());

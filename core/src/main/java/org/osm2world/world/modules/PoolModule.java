@@ -61,7 +61,7 @@ public class PoolModule extends AbstractModule {
 
 	}
 
-	public static class Pool extends AbstractAreaWorldObject
+	public class Pool extends AbstractAreaWorldObject
 			implements ProceduralWorldObject {
 
 		public Pool(MapArea area) {
@@ -80,8 +80,8 @@ public class PoolModule extends AbstractModule {
 
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			target.drawTriangles(WATER, triangles,
-					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
+			target.drawTriangles(WATER.get(config), triangles,
+					triangleTexCoordLists(triangles, WATER.get(config), GLOBAL_X_Z));
 
 			/* draw a small area around the pool */
 
@@ -97,13 +97,12 @@ public class PoolModule extends AbstractModule {
 
 			List<VectorXYZ> path = getOutlinePolygon().outer().vertices();
 
-			target.drawExtrudedShape(CONCRETE, wallShape, path,
-					nCopies(path.size(), Y_UNIT), null, null);
+			target.drawExtrudedShape(CONCRETE.get(config), wallShape, path, nCopies(path.size(), Y_UNIT), null, null);
 
 		}
 	}
 
-	private static class WaterSlide implements WaySegmentWorldObject, ProceduralWorldObject {
+	private class WaterSlide implements WaySegmentWorldObject, ProceduralWorldObject {
 
 		private static final Color DEFAULT_COLOR = ORANGE;
 
@@ -235,7 +234,7 @@ public class PoolModule extends AbstractModule {
 			List<VectorXYZ> up = nCopies(path.size(), Y_UNIT);
 
 			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null);
-			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null);
+			target.drawExtrudedShape(WATER.get(config), CROSS_SECTION_WATER, path, up, null, null);
 
 			/* draw supporting pillars */
 
@@ -243,7 +242,7 @@ public class PoolModule extends AbstractModule {
 
 				double bottomHeight = -100;
 
-				target.drawColumn(STEEL, null, v.y(bottomHeight),
+				target.drawColumn(STEEL.get(config), null, v.y(bottomHeight),
 						v.y - bottomHeight, 0.15, 0.15, false, false);
 
 			}

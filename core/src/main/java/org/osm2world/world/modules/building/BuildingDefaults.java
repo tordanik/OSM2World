@@ -1,8 +1,7 @@
 package org.osm2world.world.modules.building;
 
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.MaterialOrRef;
+import org.osm2world.scene.material.MaterialRef;
 import org.osm2world.scene.material.Materials;
 
 /** default properties for a particular building or building:part type. Immutable. */
@@ -11,13 +10,13 @@ public class BuildingDefaults {
 	public final int levels;
 	public final double heightPerLevel;
 	public final String roofShape;
-	public final Material materialWall;
-	public final Material materialRoof;
+	public final MaterialRef materialWall;
+	public final MaterialRef materialRoof;
 	public final boolean hasWindows;
 	public final boolean hasWalls;
 
 	public BuildingDefaults(int levels, double heightPerLevel, String roofShape,
-			Material materialWall, Material materialRoof, boolean hasWindows, boolean hasWalls) {
+			MaterialRef materialWall, MaterialRef materialRoof, boolean hasWindows, boolean hasWalls) {
 		this.levels = levels;
 		this.heightPerLevel = heightPerLevel;
 		this.roofShape = roofShape;
@@ -42,8 +41,8 @@ public class BuildingDefaults {
 
 		int levels = 3;
 		double heightPerLevel = 2.5;
-		MaterialOrRef materialWall = Materials.BUILDING_DEFAULT;
-		MaterialOrRef materialRoof = Materials.ROOF_DEFAULT;
+		MaterialRef materialWall = Materials.BUILDING_DEFAULT;
+		MaterialRef materialRoof = Materials.ROOF_DEFAULT;
 		boolean hasWindows = true;
 		boolean hasWalls = true;
 		String roofShape = "flat";
@@ -123,7 +122,7 @@ public class BuildingDefaults {
 		/* return an object populated with the results */
 
     	return new BuildingDefaults(levels, heightPerLevel, roofShape,
-    			materialWall.get(), materialRoof.get(), hasWindows, hasWalls);
+    			materialWall, materialRoof, hasWindows, hasWalls);
 
 	}
 

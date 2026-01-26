@@ -100,7 +100,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
+	public class Waterway extends AbstractNetworkWaySegmentWorldObject
 			implements ProceduralWorldObject {
 
 		public Waterway(MapWaySegment line) {
@@ -191,8 +191,8 @@ public class WaterModule extends ConfigurableWorldModule {
 				);
 
 				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(TERRAIN_DEFAULT, strip,
-						texCoordLists(strip, TERRAIN_DEFAULT, GLOBAL_X_Z));
+					target.drawTriangleStrip(TERRAIN_DEFAULT.get(config), strip,
+						texCoordLists(strip, TERRAIN_DEFAULT.get(config), GLOBAL_X_Z));
 				}
 
 				/* render water */
@@ -200,8 +200,8 @@ public class WaterModule extends ConfigurableWorldModule {
 				List<VectorXYZ> vs = createTriangleStripBetween(
 						leftWaterBorder, rightWaterBorder);
 
-				target.drawTriangleStrip(WATER, vs,
-						texCoordLists(vs, WATER, GLOBAL_X_Z));
+				target.drawTriangleStrip(WATER.get(config), vs,
+						texCoordLists(vs, WATER.get(config), GLOBAL_X_Z));
 
 			}
 
@@ -232,7 +232,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RiverJunction extends JunctionNodeWorldObject<Waterway>
+	public class RiverJunction extends JunctionNodeWorldObject<Waterway>
 			implements ProceduralWorldObject {
 
 		public RiverJunction(MapNode node) {
@@ -246,8 +246,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vertices = getOutlinePolygon().verticesNoDup();
 
-			target.drawConvexPolygon(WATER, vertices,
-					texCoordLists(vertices, WATER, GLOBAL_X_Z));
+			target.drawConvexPolygon(WATER.get(config), vertices,
+					texCoordLists(vertices, WATER.get(config), GLOBAL_X_Z));
 
 			//TODO: only cover with water to 0.95 * distance to center; add land below
 
@@ -255,7 +255,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Water extends NetworkAreaWorldObject
+	public class Water extends NetworkAreaWorldObject
 			implements ProceduralWorldObject {
 
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
@@ -280,13 +280,13 @@ public class WaterModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 			List<TriangleXYZ> triangles = getTriangulation();
-			target.drawTriangles(WATER, triangles,
-					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
+			target.drawTriangles(WATER.get(config), triangles,
+					triangleTexCoordLists(triangles, WATER.get(config), GLOBAL_X_Z));
 		}
 
 	}
 
-	public static class AreaFountain extends AbstractAreaWorldObject
+	public class AreaFountain extends AbstractAreaWorldObject
 			implements ProceduralWorldObject {
 
 		public AreaFountain(MapArea area) {
@@ -309,8 +309,8 @@ public class WaterModule extends ConfigurableWorldModule {
 			/* render water */
 
 			List<TriangleXYZ> triangles = getTriangulation();
-			target.drawTriangles(WATER, triangles,
-					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
+			target.drawTriangles(WATER.get(config), triangles,
+					triangleTexCoordLists(triangles, WATER.get(config), GLOBAL_X_Z));
 
 			/* render walls */
 
@@ -326,7 +326,8 @@ public class WaterModule extends ConfigurableWorldModule {
 						new VectorXZ(-width / 2, 0)
 				);
 
-				target.drawExtrudedShape(CONCRETE, wallShape, ring.vertices(),
+				List<VectorXYZ> path = ring.vertices();
+				target.drawExtrudedShape(CONCRETE.get(config), wallShape, path,
 						nCopies(ring.vertices().size(), Y_UNIT), null, null);
 
 			}

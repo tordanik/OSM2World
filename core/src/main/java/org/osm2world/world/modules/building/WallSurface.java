@@ -18,6 +18,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
@@ -165,13 +166,13 @@ public class WallSurface {
 	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
 	 * @param windowHeight  the height for window textures will be replaced with this value if it's non-null
 	 */
-	public void renderTo(ProceduralWorldObject.Target target, VectorXZ textureOrigin,
+	public void renderTo(ProceduralWorldObject.Target target, O2WConfig config, VectorXZ textureOrigin,
 			boolean applyWindowTexture, Double windowHeight, String... attachmentTypes) {
 
 		/* render the elements on the wall */
 
 		for (WallElement e : elements) {
-			e.renderTo(target, this);
+			e.renderTo(target, this, config);
 		}
 
 		/* draw insets around the elements */
@@ -216,7 +217,7 @@ public class WallSurface {
 		/* determine the material depending on whether a window texture should be applied */
 
 		Material material = applyWindowTexture
-				? this.material.withAddedLayers(BUILDING_WINDOWS.get().textureLayers())
+				? this.material.withAddedLayers(BUILDING_WINDOWS.get(config).textureLayers())
 				: this.material;
 
 		/* calculate texture coordinates */
@@ -238,7 +239,7 @@ public class WallSurface {
 			Double fixedHeight = null;
 
 			if (windowHeight != null && (texLayer >= this.material.textureLayers().size()
-					|| Objects.equals(Materials.getUniqueName(this.material), "GLASS_WALL"))) {
+					|| Objects.equals(Materials.getUniqueName(this.material, config), "GLASS_WALL"))) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

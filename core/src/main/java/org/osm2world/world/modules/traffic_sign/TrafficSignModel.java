@@ -42,6 +42,11 @@ public class TrafficSignModel implements Model {
 	 */
 	public final Material material;
 
+	/**
+	 * the material of the back of the sign.
+	 */
+	public final Material materialBack;
+
 	public final TrafficSignType type;
 
 	public final int numPosts;
@@ -60,8 +65,9 @@ public class TrafficSignModel implements Model {
 	 */
 	private static final Map<Material, Material> frontMaterials = new HashMap<>();
 
-	public TrafficSignModel(Material material, TrafficSignType type, int numPosts, double height) {
+	public TrafficSignModel(Material material, Material materialBack, TrafficSignType type, int numPosts, double height) {
 		this.material = material;
+		this.materialBack = materialBack;
 		this.type = type;
 		this.numPosts = numPosts;
 		this.defaultHeight = height;
@@ -89,6 +95,7 @@ public class TrafficSignModel implements Model {
 
 		return new TrafficSignModel(
 				type.material.withPlaceholdersFilledIn(map, tagsOfElement),
+				buildBackMaterial(type, config),
 				type, type.defaultNumPosts, type.defaultHeight);
 
 	}
@@ -143,8 +150,6 @@ public class TrafficSignModel implements Model {
 
 		List<VectorXYZ> vsBack = asList(vsFront.get(2), vsFront.get(3), vsFront.get(0), vsFront.get(1));
 
-		Material materialBack = getBackMaterial(type);
-
 		var backBuilder = new TriangleGeometry.Builder(texCoordFunctions(materialBack, mirroredHorizontally(STRIP_FIT)), null, FLAT);
 		backBuilder.addTriangleStrip(vsBack);
 		var backMesh = new Mesh(backBuilder.build(), materialBack, LOD3, LOD4);
@@ -153,10 +158,12 @@ public class TrafficSignModel implements Model {
 
 	}
 
-	private static Material getBackMaterial(TrafficSignType type) {
+	static Material buildBackMaterial(TrafficSignType type, O2WConfig config) {
+
+		Material steel = STEEL.get(config);
 
 		if (type.material.textureLayers().size() == 0) {
-			return STEEL.get();
+			return steel;
 		}
 
 		if (!backMaterials.containsKey(type)) {
@@ -164,10 +171,10 @@ public class TrafficSignModel implements Model {
 			// use the transparency information from the front of the sign to cut out the correct shape for the back
 			return new Material(
 					FLAT, WHITE, Transparency.BINARY, List.of(new TextureLayer(
-						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).baseColorTexture),
-						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).normalTexture),
-						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).ormTexture),
-						textureWithAlphaMask(type.material, STEEL.get().textureLayers().get(0).displacementTexture),
+						textureWithAlphaMask(type.material, steel.textureLayers().get(0).baseColorTexture),
+						textureWithAlphaMask(type.material, steel.textureLayers().get(0).normalTexture),
+						textureWithAlphaMask(type.material, steel.textureLayers().get(0).ormTexture),
+						textureWithAlphaMask(type.material, steel.textureLayers().get(0).displacementTexture),
 						false)));
 		}
 

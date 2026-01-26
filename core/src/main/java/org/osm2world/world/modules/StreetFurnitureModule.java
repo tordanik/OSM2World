@@ -33,6 +33,7 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.TagSet;
@@ -214,7 +215,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Pole extends NoOutlineNodeWorldObject {
+	public final class Pole extends NoOutlineNodeWorldObject {
 
 		public Pole(MapNode node) {
 			super(node);
@@ -226,7 +227,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			double height = parseMeasure(node.getTags().getValue("height"), 5.0);
 			double radius = parseMeasure(node.getTags().getValue("width"), 0.2) / 2;
 
-			Material material = getMaterial(node.getTags().getValue("material"), STEEL);
+			Material material = getMaterial(node.getTags().getValue("material"), STEEL.get(config), config);
 			Color color = parseColor(node.getTags().getValue("colour"));
 
 			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
@@ -244,7 +245,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Flagpole extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class Flagpole extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -262,7 +263,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			VectorXYZ poleBase = getBase();
 
-			target.drawColumn(STEEL, null, poleBase,
+			target.drawColumn(STEEL.get(config), null, poleBase,
 					poleHeight, poleRadius, poleRadius, false, true);
 
 			/* draw the flag (if any) */
@@ -290,7 +291,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (flag == null && node.getTags().containsKey("flag:colour")) {
 				Color color = parseColor(node.getTags().getValue("flag:colour"), CSS_COLORS);
 				if (color != null) {
-					flag = new TexturedFlag(2 / 3.0, FLAGCLOTH.get().withColor(color));
+					flag = new TexturedFlag(2 / 3.0, FLAGCLOTH.get(config).withColor(color));
 				}
 			}
 
@@ -314,7 +315,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
 				outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
 
-				flag.renderFlag(target, flagTop, flagHeight, flagWidth);
+				flag.renderFlag(target, flagTop, flagHeight, flagWidth, config);
 
 			}
 
@@ -326,8 +327,8 @@ public class StreetFurnitureModule extends AbstractModule {
 		 * @param flagId  the ID of the flag, e.g. a country code or Wikidata ID
 		 */
 		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
-			Material material = getMaterial("FLAG_" + flagId);
-			Material flagcloth = FLAGCLOTH.get();
+			Material material = getMaterial("FLAG_" + flagId, config);
+			Material flagcloth = FLAGCLOTH.get(config);
 			if (material != null && material.textureLayers().size() > 0 && flagcloth.textureLayers().size() > 0) {
 				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.textureLayers());
 				TextureLayer flag0 = material.textureLayers().get(0);
@@ -360,22 +361,24 @@ public class StreetFurnitureModule extends AbstractModule {
 		static abstract class Flag {
 
 			private final double heightWidthRatio;
-			private final List<Material> stripeMaterials;
 			private final boolean verticalStripes;
 
 			/**
 			 *
 			 * @param heightWidthRatio  height / width
 			 * @param verticalStripes   whether the material stripes provided by
-			 *                          stripeMaterials are vertical.
-			 * @param stripeMaterials   returns one or more materials for the flag.
-			 *                          If there's more than one, the flag will be striped.
+			 *                          {@link #buildStripeMaterials(O2WConfig)} are vertical.
 			 */
-			protected Flag(double heightWidthRatio, List<Material> stripeMaterials, boolean verticalStripes) {
+			protected Flag(double heightWidthRatio, boolean verticalStripes) {
 				this.heightWidthRatio = heightWidthRatio;
-				this.stripeMaterials = stripeMaterials;
 				this.verticalStripes = verticalStripes;
 			}
+
+			/**
+			 * Returns one or more materials for the flag.
+			 * If there's more than one, the flag will be striped.
+			 */
+			protected abstract List<Material> buildStripeMaterials(O2WConfig config);
 
 			public double getHeightWidthRatio() {
 				return heightWidthRatio;
@@ -388,9 +391,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			 * @param height  height of the flag in meters
 			 * @param width  width of the flag in meters
 			 */
-			public void renderFlag(Target target, VectorXYZ origin, double height, double width) {
+			public void renderFlag(Target target, VectorXYZ origin, double height, double width, O2WConfig config) {
 
-				FlagMesh flagMesh = createFlagMesh(origin, height, width);
+				List<Material> stripeMaterials = buildStripeMaterials(config);
+
+				FlagMesh flagMesh = createFlagMesh(origin, height, width, stripeMaterials);
 				VectorXYZ[][] mesh = flagMesh.vertices;
 				final Map<VectorXYZ, VectorXZ> texCoordMap = flagMesh.texCoordMap;
 
@@ -458,7 +463,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			 *
 			 * @return the grid of vertices, normals and the matching texture coordinates
 			 */
-			private final FlagMesh createFlagMesh(VectorXYZ origin, double height, double width) {
+			private final FlagMesh createFlagMesh(VectorXYZ origin, double height, double width,
+					List<Material> stripeMaterials) {
 
 				/* set the minimum columns and rows to achieve a reasonable "wavy cloth" appearance */
 
@@ -545,17 +551,17 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		static class StripedFlag extends Flag {
 
+			private final List<Color> colors;
+
 			public StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
-
-				super(heightWidthRatio, createStripeMaterials(colors), verticalStripes);
-
+				super(heightWidthRatio, verticalStripes);
+				this.colors = colors;
 			}
 
-			/**
-			 * creates a material for each colored stripe
-			 */
-			private static List<Material> createStripeMaterials(List<Color> colors) {
-				return colors.stream().map(FLAGCLOTH.get()::withColor).toList();
+			@Override
+			protected List<Material> buildStripeMaterials(O2WConfig config) {
+				// create a material for each colored stripe
+				return colors.stream().map(FLAGCLOTH.get(config)::withColor).toList();
 			}
 
 		}
@@ -566,8 +572,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		 */
 		static class TexturedFlag extends Flag {
 
+			private final Material material;
+
 			public TexturedFlag(double heightWidthRatio, Material material) {
-				super(heightWidthRatio, singletonList(material), false);
+				super(heightWidthRatio, false);
+				this.material = material;
 			}
 
 			/**
@@ -582,6 +591,10 @@ public class StreetFurnitureModule extends AbstractModule {
 						material);
 			}
 
+			@Override
+			protected List<Material> buildStripeMaterials(O2WConfig config) {
+				return List.of(material);
+			}
 		}
 
 		private static final Map<String, Flag> NATIONAL_FLAGS = new HashMap<String, Flag>();
@@ -624,7 +637,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class AdvertisingColumn extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public AdvertisingColumn(MapNode node) {
 			super(node);
@@ -639,17 +652,17 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw socket, poster and cap */
 
-			target.drawColumn(CONCRETE, null,
+			target.drawColumn(CONCRETE.get(config), null,
 					getBase(),
 					0.15 * height,
 					0.5, 0.5, false, false);
 
-			target.drawColumn(ADVERTISING_POSTER, null,
+			target.drawColumn(ADVERTISING_POSTER.get(config), null,
 					getBase(),
 					0.98 * height,
 					0.48, 0.48, false, false);
 
-			target.drawColumn(CONCRETE, null,
+			target.drawColumn(CONCRETE.get(config), null,
 					getBase().add(0, 0.95 * height, 0),
 					0.05 * height,
 					0.5, 0.5, false, true);
@@ -658,7 +671,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Billboard extends NodeWorldObjectWithOptionalSupports {
+	public final class Billboard extends NodeWorldObjectWithOptionalSupports {
 
 		/** @param trueHeight  the height of the billboard itself, i.e. height minus minHeight */
 		private record BillboardDimensions(
@@ -723,8 +736,8 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
 
-			target.drawTriangleStrip(ADVERTISING_POSTER, vsListPoster,
-					texCoordLists(vsListPoster, ADVERTISING_POSTER, STRIP_FIT));
+			target.drawTriangleStrip(ADVERTISING_POSTER.get(config), vsListPoster,
+					texCoordLists(vsListPoster, ADVERTISING_POSTER.get(config), STRIP_FIT));
 
 			List<VectorXYZ> vsBoard = List.of(
 					vsPoster[2],
@@ -735,13 +748,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			if (node.getTags().contains("two_sided", "yes")) {
 
-				Material backMaterial = ADVERTISING_POSTER.get();
+				Material backMaterial = ADVERTISING_POSTER.get(config);
 				target.drawTriangleStrip(backMaterial, vsBoard,
 						texCoordLists(vsBoard, backMaterial, STRIP_FIT));
 
 			} else {
 
-				Material backMaterial = CONCRETE.get();
+				Material backMaterial = CONCRETE.get(config);
 				target.drawTriangleStrip(backMaterial, vsBoard,
 						texCoordLists(vsBoard, backMaterial, STRIP_WALL));
 
@@ -749,16 +762,16 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw frame */
 
-			target.drawBox(CONCRETE, boardBase.addY(dimensions.trueHeight - 0.1),
+			target.drawBox(CONCRETE.get(config), boardBase.addY(dimensions.trueHeight - 0.1),
 					direction, 0.1, dimensions.width, 0.1);
 
-			target.drawBox(CONCRETE, boardBase,
+			target.drawBox(CONCRETE.get(config), boardBase,
 					direction, 0.1, dimensions.width, 0.1);
 
-			target.drawBox(CONCRETE, boardBase.add(boardVector.mult(dimensions.width / 2)),
+			target.drawBox(CONCRETE.get(config), boardBase.add(boardVector.mult(dimensions.width / 2)),
 					direction, dimensions.trueHeight, 0.1, 0.1);
 
-			target.drawBox(CONCRETE, boardBase.add(boardVector.mult(-dimensions.width / 2)),
+			target.drawBox(CONCRETE.get(config), boardBase.add(boardVector.mult(-dimensions.width / 2)),
 					direction, dimensions.trueHeight, 0.1, 0.1);
 
 		}
@@ -776,7 +789,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			};
 
 			for (VectorXZ pole : poles) {
-				target.drawBox(CONCRETE, pole.xyz(supportBase.y),
+				target.drawBox(CONCRETE.get(config), pole.xyz(supportBase.y),
 						direction, dimensions.minHeight, 0.2, 0.1);
 			}
 
@@ -784,7 +797,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Swing extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class Swing extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Swing(MapNode node) {
 			super(node);
@@ -817,11 +830,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = getMaterial(node.getTags().getValue("material").toUpperCase());
+				material = getMaterial(node.getTags().getValue("material").toUpperCase(), config);
 			}
 
 			if (material == null) {
-				material = WOOD.get();
+				material = WOOD.get(config);
 			}
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
@@ -888,13 +901,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			//Draw 2 triangleStrips for each rope, to be visible from both front and back side
 			for(List<VectorXYZ> path : paths) {
-				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT.invert()), null, null);
-				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT), null, null);
+				target.drawExtrudedShape(STEEL.get(config), shape, path, nCopies(2, Z_UNIT.invert()), null, null);
+				target.drawExtrudedShape(STEEL.get(config), shape, path, nCopies(2, Z_UNIT), null, null);
 			}
 		}
 	}
 
-	public static final class Bench extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class Bench extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Bench(MapNode node) {
 			super(node);
@@ -918,11 +931,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = getMaterial(node.getTags().getValue("material").toUpperCase());
+				material = getMaterial(node.getTags().getValue("material").toUpperCase(), config);
 			}
 
 			if (material == null) {
-				material = WOOD.get();
+				material = WOOD.get(config);
 			}
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
@@ -966,7 +979,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	public static final class Table extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class Table extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private final Material defaultMaterial;
 
@@ -974,9 +987,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			super(node);
 
 			if (node.getTags().contains("leisure", "picnic_table")) {
-				defaultMaterial = WOOD.get();
+				defaultMaterial = WOOD.get(config);
 			} else {
-				defaultMaterial = STEEL.get();
+				defaultMaterial = STEEL.get(config);
 			}
 		}
 
@@ -996,18 +1009,16 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* determine material */
 
-			Material material = null;
+			MaterialOrRef material = null;
 
 			//TODO parse color
 
 			if (material == null) {
-				material = getSurfaceMaterial(
-						node.getTags().getValue("material"));
+				material = getSurfaceMaterialRef(node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
-				material = getSurfaceMaterial(
-						node.getTags().getValue("surface"), defaultMaterial);
+				material = getSurfaceMaterialRef(node.getTags().getValue("surface"), defaultMaterial);
 			}
 
 			/* calculate vectors and corners */
@@ -1031,12 +1042,12 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			for (VectorXZ cornerOffset : cornerOffsets) {
 				VectorXZ polePos = node.getPos().add(cornerOffset);
-				target.drawBox(material, polePos.xyz(getBase().y + 0.001), faceVector, height, poleThickness, poleThickness);
+				target.drawBox(material.get(config), polePos.xyz(getBase().y + 0.001), faceVector, height, poleThickness, poleThickness);
 			}
 
 			/* draw table */
 
-			target.drawBox(material, getBase().addY(height * 14f / 15f),
+			target.drawBox(material.get(config), getBase().addY(height * 14f / 15f),
 					faceVector, height / 15f, width, length);
 
 			/* draw seats */
@@ -1044,8 +1055,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			int leftSeats = seats / 2;
 			int rightSeats = (seats + 1) / 2;
 
-			renderSeatSide(target, material, boardVector.mult(+width / 2 + seatHeight / 2.5f), length, leftSeats, seatHeight);
-			renderSeatSide(target, material, boardVector.mult(-width / 2 - seatHeight / 2.5f), length, rightSeats, seatHeight);
+			renderSeatSide(target, material.get(config), boardVector.mult(+width / 2 + seatHeight / 2.5f), length, leftSeats, seatHeight);
+			renderSeatSide(target, material.get(config), boardVector.mult(-width / 2 - seatHeight / 2.5f), length, rightSeats, seatHeight);
 		}
 
 		private void renderSeatSide(Target target, Material material, VectorXZ rowPos, double length, int seats, double seatHeight) {
@@ -1095,7 +1106,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a summit cross or wayside cross
 	 */
-	public static final class Cross extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class Cross extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Cross(MapNode node) {
 			super(node);
@@ -1116,17 +1127,17 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* determine material and direction */
 
-			Material material = null;
+			MaterialOrRef material = null;
 
 			//TODO parse color
 
 			if (material == null) {
-				material = getSurfaceMaterial(
+				material = getSurfaceMaterialRef(
 						node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
-				material = getSurfaceMaterial(
+				material = getSurfaceMaterialRef(
 						node.getTags().getValue("surface"), WOOD);
 			}
 
@@ -1135,10 +1146,10 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw cross */
 
-			target.drawBox(material, getBase(),
+			target.drawBox(material.get(config), getBase(),
 					faceVector, height, thickness, thickness);
 
-			target.drawBox(material, getBase().addY(height - width / 2 - thickness / 2),
+			target.drawBox(material.get(config), getBase().addY(height - width / 2 - thickness / 2),
 					faceVector, thickness, width, thickness);
 
 		}
@@ -1148,7 +1159,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a clock. Currently only clocks attached to walls are supported.
 	 */
-	public static final class Clock implements NodeWorldObject, ProceduralWorldObject {
+	public final class Clock implements NodeWorldObject, ProceduralWorldObject {
 
 		private static final LocalTime TIME = LocalTime.parse("12:25");
 
@@ -1195,7 +1206,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.setCurrentLodRange(LOD2, LOD4);
 
 			double diameter = parseWidth(node.getTags(), 1f);
-			var instance = new ModelInstance(new ClockFace(TIME), new InstanceParameters(
+			var instance = new ModelInstance(new ClockFace(TIME, PLASTIC.get(config)), new InstanceParameters(
 					connector.getAttachedPos(),
 					connector.getAttachedSurfaceNormal().xz().angle(),
 					diameter));
@@ -1203,13 +1214,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		private static class ClockFace implements ProceduralModel {
-
-			private final LocalTime time;
-
-			public ClockFace(LocalTime currentTime) {
-				this.time = currentTime;
-			}
+		private record ClockFace(LocalTime time, Material material) implements ProceduralModel {
 
 			@Override
 			public void render(CommonTarget target, InstanceParameters params) {
@@ -1228,18 +1233,18 @@ public class StreetFurnitureModule extends AbstractModule {
 				PolygonWithHolesXZ ring = new PolygonWithHolesXZ(asSimplePolygon(outerCircle),
 						asList(asSimplePolygon(innerCircle).reverse()));
 
-				target.drawExtrudedShape(PLASTIC.get().withColor(BLACK), ring,
+				target.drawExtrudedShape(material.withColor(BLACK), ring,
 						asList(params.position(), frontCenter),
 						nCopies(2, Y_UNIT), null, EnumSet.of(ExtrudeOption.END_CAP));
 
-				target.drawShape(PLASTIC, innerCircle, backCenter, faceNormal.xyz(0), Y_UNIT, 1);
+				target.drawShape(material, innerCircle, backCenter, faceNormal.xyz(0), Y_UNIT, 1);
 
 				drawHand(target, frontCenter, faceNormal, diameter / 20, diameter / 2.5, thickness / 5, angleMinuteHand(time));
 				drawHand(target, frontCenter, faceNormal, diameter / 15, diameter / 4, thickness / 5, angleHourHand(time));
 
 			}
 
-			private final void drawHand(CommonTarget target, VectorXYZ origin, VectorXZ faceNormal,
+			private void drawHand(CommonTarget target, VectorXYZ origin, VectorXZ faceNormal,
 					double width, double length, double thickness, double angleRad) {
 
 				assert width < length;
@@ -1247,7 +1252,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				ShapeXZ handShape = new AxisAlignedRectangleXZ(-width/2, -width/2, width/2, length - width/2);
 				handShape = handShape.rotatedCW(angleRad);
 
-				target.drawExtrudedShape(PLASTIC.get().withColor(BLACK), handShape,
+				target.drawExtrudedShape(material.withColor(BLACK), handShape,
 						asList(origin, origin.add(faceNormal.mult(thickness))),
 						nCopies(2, Y_UNIT), null, EnumSet.of(ExtrudeOption.END_CAP));
 
@@ -1267,7 +1272,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class RecyclingContainer extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class RecyclingContainer extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		double directionAngle = parseDirection(node.getTags(), PI);
 		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1338,7 +1343,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					colourBack = new Material(Interpolation.FLAT, new Color(0.39f, 0.15f, 0.11f));
 				}
 
-				target.drawBox(STEEL,
+				target.drawBox(STEEL.get(config),
 						pos,
 						faceVector, height, width, width);
 				target.drawBox(colourFront,
@@ -1359,7 +1364,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class WasteBasket extends NodeWorldObjectWithOptionalSupports {
+	public final class WasteBasket extends NodeWorldObjectWithOptionalSupports {
 
 		public WasteBasket(MapNode node) {
 			super(node);
@@ -1380,11 +1385,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = getMaterial(node.getTags().getValue("material").toUpperCase());
+				material = getMaterial(node.getTags().getValue("material").toUpperCase(), config);
 			}
 
 			if (material == null) {
-				material = STEEL.get();
+				material = STEEL.get(config);
 			}
 
 			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
@@ -1437,7 +1442,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class GritBin extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class GritBin extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public GritBin(MapNode node) {
 			super(node);
@@ -1460,8 +1465,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			Material material = getSurfaceMaterial(node.getTags().getValue("material"),
-					getSurfaceMaterial(node.getTags().getValue("surface"), PLASTIC))
-					.withColor(color);
+					getSurfaceMaterialRef(node.getTags().getValue("surface"), PLASTIC),
+					config).withColor(color);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 
@@ -1488,7 +1493,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Phone extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class Phone extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 
@@ -1540,19 +1545,19 @@ public class StreetFurnitureModule extends AbstractModule {
 					height = parseHeight(node.getTags(), 2.1f);
 					width = parseWidth(node.getTags(), 0.8f);
 
-					target.drawBox(GLASS,
+					target.drawBox(GLASS.get(config),
 							getBase(),
 							faceVector, height - 0.2, width - 0.06, width - 0.06);
-					target.drawBox(roofMaterial,
+					target.drawBox(roofMaterial.get(config),
 							getBase().addY(height - 0.2),
 							faceVector, 0.2, width, width);
-					target.drawBox(poleMaterial,
+					target.drawBox(poleMaterial.get(config),
 							getBase().add(new VectorXYZ((width / 2 - 0.05), 0, (width / 2 - 0.05)).rotateY(directionAngle)),
 							faceVector, height - 0.2, 0.1, 0.1);
-					target.drawBox(poleMaterial,
+					target.drawBox(poleMaterial.get(config),
 							getBase().add(new VectorXYZ(-(width / 2 - 0.05), 0, (width / 2 - 0.05)).rotateY(directionAngle)),
 							faceVector, height - 0.2, 0.1, 0.1);
-					target.drawBox(poleMaterial,
+					target.drawBox(poleMaterial.get(config),
 							getBase().add(new VectorXYZ(0, 0, -(width / 2 - 0.05)).rotateY(directionAngle)),
 							faceVector, height - 0.2, width, 0.1);
 
@@ -1565,7 +1570,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class VendingMachine extends NodeWorldObjectWithOptionalSupports {
+	public final class VendingMachine extends NodeWorldObjectWithOptionalSupports {
 
 		public VendingMachine(MapNode node) {
 			super(node);
@@ -1614,7 +1619,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (supportBase != null) {
 
 				/* draw pole */
-				target.drawBox(STEEL, supportBase, direction.xz(), height - 0.3, 0.1, 0.1);
+				target.drawBox(STEEL.get(config), supportBase, direction.xz(), height - 0.3, 0.1, 0.1);
 
 				boardBase = boardBase.add(direction.mult(0.05));
 
@@ -1626,7 +1631,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class PostBox extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class PostBox extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1671,11 +1676,11 @@ public class StreetFurnitureModule extends AbstractModule {
 					height = parseHeight(node.getTags(), 0.8f);
 					width = parseWidth(node.getTags(), 0.3f);
 
-					target.drawBox(poleMaterial,
+					target.drawBox(poleMaterial.get(config),
 							getBase(),
 							faceVector, height, 0.08, 0.08);
 
-					target.drawBox(boxMaterial,
+					target.drawBox(boxMaterial.get(config),
 							getBase().add(faceVector.mult(width / 2 - 0.08 / 2)).addY(height),
 							faceVector, width, width, width);
 					break;
@@ -1683,10 +1688,10 @@ public class StreetFurnitureModule extends AbstractModule {
 					height = parseHeight(node.getTags(), 2f);
 					width = parseWidth(node.getTags(), 0.5f);
 
-					target.drawColumn(boxMaterial, null,
+					target.drawColumn(boxMaterial.get(config), null,
 							getBase(),
 							height - 0.1, width, width, false, false);
-					target.drawColumn(boxMaterial, null,
+					target.drawColumn(boxMaterial.get(config), null,
 							getBase().addY(height - 0.1),
 							0.1, width + 0.1, 0, true, true);
 					break;
@@ -1698,7 +1703,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class BusStop extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class BusStop extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public BusStop(MapNode node) {
 			super(node);
@@ -1721,18 +1726,18 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			target.drawColumn(STEEL, null,
+			target.drawColumn(STEEL.get(config), null,
 					getBase(),
 					height - signHeight, 0.05, 0.05, false, true);
 
 			target.setCurrentAttachmentTypes();
 
 			/* draw sign */
-			target.drawBox(BUS_STOP_SIGN,
+			target.drawBox(BUS_STOP_SIGN.get(config),
 					getBase().addY(height - signHeight),
 					faceVector, signHeight, signWidth, 0.02);
 			/*  draw timetable */
-			target.drawBox(STEEL,
+			target.drawBox(STEEL.get(config),
 					getBase().addY(1.2f).add(new VectorXYZ(0.055f, 0, 0f).rotateY(directionAngle)),
 					faceVector, 0.31, 0.01, 0.43);
 
@@ -1740,7 +1745,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class ParcelLocker implements Model {
+	public final class ParcelLocker implements Model {
 
 		private final TagSet tags;
 
@@ -1751,8 +1756,8 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			Material boxMaterial = POSTBOX_DEUTSCHEPOST.get();
-			Material otherMaterial = STEEL.get();
+			Material boxMaterial = POSTBOX_DEUTSCHEPOST.get(config);
+			Material otherMaterial = STEEL.get(config);
 
 			VectorXZ faceVector = VectorXZ.fromAngle(params.direction());
 			VectorXZ rightVector = faceVector.rightNormal();
@@ -1814,7 +1819,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class FireHydrant extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class FireHydrant extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public FireHydrant(MapNode node) {
 			super(node);
@@ -1828,7 +1833,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			double height = parseHeight(node.getTags(), 1.0);
 
 			/* draw main pole */
-			target.drawColumn(FIREHYDRANT, null,
+			target.drawColumn(FIREHYDRANT.get(config), null,
 					getBase(),
 					height,
 					0.15, 0.15, false, true);
@@ -1838,17 +1843,17 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ smallValveVector = VectorXZ.X_UNIT;
 			VectorXZ largeValveVector = VectorXZ.Z_UNIT;
 
-			target.drawBox(FIREHYDRANT,
+			target.drawBox(FIREHYDRANT.get(config),
 					valveBaseVector,
 					smallValveVector, 0.1f, 0.5f, 0.1f);
-			target.drawBox(FIREHYDRANT,
+			target.drawBox(FIREHYDRANT.get(config),
 					valveBaseVector.add(0.2f, -0.1f, 0f),
 					largeValveVector, 0.15f, 0.15f, 0.15f);
 		}
 
 	}
 
-	public static final class StreetLamp extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class StreetLamp extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public StreetLamp(MapNode node) {
 			super(node);
@@ -1865,17 +1870,18 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* determine material */
 
-			Material material = null;
+			MaterialOrRef materialOrRef = null;
 
-			if (material == null) {
-				material = getSurfaceMaterial(
-						node.getTags().getValue("material"));
+			if (materialOrRef == null) {
+				materialOrRef = getSurfaceMaterial(
+						node.getTags().getValue("material"), config);
 			}
 
-			if (material == null) {
-				material = getSurfaceMaterial(
-						node.getTags().getValue("surface"), STEEL);
+			if (materialOrRef == null) {
+				materialOrRef = getSurfaceMaterialRef(node.getTags().getValue("surface"), STEEL);
 			}
+
+			Material material = materialOrRef.get(config);
 
 			/* draw pole */
 
@@ -1914,7 +1920,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Board extends NodeWorldObjectWithOptionalSupports {
+	public final class Board extends NodeWorldObjectWithOptionalSupports {
 
 		public Board(MapNode node) {
 			super(node);
@@ -1943,13 +1949,13 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		private void drawBoard(Target target, VectorXYZ boardBase, VectorXZ faceVector) {
-			target.drawBox(WOOD,
+			target.drawBox(WOOD.get(config),
 					boardBase,
 					faceVector, 0.4, 0.4, 0.1);
 		}
 
 		private void drawSupport(Target target, VectorXYZ supportBase, VectorXZ faceVector) {
-			target.drawColumn(WOOD, null,
+			target.drawColumn(WOOD.get(config), null,
 					supportBase,
 					1.5, 0.05, 0.05, false, true);
 		}

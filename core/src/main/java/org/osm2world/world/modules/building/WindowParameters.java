@@ -11,12 +11,14 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Materials;
+import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRightBoth;
 
 /**
@@ -182,14 +184,14 @@ public class WindowParameters {
 	/**
 	 * The material for the window pane if it should appear opaque (non-transparent).
 	 * If it should appear transparent, a suitable variant can be accessed from
-	 * {@link #transparentWindowMaterial()}.
+	 * {@link #transparentWindowMaterial(Style)}.
 	 */
 	public final Material windowMaterial;
 
 	public final Material frameMaterial;
 	public final Material shutterMaterial;
 
-	public WindowParameters(TagSet tags, double levelHeight) {
+	public WindowParameters(TagSet tags, double levelHeight, O2WConfig config) {
 
 		/* window */
 
@@ -207,7 +209,7 @@ public class WindowParameters {
 		windowMaterial = BuildingPart.buildMaterial(
 				materialString,
 				tags.getValue("window:colour"),
-				Materials.GLASS.get(), false);
+				Materials.GLASS, false, config);
 
 		numberWindows = parseUInt(tags.getValue("window:count"));
 		groupSize = parseUInt(tags.getValue("window:group_size"), 1);
@@ -361,7 +363,7 @@ public class WindowParameters {
 		frameMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:frame:material"),
 				tags.getValue("window:frame:colour"),
-				Materials.PLASTIC.get(), false);
+				Materials.PLASTIC.get(config), false, config);
 
 		/* shutters */
 
@@ -370,7 +372,7 @@ public class WindowParameters {
 		shutterMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:shutter:material"),
 				tags.getValue("window:shutter:colour"),
-				Materials.WOOD.get(), false);
+				Materials.WOOD.get(config), false, config);
 
 	}
 
@@ -378,8 +380,8 @@ public class WindowParameters {
 		return windowMaterial;
 	}
 
-	public Material transparentWindowMaterial() {
-		return Materials.getTransparentVariant(windowMaterial);
+	public Material transparentWindowMaterial(Style mapStyle) {
+		return mapStyle.getTransparentVariant(windowMaterial);
 	}
 
 }

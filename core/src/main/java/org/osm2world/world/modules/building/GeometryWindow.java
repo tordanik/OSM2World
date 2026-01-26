@@ -22,6 +22,7 @@ import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createT
 
 import java.util.*;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -252,7 +253,7 @@ public class GeometryWindow implements Window {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, WallSurface surface) {
+	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config) {
 
 		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
 
@@ -277,8 +278,9 @@ public class GeometryWindow implements Window {
 				skip = (lodRange == null);
 			}
 			if (!skip) {
-				target.drawTriangles(params.transparentWindowMaterial(), paneTriangles,
-						triangleTexCoordLists(paneTriangles, params.transparentWindowMaterial(), surface::texCoordFunction));
+				Material transparentMaterial = params.transparentWindowMaterial(config.mapStyle());
+				target.drawTriangles(transparentMaterial, paneTriangles,
+						triangleTexCoordLists(paneTriangles, transparentMaterial, surface::texCoordFunction));
 			}
 			if (target instanceof ProceduralWorldObject.Target t) {
 				t.setCurrentLodRange(LOD0, BuildingPart.INDOOR_MIN_LOD);
@@ -395,7 +397,7 @@ public class GeometryWindow implements Window {
 			for (VectorXZ hingeLocation : hingeLocations) {
 				double hingeHeight = 0.1;
 				VectorXYZ base = surface.convertTo3D(hingeLocation).addY(-hingeHeight / 2);
-				target.drawColumn(STEEL, null, base, hingeHeight, hingeSpace / 2, hingeSpace / 2, true, true);
+				target.drawColumn(STEEL.get(config), null, base, hingeHeight, hingeSpace / 2, hingeSpace / 2, true, true);
 			}
 
 		}

@@ -9,6 +9,7 @@ import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.*;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.creation.EmptyTerrainBuilder;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.Tag;
@@ -23,7 +24,7 @@ import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.scene.material.MaterialOrRef;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.world.data.AbstractAreaWorldObject;
@@ -69,14 +70,14 @@ public class SurfaceAreaModule extends AbstractModule {
 		if (tags.containsKey("surface")) {
 			if (!tags.contains("surface", EMPTY_SURFACE_VALUE)
 					|| config.getBoolean("createTerrain", true)) {
-				area.addRepresentation(new SurfaceArea(area, tags.getValue("surface")));
+				area.addRepresentation(new SurfaceArea(area, tags.getValue("surface"), config));
 			}
 		} else {
 
 			for (Tag tagWithDefault : defaultSurfaceMap.keySet()) {
 				if (tags.contains(tagWithDefault)) {
 					area.addRepresentation(new SurfaceArea(
-							area, defaultSurfaceMap.get(tagWithDefault)));
+							area, defaultSurfaceMap.get(tagWithDefault), config));
 				}
 			}
 
@@ -88,24 +89,26 @@ public class SurfaceAreaModule extends AbstractModule {
 			implements ProceduralWorldObject {
 
 		private final String surface;
+		private final Material material;
 
 		private List<TriangleXZ> triangulationXZ;
 
-		public SurfaceArea(MapArea area, String surface) {
+		public SurfaceArea(MapArea area, String surface, O2WConfig config) {
+
 			super(area);
+
 			this.surface = surface;
+
+			if (surface.equals(EMPTY_SURFACE_VALUE)) {
+				this.material = Materials.TERRAIN_DEFAULT.get(config);
+			} else {
+				this.material = Materials.getSurfaceMaterial(surface, config).get(config);
+			}
+
 		}
 
 		@Override
 		public void buildMeshesAndModels(Target target) {
-
-			MaterialOrRef material;
-
-			if (surface.equals(EMPTY_SURFACE_VALUE)) {
-				material = Materials.TERRAIN_DEFAULT;
-			} else {
-				material = Materials.getSurfaceMaterial(surface);
-			}
 
 			if (material != null) {
 

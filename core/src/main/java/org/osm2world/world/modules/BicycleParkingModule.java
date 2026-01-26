@@ -182,7 +182,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 			double height = parseHeight(tags, STAND_DEFAULT_HEIGHT);
 			double length = parseLength(tags, STAND_DEFAULT_LENGTH);
-			BicycleStandModel model = new BicycleStandModel(height, length);
+			BicycleStandModel model = new BicycleStandModel(height, length, STEEL.get(config));
 
 			Double direction = parseAngle(tags.getValue("direction"));
 			if (direction != null) { direction = toRadians(direction); }
@@ -237,7 +237,8 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		private @Nullable Material getSurfaceMaterial() {
-			return Materials.getSurfaceMaterial(getPrimaryMapElement().getTags().getValue("surface"));
+			return config.mapStyle().resolveMaterial(
+					Materials.getSurfaceMaterial(getPrimaryMapElement().getTags().getValue("surface"), config));
 		}
 
 		@Override
@@ -333,7 +334,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	private record BicycleStandModel(double height, double length) implements Model {
+	private record BicycleStandModel(double height, double length, Material material) implements Model {
 
 		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
@@ -359,9 +360,9 @@ public class BicycleParkingModule extends AbstractModule {
 					toFront.invert().normalize());
 
 			Geometry geom = new ExtrusionGeometry(STAND_SHAPE, path, upVectors, null, null, null,
-					STEEL.get().textureDimensions());
+					material.textureDimensions());
 
-			return List.of(new Mesh(geom, STEEL.get(), LOD3, LOD4));
+			return List.of(new Mesh(geom, material, LOD3, LOD4));
 
 		}
 

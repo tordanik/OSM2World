@@ -19,7 +19,7 @@ import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.MaterialOrRef;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.TextureLayer;
 
 import com.jogamp.opengl.GL;
@@ -53,7 +53,7 @@ public abstract class AbstractJOGLOutput extends PrimitiveOutput implements JOGL
 	}
 
 	@Override
-	protected void drawPrimitive(Primitive.Type type, MaterialOrRef material,
+	protected void drawPrimitive(Primitive.Type type, Material material,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 
@@ -61,8 +61,8 @@ public abstract class AbstractJOGLOutput extends PrimitiveOutput implements JOGL
 
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
-		if (material.get().textureLayers().size() > 0) {
-			for (TextureLayer layer : material.get().textureLayers()) {
+		if (!material.textureLayers().isEmpty()) {
+			for (TextureLayer layer : material.textureLayers()) {
 				textureManager.getTextureForTextureData(layer.baseColorTexture);
 			}
 		}

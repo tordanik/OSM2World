@@ -29,9 +29,9 @@ public class BuildingPartInterior {
 			var data = new IndoorObjectData(buildingPart, element);
 
 			switch (element.getTags().getValue("indoor")) {
-			case "wall" -> walls.add(new IndoorWall(data));
-			case "room", "corridor" -> rooms.add(new IndoorRoom(data));
-			case "area" -> areas.add(new IndoorArea(data));
+			case "wall" -> walls.add(new IndoorWall(data, buildingPart.getConfig()));
+			case "room", "corridor" -> rooms.add(new IndoorRoom(data, buildingPart.getConfig()));
+			case "area" -> areas.add(new IndoorArea(data, buildingPart.getConfig()));
 			}
 
 		}

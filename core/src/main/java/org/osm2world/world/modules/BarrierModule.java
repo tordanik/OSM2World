@@ -29,6 +29,7 @@ import static org.osm2world.world.network.NetworkUtil.getConnectedNetworkSegment
 import java.util.*;
 import java.util.function.Function;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
@@ -37,6 +38,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.shapes.*;
+import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.Materials;
@@ -66,7 +68,7 @@ public class BarrierModule extends AbstractModule {
 		if (!tags.containsKey("barrier")) return; //fast exit for common case
 
 		if (Wall.fits(tags)) {
-			line.addRepresentation(new Wall(line));
+			line.addRepresentation(new Wall(line, config));
 		} else if (CityWall.fits(tags)) {
 			line.addRepresentation(new CityWall(line));
 		} else if (Hedge.fits(tags)) {
@@ -120,14 +122,15 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static Model createBollardModel(TagSet tags) {
+	private Model createBollardModel(TagSet tags) {
+		Material material = CONCRETE.get(config);
 		double height = parseHeight(tags, 1.0);
 		double width = parseWidth(tags, 0.3);
 		// TODO: support and document other bollard shapes, or support bollard models from 3dmr
 		if (tags.contains("bollard:shape", "roundtop")) {
-			return new RoundtopBollard(height, width);
+			return new RoundtopBollard(material,height, width);
 		} else {
-			return new CylinderBollard(height, width);
+			return new CylinderBollard(material, height, width);
 		}
 	}
 
@@ -264,55 +267,55 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "wall");
 		}
 
-		private static Material getMaterial(TagSet tags) {
+		private static Material getMaterial(TagSet tags, O2WConfig config) {
 
 			Material material = null;
 
 			if ("gabion".equals(tags.getValue("wall"))) {
-				material = WALL_GABION.get();
+				material = WALL_GABION.get(config);
 			} else if ("brick".equals(tags.getValue("wall"))) {
-				material = BRICK.get();
+				material = BRICK.get(config);
 			} else if ( tags.containsKey("material") ) {
-				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
+				material = Materials.getMaterial(tags.getValue("material").toUpperCase(), config);
 			}
 
 			if (material == null) {
-				material = DEFAULT_MATERIAL.get();
+				material = DEFAULT_MATERIAL.get(config);
 			}
 
 			String colorString = tags.getValue("colour");
-			boolean colorable = material.get().textureLayers().size() == 0
-					|| material.get().textureLayers().get(0).colorable;
+			boolean colorable = material.textureLayers().size() == 0
+					|| material.textureLayers().get(0).colorable;
 
 			if (colorString != null && colorable) {
-				material = material.get().withColor(parseColor(colorString, CSS_COLORS));
+				material = material.withColor(parseColor(colorString, CSS_COLORS));
 			}
 
 			return material;
 
 		}
 
-		public Wall(MapWaySegment segment) {
-			super(getMaterial(segment.getTags()), segment, 1f, 0.25f);
+		public Wall(MapWaySegment segment, O2WConfig config) {
+			super(getMaterial(segment.getTags(), config), segment, 1f, 0.25f);
 		}
 
 	}
 
-	public static class CityWall extends ColoredWall {
+	public class CityWall extends ColoredWall {
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "city_wall");
 		}
 		public CityWall(MapWaySegment segment) {
-			super(Wall.DEFAULT_MATERIAL.get(), segment, 10, 2);
+			super(Wall.DEFAULT_MATERIAL.get(config), segment, 10, 2);
 		}
 	}
 
-	public static class Hedge extends ColoredWall {
+	public class Hedge extends ColoredWall {
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "hedge");
 		}
 		public Hedge(MapWaySegment segment) {
-			super(HEDGE.get(), segment, 1f, 0.5f);
+			super(HEDGE.get(config), segment, 1f, 0.5f);
 		}
 		@Override
 		public Collection<AttachmentSurface> getAttachmentSurfaces() {
@@ -320,7 +323,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	public static class Railing extends LinearBarrier {
+	public class Railing extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE =
 				new AxisAlignedRectangleXZ(-0.5, -0.3, 0.5, 0);
@@ -342,7 +345,7 @@ public class BarrierModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD2, LOD4);
 
-			Material material = METAL_FENCE.get();
+			Material material = METAL_FENCE.get(config);
 
 			List<VectorXYZ> polePositions = equallyDistributePointsAlong(2.4, true, getCenterline());
 
@@ -398,7 +401,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class Balustrade extends LinearBarrier {
+	public class Balustrade extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE =
 				new AxisAlignedRectangleXZ(-0.5, -0.3, 0.5, 0);
@@ -427,12 +430,12 @@ public class BarrierModule extends AbstractModule {
 			Material material = null;
 
 			if (segment.getTags().containsKey("material")) {
-				material = getMaterial(segment.getTags().getValue("material").toUpperCase());
+				material = getMaterial(segment.getTags().getValue("material").toUpperCase(), config);
 				//TODO also look at fence:material
 			}
 
 			if (material == null) {
-				material = CONCRETE.get();
+				material = CONCRETE.get(config);
 			}
 
 			material = material.withColor(parseColor(segment.getTags().getValue("colour"), CSS_COLORS));
@@ -471,7 +474,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class ChainLinkFence extends LinearBarrier {
+	public class ChainLinkFence extends LinearBarrier {
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence")
@@ -492,17 +495,17 @@ public class BarrierModule extends AbstractModule {
 			List<VectorXYZ> pointsWithEle = getCenterline();
 
 			List<VectorXYZ> vsFence = createVerticalTriangleStrip(pointsWithEle, 0, height);
-			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence,
-					texCoordLists(vsFence, CHAIN_LINK_FENCE, STRIP_WALL));
+			target.drawTriangleStrip(CHAIN_LINK_FENCE.get(config), vsFence,
+					texCoordLists(vsFence, CHAIN_LINK_FENCE.get(config), STRIP_WALL));
 
-			if (!CHAIN_LINK_FENCE.get().doubleSided()) {
+			if (!CHAIN_LINK_FENCE.get(config).doubleSided()) {
 
 				List<VectorXYZ> pointsWithEleBack = new ArrayList<>(pointsWithEle);
 				Collections.reverse(pointsWithEleBack);
 
 				List<VectorXYZ> vsFenceBack = createVerticalTriangleStrip(pointsWithEleBack, 0, height);
-				target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
-						texCoordLists(vsFenceBack, CHAIN_LINK_FENCE, STRIP_WALL));
+				target.drawTriangleStrip(CHAIN_LINK_FENCE.get(config), vsFenceBack,
+						texCoordLists(vsFenceBack, CHAIN_LINK_FENCE.get(config), STRIP_WALL));
 
 			}
 
@@ -515,7 +518,7 @@ public class BarrierModule extends AbstractModule {
 
 			for (VectorXYZ base : polePositions) {
 
-				target.drawColumn(METAL_FENCE_POST, null, base,
+				target.drawColumn(METAL_FENCE_POST.get(config), null, base,
 						height, width, width, false, true);
 
 			}
@@ -529,15 +532,15 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class PoleFence extends LinearBarrier {
+	public class PoleFence extends LinearBarrier {
 
 		private Material material;
 		protected float barWidth;
 		protected float barGap;
 		protected float barOffset;
 		protected int bars;
-		protected Material defaultFenceMaterial = WOOD.get();
-		protected Material defaultPoleMaterial = WOOD.get();
+		protected Material defaultFenceMaterial = WOOD.get(config);
+		protected Material defaultPoleMaterial = WOOD.get(config);
 		protected Material poleMaterial;
 
 		public static boolean fits(TagSet tags) {
@@ -547,7 +550,7 @@ public class BarrierModule extends AbstractModule {
 		public PoleFence(MapWaySegment segment) {
 			super(segment, 1f, 0.02f);
 			if (segment.getTags().containsKey("material")){
-				material = getMaterial(segment.getTags().getValue("material").toUpperCase());
+				material = getMaterial(segment.getTags().getValue("material").toUpperCase(), config);
 				poleMaterial = material;
 			}
 
@@ -615,7 +618,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class TrellisWorkFence extends LinearBarrier {
+	public class TrellisWorkFence extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ PLANK_SHAPE;
 
@@ -667,15 +670,15 @@ public class BarrierModule extends AbstractModule {
 				int leftIndex = i;
 				int rightIndex = i + 2 * numIntersections - 1;
 
-				target.drawExtrudedShape(WOOD, PLANK_SHAPE,
-						asList(positions.get(leftIndex).add(offsetBackPlank),
-								positions.get(rightIndex).addY(height).add(offsetBackPlank)),
-						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
+				List<VectorXYZ> path1 = asList(positions.get(leftIndex).add(offsetBackPlank),
+						positions.get(rightIndex).addY(height).add(offsetBackPlank));
+				Set<ExtrudeOption> options1 = EnumSet.of(START_CAP, END_CAP);
+				target.drawExtrudedShape(WOOD.get(config), PLANK_SHAPE, path1, nCopies(2, Y_UNIT), null, options1);
 
-				target.drawExtrudedShape(WOOD, PLANK_SHAPE,
-						asList(positions.get(leftIndex).addY(height),
-								positions.get(rightIndex)),
-						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
+				List<VectorXYZ> path = asList(positions.get(leftIndex).addY(height),
+						positions.get(rightIndex));
+				Set<ExtrudeOption> options = EnumSet.of(START_CAP, END_CAP);
+				target.drawExtrudedShape(WOOD.get(config), PLANK_SHAPE, path, nCopies(2, Y_UNIT), null, options);
 
 			}
 
@@ -688,7 +691,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class CableBarrier extends PoleFence {
+	public class CableBarrier extends PoleFence {
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "cable_barrier");
@@ -702,12 +705,12 @@ public class BarrierModule extends AbstractModule {
 			this.bars = 4;
 			this.barOffset = barGap/2;
 
-			this.defaultFenceMaterial = METAL_FENCE.get();
-			this.defaultPoleMaterial = METAL_FENCE_POST.get();
+			this.defaultFenceMaterial = METAL_FENCE.get(config);
+			this.defaultPoleMaterial = METAL_FENCE_POST.get(config);
 		}
 	}
 
-	public static class HandRail extends PoleFence {
+	public class HandRail extends PoleFence {
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "handrail");
@@ -721,13 +724,13 @@ public class BarrierModule extends AbstractModule {
 			this.bars = 1;
 			this.barOffset = 0;
 
-			this.defaultFenceMaterial = HANDRAIL_DEFAULT.get();
-			this.defaultPoleMaterial = HANDRAIL_DEFAULT.get();
+			this.defaultFenceMaterial = HANDRAIL_DEFAULT.get(config);
+			this.defaultPoleMaterial = HANDRAIL_DEFAULT.get(config);
 		}
 
 	}
 
-	public static class Guardrail extends LinearBarrier {
+	public class Guardrail extends LinearBarrier {
 
 		private static final float DEFAULT_HEIGHT = 0.75f;
 
@@ -778,7 +781,7 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> centerline = getCenterline();
 
-			Material material = STEEL.get().makeSmooth();
+			Material material = STEEL.get(config).makeSmooth();
 
 			/* draw the rail itself */
 
@@ -839,7 +842,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class JerseyBarrier extends LinearBarrier {
+	public class JerseyBarrier extends LinearBarrier {
 
 		private static final float DEFAULT_HEIGHT = 1.145f;
 		private static final float DEFAULT_WIDTH = 0.82f;
@@ -887,7 +890,7 @@ public class BarrierModule extends AbstractModule {
 						interpolateBetween(points.get(i), points.get(i+1), relativeOffset),
 						interpolateBetween(points.get(i), points.get(i+1), 1.0 - relativeOffset));
 
-				target.drawExtrudedShape(CONCRETE, DEFAULT_SHAPE, path,
+				target.drawExtrudedShape(CONCRETE.get(config), DEFAULT_SHAPE, path,
 						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 
 			}
@@ -901,7 +904,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class BollardRow extends AbstractNetworkWaySegmentWorldObject {
+	public class BollardRow extends AbstractNetworkWaySegmentWorldObject {
 
 		private final Model bollardModel;
 
@@ -947,7 +950,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class ChainRow extends PoleFence{
+	public class ChainRow extends PoleFence{
 
 		private static final Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
 
@@ -961,8 +964,8 @@ public class BarrierModule extends AbstractModule {
 			super(line);
 
 			this.barWidth = 0.05f;
-			this.defaultPoleMaterial = STEEL.get();
-			this.defaultFenceMaterial = STEEL.get();
+			this.defaultPoleMaterial = STEEL.get(config);
+			this.defaultFenceMaterial = STEEL.get(config);
 			this.barGap = 1.5f;
 		}
 
@@ -1008,62 +1011,18 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	public static class CylinderBollard implements Model {
-
-		private final double height;
-		private final double width;
-
-		public CylinderBollard(double height, double width) {
-			this.height = height;
-			this.width = width;
-		}
+	public record CylinderBollard(Material material, double height, double width) implements Model {
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position(), height,
 					width/2, width/2, false, true, null,
-					CONCRETE.get().textureDimensions()), CONCRETE.get(), LOD2, LOD4));
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			long temp;
-			temp = Double.doubleToLongBits(height);
-			result = prime * result + (int) (temp ^ (temp >>> 32));
-			temp = Double.doubleToLongBits(width);
-			result = prime * result + (int) (temp ^ (temp >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CylinderBollard other = (CylinderBollard) obj;
-			if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
-				return false;
-			if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
-				return false;
-			return true;
+					material.textureDimensions()), material, LOD2, LOD4));
 		}
 
 	}
 
-	public static class RoundtopBollard implements Model {
-
-		private final double height;
-		private final double width;
-
-		public RoundtopBollard(double height, double width) {
-			this.height = height;
-			this.width = width;
-		}
+	public record RoundtopBollard(Material material, double height, double width) implements Model {
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
@@ -1102,41 +1061,13 @@ public class BarrierModule extends AbstractModule {
 
 			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
 					path, null, scaleFactors, null, null,
-					CONCRETE.get().textureDimensions()), CONCRETE.get(), LOD2, LOD4));
+					material.textureDimensions()), material, LOD2, LOD4));
 
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			long temp;
-			temp = Double.doubleToLongBits(height);
-			result = prime * result + (int) (temp ^ (temp >>> 32));
-			temp = Double.doubleToLongBits(width);
-			result = prime * result + (int) (temp ^ (temp >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			RoundtopBollard other = (RoundtopBollard) obj;
-			if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
-				return false;
-			if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
-				return false;
-			return true;
 		}
 
 	}
 
-	public static class Chain extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public class Chain extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static final double DEFAULT_HEIGHT = 1;
 		private final double height;
@@ -1178,10 +1109,10 @@ public class BarrierModule extends AbstractModule {
 			VectorXYZ post2Pos = getBase().add(offset.rotateY(PI));
 			double distanceBetweenPosts = offset.length() * 2;
 
-			target.drawColumn(STEEL, null, post1Pos,
+			target.drawColumn(STEEL.get(config), null, post1Pos,
 					height, DEFAULT_BAR_WIDTH, DEFAULT_BAR_WIDTH, false, true);
 
-			target.drawColumn(STEEL, null, post2Pos,
+			target.drawColumn(STEEL.get(config), null, post2Pos,
 					height, DEFAULT_BAR_WIDTH, DEFAULT_BAR_WIDTH, false, true);
 
 
@@ -1197,14 +1128,14 @@ public class BarrierModule extends AbstractModule {
 				chainPath.add(post2Pos.add(offset.normalize().mult(i)).addY(pointDrop));
 			}
 
-			target.drawExtrudedShape(STEEL, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
+			target.drawExtrudedShape(STEEL.get(config), BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
 					Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 
 		}
 
 	}
 
-	public static class DenseShrubbery extends AbstractAreaWorldObject implements ProceduralWorldObject {
+	public class DenseShrubbery extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		/** the shrubbery:shape=* value. Only "box" is supported at the moment. */
 		private static enum ShrubberyShape { BOX }
@@ -1225,11 +1156,11 @@ public class BarrierModule extends AbstractModule {
 				List<TriangleXYZ> topTriangles = getTriangulation().stream()
 						.map(t -> t.shift(new VectorXYZ(0, height, 0)))
 						.toList();
-				target.drawTriangles(HEDGE, topTriangles, triangleTexCoordLists(topTriangles, HEDGE, GLOBAL_X_Z));
+				target.drawTriangles(HEDGE.get(config), topTriangles, triangleTexCoordLists(topTriangles, HEDGE.get(config), GLOBAL_X_Z));
 				for (PolygonXYZ ring : getOutlinePolygon().rings()) {
 					List<VectorXYZ> outerStrip = createTriangleStripBetween(
 							addYList(ring.vertices(), height), ring.vertices());
-					target.drawTriangleStrip(HEDGE, outerStrip, texCoordLists(outerStrip, HEDGE, STRIP_WALL));
+					target.drawTriangleStrip(HEDGE.get(config), outerStrip, texCoordLists(outerStrip, HEDGE.get(config), STRIP_WALL));
 				}
 				break;
 			}

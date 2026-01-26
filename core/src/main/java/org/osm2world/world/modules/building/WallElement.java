@@ -1,5 +1,6 @@
 package org.osm2world.world.modules.building;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.output.CommonTarget;
 
@@ -20,6 +21,6 @@ interface WallElement {
 	 */
 	public double insetDistance();
 
-	public void renderTo(CommonTarget target, WallSurface surface);
+	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config);
 
 }

@@ -38,6 +38,8 @@ import org.osm2world.world.data.NoOutlineNodeWorldObject;
  */
 public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 
+	private final O2WConfig config;
+
 	/** The {@link TrafficSignModel}s from top to bottom */
 	public List<TrafficSignModel> signs;
 
@@ -64,6 +66,7 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 		this.position = position;
 		this.direction = direction;
 		this.postRadius = config.getDouble("standardPoleRadius", 0.05);
+		this.config = config;
 	}
 
 	@Override
@@ -150,8 +153,8 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 				}
 
 				ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, position, height,
-						postRadius, postRadius, false, true, null, STEEL.get().textureDimensions());
-				resultMeshes = List.of(new Mesh(geometry, STEEL.get(), LOD3, LOD4));
+						postRadius, postRadius, false, true, null, STEEL.get(config).textureDimensions());
+				resultMeshes = List.of(new Mesh(geometry, STEEL.get(config), LOD3, LOD4));
 
 			}
 

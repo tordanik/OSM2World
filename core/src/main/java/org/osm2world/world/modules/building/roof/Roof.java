@@ -14,6 +14,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.ConversionLog;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
@@ -102,7 +103,7 @@ abstract public class Roof {
 	 * creates the correct roof for the given roof:shape value
 	 */
 	public static final Roof createRoofForShape(String roofShape, MapArea area, PolygonWithHolesXZ originalPolygon,
-			TagSet tags, Material material) {
+			TagSet tags, Material material, O2WConfig config) {
 
 		return switch (roofShape) {
 			case "pyramidal" -> new PyramidalRoof(originalPolygon, tags, material);
@@ -116,7 +117,7 @@ abstract public class Roof {
 			case "dome" -> new DomeRoof(originalPolygon, tags, material);
 			case "round" -> new RoundRoof(originalPolygon, tags, material);
 			case "cone" -> new ConeRoof(originalPolygon, tags, material);
-			case "chimney" -> new ChimneyRoof(originalPolygon, tags, material);
+			case "chimney" -> new ChimneyRoof(originalPolygon, tags, material, config);
 			case "complex" -> new ComplexRoof(area, originalPolygon, tags, material);
 			default -> new FlatRoof(originalPolygon, tags, material);
 		};

@@ -493,7 +493,8 @@ public class TrafficSignModule extends AbstractModule {
 			//set material text color
 			material = material.withTextColor(textColor, 1);
 
-			signs.add(new TrafficSignModel(material, type, type.defaultNumPosts, type.defaultHeight));
+			signs.add(new TrafficSignModel(material, TrafficSignModel.buildBackMaterial(type, config), type,
+					type.defaultNumPosts, type.defaultHeight));
 
 		}
 

@@ -10,10 +10,15 @@ import org.osm2world.style.Style;
  */
 public class ConversionContext {
 
-	private static final ThreadLocal<O2WConfig> config = ThreadLocal.withInitial(O2WConfig::new);
+	private static final ThreadLocal<O2WConfig> config = ThreadLocal.withInitial(() -> null);
 
 	public static O2WConfig config() {
-		return config.get();
+		O2WConfig c = config.get();
+		if (c != null) {
+			return c;
+		} else {
+			throw new IllegalStateException("No configuration available on this thread");
+		}
 	}
 
 	public static Style mapStyle() {

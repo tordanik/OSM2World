@@ -93,7 +93,7 @@ public class ParkingModule extends AbstractModule {
 		public void buildMeshesAndModels(Target target) {
 
 			String surface = area.getTags().getValue("surface");
-			Material material = getSurfaceMaterial(surface, ASPHALT);
+			Material material = getSurfaceMaterial(surface, ASPHALT, config);
 
 			List<TriangleXYZ> triangles = getTriangulation();
 

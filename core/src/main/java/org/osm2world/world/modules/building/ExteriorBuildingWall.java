@@ -88,7 +88,7 @@ public class ExteriorBuildingWall {
 				buildingPart == null ? 0 : buildingPart.levelStructure.bottomHeight());
 	}
 
-	public void renderTo(ProceduralWorldObject.Target target) {
+	public void renderTo(ProceduralWorldObject.Target target, O2WConfig config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -118,7 +118,7 @@ public class ExteriorBuildingWall {
 				hasWindows = false;
 			}
 
-			if ("GLASS_WALL".equals(Materials.getUniqueName(material))) {
+			if ("GLASS_WALL".equals(Materials.getUniqueName(material, config))) {
 				// avoid placing windows into a glass front
 				// TODO: the check currently only works if GLASS_WALL is not colorable
 				hasWindows = false;
@@ -282,7 +282,7 @@ public class ExteriorBuildingWall {
 								boolean transparent = determineWindowTransparency(node, level);
 
 								TagSet windowTags = inheritTags(node.getTags(), tags);
-								WindowParameters params = new WindowParameters(windowTags, buildingPart.levelStructure.level(level).height);
+								WindowParameters params = new WindowParameters(windowTags, buildingPart.levelStructure.level(level).height, config);
 								GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params, transparent);
 								mainSurface.addElementIfSpaceFree(window);
 
@@ -313,7 +313,7 @@ public class ExteriorBuildingWall {
 				if (hasWindows && !individuallyMappedWindows
 						&& (windowImplementation == WindowImplementation.INSET_TEXTURES
 						|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
-					placeDefaultWindows(mainSurface, windowImplementation);
+					placeDefaultWindows(mainSurface, windowImplementation, config);
 				}
 
 			}
@@ -329,7 +329,7 @@ public class ExteriorBuildingWall {
 			}
 
 			if (mainSurface != null) {
-				mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
+				mainSurface.renderTo(target, config, new VectorXZ(0, -floorHeight),
 						hasWindows && !individuallyMappedWindows
 								&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
 						windowHeight,
@@ -337,7 +337,7 @@ public class ExteriorBuildingWall {
 			}
 
 			if (roofSurface != null) {
-				roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight,
+				roofSurface.renderTo(target, config, NULL_VECTOR, false, windowHeight,
 						"wall", "wall_mounted");
 			}
 
@@ -409,13 +409,13 @@ public class ExteriorBuildingWall {
 	}
 
 	/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
-	private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation) {
+	private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation, O2WConfig config) {
 
 		List<Window> windows = new ArrayList<>();
 
 		for (Level level : buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND))) {
 
-			WindowParameters windowParams = new WindowParameters(tags, level.height);
+			WindowParameters windowParams = new WindowParameters(tags, level.height, config);
 
 			double levelEle = level.relativeEle - buildingPart.levelStructure.bottomHeight();
 

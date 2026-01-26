@@ -60,7 +60,7 @@ public class TrafficSignType {
 				config.getFloat("defaultTrafficSignHeight", 2));
 
 		String materialName = config.getString(keyPrefix + "_material", configKey).toUpperCase();
-		Material material = Materials.getMaterial(materialName);
+		Material material = Materials.getMaterial(materialName, config);
 
 		if (material == null) {
 			return null;

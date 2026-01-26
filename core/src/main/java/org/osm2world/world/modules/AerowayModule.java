@@ -23,6 +23,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
@@ -87,7 +88,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	/**
 	 * comparable to {@link RoadModule#getSurfaceForNode}
 	 */
-	private static Material getSurfaceForNode(MapNode node) {
+	private static MaterialOrRef getSurfaceForNode(MapNode node) {
 		if (node.getTags().containsKey("surface")) {
 			return getSurfaceMaterial(node.getTags().getValue("surface"), null);
 		} else {
@@ -95,7 +96,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 	}
 
-	public static class Helipad extends AbstractAreaWorldObject
+	public class Helipad extends AbstractAreaWorldObject
 			implements ProceduralWorldObject {
 
 		protected Helipad(MapArea area) {
@@ -122,12 +123,12 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			Material baseMaterial = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
+			Material baseMaterial = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT, config);
 			List<List<VectorXZ>> baseTexCoords = triangleTexCoordLists(triangles, baseMaterial, GLOBAL_X_Z);
 
-			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.get().textureLayers());
+			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.get(config).textureLayers());
 			List<List<VectorXZ>> texCoords = new ArrayList<>(baseTexCoords);
-			texCoords.addAll(triangleTexCoordLists(triangles, HELIPAD_MARKING, localXZTexCoordFunction));
+			texCoords.addAll(triangleTexCoordLists(triangles, HELIPAD_MARKING.get(config), localXZTexCoordFunction));
 
 			target.drawTriangles(fullMaterial, triangles, texCoords);
 
@@ -135,7 +136,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Apron extends NetworkAreaWorldObject
+	public class Apron extends NetworkAreaWorldObject
 			implements ProceduralWorldObject {
 
 		public Apron(MapArea area) {
@@ -145,7 +146,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Material material = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
+			Material material = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT, config);
 
 			List<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(material, triangles,
@@ -156,7 +157,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	/** some linear "road" on an airport, e.g. a runway or taxiway */
-	public static abstract class AerowaySegment extends AbstractNetworkWaySegmentWorldObject
+	public abstract class AerowaySegment extends AbstractNetworkWaySegmentWorldObject
 		implements ProceduralWorldObject {
 
 		final float centerlineWidthMeters;
@@ -194,14 +195,14 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		Material getSurface() {
-			return getSurfaceMaterial(segment.getTags().getValue("surface"), ASPHALT);
+			return getSurfaceMaterial(segment.getTags().getValue("surface"), ASPHALT, config);
 		}
 
 		abstract Material getCenterlineSurface();
 
 	}
 
-	public static class Runway extends AerowaySegment {
+	public class Runway extends AerowaySegment {
 
 		protected Runway(MapWaySegment segment) {
 			super(segment, 0.9f);
@@ -214,8 +215,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		@Override
 		Material getCenterlineSurface() {
-			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface()))) {
-				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get().textureLayers());
+			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface(), config))) {
+				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get(config).textureLayers());
 			} else {
 				return getSurface();
 			}
@@ -223,7 +224,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Taxiway extends AerowaySegment {
+	public class Taxiway extends AerowaySegment {
 
 		protected Taxiway(MapWaySegment segment) {
 			super(segment, 0.15f);
@@ -236,8 +237,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		@Override
 		Material getCenterlineSurface() {
-			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface()))) {
-				return TAXIWAY_CENTER_MARKING.get();
+			if (List.of("ASPHALT", "CONCRETE").contains(Materials.getUniqueName(getSurface(), config))) {
+				return TAXIWAY_CENTER_MARKING.get(config);
 			} else {
 				return getSurface();
 			}
@@ -245,7 +246,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class AerowayJunction extends JunctionNodeWorldObject<AerowaySegment>
+	public class AerowayJunction extends JunctionNodeWorldObject<AerowaySegment>
 		implements ProceduralWorldObject {
 
 		public AerowayJunction(MapNode node) {
@@ -255,7 +256,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Material material = getSurfaceForNode(node);
+			Material material = getSurfaceForNode(node).get(config);
 			List<TriangleXYZ> triangles = super.getTriangulation();
 
 			target.drawTriangles(material, triangles,
@@ -265,7 +266,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class AerowayConnector extends VisibleConnectorNodeWorldObject<AerowaySegment>
+	public class AerowayConnector extends VisibleConnectorNodeWorldObject<AerowaySegment>
 		implements ProceduralWorldObject {
 
 		public AerowayConnector(MapNode node) {
@@ -283,7 +284,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Material material = getSurfaceForNode(node);
+			Material material = getSurfaceForNode(node).get(config);
 
 			List<TriangleXYZ> trianglesXYZ = getTriangulation();
 

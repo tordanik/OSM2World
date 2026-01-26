@@ -29,6 +29,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
+import org.osm2world.style.Style;
 import org.osm2world.world.data.*;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.modules.common.WorldModuleBillboardUtil;
@@ -259,8 +260,8 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		if (model == null) {
 			model = useBillboards
-					? new TreeBillboardModel(leafType, leafCycle, species, mirrored, dimensions)
-					: new TreeGeometryModel(leafType, leafCycle, species, dimensions);
+					? new TreeBillboardModel(leafType, leafCycle, species, mirrored, dimensions, config.mapStyle())
+					: new TreeGeometryModel(leafType, leafCycle, species, dimensions, config.mapStyle());
 			existingModels.add(model);
 		}
 
@@ -284,13 +285,14 @@ public class TreeModule extends ConfigurableWorldModule {
 			LeafCycle leafCycle,
 			@Nullable TreeSpecies species,
 			boolean mirrored,
-			@Nullable TreeDimensions dimensions
+			@Nullable TreeDimensions dimensions,
+			Style mapStyle
 	) implements TreeModel {
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			Material material = getMaterial().get();
+			Material material = getMaterial().get(mapStyle);
 
 			return WorldModuleBillboardUtil.buildCrosstree(material, params.position(),
 					dimensions != null ? dimensions.crownDiameter : defaultHeightToWidth() * params.height(),
@@ -308,7 +310,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		@Override
 		public double defaultHeightToWidth() {
-			List<TextureLayer> textureLayers = getMaterial().get().textureLayers();
+			List<TextureLayer> textureLayers = getMaterial().get(mapStyle).textureLayers();
 			if (!textureLayers.isEmpty()) {
 				TextureData texture = textureLayers.get(0).baseColorTexture;
 				TextureDataDimensions textureDimensions = texture.dimensions();
@@ -329,7 +331,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			LeafType leafType,
 			LeafCycle leafCycle,
 			@Nullable TreeSpecies species,
-			@Nullable TreeDimensions dimensions
+			@Nullable TreeDimensions dimensions,
+			Style mapStyle
 	) implements TreeModel {
 
 		@Override
@@ -352,16 +355,16 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			ExtrusionGeometry trunk = ExtrusionGeometry.createColumn(null,
 					posXYZ, height*stemRatio,trunkRadius, 0.8 * trunkRadius,
-					false, true, null, TREE_TRUNK.get().textureDimensions());
+					false, true, null, TREE_TRUNK.get(mapStyle).textureDimensions());
 
 			ExtrusionGeometry crown = ExtrusionGeometry.createColumn(null,
 					posXYZ.addY(height*stemRatio), height*(1-stemRatio), width / 2,
 					coniferous ? 0 : width / 2, true, true, null,
-					TREE_CROWN.get().textureDimensions());
+					TREE_CROWN.get(mapStyle).textureDimensions());
 
 			return List.of(
-					new Mesh(trunk, TREE_TRUNK.get()),
-					new Mesh(crown, TREE_CROWN.get())
+					new Mesh(trunk, TREE_TRUNK.get(mapStyle)),
+					new Mesh(crown, TREE_CROWN.get(mapStyle))
 			);
 
 		}

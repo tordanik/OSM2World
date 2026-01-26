@@ -71,31 +71,31 @@ public class GolfModule extends AbstractModule {
 
 	}
 
-	private static class Tee extends SurfaceArea {
+	private class Tee extends SurfaceArea {
 
 		private Tee(MapArea area) {
 
 			super(area, area.getTags().containsKey("surface")
 					? area.getTags().getValue("surface")
-					: "grass");
+					: "grass", config);
 
 		}
 
 	}
 
-	private static class Fairway extends SurfaceArea {
+	private class Fairway extends SurfaceArea {
 
 		private Fairway(MapArea area) {
 
 			super(area, area.getTags().containsKey("surface")
 					? area.getTags().getValue("surface")
-					: "grass");
+					: "grass", config);
 
 		}
 
 	}
 
-	private static class Bunker extends AbstractAreaWorldObject implements ProceduralWorldObject {
+	private class Bunker extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		public Bunker(MapArea area) {
 			super(area);
@@ -119,8 +119,8 @@ public class GolfModule extends AbstractModule {
 			target.setCurrentLodRange(LOD0, LOD1);
 
 			List<TriangleXYZ> basicTriangulation = getTriangulation();
-			target.drawTriangles(SAND, basicTriangulation,
-					triangleTexCoordLists(basicTriangulation, SAND, GLOBAL_X_Z));
+			target.drawTriangles(SAND.get(config), basicTriangulation,
+					triangleTexCoordLists(basicTriangulation, SAND.get(config), GLOBAL_X_Z));
 
 			/* draw the bunker as a depression by shrinking the outline polygon and lowering it at each step.
 			 *
@@ -187,14 +187,14 @@ public class GolfModule extends AbstractModule {
 
 			/* render everything with a sand texture */
 
-			target.drawTriangles(SAND, resultingTriangulation,
-					triangleTexCoordLists(resultingTriangulation, SAND, GLOBAL_X_Z));
+			target.drawTriangles(SAND.get(config), resultingTriangulation,
+					triangleTexCoordLists(resultingTriangulation, SAND.get(config), GLOBAL_X_Z));
 
 		}
 
 	}
 
-	private static class Green extends AbstractAreaWorldObject implements ProceduralWorldObject {
+	private class Green extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		private final VectorXZ pinPosition;
 		private final SimplePolygonXZ pinHoleLoop;
@@ -276,10 +276,10 @@ public class GolfModule extends AbstractModule {
 
 			String surfaceValue = area.getTags().getValue("surface");
 
-			Material material = Materials.GRASS.get();
+			Material material = Materials.GRASS.get(config);
 
 			if (surfaceValue != null && !"grass".equals(surfaceValue)) {
-				material = Materials.getSurfaceMaterial(surfaceValue, material);
+				material = Materials.getSurfaceMaterial(surfaceValue, material, config);
 			}
 
 			List<TriangleXZ> trianglesXZ = getGreenTriangulation();
@@ -304,7 +304,7 @@ public class GolfModule extends AbstractModule {
 			return TriangulationUtil.triangulate(area.getPolygon().getOuter(), holes, emptyList());
 		}
 
-		private static void drawPin(Target target, VectorXZ pos, List<VectorXYZ> upperHoleRing) {
+		private void drawPin(Target target, VectorXZ pos, List<VectorXYZ> upperHoleRing) {
 
 			double minHoleEle = min(upperHoleRing, comparingDouble(v -> v.y)).y;
 
@@ -316,7 +316,7 @@ public class GolfModule extends AbstractModule {
 
 			List<VectorXYZ> vs = createTriangleStripBetween(lowerHoleRing, upperHoleRing);
 
-			Material groundMaterial = Materials.EARTH.get().makeSmooth();
+			Material groundMaterial = Materials.EARTH.get(config).makeSmooth();
 
 			target.drawTriangleStrip(groundMaterial, vs,
 					texCoordLists(vs, groundMaterial, STRIP_WALL));
@@ -326,12 +326,12 @@ public class GolfModule extends AbstractModule {
 
 			/* draw pole and flag */
 
-			Material flagPoleMaterial = PLASTIC.get().withColor(new Color(184, 184, 184));
+			Material flagPoleMaterial = PLASTIC.get(config).withColor(new Color(184, 184, 184));
 			target.drawColumn(flagPoleMaterial, null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 
 			var flag = new StripedFlag(3.0 / 4, List.of(YELLOW), true);
-			flag.renderFlag(target, pos.xyz(holeBottomEle + 1.5), 0.3, 0.4);
+			flag.renderFlag(target, pos.xyz(holeBottomEle + 1.5), 0.3, 0.4, config);
 
 		}
 

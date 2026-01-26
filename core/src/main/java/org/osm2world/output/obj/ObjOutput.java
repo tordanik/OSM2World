@@ -10,7 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -24,9 +27,12 @@ import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.common.FaceOutput;
 import org.osm2world.output.common.ResourceOutputSettings;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.*;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Transparency;
+import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureData.Wrap;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.util.GlobalValues;
 import org.osm2world.world.data.WorldObject;
 
@@ -166,7 +172,7 @@ public class ObjOutput extends FaceOutput {
 	}
 
 	@Override
-	public void drawFace(MaterialOrRef material, List<VectorXYZ> vs,
+	public void drawFace(Material material, List<VectorXYZ> vs,
 			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 
 		int[] normalIndices = null;
@@ -176,9 +182,9 @@ public class ObjOutput extends FaceOutput {
 
 		VectorXYZ faceNormal = new TriangleXYZ(vs.get(0), vs.get(1), vs.get(2)).getNormal();
 
-		for (int layer = 0; layer < max(1, material.get().textureLayers().size()); layer++) {
+		for (int layer = 0; layer < max(1, material.textureLayers().size()); layer++) {
 
-			useMaterial(material.get(), layer);
+			useMaterial(material, layer);
 
 			int[] texCoordIndices = null;
 			if (texCoordLists != null && !texCoordLists.isEmpty()) {
@@ -199,7 +205,7 @@ public class ObjOutput extends FaceOutput {
 
 			String name = materialMap.get(material);
 			if (name == null) {
-				name = Materials.getUniqueName(material);
+				name = Materials.getUniqueName(material, config);
 				if (name == null) {
 					name = "MAT_" + anonymousMaterialCounter;
 					anonymousMaterialCounter += 1;

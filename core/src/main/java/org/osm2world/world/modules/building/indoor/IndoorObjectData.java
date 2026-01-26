@@ -13,6 +13,7 @@ import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.world.modules.building.BuildingDefaults;
 import org.osm2world.world.modules.building.BuildingPart;
 
@@ -89,15 +90,15 @@ public final class IndoorObjectData {
         }
     }
 
-    public Material getMaterial(Material defaultMaterial) {
-        return  BuildingPart.buildMaterial(mapElement.getTags().getValue("material"), null, defaultMaterial, false);
+    public Material getMaterial(MaterialOrRef defaultMaterial, O2WConfig config) {
+        return BuildingPart.buildMaterial(mapElement.getTags().getValue("material"), null, defaultMaterial, false, config);
     }
 
-    public Material getSurface() {
+    public Material getSurface(O2WConfig config) {
         if (tags.containsKey("surface")) {
-            return BuildingPart.buildMaterial(tags.getValue("surface"), null, BuildingDefaults.getDefaultsFor(buildingPart.getTags()).materialWall, false);
+            return BuildingPart.buildMaterial(tags.getValue("surface"), null, BuildingDefaults.getDefaultsFor(buildingPart.getTags()).materialWall, false, config);
         } else {
-            return BuildingDefaults.getDefaultsFor(buildingPart.getTags()).materialWall;
+            return BuildingDefaults.getDefaultsFor(buildingPart.getTags()).materialWall.get(config);
         }
     }
 

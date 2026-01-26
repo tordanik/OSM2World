@@ -124,7 +124,7 @@ public class TunnelModule extends AbstractModule {
 
 	}
 
-	public static class Tunnel extends BridgeOrTunnel {
+	public class Tunnel extends BridgeOrTunnel {
 
 		public Tunnel(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
@@ -165,18 +165,18 @@ public class TunnelModule extends AbstractModule {
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					aboveLeftOutline, leftOutline);
 
-			target.drawTriangleStrip(TUNNEL_DEFAULT, strip1,
-					texCoordLists(strip1, TUNNEL_DEFAULT, STRIP_WALL));
-			target.drawTriangleStrip(TUNNEL_DEFAULT, strip2,
-					texCoordLists(strip1, TUNNEL_DEFAULT, STRIP_WALL));
-			target.drawTriangleStrip(TUNNEL_DEFAULT, strip3,
-					texCoordLists(strip1, TUNNEL_DEFAULT, STRIP_WALL));
+			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip1,
+					texCoordLists(strip1, TUNNEL_DEFAULT.get(config), STRIP_WALL));
+			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip2,
+					texCoordLists(strip1, TUNNEL_DEFAULT.get(config), STRIP_WALL));
+			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip3,
+					texCoordLists(strip1, TUNNEL_DEFAULT.get(config), STRIP_WALL));
 
 		}
 
 	}
 
-	public static class TunnelEntrance implements NodeWorldObject {
+	public class TunnelEntrance implements NodeWorldObject {
 
 		private final MapNode node;
 		private final AbstractNetworkWaySegmentWorldObject tunnelContent;
@@ -310,7 +310,7 @@ public class TunnelModule extends AbstractModule {
 
 	}
 
-	public static class TunnelJunction implements NodeWorldObject, ProceduralWorldObject {
+	public class TunnelJunction implements NodeWorldObject, ProceduralWorldObject {
 
 		private final MapNode node;
 		private final JunctionNodeWorldObject<?> primaryRep;

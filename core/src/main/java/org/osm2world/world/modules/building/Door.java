@@ -10,6 +10,7 @@ import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import java.util.List;
 
 import org.osm2world.conversion.ConversionLog;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -48,12 +49,12 @@ public class Door implements WallElement {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, WallSurface surface) {
+	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config) {
 
 		Material doorMaterial = switch (parameters.type) {
-			case "no" -> VOID.get();
-			case "overhead" -> GARAGE_DOOR.get();
-			default -> ENTRANCE_DEFAULT.get();
+			case "no" -> VOID.get(config);
+			case "overhead" -> GARAGE_DOOR.get(config);
+			default -> ENTRANCE_DEFAULT.get(config);
 		};
 
 		doorMaterial = doorMaterial.withColor(parameters.color);

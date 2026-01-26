@@ -15,6 +15,7 @@ import static org.osm2world.world.modules.common.WorldModuleParseUtil.inheritTag
 import java.util.*;
 
 import org.osm2world.conversion.ConversionLog;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -26,7 +27,7 @@ import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.MaterialOrRef;
+import org.osm2world.scene.material.MaterialRef;
 import org.osm2world.scene.material.Materials;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -36,6 +37,8 @@ import org.osm2world.world.modules.building.roof.Roof;
 import com.google.common.collect.Sets;
 
 public class IndoorWall {
+
+	private final O2WConfig config;
 
 	private final double straightnessTolerance = 0.001;
 	private final double wallThickness = 0.1;
@@ -51,12 +54,13 @@ public class IndoorWall {
 
     private final IndoorObjectData data;
 
-    private static final MaterialOrRef defaultInnerMaterial = Materials.CONCRETE;
+    private static final MaterialRef defaultInnerMaterial = Materials.CONCRETE;
 
     //TODO account for height of wall
-    public IndoorWall(IndoorObjectData objectData){
+    public IndoorWall(IndoorObjectData objectData, O2WConfig config) {
 
         this.data = objectData;
+		this.config = config;
 
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 		this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getLevelHeightAboveBase();
@@ -74,11 +78,12 @@ public class IndoorWall {
 
     }
 
-    public IndoorWall(BuildingPart buildingPart, MapElement element){
+    public IndoorWall(BuildingPart buildingPart, MapElement element, O2WConfig config) {
 
         data = new IndoorObjectData(buildingPart, element);
         this.floorHeight = (float) buildingPart.levelStructure.bottomHeight();
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
+		this.config = config;
 
         if (element instanceof MapArea) {
 			nodes = areaNodes((MapArea) element);
@@ -692,7 +697,9 @@ public class IndoorWall {
     	return v1.subtract(v2).lengthSquared() < 0.00001;
 	}
 
-	public static void renderNodePolygons(CommonTarget target, Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> nodeToLineSegments){
+	public static void renderNodePolygons(CommonTarget target, Map<NodeWithLevelAndHeights,
+			List<LineSegmentXZ>> nodeToLineSegments, O2WConfig config) {
+
 		for (Map.Entry<NodeWithLevelAndHeights, List<LineSegmentXZ>> entry : nodeToLineSegments.entrySet()) {
 
 			NodeWithLevelAndHeights nodeAndLevel = entry.getKey();
@@ -775,13 +782,15 @@ public class IndoorWall {
 					path.add(bottom);
 					path.add(top);
 
-					target.drawExtrudedShape(defaultInnerMaterial, polygon, path, null, null, null);
+					Material material = defaultInnerMaterial.get(config);
 
-					target.drawTriangles(defaultInnerMaterial, trianglesXYZBottom,
-							triangleTexCoordLists(trianglesXYZBottom, Materials.BRICK, GLOBAL_X_Z));
+					target.drawExtrudedShape(material, polygon, path, null, null, null);
 
-					target.drawTriangles(defaultInnerMaterial, trianglesXYZTop,
-							triangleTexCoordLists(trianglesXYZTop, Materials.BRICK, GLOBAL_X_Z));
+					target.drawTriangles(material, trianglesXYZBottom,
+							triangleTexCoordLists(trianglesXYZBottom, material, GLOBAL_X_Z));
+
+					target.drawTriangles(material, trianglesXYZTop,
+							triangleTexCoordLists(trianglesXYZTop, material, GLOBAL_X_Z));
 
 
 				} catch (InvalidGeometryException e) {}
@@ -793,7 +802,8 @@ public class IndoorWall {
 
 		double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
-		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK.get(), false);
+		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null,
+				Materials.BRICK, false, config);
 
 		for (Integer level : data.getRenderableLevels()) {
 
@@ -846,6 +856,8 @@ public class IndoorWall {
 
 						try {
 
+							Material innerMaterial = defaultInnerMaterial.get(config);
+
 							List<VectorXZ> bottomVertexLoop = new ArrayList<>(endPoints);
 							bottomVertexLoop.add(endPoints.get(0));
 
@@ -860,10 +872,10 @@ public class IndoorWall {
 									triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 									.stream()
 									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - topOffset))
-									.collect(toList());
+									.toList();
 
-							target.drawTriangles(defaultInnerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
-							target.drawTriangles(defaultInnerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(innerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(innerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
 
 
 							rightSurface = new WallSurface(material,
@@ -899,7 +911,7 @@ public class IndoorWall {
 									boolean transparent = ExteriorBuildingWall.determineWindowTransparency(node, level);
 
 									TagSet windowTags = inheritTags(node.getTags(), data.getTags());
-									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().levelStructure.level(level).height);
+									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().levelStructure.level(level).height, config);
 
 									GeometryWindow windowFront = new GeometryWindow(new VectorXZ(posFront.x, params.breast), params, transparent);
 									GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posback.x, params.breast), params, transparent);
@@ -922,11 +934,11 @@ public class IndoorWall {
 
 						if (mainSurface != null && backSurface != null) {
 							String[] attachmentTypes = new String[] {"wall" + level, "wall"};
-							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, attachmentTypes);
-							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, attachmentTypes);
+							mainSurface.renderTo(target, config, new VectorXZ(0, -floorHeight), false, null, attachmentTypes);
+							backSurface.renderTo(target, config, new VectorXZ(0, -floorHeight), false, null, attachmentTypes);
 							if (leftSurface != null && rightSurface != null) {
-								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null);
-								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null);
+								rightSurface.renderTo(target, config, new VectorXZ(0, -floorHeight), false, null);
+								leftSurface.renderTo(target, config, new VectorXZ(0, -floorHeight), false, null);
 							}
 						}
 					} else {

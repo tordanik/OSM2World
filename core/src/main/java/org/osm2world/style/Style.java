@@ -29,11 +29,13 @@ public interface Style {
 	/** Variant of {@link #resolveMaterial(String)} with a default value */
 	default Material resolveMaterial(@Nullable String name, MaterialOrRef defaultValue) {
 		Material result = resolveMaterial(name);
-		return result == null ? defaultValue.get() : result;
+		return result == null ? resolveMaterial(defaultValue) : result;
 	}
 
-	default Material resolveMaterial(MaterialOrRef materialOrRef) {
-		if (materialOrRef instanceof MaterialRef materialRef) {
+	default Material resolveMaterial(@Nullable MaterialOrRef materialOrRef) {
+		if (materialOrRef == null) {
+			return null;
+		} else if (materialOrRef instanceof MaterialRef materialRef) {
 			Material material = resolveMaterial(materialRef.name());
 			return material != null ? material : materialRef.defaultAppearance();
 		} else {
@@ -56,9 +58,9 @@ public interface Style {
 	 *
 	 * @return the transparent variant of the material, or null if none is available
 	 */
-	default @Nullable Material getTransparentVariant(MaterialOrRef material) {
+	default @Nullable Material getTransparentVariant(Material material) {
 		return switch (requireNonNullElse(getUniqueName(material), "")) {
-			case "GLASS" -> GLASS_TRANSPARENT.get();
+			case "GLASS" -> resolveMaterial(GLASS_TRANSPARENT);
 			case "GLASS_WALL" -> resolveMaterial("GLASS_WALL_TRANSPARENT", null);
 			case "GLASS_ROOF" -> resolveMaterial("GLASS_ROOF_TRANSPARENT", null);
 			default -> null;

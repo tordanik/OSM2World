@@ -1,9 +1,7 @@
 package org.osm2world.scene.material;
 
-import static org.osm2world.conversion.ConversionContext.mapStyle;
 import static org.osm2world.scene.color.Color.*;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -293,43 +291,41 @@ public final class Materials {
 
 	}
 
-	public static Collection<Material> getMaterials() {
-		return mapStyle().getMaterials();
+	public static @Nullable Material getMaterial(@Nullable String name, O2WConfig config) {
+		return config.mapStyle().resolveMaterial(name);
 	}
 
-	public static @Nullable Material getMaterial(@Nullable String name) {
-		return mapStyle().resolveMaterial(name);
+	public static Material getMaterial(@Nullable String name, MaterialOrRef defaultValue, O2WConfig config) {
+		return config.mapStyle().resolveMaterial(name, defaultValue);
 	}
 
-	public static Material getMaterial(@Nullable String name, MaterialOrRef defaultValue) {
-		return mapStyle().resolveMaterial(name, defaultValue);
-	}
-
-	public static Material resolveMaterial(MaterialOrRef materialOrRef) {
-		return mapStyle().resolveMaterial(materialOrRef);
+	/** returns a material reference for a surface value; null if none is found */
+	public static MaterialOrRef getSurfaceMaterialRef(String value) {
+		return getSurfaceMaterialRef(value, null);
 	}
 
 	/** returns a material for a surface value; null if none is found */
-	public static Material getSurfaceMaterial(String value) {
-		return getSurfaceMaterial(value, null);
+	public static Material getSurfaceMaterial(String value, O2WConfig config) {
+		return config.mapStyle().resolveMaterial(getSurfaceMaterialRef(value));
 	}
 
-	/** same as {@link #getSurfaceMaterial(String)}, but with fallback value */
-	public static Material getSurfaceMaterial(String value, MaterialOrRef fallback) {
+	/** same as {@link #getSurfaceMaterialRef(String)}, but with fallback value */
+	public static MaterialOrRef getSurfaceMaterialRef(String value, MaterialOrRef fallback) {
 		MaterialRef materialRef = value == null ? null : surfaceMaterialMap.get(value);
-		if (materialRef != null) {
-			return materialRef.get();
-		} else {
-			return fallback == null ? null : fallback.get();
-		}
+		return materialRef != null ? materialRef : fallback;
 	}
 
-	public static String getUniqueName(MaterialOrRef material) {
-		return mapStyle().getUniqueName(material);
+	/** same as {@link #getSurfaceMaterial(String, O2WConfig)}, but with fallback value */
+	public static Material getSurfaceMaterial(String value, MaterialOrRef fallback, O2WConfig config) {
+		return config.mapStyle().resolveMaterial(getSurfaceMaterialRef(value, fallback));
 	}
 
-	public static @Nullable Material getTransparentVariant(MaterialOrRef material) {
-		return mapStyle().getTransparentVariant(material);
+	public static String getUniqueName(Material material, O2WConfig config) {
+		return config.mapStyle().getUniqueName(material);
+	}
+
+	public static @Nullable Material getTransparentVariant(Material material, O2WConfig config) {
+		return config.mapStyle().getTransparentVariant(material);
 	}
 
 	public static void configureMaterials(O2WConfig config) {

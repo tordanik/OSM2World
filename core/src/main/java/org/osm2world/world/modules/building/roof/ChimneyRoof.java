@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -25,8 +26,11 @@ import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 /** the top of a chimney, modeled as a special kind of "roof" */
 public class ChimneyRoof extends Roof {
 
-	public ChimneyRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+	private final O2WConfig config;
+
+	public ChimneyRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material, O2WConfig config) {
 		super(originalPolygon, tags, material);
+		this.config = config;
 	}
 
 	@Override
@@ -74,8 +78,8 @@ public class ChimneyRoof extends Roof {
 		List<TriangleXZ> holeTrianglesXZ = chimneyHole.getTriangulation();
 		List<TriangleXYZ> holeTriangles = holeTrianglesXZ.stream().map(t -> t.xyz(chimneyHoleEle)).collect(toList());
 
-		target.drawTriangles(VOID, holeTriangles,
-				triangleTexCoordLists(holeTriangles, VOID, NamedTexCoordFunction.GLOBAL_X_Z));
+		target.drawTriangles(VOID.get(config), holeTriangles,
+				triangleTexCoordLists(holeTriangles, VOID.get(config), NamedTexCoordFunction.GLOBAL_X_Z));
 
 		/* mark the location where a client might want to emit a smoke effect */
 

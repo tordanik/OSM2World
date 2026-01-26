@@ -10,7 +10,6 @@ import org.osm2world.output.common.Primitive;
 import org.osm2world.output.common.Primitive.Type;
 import org.osm2world.output.common.PrimitiveOutput;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.MaterialOrRef;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -26,11 +25,10 @@ public class PrimitiveBuffer extends PrimitiveOutput {
 	private Multimap<Material, Primitive> primitiveMap = HashMultimap.create();
 
 	@Override
-	protected void drawPrimitive(Type type, MaterialOrRef material,
+	protected void drawPrimitive(Type type, Material material,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
-		primitiveMap.put(material.get(),
-				new Primitive(type, vertices, normals, texCoordLists));
+		primitiveMap.put(material, new Primitive(type, vertices, normals, texCoordLists));
 	}
 
 	/**

@@ -47,7 +47,7 @@ public class StatisticsAction extends AbstractAction implements Observer {
 		StatisticsOutput stats = new StatisticsOutput(lod);
 
 		stats.outputScene(conversionResults);
-		new StatisticsDialog(viewerFrame, stats).setVisible(true);
+		new StatisticsDialog(viewerFrame, stats, data.getConfig()).setVisible(true);
 
 	}
 

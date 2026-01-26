@@ -12,7 +12,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.output.common.Primitive.Type;
 import org.osm2world.output.common.PrimitiveOutput;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.world.data.WorldObject;
 
@@ -171,16 +170,15 @@ public class StatisticsOutput extends PrimitiveOutput {
 	}
 
 	@Override
-	protected void drawPrimitive(Type type, MaterialOrRef material,
+	protected void drawPrimitive(Type type, Material material,
 			List<VectorXYZ> vs, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 
-		countsPerMaterial.putIfAbsent(material.get(), new long[Stat.values().length]);
+		countsPerMaterial.putIfAbsent(material, new long[Stat.values().length]);
 
 		for (Stat stat : Stat.values()) {
 
-			long count = stat.countPrimitive(
-					type, material.get(), vs, normals, texCoordLists);
+			long count = stat.countPrimitive(type, material, vs, normals, texCoordLists);
 
 			globalCounts[stat.ordinal()] += count;
 

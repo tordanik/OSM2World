@@ -97,7 +97,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	private record SleeperModel(double sleeperWidth) implements Model {
+	private record SleeperModel(double sleeperWidth, Material material) implements Model {
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
@@ -108,8 +108,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 			box = box.rotatedCW(params.direction());
 
 			return List.of(new Mesh(new ExtrusionGeometry(box, List.of(position, position.addY(SLEEPER_HEIGHT)),
-					null, null, null, EnumSet.of(END_CAP), WOOD.get().textureDimensions()),
-					WOOD.get(), LOD4));
+					null, null, null, EnumSet.of(END_CAP), material.textureDimensions()),
+					material, LOD4));
 
 		}
 	}
@@ -155,7 +155,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			groundWidth = sleeperWidth + 2 * GROUND_EXTRA_WIDTH;
 
 			if (!sleeperModelByWidth.containsKey(sleeperWidth)) {
-				sleeperModelByWidth.put(sleeperWidth, new SleeperModel(sleeperWidth));
+				sleeperModelByWidth.put(sleeperWidth, new SleeperModel(sleeperWidth, WOOD.get(config)));
 			}
 
 			// tram is often part of a street, omit ground mesh
@@ -193,15 +193,15 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 				// just the ballast (sleepers will be rendered as separate models at this LOD)
 				TriangleGeometry.Builder lod4GroundBuilder = new TriangleGeometry.Builder(
-						texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
+						texCoordFunctions(RAIL_BALLAST.get(config), GLOBAL_X_Z), null, Interpolation.SMOOTH);
 				lod4GroundBuilder.addTriangleStrip(groundVs);
-				result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST.get(), LOD4));
+				result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST.get(config), LOD4));
 
 				// repeating texture containing ballast, sleepers and rails
 				TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(
-						texCoordFunctions(RAILWAY, STRIP_FIT_HEIGHT), null, Interpolation.SMOOTH);
+						texCoordFunctions(RAILWAY.get(config), STRIP_FIT_HEIGHT), null, Interpolation.SMOOTH);
 				lod3GroundBuilder.addTriangleStrip(groundVs);
-				result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY.get(), LOD0, LOD3));
+				result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY.get(config), LOD0, LOD3));
 
 			}
 
@@ -228,8 +228,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 						createLineBetween(getOutline(false), getOutline(true), 1 - (groundWidth - railDist) / groundWidth / 2)
 				)) {
 					result.add(new Mesh(new ExtrusionGeometry(shape, addYList(railLine, yOffset),
-							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions, STEEL.get().textureDimensions()),
-							STEEL.get(), lod));
+							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions, STEEL.get(config).textureDimensions()),
+							STEEL.get(config), lod));
 				}
 
 			}
@@ -278,7 +278,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RailJunction extends JunctionNodeWorldObject<Rail>
+	public class RailJunction extends JunctionNodeWorldObject<Rail>
 			implements ProceduralWorldObject {
 
 		public RailJunction(MapNode node) {
@@ -294,7 +294,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vectors = getOutlinePolygon().vertices();
 
-			Material material = Materials.RAIL_BALLAST.get();
+			Material material = Materials.RAIL_BALLAST.get(config);
 
 			target.drawConvexPolygon(material, vectors,
 					texCoordLists(vectors, material, GLOBAL_X_Z));

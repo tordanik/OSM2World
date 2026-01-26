@@ -43,6 +43,7 @@ import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -184,9 +185,9 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * If the node has an explicit surface tag, this is evaluated.
 	 * Otherwise, the result depends on the surface values of adjacent roads.
 	 */
-	static Material getSurfaceForNode(MapNode node) {
+	static MaterialOrRef getSurfaceForNode(MapNode node) {
 
-		Material surface = getSurfaceMaterial(
+		MaterialOrRef surface = getSurfaceMaterialRef(
 				node.getTags().getValue("surface"), null);
 
 		if (surface != null) {
@@ -221,29 +222,29 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static Material getSurfaceForRoad(TagSet tags,
-			Material defaultSurface) {
+	private static MaterialOrRef getSurfaceForRoad(TagSet tags,
+			MaterialOrRef defaultSurface) {
 
-		Material result;
+		MaterialOrRef result;
 
 		if (tags.containsKey("tracktype")) {
 			if (tags.contains("tracktype", "grade1")) {
-				result = ASPHALT.get();
+				result = ASPHALT;
 			} else if (tags.contains("tracktype", "grade2")) {
-				result = GRAVEL.get();
+				result = GRAVEL;
 			} else {
-				result = EARTH.get();
+				result = EARTH;
 			}
 		} else {
 			result = defaultSurface;
 		}
 
-		return getSurfaceMaterial(tags.getValue("surface"), result);
+		return getSurfaceMaterialRef(tags.getValue("surface"), result);
 
 	}
 
 	private static MaterialOrRef getSurfaceMiddleForRoad(TagSet tags,
-			Material defaultSurface) {
+			MaterialOrRef defaultSurface, Style mapStyle) {
 
 		MaterialOrRef result;
 
@@ -255,9 +256,9 @@ public class RoadModule extends ConfigurableWorldModule {
 			result = defaultSurface;
 		}
 
-		result = getSurfaceMaterial(tags.getValue("surface:middle"), result);
+		result = getSurfaceMaterialRef(tags.getValue("surface:middle"), result);
 
-		if ("GRASS".equals(Materials.getUniqueName(result))) {
+		if ("GRASS".equals(mapStyle.getUniqueName(result))) {
 			result = TERRAIN_DEFAULT;
 		}
 
@@ -582,7 +583,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * representation for junctions between roads.
 	 */
-	public static class RoadJunction extends JunctionNodeWorldObject<Road>
+	public class RoadJunction extends JunctionNodeWorldObject<Road>
 			implements ProceduralWorldObject {
 
 		public RoadJunction(MapNode node) {
@@ -592,7 +593,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Material material = getSurfaceForNode(node);
+			Material material = getSurfaceForNode(node).get(config);
 			List<TriangleXYZ> triangles = super.getTriangulation();
 
 			target.setCurrentLodRange(LOD0, LOD4);
@@ -608,7 +609,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					node, true, false);
 
 			for (LaneConnection connection : connections) {
-				connection.renderTo(target);
+				connection.renderTo(target, config);
 			}
 
 		}
@@ -624,7 +625,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * visible connectors where a road changes width or lane layout
 	 */
-	public static class RoadConnector
+	public class RoadConnector
 		extends VisibleConnectorNodeWorldObject<Road>
 		implements ProceduralWorldObject {
 
@@ -659,7 +660,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			target.setCurrentLodRange(LOD2, LOD4);
 
 			for (LaneConnection connection : connections) {
-				connection.renderTo(target);
+				connection.renderTo(target, config);
 			}
 
 			/* render area not covered by connections */
@@ -668,7 +669,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			target.setCurrentLodRange(LOD0, LOD4);
 
-			Material material = getSurfaceForNode(node);
+			Material material = getSurfaceForNode(node).get(config);
 
 			List<TriangleXYZ> trianglesXYZ = getTriangulation();
 
@@ -682,7 +683,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * representation for crossings (zebra crossing etc.) on roads
 	 */
-	public static class RoadCrossingAtConnector
+	public class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject<Road>
 		implements ProceduralWorldObject {
 
@@ -712,7 +713,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* determine surface material */
 
-			Material surface = getSurfaceForNode(node);
+			Material surface = getSurfaceForNode(node).get(config);
 
 			Material markingMaterial = getMarkingMaterial(node.getTags());
 
@@ -735,12 +736,12 @@ public class RoadModule extends ConfigurableWorldModule {
 					node, false, true);
 
 			for (LaneConnection connection : connections) {
-				connection.renderTo(target);
+				connection.renderTo(target, config);
 			}
 
 		}
 
-		private static @Nullable Material getMarkingMaterial(TagSet tags) {
+		private @Nullable Material getMarkingMaterial(TagSet tags) {
 
 			String markingType = tags.getValue("crossing:markings");
 
@@ -755,9 +756,9 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			return switch (markingType) {
-				case "zebra" -> ROAD_MARKING_ZEBRA.get();
+				case "zebra" -> ROAD_MARKING_ZEBRA.get(config);
 				case "surface", "no" -> null;
-				default -> ROAD_MARKING_CROSSING.get();
+				default -> ROAD_MARKING_CROSSING.get(config);
 			};
 
 		}
@@ -765,7 +766,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/** representation of a road */
-	public static class Road extends AbstractNetworkWaySegmentWorldObject
+	public class Road extends AbstractNetworkWaySegmentWorldObject
 			implements ProceduralWorldObject {
 
 		protected static final double DEFAULT_LANE_WIDTH = 3.5f;
@@ -1317,7 +1318,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		public Material getSurface() {
-			return getSurfaceForRoad(tags, ASPHALT.get());
+			return getSurfaceForRoad(tags, ASPHALT).get(config);
 		}
 
 		public LaneLayout getLaneLayout() {
@@ -1358,15 +1359,15 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = null;
 
 			if (tags.containsKey("material")) {
-				material = Materials.getMaterial(tags.getValue("material"));
+				material = Materials.getMaterial(tags.getValue("material"), config);
 			}
 
 			if (material == null && tags.containsKey("surface")) {
-				material = Materials.getSurfaceMaterial(tags.getValue("surface"));
+				material = Materials.getSurfaceMaterial(tags.getValue("surface"), config);
 			}
 
 			if (material == null) {
-				material = CONCRETE.get();
+				material = CONCRETE.get(config);
 			}
 
 			material = material.withColor(parseColor(tags.getValue("colour"), CSS_COLORS));
@@ -1376,16 +1377,16 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vs = createTriangleStripBetween(
 					leftOutline, rightOutline);
 
-			target.drawTriangleStrip(ASPHALT, vs,
-					texCoordLists(vs, ASPHALT, GLOBAL_X_Z));
+			target.drawTriangleStrip(ASPHALT.get(config), vs,
+					texCoordLists(vs, ASPHALT.get(config), GLOBAL_X_Z));
 
 			// render underside for indoor stairs
 
 			List<VectorXYZ> vsDown = createTriangleStripBetween(
 					rightOutline, leftOutline);
 
-			target.drawTriangleStrip(ASPHALT, vsDown,
-					texCoordLists(vsDown, ASPHALT, GLOBAL_X_Z));
+			target.drawTriangleStrip(ASPHALT.get(config), vsDown,
+					texCoordLists(vsDown, ASPHALT.get(config), GLOBAL_X_Z));
 
 			/* Determine the position of the start/end for each step.
 			 * May need to look beyond this way segment because step_count refers to the entire way. */
@@ -1511,13 +1512,13 @@ public class RoadModule extends ConfigurableWorldModule {
 					handrailLine.add(v.y(v.y + 1));
 				}
 
-				target.drawExtrudedShape(HANDRAIL_DEFAULT, HANDRAIL_SHAPE, handrailLine,
+				target.drawExtrudedShape(HANDRAIL_DEFAULT.get(config), HANDRAIL_SHAPE, handrailLine,
 						nCopies(handrailLine.size(), Y_UNIT), null, null);
 
-				target.drawColumn(HANDRAIL_DEFAULT, 4,
+				target.drawColumn(HANDRAIL_DEFAULT.get(config), 4,
 						handrailFootprint.get(0),
 						1, 0.03, 0.03, false, true);
-				target.drawColumn(HANDRAIL_DEFAULT, 4,
+				target.drawColumn(HANDRAIL_DEFAULT.get(config), 4,
 						handrailFootprint.get(handrailFootprint.size()-1),
 						1, 0.03, 0.03, false, true);
 
@@ -1532,7 +1533,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			/* draw lanes themselves */
 
 			for (Lane lane : lanesLeftToRight) {
-				lane.renderTo(target);
+				lane.renderTo(target, config);
 			}
 
 			/* close height gaps at left and right border of the road */
@@ -1594,7 +1595,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				target.setCurrentLodRange(LOD0, LOD1);
 				VEHICLE_LANE.render(target, RoadPart.RIGHT, true,
-						this.tags, TagSet.of(), getOutline(false), getOutline(true));
+						this.tags, TagSet.of(), getOutline(false), getOutline(true), config);
 
 			}
 
@@ -1602,7 +1603,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RoadArea extends NetworkAreaWorldObject
+	public class RoadArea extends NetworkAreaWorldObject
 			implements ProceduralWorldObject {
 
 		public RoadArea(MapArea area) {
@@ -1613,7 +1614,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public void buildMeshesAndModels(Target target) {
 
 			String surface = area.getTags().getValue("surface");
-			Material material = getSurfaceMaterial(surface, ASPHALT);
+			Material material = getSurfaceMaterial(surface, ASPHALT, config);
 			List<TriangleXYZ> triangles = getTriangulation();
 
 			target.drawTriangles(material, triangles,
@@ -1859,7 +1860,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(CommonTarget target) {
+		public void renderTo(CommonTarget target, O2WConfig config) {
 
 			assert phase > 1;
 
@@ -1876,7 +1877,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			rightLaneBorder = addYList(rightLaneBorder, getHeightAboveRoad());
 
 			type.render(target, roadPart, road.rightHandTraffic,
-					road.tags, laneTags, leftLaneBorder, rightLaneBorder);
+					road.tags, laneTags, leftLaneBorder, rightLaneBorder, config);
 
 		}
 
@@ -1935,10 +1936,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(CommonTarget target) {
+		public void renderTo(CommonTarget target, O2WConfig config) {
 
 			type.render(target, roadPart, rightHandTraffic,
-					roadTags, laneTags, leftBorder, rightBorder);
+					roadTags, laneTags, leftBorder, rightBorder, config);
 
 		}
 
@@ -1968,7 +1969,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				boolean rightHandTraffic,
 				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
-				List<VectorXYZ> rightLaneBorder);
+				List<VectorXYZ> rightLaneBorder,
+				O2WConfig config);
 
 		public abstract Double getAbsoluteWidth(
 				TagSet roadTags, TagSet laneTags);
@@ -1983,7 +1985,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	static abstract class FlatTexturedLane extends LaneType {
+	abstract static class FlatTexturedLane extends LaneType {
 
 		private FlatTexturedLane(String typeName,
 				boolean isConnectableAtCrossings,
@@ -1998,10 +2000,10 @@ public class RoadModule extends ConfigurableWorldModule {
 				boolean rightHandTraffic,
 				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
-				List<VectorXYZ> rightLaneBorder) {
+				List<VectorXYZ> rightLaneBorder, O2WConfig config) {
 
-			Material surface = getSurface(roadTags, laneTags);
-			Material surfaceMiddle = getSurfaceMiddle(roadTags, laneTags);
+			Material surface = getSurface(roadTags, laneTags, config);
+			Material surfaceMiddle = getSurfaceMiddle(roadTags, laneTags, config);
 
 			boolean outlinesShareStart = leftLaneBorder.get(0).distanceToXZ(rightLaneBorder.get(0)) < 0.01;
 			boolean outlinesShareEnd = leftLaneBorder.get(leftLaneBorder.size() - 1).distanceToXZ(
@@ -2028,7 +2030,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						// add turn arrows only if the lane section is long enough (rough rule of thumb)
 						double length = leftLaneBorder.get(0).distanceToXZ(leftLaneBorder.get(leftLaneBorder.size() - 1));
 						if (length > 4.0) {
-							surface = addTurnArrows(surface, laneTags);
+							surface = addTurnArrows(surface, laneTags, config.mapStyle());
 						}
 
 					}
@@ -2094,17 +2096,17 @@ public class RoadModule extends ConfigurableWorldModule {
 			return 0;
 		}
 
-		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
+		protected Material getSurface(TagSet roadTags, TagSet laneTags, O2WConfig config) {
 
 			return getSurfaceMaterial(laneTags.getValue("surface"),
-					getSurfaceForRoad(roadTags, ASPHALT.get()));
+					getSurfaceForRoad(roadTags, ASPHALT), config);
 
 		}
 
-		protected Material getSurfaceMiddle(TagSet roadTags, TagSet laneTags) {
+		protected Material getSurfaceMiddle(TagSet roadTags, TagSet laneTags, O2WConfig config) {
 
 			return getSurfaceMaterial(laneTags.getValue("surface:middle"),
-					getSurfaceMiddleForRoad(roadTags, null));
+					getSurfaceMiddleForRoad(roadTags, null, config.mapStyle()), config);
 
 		}
 
@@ -2155,9 +2157,9 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
-			Material material = super.getSurface(roadTags, laneTags);
-			if ("ASPHALT".equals(getUniqueName(material))) return RED_ROAD_MARKING.get();
+		protected Material getSurface(TagSet roadTags, TagSet laneTags, O2WConfig config) {
+			Material material = super.getSurface(roadTags, laneTags, config);
+			if ("ASPHALT".equals(getUniqueName(material, config))) return RED_ROAD_MARKING.get(config);
 			else return material;
 		}
 
@@ -2182,8 +2184,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
-			return ROAD_MARKING.get();
+		protected Material getSurface(TagSet roadTags, TagSet laneTags, O2WConfig config) {
+			return ROAD_MARKING.get(config);
 		}
 
 	};
@@ -2197,16 +2199,16 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
+		protected Material getSurface(TagSet roadTags, TagSet laneTags, O2WConfig config) {
 
 			@Nullable Material baseSurface = getSurfaceMaterial(laneTags.getValue("surface"),
-					getSurfaceForRoad(roadTags, null));
-			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.get().textureLayers();
+					getSurfaceForRoad(roadTags, null), config);
+			List<TextureLayer> markingLayers = ROAD_MARKING_DASHED.get(config).textureLayers();
 
 			if (baseSurface != null && markingLayers.size() > 1) {
 				return baseSurface.withAddedLayers(markingLayers.subList(1, markingLayers.size()));
 			} else {
-				return ROAD_MARKING_DASHED.get();
+				return ROAD_MARKING_DASHED.get(config);
 			}
 
 		}
@@ -2220,7 +2222,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public void render(CommonTarget target, RoadPart roadPart,
 				boolean rightHandTraffic, TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
-				List<VectorXYZ> rightLaneBorder) {
+				List<VectorXYZ> rightLaneBorder, O2WConfig config) {
 
 			List<VectorXYZ> borderFront0, borderFront1;
 			List<VectorXYZ> borderTop0, borderTop1;
@@ -2241,14 +2243,14 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vsTop = createTriangleStripBetween(
 					borderTop0, borderTop1);
-			target.drawTriangleStrip(Materials.KERB, vsTop,
-					texCoordLists(vsTop, Materials.KERB, STRIP_FIT_HEIGHT));
+			target.drawTriangleStrip(Materials.KERB.get(config), vsTop,
+					texCoordLists(vsTop, Materials.KERB.get(config), STRIP_FIT_HEIGHT));
 
 			if (height > 0) {
 				List<VectorXYZ> vsFront = createTriangleStripBetween(
 						borderFront0, borderFront1);
-				target.drawTriangleStrip(Materials.KERB, vsFront,
-						texCoordLists(vsFront, Materials.KERB, STRIP_FIT_HEIGHT));
+				target.drawTriangleStrip(Materials.KERB.get(config), vsFront,
+						texCoordLists(vsFront, Materials.KERB.get(config), STRIP_FIT_HEIGHT));
 			}
 
 		}
@@ -2282,7 +2284,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * @return  a material based on the input, possibly with added turn arrows
 	 */
 	private static Material addTurnArrows(Material material,
-			TagSet laneTags) {
+			TagSet laneTags, Style mapStyle) {
 
 		Material arrowMaterial = null;
 
@@ -2294,27 +2296,27 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			if (turn.contains("through") && turn.contains("right")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT.get();
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT.get(mapStyle);
 
 			} else if (turn.contains("through") && turn.contains("left")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT.get();
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT.get(mapStyle);
 
 			} else if (turn.contains("through")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_THROUGH.get();
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH.get(mapStyle);
 
 			} else if (turn.contains("right") && turn.contains("left")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_RIGHT_LEFT.get();
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT_LEFT.get(mapStyle);
 
 			} else if (turn.contains("right")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_RIGHT.get();
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT.get(mapStyle);
 
 			} else if (turn.contains("left")) {
 
-				arrowMaterial = ROAD_MARKING_ARROW_RIGHT.get();
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT.get(mapStyle);
 
 			}
 

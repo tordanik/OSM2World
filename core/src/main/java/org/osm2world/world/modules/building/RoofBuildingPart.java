@@ -19,8 +19,8 @@ public class RoofBuildingPart extends BuildingPart {
 
 	/** whether this roof is at least partially transparent */
 	private boolean isTransparent() {
-		return getTransparentVariant(super.createWallMaterial(tags, config)) != null
-				|| getTransparentVariant(super.createRoofMaterial(tags, config)) != null;
+		return getTransparentVariant(super.createWallMaterial(tags, config), config) != null
+				|| getTransparentVariant(super.createRoofMaterial(tags, config), config) != null;
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class RoofBuildingPart extends BuildingPart {
 		if (!tags.containsKey("building:material") && tags.containsKey("roof:material")) {
 			// use a roof-dependent default material for the small bit of "wall" below the roof
 			if ("glass".equals(tags.getValue("roof:material"))) {
-				result = GLASS_WALL.get();
+				result = GLASS_WALL.get(config);
 			}
 		}
 
@@ -55,7 +55,7 @@ public class RoofBuildingPart extends BuildingPart {
 
 		if (isTransparent()) {
 
-			Material transparentMaterial = getTransparentVariant(result);
+			Material transparentMaterial = getTransparentVariant(result, config);
 			if (transparentMaterial != null) {
 				result = transparentMaterial;
 			}

@@ -13,8 +13,7 @@ import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.VectorXZ.angleBetween;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.scene.color.Color.BLACK;
-import static org.osm2world.scene.material.Materials.PLASTIC;
-import static org.osm2world.scene.material.Materials.SOLAR_PANEL;
+import static org.osm2world.scene.material.Materials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -40,14 +39,13 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.LODRange;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
-import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.TexCoordFunction;
@@ -153,7 +151,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PowerCabinet extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	private final class PowerCabinet extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public PowerCabinet(MapNode node) {
 			super(node);
@@ -170,7 +168,7 @@ public final class PowerModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			Material material = PLASTIC.get().withColor(new Color(184, 184, 184));
+			Material material = PLASTIC.get(config).withColor(new Color(184, 184, 184));
 			target.drawBox(material, getBase(), faceVector, 1.5, 0.8, 0.3);
 
 		}
@@ -196,7 +194,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class Powerpole extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	private final class Powerpole extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Powerpole(MapNode node) {
 			super(node);
@@ -207,39 +205,37 @@ public final class PowerModule extends AbstractModule {
 
 			/* determine material */
 
-			Material material = null;
+			MaterialOrRef material = null;
 
 			//TODO parse color
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("material"));
+				material = getSurfaceMaterial(
+						node.getTags().getValue("material"), config);
 			}
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.WOOD);
+				material = getSurfaceMaterialRef(
+						node.getTags().getValue("surface"), WOOD);
 			}
 
-			target.drawColumn(material, null, getBase(),
+			target.drawColumn(material.get(config), null, getBase(),
 					parseHeight(node.getTags(), 8f),
 					0.15, 0.15, false, true);
 		}
 
 	}
 
-	public static final class WindTurbine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public final class WindTurbine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
-		public static final Model ROTOR = new ProceduralModel() {
+		public record RotorModel(Material bladeMaterial) implements ProceduralModel {
 
 			@Override
 			public void render(CommonTarget target, InstanceParameters params) {
 
 				double bladeLength = (params.height() == null ? 1 : params.height()) / 2;
 				double bladeWidth = 0.1 * bladeLength;
-
-				Material bladeMaterial = Materials.STEEL.get(); // probably fibre, but color matches roughly :)
 
 				// define first blade
 				List<VectorXYZ> bladeFront = asList(
@@ -294,38 +290,39 @@ public final class PowerModule extends AbstractModule {
 
 			/* determine material */
 
-			Material poleMaterial = null;
-			Material nacelleMaterial = Materials.STEEL.get();
+			MaterialOrRef poleMaterial = null;
+			MaterialOrRef nacelleMaterial = STEEL.get(config);
 
 			//TODO parse color
 
 			if (poleMaterial == null) {
-				poleMaterial = Materials.getSurfaceMaterial(
+				poleMaterial = getSurfaceMaterialRef(
 						node.getTags().getValue("material"));
 			}
 
 			if (poleMaterial == null) {
-				poleMaterial = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.STEEL);
+				poleMaterial = getSurfaceMaterialRef(
+						node.getTags().getValue("surface"), STEEL);
 			}
 
 			/* determine position with elevation */
 			VectorXYZ position = getBase();
 
 			/* draw pole */
-			target.drawColumn(poleMaterial, null,
+			target.drawColumn(poleMaterial.get(config), null,
 					position,
 					poleHeight,
 					poleRadiusBottom, poleRadiusTop, false, false);
 
 			/* draw nacelle */
 			VectorXZ nacelleVector = VectorXZ.X_UNIT;
-			target.drawBox(nacelleMaterial,
+			target.drawBox(nacelleMaterial.get(config),
 					position.addY(poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
 			/* draw rotor blades */
-			target.addSubModel(new ModelInstance(ROTOR, new InstanceParameters(
+			RotorModel rotor = new RotorModel(STEEL.get(config)); // probably fibre, but color matches roughly :)
+			target.addSubModel(new ModelInstance(rotor, new InstanceParameters(
 					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 					0, rotorDiameter)));
 
@@ -333,7 +330,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private static class PowerMinorLine extends NoOutlineWaySegmentWorldObject {
+	private class PowerMinorLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
@@ -360,17 +357,17 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> path = getBaseline();
 
 			return singletonList(new Mesh(new ExtrusionGeometry(powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.get().textureDimensions()),
-					PLASTIC.get().get(), LevelOfDetail.LOD3, LevelOfDetail.LOD4));
+					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.get(config).textureDimensions()),
+					PLASTIC.get(config), LevelOfDetail.LOD3, LevelOfDetail.LOD4));
 
 		}
 
 	}
 
-	private final static class PowerLine extends NoOutlineWaySegmentWorldObject {
+	private final class PowerLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float CABLE_THICKNESS = 0.05f;
-		private static final Material CABLE_MATERIAL = PLASTIC.get();
+		private static final MaterialOrRef CABLE_MATERIAL = PLASTIC;
 		private static final double SLACK_SPAN = 6;
 		private static final Map<LODRange, Double> INTERPOLATION_STEPS = Map.of(
 				new LODRange(LevelOfDetail.LOD3), 3.0,
@@ -539,8 +536,8 @@ public final class PowerModule extends AbstractModule {
 					}
 
 					result.add(new Mesh(new ExtrusionGeometry(powerlineShape, path, nCopies(path.size(), Y_UNIT),
-							null, BLACK, null, CABLE_MATERIAL.textureDimensions()),
-							CABLE_MATERIAL, lodRange.min(), lodRange.max()));
+							null, BLACK, null, CABLE_MATERIAL.get(config).textureDimensions()),
+							CABLE_MATERIAL.get(config), lodRange.min(), lodRange.max()));
 
 				}
 
@@ -553,7 +550,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class PowerTower extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	private final class PowerTower extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private TowerConfig config;
 
@@ -570,9 +567,9 @@ public final class PowerModule extends AbstractModule {
 			VectorXYZ base = getBase().addY(-0.5);
 			double height = parseHeight(node.getTags(), 14);
 
-			Material material = Materials.getSurfaceMaterial(node.getTags().getValue("material"));
+			Material material = getSurfaceMaterial(node.getTags().getValue("material"), PowerModule.this.config);
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(node.getTags().getValue("surface"), Materials.STEEL);
+				material = getSurfaceMaterial(node.getTags().getValue("surface"), STEEL, PowerModule.this.config);
 			}
 
 			// draw base column
@@ -582,21 +579,22 @@ public final class PowerModule extends AbstractModule {
 			target.drawBox(material, base.add(0, height, 0), config.direction, 0.25, 5, 0.25);
 
 			// draw pieces holding the power lines
+			Material extraMaterial = CONCRETE.get(PowerModule.this.config);
 			base = base.add(0, height + 0.25, 0);
-			target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(2)), 0.5, 0.1, 0.1, true, true);
-			target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(-2)), 0.5, 0.1, 0.1, true, true);
+			target.drawColumn(extraMaterial, null, base.add(config.direction.rightNormal().mult(2)), 0.5, 0.1, 0.1, true, true);
+			target.drawColumn(extraMaterial, null, base.add(config.direction.rightNormal().mult(-2)), 0.5, 0.1, 0.1, true, true);
 			if (config.cables >= 3) {
-				target.drawColumn(Materials.CONCRETE, null, base, 0.5, 0.1, 0.1, true, true);
+				target.drawColumn(extraMaterial, null, base, 0.5, 0.1, 0.1, true, true);
 			}
 			if (config.cables >= 5) {
-				target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(1.5)), -0.5, 0.1, 0.1, true, true);
-				target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(-1.5)), -0.5, 0.1, 0.1, true, true);
+				target.drawColumn(extraMaterial, null, base.add(config.direction.rightNormal().mult(1.5)), -0.5, 0.1, 0.1, true, true);
+				target.drawColumn(extraMaterial, null, base.add(config.direction.rightNormal().mult(-1.5)), -0.5, 0.1, 0.1, true, true);
 			}
 		}
 	}
 
 
-	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	private final class HighVoltagePowerTower extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private TowerConfig config;
 		private VectorXZ direction;
@@ -641,7 +639,7 @@ public final class PowerModule extends AbstractModule {
 				List<VectorXYZ> vs = new ArrayList<>();
 				List<VectorXZ> tex = new ArrayList<>();
 				List<List<VectorXZ>> texList =
-					nCopies(Materials.POWER_TOWER_VERTICAL.get().textureLayers().size(), tex);
+					nCopies(POWER_TOWER_VERTICAL.get(PowerModule.this.config).textureLayers().size(), tex);
 
 				vs.add(high[a].xyz(height));
 				tex.add(new VectorXZ(0, 1));
@@ -657,7 +655,7 @@ public final class PowerModule extends AbstractModule {
 				vs.add(low[(a + 1) % 4].xyz(base));
 				tex.add(new VectorXZ(1, 0));
 
-				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
+				target.drawTriangleStrip(POWER_TOWER_VERTICAL.get(PowerModule.this.config), vs, texList);
 			}
 		}
 
@@ -668,7 +666,7 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 			List<VectorXZ> tex = new ArrayList<VectorXZ>();
 			List<List<VectorXZ>> texList =
-					nCopies(Materials.POWER_TOWER_HORIZONTAL.get().textureLayers().size(), tex);
+					nCopies(POWER_TOWER_HORIZONTAL.get(PowerModule.this.config).textureLayers().size(), tex);
 
 			vs.add(right.xyz(base));
 			vs.add(left.xyz(base));
@@ -680,7 +678,7 @@ public final class PowerModule extends AbstractModule {
 			tex.add(new VectorXZ(1, 0));
 			tex.add(new VectorXZ(0, 0));
 
-			target.drawTriangleStrip(Materials.POWER_TOWER_HORIZONTAL, vs, texList);
+			target.drawTriangleStrip(POWER_TOWER_HORIZONTAL.get(PowerModule.this.config), vs, texList);
 		}
 
 		private void drawHorizontalTop(Target target, VectorXZ[] frontPoints, VectorXZ[] backPoints,
@@ -694,7 +692,7 @@ public final class PowerModule extends AbstractModule {
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
 				List<List<VectorXZ>> texList =
-						nCopies(Materials.POWER_TOWER_VERTICAL.get().textureLayers().size(), tex);
+						nCopies(POWER_TOWER_VERTICAL.get(PowerModule.this.config).textureLayers().size(), tex);
 
 				for (int i = 0; i < 2; i++) {
 					vs.add(frontPoints[a+i].xyz(base + height[a+i]));
@@ -702,7 +700,7 @@ public final class PowerModule extends AbstractModule {
 					tex.add(new VectorXZ(0, i));
 					tex.add(new VectorXZ(1, i));
 				}
-				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
+				target.drawTriangleStrip(POWER_TOWER_VERTICAL.get(PowerModule.this.config), vs, texList);
 			}
 		}
 
@@ -788,7 +786,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject implements ProceduralWorldObject {
+	private final class PhotovoltaicPlant extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = comparingDouble(v -> v.x);
@@ -938,14 +936,14 @@ public final class PowerModule extends AbstractModule {
 					bottomRight.add(upVector),
 					bottomRight);
 
-			target.drawTriangleStrip(Materials.SOLAR_PANEL, vs,
-					texCoordLists(vs, Materials.SOLAR_PANEL, STRIP_FIT_HEIGHT));
+			target.drawTriangleStrip(SOLAR_PANEL.get(config), vs,
+					texCoordLists(vs, SOLAR_PANEL.get(config), STRIP_FIT_HEIGHT));
 
 			/* draw back */
 
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 
-			Material backMaterial = PLASTIC.get().withColor(new Color(184, 184, 184));
+			Material backMaterial = PLASTIC.get(config).withColor(new Color(184, 184, 184));
 			target.drawTriangleStrip(backMaterial, vs,
 					texCoordLists(vs, backMaterial, STRIP_WALL));
 
@@ -953,7 +951,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	static final class RooftopSolarPanels extends AbstractAreaWorldObject implements ProceduralWorldObject {
+	final class RooftopSolarPanels extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 
@@ -999,8 +997,8 @@ public final class PowerModule extends AbstractModule {
 				Function<TextureDataDimensions, PanelTexCoordFunction> texCoordFunctionGenerator =
 						placePanelTextures(area.getPolygon(), plane.getNormal());
 
-				target.drawTriangles(SOLAR_PANEL, triangles,
-						triangleTexCoordLists(triangles, SOLAR_PANEL, texCoordFunctionGenerator));
+				target.drawTriangles(SOLAR_PANEL.get(config), triangles,
+						triangleTexCoordLists(triangles, SOLAR_PANEL.get(config), texCoordFunctionGenerator));
 
 			}
 

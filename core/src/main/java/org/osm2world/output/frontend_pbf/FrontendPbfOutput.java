@@ -351,7 +351,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		}
 
 		if (material.shadow() == Shadow.FALSE
-				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(Materials.getUniqueName(material), ""))) {
+				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(Materials.getUniqueName(material, config), ""))) {
 			materialBuilder.setCastShadow(false);
 		}
 
@@ -443,8 +443,8 @@ public class FrontendPbfOutput extends MeshOutput {
 			trianglesXYZ.add(triangle.xyz(FLOOR_PLATE_Y));
 		}
 
-		output.drawTriangles(TERRAIN_DEFAULT, trianglesXYZ,
-				triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
+		output.drawTriangles(TERRAIN_DEFAULT.get(config), trianglesXYZ,
+				triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT.get(config), GLOBAL_X_Z));
 
 		return buildWorldObject(null, output.getMeshes(), HashMultimap.create());
 
@@ -571,7 +571,7 @@ public class FrontendPbfOutput extends MeshOutput {
 				geometryBuilder.clearScale();
 			}
 
-			if (model == WindTurbine.ROTOR) {
+			if (model instanceof WindTurbine.RotorModel) {
 
 				// hard-coded animation of wind turbine rotors
 				Animation.Builder animationBuilder = Animation.newBuilder();

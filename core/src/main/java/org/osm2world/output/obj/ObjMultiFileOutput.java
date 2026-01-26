@@ -15,7 +15,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.output.common.FaceOutput;
-import org.osm2world.scene.material.MaterialOrRef;
+import org.osm2world.scene.material.Material;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -132,7 +132,7 @@ public class ObjMultiFileOutput extends FaceOutput {
 	}
 
 	@Override
-	public void drawFace(MaterialOrRef material, List<VectorXYZ> vs, List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
+	public void drawFace(Material material, List<VectorXYZ> vs, List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 		primitivesInCurrentTarget += vs.size() - 2;
 		currentTarget.drawFace(material, vs, normals, texCoordLists);
 	}
