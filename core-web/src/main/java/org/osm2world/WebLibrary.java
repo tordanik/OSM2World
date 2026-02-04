@@ -60,6 +60,7 @@ public class WebLibrary {
 	public static class WebMesh {
 
 		private final String baseColorTexture;
+		private final String opacityTexture;
 		private final String normalTexture;
 		private final String ormTexture;
 		private final String displacementTexture;
@@ -76,6 +77,11 @@ public class WebLibrary {
 		@JSExport
 		public String baseColorTexture() {
 			return baseColorTexture;
+		}
+
+		@JSExport
+		public String opacityTexture() {
+			return opacityTexture;
 		}
 
 		@JSExport
@@ -134,6 +140,13 @@ public class WebLibrary {
 			this.normalTexture = getTexturePath(textureLayer, l -> l.normalTexture);
 			this.ormTexture = getTexturePath(textureLayer, l -> l.ormTexture);
 			this.displacementTexture = getTexturePath(textureLayer, l -> l.displacementTexture);
+
+			if (textureLayer != null && textureLayer.baseColorTexture instanceof CompositeTexture t
+					&& t.mode == CompositeTexture.CompositeMode.ALPHA_FROM_A) {
+				this.opacityTexture = getTexturePath(textureLayer, l -> t.textureA);
+			} else {
+				this.opacityTexture = null;
+			}
 
 			this.clampTextures = textureLayer != null && textureLayer.baseColorTexture.wrap != TextureData.Wrap.REPEAT;
 			this.transparency = material.transparency() != Material.Transparency.FALSE;
