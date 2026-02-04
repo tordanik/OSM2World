@@ -24,11 +24,11 @@ public class CompositeTexture extends RuntimeTexture {
 		STACKED
 	}
 
-	private final CompositeMode mode;
-	private final boolean rescale;
+	public final CompositeMode mode;
+	public final boolean rescale;
 
-	private final TextureData textureA;
-	private final TextureData textureB;
+	public final TextureData textureA;
+	public final TextureData textureB;
 
 	public CompositeTexture(CompositeMode mode, boolean rescale, TextureData textureA, TextureData textureB) {
 		super(textureA.dimensions(), textureA.wrap, t -> textureA.coordFunction);

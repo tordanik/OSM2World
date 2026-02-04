@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -15,10 +16,7 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.scene.Scene;
-import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.TextureData;
-import org.osm2world.scene.material.TextureLayer;
-import org.osm2world.scene.material.UriTexture;
+import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
@@ -132,29 +130,10 @@ public class WebLibrary {
 			TextureLayer textureLayer = (!material.textureLayers().isEmpty())
 					? material.textureLayers().get(0) : null;
 
-			if (textureLayer != null && textureLayer.baseColorTexture instanceof UriTexture t) {
-				this.baseColorTexture = t.getUri().getPath();
-			} else {
-				this.baseColorTexture = null;
-			}
-
-			if (textureLayer != null && textureLayer.normalTexture instanceof UriTexture t) {
-				this.normalTexture = t.getUri().getPath();
-			} else {
-				this.normalTexture = null;
-			}
-
-			if (textureLayer != null && textureLayer.ormTexture instanceof UriTexture t) {
-				this.ormTexture = t.getUri().getPath();
-			} else {
-				this.ormTexture = null;
-			}
-
-			if (textureLayer != null && textureLayer.displacementTexture instanceof UriTexture t) {
-				this.displacementTexture = t.getUri().getPath();
-			} else {
-				this.displacementTexture = null;
-			}
+			this.baseColorTexture = getTexturePath(textureLayer, l -> l.baseColorTexture);
+			this.normalTexture = getTexturePath(textureLayer, l -> l.normalTexture);
+			this.ormTexture = getTexturePath(textureLayer, l -> l.ormTexture);
+			this.displacementTexture = getTexturePath(textureLayer, l -> l.displacementTexture);
 
 			this.clampTextures = textureLayer != null && textureLayer.baseColorTexture.wrap != TextureData.Wrap.REPEAT;
 			this.transparency = material.transparency() != Material.Transparency.FALSE;
@@ -191,6 +170,18 @@ public class WebLibrary {
 
 			}
 
+		}
+
+		private @Nullable String getTexturePath(@Nullable TextureLayer textureLayer, Function<TextureLayer, TextureData> getTexture) {
+			if (textureLayer != null) {
+				TextureData texture = getTexture.apply(textureLayer);
+				if (texture instanceof UriTexture t) {
+					return t.getUri().getPath();
+				} else if (texture instanceof CompositeTexture t) {
+					return getTexturePath(textureLayer, x -> t.textureB);
+				}
+			}
+			return null;
 		}
 
 	}
