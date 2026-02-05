@@ -3,8 +3,7 @@ package org.osm2world.world.modules;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNullElse;
-import static org.osm2world.scene.material.Materials.TREE_CROWN;
-import static org.osm2world.scene.material.Materials.TREE_TRUNK;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.util.ValueParseUtil.parseMeasureWithSpecialDefaultUnit;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
@@ -302,10 +301,10 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		private MaterialOrRef getMaterial() {
 			return species == TreeSpecies.APPLE_TREE
-					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
+					? TREE_BILLBOARD_BROAD_LEAVED_FRUIT
 					: leafType == LeafType.NEEDLELEAVED
-					? Materials.TREE_BILLBOARD_CONIFEROUS
-					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
+					? TREE_BILLBOARD_CONIFEROUS
+					: TREE_BILLBOARD_BROAD_LEAVED;
 		}
 
 		@Override

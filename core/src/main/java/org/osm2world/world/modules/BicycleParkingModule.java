@@ -11,8 +11,8 @@ import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePoints
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
 import static org.osm2world.scene.color.Color.*;
+import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.material.Material.Interpolation.SMOOTH;
-import static org.osm2world.scene.material.Materials.STEEL;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -36,8 +36,8 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.color.Color;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.*;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
@@ -238,7 +238,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 		private @Nullable Material getSurfaceMaterial() {
 			return config.mapStyle().resolveMaterial(
-					Materials.getSurfaceMaterial(getPrimaryMapElement().getTags().getValue("surface"), config));
+					DefaultMaterials.getSurfaceMaterial(getPrimaryMapElement().getTags().getValue("surface"), config));
 		}
 
 		@Override

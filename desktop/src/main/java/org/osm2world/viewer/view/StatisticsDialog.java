@@ -18,7 +18,6 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.output.statistics.StatisticsOutput.Stat;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 
 
 public class StatisticsDialog extends JDialog {
@@ -73,7 +72,7 @@ public class StatisticsDialog extends JDialog {
 			for (int row = 0; row < numMaterials; ++row) {
 
 				if (col == 0) {
-					String name = Materials.getUniqueName(materialList.get(row), config);
+					String name = config.mapStyle().getUniqueName(materialList.get(row));
 					if (name == null) {
 						name = materialList.get(row).toString();
 					}

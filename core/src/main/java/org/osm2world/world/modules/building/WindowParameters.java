@@ -16,8 +16,8 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRightBoth;
 
@@ -209,7 +209,7 @@ public class WindowParameters {
 		windowMaterial = BuildingPart.buildMaterial(
 				materialString,
 				tags.getValue("window:colour"),
-				Materials.GLASS, false, config);
+				DefaultMaterials.GLASS, false, config);
 
 		numberWindows = parseUInt(tags.getValue("window:count"));
 		groupSize = parseUInt(tags.getValue("window:group_size"), 1);
@@ -363,7 +363,7 @@ public class WindowParameters {
 		frameMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:frame:material"),
 				tags.getValue("window:frame:colour"),
-				Materials.PLASTIC.get(config), false, config);
+				DefaultMaterials.PLASTIC.get(config), false, config);
 
 		/* shutters */
 
@@ -372,7 +372,7 @@ public class WindowParameters {
 		shutterMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:shutter:material"),
 				tags.getValue("window:shutter:colour"),
-				Materials.WOOD.get(config), false, config);
+				DefaultMaterials.WOOD.get(config), false, config);
 
 	}
 

@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.EXACT;
 import static org.osm2world.map_elevation.data.GroundState.ON;
-import static org.osm2world.scene.material.Materials.TUNNEL_DEFAULT;
+import static org.osm2world.scene.material.DefaultMaterials.TUNNEL_DEFAULT;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;

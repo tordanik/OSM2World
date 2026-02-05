@@ -1,7 +1,7 @@
 package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.scene.material.Materials.SINGLE_WINDOW;
+import static org.osm2world.scene.material.DefaultMaterials.SINGLE_WINDOW;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 

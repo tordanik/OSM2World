@@ -6,21 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.Material.Transparency;
-import org.osm2world.world.creation.WorldModule;
 
 /**
- * this class defines materials that can be used by all {@link WorldModule}s
+ * This class defines materials which are always available
+ * (regardless of the specific {@link org.osm2world.style.Style})
+ * and can therefore be freely used by all {@link org.osm2world.world.data.WorldObject}s.
  */
-public final class Materials {
+public final class DefaultMaterials {
 
 	/** prevents instantiation */
-	private Materials() {}
+	private DefaultMaterials() {}
 
 	/** material for "empty" ground */
 	public static final MaterialRef TERRAIN_DEFAULT = new MaterialRef("TERRAIN_DEFAULT",
@@ -290,14 +289,6 @@ public final class Materials {
 
 	}
 
-	public static @Nullable Material getMaterial(@Nullable String name, O2WConfig config) {
-		return config.mapStyle().resolveMaterial(name);
-	}
-
-	public static Material getMaterial(@Nullable String name, MaterialOrRef defaultValue, O2WConfig config) {
-		return config.mapStyle().resolveMaterial(name, defaultValue);
-	}
-
 	/** returns a material reference for a surface value; null if none is found */
 	public static MaterialOrRef getSurfaceMaterialRef(String value) {
 		return getSurfaceMaterialRef(value, null);
@@ -317,14 +308,6 @@ public final class Materials {
 	/** same as {@link #getSurfaceMaterial(String, O2WConfig)}, but with fallback value */
 	public static Material getSurfaceMaterial(String value, MaterialOrRef fallback, O2WConfig config) {
 		return config.mapStyle().resolveMaterial(getSurfaceMaterialRef(value, fallback));
-	}
-
-	public static String getUniqueName(Material material, O2WConfig config) {
-		return config.mapStyle().getUniqueName(material);
-	}
-
-	public static @Nullable Material getTransparentVariant(Material material, O2WConfig config) {
-		return config.mapStyle().getTransparentVariant(material);
 	}
 
 }

@@ -7,7 +7,8 @@ import static java.util.Arrays.asList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.Materials.BRIDGE_DEFAULT;
+import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_DEFAULT;
+import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_PILLAR_DEFAULT;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
@@ -31,7 +32,6 @@ import org.osm2world.math.shapes.PolylineXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.world.data.WaySegmentWorldObject;
 import org.osm2world.world.data.WorldObject;
@@ -119,11 +119,11 @@ public class BridgeModule extends AbstractModule {
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					rightOutline, belowRightOutline);
 
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT.get(config), strip1,
+			target.drawTriangleStrip(BRIDGE_DEFAULT.get(config), strip1,
 					texCoordLists(strip1, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT.get(config), strip2,
+			target.drawTriangleStrip(BRIDGE_DEFAULT.get(config), strip2,
 					texCoordLists(strip2, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT.get(config), strip3,
+			target.drawTriangleStrip(BRIDGE_DEFAULT.get(config), strip3,
 					texCoordLists(strip3, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
 
 		}
@@ -141,7 +141,7 @@ public class BridgeModule extends AbstractModule {
 			SimplePolygonShapeXZ defaultShape = new AxisAlignedRectangleXZ(NULL_VECTOR, defaultWidth, defaultLength);
 			defaultShape = defaultShape.rotatedCW(primaryRep.getPrimaryMapElement().getDirection().angle());
 
-			Material defaultMaterial = Materials.BRIDGE_PILLAR_DEFAULT.get(config);
+			Material defaultMaterial = BRIDGE_PILLAR_DEFAULT.get(config);
 
 			/* look for explicitly mapped supports among the way's nodes and overlapping features */
 
@@ -180,10 +180,10 @@ public class BridgeModule extends AbstractModule {
 
 						Material material = null;
 						if (element.getTags().containsKey("material")) {
-							material = Materials.getMaterial(element.getTags().getValue("material").toUpperCase(), config);
+							material = config.mapStyle().resolveMaterial(element.getTags().getValue("material").toUpperCase());
 						}
 						if (material == null) {
-							material = Materials.BRIDGE_PILLAR_DEFAULT.get(config);
+							material = BRIDGE_PILLAR_DEFAULT.get(config);
 						}
 						material = material.withColor(parseColor(element.getTags().getValue("colour"), CSS_COLORS));
 

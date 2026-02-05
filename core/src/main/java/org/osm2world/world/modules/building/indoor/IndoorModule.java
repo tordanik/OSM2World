@@ -3,7 +3,7 @@ package org.osm2world.world.modules.building.indoor;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.scene.material.Materials.STEEL;
+import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseLevels;

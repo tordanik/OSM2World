@@ -5,7 +5,7 @@ import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.scene.color.Color.ORANGE;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;

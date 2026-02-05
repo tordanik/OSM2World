@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.output.common.ExtrudeOption.TEX_HEIGHT_ALONG_PATH;
-import static org.osm2world.scene.material.Materials.VOID;
+import static org.osm2world.scene.material.DefaultMaterials.VOID;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.Collection;

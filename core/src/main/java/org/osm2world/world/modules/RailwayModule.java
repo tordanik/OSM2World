@@ -8,7 +8,7 @@ import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
@@ -30,7 +30,6 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.scene.mesh.Mesh;
@@ -294,7 +293,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vectors = getOutlinePolygon().vertices();
 
-			Material material = Materials.RAIL_BALLAST.get(config);
+			Material material = RAIL_BALLAST.get(config);
 
 			target.drawConvexPolygon(material, vectors,
 					texCoordLists(vectors, material, GLOBAL_X_Z));

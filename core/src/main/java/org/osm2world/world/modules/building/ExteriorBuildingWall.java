@@ -30,7 +30,6 @@ import org.osm2world.math.shapes.PolylineShapeXZ;
 import org.osm2world.math.shapes.PolylineXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.LODRange;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -118,7 +117,7 @@ public class ExteriorBuildingWall {
 				hasWindows = false;
 			}
 
-			if ("GLASS_WALL".equals(Materials.getUniqueName(material, config))) {
+			if ("GLASS_WALL".equals(config.mapStyle().getUniqueName(material))) {
 				// avoid placing windows into a glass front
 				// TODO: the check currently only works if GLASS_WALL is not colorable
 				hasWindows = false;

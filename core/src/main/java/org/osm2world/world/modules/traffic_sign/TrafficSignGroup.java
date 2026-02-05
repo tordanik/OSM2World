@@ -8,7 +8,7 @@ import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.math.VectorXYZ.X_UNIT;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXZ.angleBetween;
-import static org.osm2world.scene.material.Materials.STEEL;
+import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;

@@ -1,8 +1,9 @@
 package org.osm2world.world.modules.building;
 
+import static org.osm2world.scene.material.DefaultMaterials.*;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.scene.material.MaterialRef;
-import org.osm2world.scene.material.Materials;
 
 /** default properties for a particular building or building:part type. Immutable. */
 public class BuildingDefaults {
@@ -41,8 +42,8 @@ public class BuildingDefaults {
 
 		int levels = 3;
 		double heightPerLevel = 2.5;
-		MaterialRef materialWall = Materials.BUILDING_DEFAULT;
-		MaterialRef materialRoof = Materials.ROOF_DEFAULT;
+		MaterialRef materialWall = BUILDING_DEFAULT;
+		MaterialRef materialRoof = ROOF_DEFAULT;
 		boolean hasWindows = true;
 		boolean hasWalls = true;
 		String roofShape = "flat";
@@ -51,23 +52,23 @@ public class BuildingDefaults {
 
 		case "greenhouse":
 			levels = 1;
-			materialWall = Materials.GLASS_WALL;
-			materialRoof = Materials.GLASS_ROOF;
+			materialWall = GLASS_WALL;
+			materialRoof = GLASS_ROOF;
 			hasWindows = false;
 			break;
 
 		case "garage":
 		case "garages":
 			levels = 1;
-			materialWall = Materials.CONCRETE;
-			materialRoof = Materials.CONCRETE;
+			materialWall = CONCRETE;
+			materialRoof = CONCRETE;
 			hasWindows = false;
 			break;
 
 		case "carport":
 			levels = 1;
-			materialWall = Materials.CONCRETE;
-			materialRoof = Materials.CONCRETE;
+			materialWall = CONCRETE;
+			materialRoof = CONCRETE;
 			hasWindows = false;
 			hasWalls = false;
 			break;
@@ -79,8 +80,8 @@ public class BuildingDefaults {
 
 		case "cabin":
 			levels = 1;
-			materialWall = Materials.WOOD_WALL;
-			materialRoof = Materials.WOOD;
+			materialWall = WOOD_WALL;
+			materialRoof = WOOD;
 			break;
 
 		case "roof":
@@ -109,14 +110,14 @@ public class BuildingDefaults {
 			levels = 1;
 			heightPerLevel = 10;
 			hasWindows = false;
-			materialWall = Materials.BRICK;
-			materialRoof = Materials.BRICK;
+			materialWall = BRICK;
+			materialRoof = BRICK;
 		}
 
 		/* make flat roofs use concrete by default */
 
-		if (tags.contains("roof:shape", "flat") && materialRoof == Materials.ROOF_DEFAULT) {
-			materialRoof = Materials.CONCRETE;
+		if (tags.contains("roof:shape", "flat") && materialRoof == ROOF_DEFAULT) {
+			materialRoof = CONCRETE;
 		}
 
 		/* return an object populated with the results */

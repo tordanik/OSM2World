@@ -13,7 +13,7 @@ import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
@@ -41,7 +41,6 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.MaterialOrRef;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.scene.mesh.Mesh;
@@ -276,7 +275,7 @@ public class BarrierModule extends AbstractModule {
 			} else if ("brick".equals(tags.getValue("wall"))) {
 				material = BRICK.get(config);
 			} else if ( tags.containsKey("material") ) {
-				material = Materials.getMaterial(tags.getValue("material").toUpperCase(), config);
+				material = config.mapStyle().resolveMaterial(tags.getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
@@ -430,7 +429,7 @@ public class BarrierModule extends AbstractModule {
 			Material material = null;
 
 			if (segment.getTags().containsKey("material")) {
-				material = getMaterial(segment.getTags().getValue("material").toUpperCase(), config);
+				material = config.mapStyle().resolveMaterial(segment.getTags().getValue("material").toUpperCase());
 				//TODO also look at fence:material
 			}
 
@@ -550,7 +549,7 @@ public class BarrierModule extends AbstractModule {
 		public PoleFence(MapWaySegment segment) {
 			super(segment, 1f, 0.02f);
 			if (segment.getTags().containsKey("material")){
-				material = getMaterial(segment.getTags().getValue("material").toUpperCase(), config);
+				material = config.mapStyle().resolveMaterial(segment.getTags().getValue("material").toUpperCase());
 				poleMaterial = material;
 			}
 

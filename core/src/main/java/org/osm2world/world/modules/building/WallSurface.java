@@ -9,7 +9,7 @@ import static java.util.Collections.min;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
-import static org.osm2world.scene.material.Materials.BUILDING_WINDOWS;
+import static org.osm2world.scene.material.DefaultMaterials.BUILDING_WINDOWS;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -24,7 +24,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
@@ -239,7 +238,7 @@ public class WallSurface {
 			Double fixedHeight = null;
 
 			if (windowHeight != null && (texLayer >= this.material.textureLayers().size()
-					|| Objects.equals(Materials.getUniqueName(this.material, config), "GLASS_WALL"))) {
+					|| Objects.equals(config.mapStyle().getUniqueName(this.material), "GLASS_WALL"))) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

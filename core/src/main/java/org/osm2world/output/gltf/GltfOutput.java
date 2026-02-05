@@ -45,7 +45,6 @@ import org.osm2world.output.gltf.data.GltfMaterial.TextureInfo;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.LevelOfDetail;
@@ -641,7 +640,7 @@ public class GltfOutput extends AbstractOutput {
 
 	private @Nullable String getMaterialName(Material m, @Nullable TextureLayer textureLayer) {
 
-		String name = Materials.getUniqueName(m, config);
+		String name = config.mapStyle().getUniqueName(m);
 
 		if (name == null) {
 			if (textureLayer != null) {

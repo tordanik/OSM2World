@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.util.ValueParseUtil.parseColor;
@@ -620,8 +620,8 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 				materialRef = WOOD_WALL;
 			} else if (getSurfaceMaterial(materialString, config) != null) {
 				materialRef = getSurfaceMaterial(materialString, config);
-			} else if (getMaterial(materialString, config) != null) {
-				materialRef = getMaterial(materialString, config);
+			} else if (config.mapStyle().resolveMaterial(materialString) != null) {
+				materialRef = config.mapStyle().resolveMaterial(materialString);
 			}
 		}
 

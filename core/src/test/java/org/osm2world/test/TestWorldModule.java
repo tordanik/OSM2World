@@ -2,7 +2,7 @@ package org.osm2world.test;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.osm2world.scene.material.Materials.PLASTIC;
+import static org.osm2world.scene.material.DefaultMaterials.PLASTIC;
 
 import java.util.List;
 
@@ -12,8 +12,8 @@ import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.output.frontend_pbf.FrontendPbf.WorldObject;
+import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;

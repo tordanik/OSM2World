@@ -10,7 +10,7 @@ import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
-import static org.osm2world.scene.material.Materials.STEEL;
+import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD0;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;

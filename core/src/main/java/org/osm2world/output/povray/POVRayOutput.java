@@ -23,7 +23,10 @@ import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.OrthographicProjection;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.scene.color.Color;
-import org.osm2world.scene.material.*;
+import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.TextTexture;
+import org.osm2world.scene.material.TextureData;
+import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.util.GlobalValues;
 
 /**
@@ -262,7 +265,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 		for (Material material : config.mapStyle().getMaterials()) {
 
-			String uniqueName = Materials.getUniqueName(material, config);
+			String uniqueName = config.mapStyle().getUniqueName(material);
 			String name = "texture_" + uniqueName;
 
 			append("#ifndef (" + name + ")\n");
@@ -626,7 +629,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 	private void appendMaterialOrName(Material material) {
 
-		String materialName = Materials.getUniqueName(material, config);
+		String materialName = config.mapStyle().getUniqueName(material);
 
 		if (materialName != null) {
 			append(" texture { texture_" + materialName + " }");

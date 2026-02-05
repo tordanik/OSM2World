@@ -16,7 +16,7 @@ import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
 import static org.osm2world.scene.color.Color.*;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.ExtrusionGeometry.createColumn;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.mesh.MeshUtil.createBox;
@@ -46,10 +46,10 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.color.Color;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.MaterialOrRef;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
@@ -227,7 +227,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			double height = parseMeasure(node.getTags().getValue("height"), 5.0);
 			double radius = parseMeasure(node.getTags().getValue("width"), 0.2) / 2;
 
-			Material material = getMaterial(node.getTags().getValue("material"), STEEL.get(config), config);
+			MaterialOrRef defaultValue = STEEL.get(config);
+			Material material = config.mapStyle().resolveMaterial(node.getTags().getValue("material"), defaultValue);
 			Color color = parseColor(node.getTags().getValue("colour"));
 
 			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
@@ -322,12 +323,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		/**
-		 * Combines a flag image with {@link Materials#FLAGCLOTH} to create a textured flag material.
+		 * Combines a flag image with {@link DefaultMaterials#FLAGCLOTH} to create a textured flag material.
 		 *
 		 * @param flagId  the ID of the flag, e.g. a country code or Wikidata ID
 		 */
 		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
-			Material material = getMaterial("FLAG_" + flagId, config);
+			Material material = config.mapStyle().resolveMaterial("FLAG_" + flagId);
 			Material flagcloth = FLAGCLOTH.get(config);
 			if (material != null && material.textureLayers().size() > 0 && flagcloth.textureLayers().size() > 0) {
 				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.textureLayers());
@@ -830,7 +831,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = getMaterial(node.getTags().getValue("material").toUpperCase(), config);
+				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
@@ -931,7 +932,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = getMaterial(node.getTags().getValue("material").toUpperCase(), config);
+				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
@@ -1385,7 +1386,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = getMaterial(node.getTags().getValue("material").toUpperCase(), config);
+				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {

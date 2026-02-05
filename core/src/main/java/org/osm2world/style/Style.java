@@ -1,7 +1,7 @@
 package org.osm2world.style;
 
 import static java.util.Objects.requireNonNullElse;
-import static org.osm2world.scene.material.Materials.GLASS_TRANSPARENT;
+import static org.osm2world.scene.material.DefaultMaterials.GLASS_TRANSPARENT;
 
 import java.util.Collection;
 

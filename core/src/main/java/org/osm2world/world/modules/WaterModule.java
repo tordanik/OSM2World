@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;

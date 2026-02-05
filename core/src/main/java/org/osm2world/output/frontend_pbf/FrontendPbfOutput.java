@@ -7,7 +7,7 @@ import static java.util.Collections.emptyList;
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
 import static org.osm2world.output.common.ExtrudeOption.START_CAP;
-import static org.osm2world.scene.material.Materials.TERRAIN_DEFAULT;
+import static org.osm2world.scene.material.DefaultMaterials.TERRAIN_DEFAULT;
 import static org.osm2world.scene.mesh.MeshStore.*;
 import static org.osm2world.scene.mesh.MeshStore.MergeMeshes.MergeOption.*;
 import static org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
@@ -43,9 +43,11 @@ import org.osm2world.output.frontend_pbf.FrontendPbf.Material.Transparency;
 import org.osm2world.output.frontend_pbf.FrontendPbf.Shape.ShapeType;
 import org.osm2world.output.gltf.GltfModel;
 import org.osm2world.scene.color.LColor;
-import org.osm2world.scene.material.*;
+import org.osm2world.scene.material.ImageFileTexture;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Shadow;
+import org.osm2world.scene.material.RuntimeTexture;
+import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.mesh.*;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
@@ -351,7 +353,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		}
 
 		if (material.shadow() == Shadow.FALSE
-				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(Materials.getUniqueName(material, config), ""))) {
+				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(config.mapStyle().getUniqueName(material), ""))) {
 			materialBuilder.setCastShadow(false);
 		}
 

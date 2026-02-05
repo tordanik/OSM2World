@@ -1,8 +1,8 @@
 package org.osm2world.world.modules;
 
 import static org.osm2world.scene.color.Color.*;
-import static org.osm2world.scene.material.Materials.ASPHALT;
-import static org.osm2world.scene.material.Materials.getSurfaceMaterial;
+import static org.osm2world.scene.material.DefaultMaterials.ASPHALT;
+import static org.osm2world.scene.material.DefaultMaterials.getSurfaceMaterial;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;

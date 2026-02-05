@@ -10,12 +10,12 @@ import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.output.gltf.GltfModel;
-import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.world.creation.WorldModule;
 
 /**
  * this class defines {@link Model}s that can be used by all {@link WorldModule}s,
- * similar to {@link Materials}
+ * similar to {@link DefaultMaterials}
  */
 public class Models {
 

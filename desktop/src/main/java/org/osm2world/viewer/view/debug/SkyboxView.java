@@ -8,8 +8,8 @@ import org.osm2world.output.common.rendering.Camera;
 import org.osm2world.output.common.rendering.Projection;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 
 public class SkyboxView extends DebugView {
 
@@ -19,7 +19,7 @@ public class SkyboxView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		Material skyboxMaterial = config.mapStyle().resolveMaterial(Materials.SKYBOX);
+		Material skyboxMaterial = config.mapStyle().resolveMaterial(DefaultMaterials.SKYBOX);
 		return scene != null && !skyboxMaterial.textureLayers().isEmpty();
 	}
 
@@ -41,7 +41,7 @@ public class SkyboxView extends DebugView {
 		// draw the skybox close to the limits of the viewing distance
 		double skyboxSize = 1.95 * projection.farClippingDistance() / sqrt(3);
 
-		output.drawBox(config.mapStyle().resolveMaterial(Materials.SKYBOX),
+		output.drawBox(config.mapStyle().resolveMaterial(DefaultMaterials.SKYBOX),
 				camera.pos().add(0, -skyboxSize / 2, 0),
 				VectorXZ.Z_UNIT, skyboxSize, skyboxSize, skyboxSize);
 

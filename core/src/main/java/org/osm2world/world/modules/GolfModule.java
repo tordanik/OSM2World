@@ -8,8 +8,7 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
 import static org.osm2world.scene.color.Color.YELLOW;
-import static org.osm2world.scene.material.Materials.PLASTIC;
-import static org.osm2world.scene.material.Materials.SAND;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
@@ -36,7 +35,6 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.StreetFurnitureModule.Flagpole.StripedFlag;
@@ -276,10 +274,10 @@ public class GolfModule extends AbstractModule {
 
 			String surfaceValue = area.getTags().getValue("surface");
 
-			Material material = Materials.GRASS.get(config);
+			Material material = GRASS.get(config);
 
 			if (surfaceValue != null && !"grass".equals(surfaceValue)) {
-				material = Materials.getSurfaceMaterial(surfaceValue, material, config);
+				material = getSurfaceMaterial(surfaceValue, material, config);
 			}
 
 			List<TriangleXZ> trianglesXZ = getGreenTriangulation();
@@ -316,7 +314,7 @@ public class GolfModule extends AbstractModule {
 
 			List<VectorXYZ> vs = createTriangleStripBetween(lowerHoleRing, upperHoleRing);
 
-			Material groundMaterial = Materials.EARTH.get(config).makeSmooth();
+			Material groundMaterial = EARTH.get(config).makeSmooth();
 
 			target.drawTriangleStrip(groundMaterial, vs,
 					texCoordLists(vs, groundMaterial, STRIP_WALL));

@@ -29,7 +29,6 @@ import org.osm2world.output.common.ResourceOutputSettings;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Transparency;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.material.TextureLayer;
@@ -205,7 +204,7 @@ public class ObjOutput extends FaceOutput {
 
 			String name = materialMap.get(material);
 			if (name == null) {
-				name = Materials.getUniqueName(material, config);
+				name = config.mapStyle().getUniqueName(material);
 				if (name == null) {
 					name = "MAT_" + anonymousMaterialCounter;
 					anonymousMaterialCounter += 1;

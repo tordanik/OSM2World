@@ -2,7 +2,7 @@ package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredHorizontally;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;

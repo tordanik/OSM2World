@@ -14,7 +14,7 @@ import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.addYList;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
@@ -1359,11 +1359,11 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = null;
 
 			if (tags.containsKey("material")) {
-				material = Materials.getMaterial(tags.getValue("material"), config);
+				material = config.mapStyle().resolveMaterial(tags.getValue("material"));
 			}
 
 			if (material == null && tags.containsKey("surface")) {
-				material = Materials.getSurfaceMaterial(tags.getValue("surface"), config);
+				material = getSurfaceMaterial(tags.getValue("surface"), config);
 			}
 
 			if (material == null) {
@@ -2159,7 +2159,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		protected Material getSurface(TagSet roadTags, TagSet laneTags, O2WConfig config) {
 			Material material = super.getSurface(roadTags, laneTags, config);
-			if ("ASPHALT".equals(getUniqueName(material, config))) return RED_ROAD_MARKING.get(config);
+			if ("ASPHALT".equals(config.mapStyle().getUniqueName(material))) return RED_ROAD_MARKING.get(config);
 			else return material;
 		}
 
@@ -2243,14 +2243,14 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vsTop = createTriangleStripBetween(
 					borderTop0, borderTop1);
-			target.drawTriangleStrip(Materials.KERB.get(config), vsTop,
-					texCoordLists(vsTop, Materials.KERB.get(config), STRIP_FIT_HEIGHT));
+			target.drawTriangleStrip(DefaultMaterials.KERB.get(config), vsTop,
+					texCoordLists(vsTop, DefaultMaterials.KERB.get(config), STRIP_FIT_HEIGHT));
 
 			if (height > 0) {
 				List<VectorXYZ> vsFront = createTriangleStripBetween(
 						borderFront0, borderFront1);
-				target.drawTriangleStrip(Materials.KERB.get(config), vsFront,
-						texCoordLists(vsFront, Materials.KERB.get(config), STRIP_FIT_HEIGHT));
+				target.drawTriangleStrip(DefaultMaterials.KERB.get(config), vsFront,
+						texCoordLists(vsFront, DefaultMaterials.KERB.get(config), STRIP_FIT_HEIGHT));
 			}
 
 		}

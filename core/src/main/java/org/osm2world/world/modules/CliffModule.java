@@ -1,6 +1,8 @@
 package org.osm2world.world.modules;
 
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.scene.material.DefaultMaterials.CONCRETE;
+import static org.osm2world.scene.material.DefaultMaterials.ROCK;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
@@ -17,7 +19,6 @@ import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -132,7 +133,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.ROCK.get(config);
+			return ROCK.get(config);
 		}
 
 	}
@@ -150,7 +151,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.CONCRETE.get(config);
+			return CONCRETE.get(config);
 		}
 
 	}

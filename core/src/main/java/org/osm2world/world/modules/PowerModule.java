@@ -13,7 +13,7 @@ import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.VectorXZ.angleBetween;
 import static org.osm2world.math.algorithms.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.scene.color.Color.BLACK;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;

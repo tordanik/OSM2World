@@ -3,7 +3,7 @@ package org.osm2world.world.modules.building.roof;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
-import static org.osm2world.scene.material.Materials.ROOF_DEFAULT;
+import static org.osm2world.scene.material.DefaultMaterials.ROOF_DEFAULT;
 
 import org.junit.Test;
 import org.osm2world.map_data.data.TagSet;

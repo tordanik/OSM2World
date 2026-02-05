@@ -5,7 +5,7 @@ import static java.lang.Math.cos;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -23,7 +23,6 @@ import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Materials;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
@@ -289,7 +288,7 @@ public class SportsModule extends AbstractModule {
 
 		@Override
 		protected Material getFallbackPitchMaterial() {
-			return Materials.getSurfaceMaterial(area.getTags().getValue("surface"), GRASS, config);
+			return getSurfaceMaterial(area.getTags().getValue("surface"), GRASS, config);
 		}
 
 	}

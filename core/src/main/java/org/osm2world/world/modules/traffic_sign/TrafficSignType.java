@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.scene.material.Materials;
 
 /**
  * a type of traffic sign, characterized by a name (country and id, by OSM convention) and information that might be
@@ -60,7 +59,7 @@ public class TrafficSignType {
 				config.getFloat("defaultTrafficSignHeight", 2));
 
 		String materialName = config.getString(keyPrefix + "_material", configKey).toUpperCase();
-		Material material = Materials.getMaterial(materialName, config);
+		Material material = config.mapStyle().resolveMaterial(materialName);
 
 		if (material == null) {
 			return null;

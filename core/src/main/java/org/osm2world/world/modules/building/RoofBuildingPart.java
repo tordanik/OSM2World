@@ -1,7 +1,6 @@
 package org.osm2world.world.modules.building;
 
-import static org.osm2world.scene.material.Materials.GLASS_WALL;
-import static org.osm2world.scene.material.Materials.getTransparentVariant;
+import static org.osm2world.scene.material.DefaultMaterials.GLASS_WALL;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
@@ -19,8 +18,8 @@ public class RoofBuildingPart extends BuildingPart {
 
 	/** whether this roof is at least partially transparent */
 	private boolean isTransparent() {
-		return getTransparentVariant(super.createWallMaterial(tags, config), config) != null
-				|| getTransparentVariant(super.createRoofMaterial(tags, config), config) != null;
+		return config.mapStyle().getTransparentVariant(super.createWallMaterial(tags, config)) != null
+				|| config.mapStyle().getTransparentVariant(super.createRoofMaterial(tags, config)) != null;
 	}
 
 	@Override
@@ -55,7 +54,7 @@ public class RoofBuildingPart extends BuildingPart {
 
 		if (isTransparent()) {
 
-			Material transparentMaterial = getTransparentVariant(result, config);
+			Material transparentMaterial = config.mapStyle().getTransparentVariant(result);
 			if (transparentMaterial != null) {
 				result = transparentMaterial;
 			}

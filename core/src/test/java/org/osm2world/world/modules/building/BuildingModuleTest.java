@@ -19,7 +19,7 @@ import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.osm.creation.OSMFileReader;
 import org.osm2world.scene.Scene;
-import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.util.test.TestFileUtil;
 
 import com.google.common.collect.Lists;
@@ -150,7 +150,7 @@ public class BuildingModuleTest {
 		assertSame(1, buildings.size());
 
 		assertTrue(buildings.get(0).buildMeshes().stream().anyMatch(it ->
-				Materials.ROOF_DEFAULT.get(config).equals(it.material)));
+				DefaultMaterials.ROOF_DEFAULT.get(config).equals(it.material)));
 
 		assertFalse(scene.getMeshes().isEmpty());
 

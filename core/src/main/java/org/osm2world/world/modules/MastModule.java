@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.output.common.ExtrudeOption.END_CAP;
-import static org.osm2world.scene.material.Materials.*;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 
 import java.util.EnumSet;
 import java.util.List;

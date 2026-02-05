@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.scene.Scene;
-import org.osm2world.scene.material.Materials;
+import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.test.TestWorldModule;
@@ -53,7 +53,7 @@ public class GltfOutputTest {
 
 		var mesh = new Mesh(ExtrusionGeometry.createColumn(
 				null, NULL_VECTOR, 10, 2, 0, true, false, null,
-						Materials.STEEL.get(config).textureDimensions()), Materials.STEEL.get(config));
+						DefaultMaterials.STEEL.get(config).textureDimensions()), DefaultMaterials.STEEL.get(config));
 
 		MapDataBuilder dataBuilder = new MapDataBuilder();
 		MapNode node = dataBuilder.createNode(0, 0);
