@@ -8,7 +8,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.conversion.ConversionContext;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
@@ -326,10 +325,6 @@ public final class Materials {
 
 	public static @Nullable Material getTransparentVariant(Material material, O2WConfig config) {
 		return config.mapStyle().getTransparentVariant(material);
-	}
-
-	public static void configureMaterials(O2WConfig config) {
-		ConversionContext.setConfig(config);
 	}
 
 }
