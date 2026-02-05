@@ -133,7 +133,7 @@ public class PropertyStyle implements Style {
 
 			/* store the finished material */
 
-			materialsByName.put(materialName, material);
+			materialsByName.put(materialName.toUpperCase(Locale.ROOT), material);
 
 		}
 
@@ -147,7 +147,7 @@ public class PropertyStyle implements Style {
 	@Override
 	public @Nullable Material resolveMaterial(@Nullable String name) {
 		if (name == null) return null;
-		return materialsByName.get(name);
+		return materialsByName.get(name.toUpperCase(Locale.ROOT));
 	}
 
 	@Override

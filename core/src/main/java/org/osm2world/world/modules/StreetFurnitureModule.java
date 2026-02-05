@@ -831,7 +831,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material").toUpperCase());
+				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
@@ -932,7 +932,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material").toUpperCase());
+				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
@@ -1386,7 +1386,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material material = null;
 
 			if (node.getTags().containsKey("material")) {
-				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material").toUpperCase());
+				material = config.mapStyle().resolveMaterial(node.getTags().getValue("material"));
 			}
 
 			if (material == null) {
