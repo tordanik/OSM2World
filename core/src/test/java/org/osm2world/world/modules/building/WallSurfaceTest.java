@@ -25,7 +25,7 @@ public class WallSurfaceTest {
 				new VectorXYZ(10, 0, 5));
 		List<VectorXYZ> upperBoundary = addYList(lowerBoundary, 10);
 
-		rectangularWallSurface = new WallSurface(BRICK.get(config), lowerBoundary, upperBoundary);
+		rectangularWallSurface = new WallSurface(BRICK.defaultAppearance(), lowerBoundary, upperBoundary);
 	}
 
 	@Test

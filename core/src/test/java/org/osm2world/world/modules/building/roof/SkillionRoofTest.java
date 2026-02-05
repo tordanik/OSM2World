@@ -24,7 +24,7 @@ public class SkillionRoofTest {
 				));
 
 		var roof = new SkillionRoof(new PolygonWithHolesXZ(polygon, emptyList()),
-				TagSet.of("roof:direction", "S", "roof:height", "1"), ROOF_DEFAULT.get(config));
+				TagSet.of("roof:direction", "S", "roof:height", "1"), ROOF_DEFAULT.defaultAppearance());
 
 		assertEquals(1.0, roof.getRoofHeightAt(new VectorXZ(+10, +5)), 1e-5);
 		assertEquals(1.0, roof.getRoofHeightAt(new VectorXZ(  0, +5)), 1e-5);
@@ -51,7 +51,7 @@ public class SkillionRoofTest {
 		));
 
 		var roof = new SkillionRoof(new PolygonWithHolesXZ(polygon, emptyList()),
-				TagSet.of("roof:direction", "W", "roof:angle", "45"), ROOF_DEFAULT.get(config));
+				TagSet.of("roof:direction", "W", "roof:angle", "45"), ROOF_DEFAULT.defaultAppearance());
 
 		assertEquals(10, roof.calculatePreliminaryHeight(), 1e-2);
 

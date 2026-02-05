@@ -1,13 +1,15 @@
 package org.osm2world.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.osm2world.world.modules.building.WindowParameters.WindowRegion.*;
 import static org.osm2world.world.modules.building.WindowParameters.WindowShape.*;
 
 import java.util.HashSet;
 
 import org.junit.Test;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.util.enums.LeftRightBoth;
 
@@ -24,7 +26,7 @@ public class WindowParametersTest {
 				"window:breast", "0.5 m",
 				"window:shutter", "both");
 
-		WindowParameters result = new WindowParameters(tags, 3);
+		WindowParameters result = new WindowParameters(tags, 3, new O2WConfig());
 
 		assertEquals(0.5, result.breast, 0);
 		assertEquals(LeftRightBoth.BOTH, result.shutterSide);
@@ -50,7 +52,7 @@ public class WindowParametersTest {
 				"window:height", "3 m",
 				"window:width", "1 m");
 
-		WindowParameters result = new WindowParameters(tags, 5);
+		WindowParameters result = new WindowParameters(tags, 5, new O2WConfig());
 
 		assertEquals(1.0, result.overallProperties.width, 0);
 		assertEquals(3.0, result.overallProperties.height, 0);
@@ -75,7 +77,7 @@ public class WindowParametersTest {
 				"window:height", "1.5 m",
 				"window:top:height", "0.5 m");
 
-		WindowParameters result = new WindowParameters(tags, 5);
+		WindowParameters result = new WindowParameters(tags, 5, new O2WConfig());
 
 		assertEquals(1.5, result.overallProperties.height, 0);
 
@@ -103,7 +105,7 @@ public class WindowParametersTest {
 				"window:right:width", "0.5 m",
 				"window:center:width", "1.0 m");
 
-		WindowParameters result = new WindowParameters(tags, 5);
+		WindowParameters result = new WindowParameters(tags, 5, new O2WConfig());
 
 		assertEquals(2.0, result.overallProperties.width, 0);
 		assertEquals(2.0, result.overallProperties.height, 0);
@@ -139,7 +141,7 @@ public class WindowParametersTest {
 				"window:shape", "rectangle",
 				"window:panes", "0x0");
 
-		WindowParameters result = new WindowParameters(tags, 2.5);
+		WindowParameters result = new WindowParameters(tags, 2.5, new O2WConfig());
 
 		assertEquals(RECTANGLE, result.overallProperties.shape);
 		assertTrue(result.overallProperties.panes.panesHorizontal > 0);

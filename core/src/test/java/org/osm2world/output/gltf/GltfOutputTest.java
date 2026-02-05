@@ -1,6 +1,7 @@
 package org.osm2world.output.gltf;
 
 import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.util.test.TestFileUtil.createTempFile;
 
 import java.io.File;
@@ -10,7 +11,7 @@ import org.junit.Test;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.scene.Scene;
-import org.osm2world.scene.material.DefaultMaterials;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.test.TestWorldModule;
@@ -51,9 +52,10 @@ public class GltfOutputTest {
 
 		File tempFile = createTempFile(fileExtension);
 
+		Material material = STEEL.defaultAppearance();
 		var mesh = new Mesh(ExtrusionGeometry.createColumn(
 				null, NULL_VECTOR, 10, 2, 0, true, false, null,
-						DefaultMaterials.STEEL.get(config).textureDimensions()), DefaultMaterials.STEEL.get(config));
+						material.textureDimensions()), material);
 
 		MapDataBuilder dataBuilder = new MapDataBuilder();
 		MapNode node = dataBuilder.createNode(0, 0);

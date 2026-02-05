@@ -766,7 +766,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/** representation of a road */
-	public class Road extends AbstractNetworkWaySegmentWorldObject
+	public static class Road extends AbstractNetworkWaySegmentWorldObject
 			implements ProceduralWorldObject {
 
 		protected static final double DEFAULT_LANE_WIDTH = 3.5f;
@@ -777,6 +777,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected static final ShapeXZ HANDRAIL_SHAPE = new PolylineXZ(
 			new VectorXZ(+0.02, -0.05), new VectorXZ(+0.02,     0),
 			new VectorXZ(-0.02,     0), new VectorXZ(-0.02, -0.05));
+
+		private final O2WConfig config;
 
 		public final boolean rightHandTraffic;
 
@@ -791,6 +793,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		public Road(MapWaySegment segment, O2WConfig config) {
 
 			super(segment);
+
+			this.config = config;
 
 			this.tags = segment.getTags();
 			this.startCoord = segment.getStartNode().getPos();

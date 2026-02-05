@@ -52,7 +52,7 @@ public class TestWorldModule extends AbstractModule {
 			VectorXYZ base = node.getPos().xyz(0);
 
 			TriangleXYZ triangle = new TriangleXYZ(base, base.add(0, 1, 0), base.add(1, 1, 0));
-			target.drawTriangles(PLASTIC, singletonList(triangle), emptyList());
+			target.drawTriangles(PLASTIC.defaultAppearance(), singletonList(triangle), emptyList());
 
 		}
 

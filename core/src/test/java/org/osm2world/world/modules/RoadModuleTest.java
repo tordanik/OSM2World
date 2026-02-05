@@ -4,6 +4,7 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.world.modules.RoadModule.findMatchingLanes;
 import static org.osm2world.world.modules.RoadModule.getSurfaceForNode;
 
@@ -11,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.world.modules.RoadModule.Lane;
 import org.osm2world.world.modules.RoadModule.RoadPart;
 
@@ -42,40 +43,40 @@ public class RoadModuleTest {
 				TagSet.of("highway", "residential", "surface", "asphalt"),
 				TagSet.of("highway", "residential", "surface", "asphalt")));
 		new RoadModule().applyTo(noPathData1);
-		assertEquals(DefaultMaterials.getSurfaceMaterial("asphalt", config),
-				getSurfaceForNode(noPathData1.getMapNodes().stream().findAny().get()));
+		assertEquals(ASPHALT.defaultAppearance(),
+				getSurfaceForNode(noPathData1.getMapNodes().stream().findAny().get()).get(new O2WConfig()));
 
 		MapData noPathData = createStarJunction(TagSet.of(), List.of(
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "residential", "surface", "asphalt")));
 		new RoadModule().applyTo(noPathData);
-		assertEquals(DefaultMaterials.getSurfaceMaterial("concrete", config),
-				getSurfaceForNode(noPathData.getMapNodes().stream().findAny().get()));
+		assertEquals(CONCRETE.defaultAppearance(),
+				getSurfaceForNode(noPathData.getMapNodes().stream().findAny().get()).get(new O2WConfig()));
 
 		MapData mixedData = createStarJunction(TagSet.of(), List.of(
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "service", "surface", "asphalt"),
 				TagSet.of("highway", "footway", "surface", "asphalt")));
 		new RoadModule().applyTo(mixedData);
-		assertEquals(DefaultMaterials.getSurfaceMaterial("concrete", config),
-				getSurfaceForNode(mixedData.getMapNodes().stream().findAny().get()));
+		assertEquals(CONCRETE.defaultAppearance(),
+				getSurfaceForNode(mixedData.getMapNodes().stream().findAny().get()).get(new O2WConfig()));
 
 		MapData allPathsData = createStarJunction(TagSet.of(), List.of(
 				TagSet.of("highway", "path", "surface", "concrete"),
 				TagSet.of("highway", "path", "surface", "asphalt"),
 				TagSet.of("highway", "path", "surface", "asphalt")));
 		new RoadModule().applyTo(allPathsData);
-		assertEquals(DefaultMaterials.getSurfaceMaterial("asphalt", config),
-				getSurfaceForNode(allPathsData.getMapNodes().stream().findAny().get()));
+		assertEquals(ASPHALT.defaultAppearance(),
+				getSurfaceForNode(allPathsData.getMapNodes().stream().findAny().get()).get(new O2WConfig()));
 
 		MapData nodeTagData = createStarJunction(TagSet.of("surface", "gravel"), List.of(
 				TagSet.of("highway", "residential", "surface", "concrete"),
 				TagSet.of("highway", "residential", "surface", "asphalt"),
 				TagSet.of("highway", "residential", "surface", "asphalt")));
 		new RoadModule().applyTo(nodeTagData);
-		assertEquals(DefaultMaterials.getSurfaceMaterial("gravel", config),
-				getSurfaceForNode(nodeTagData.getMapNodes().stream().findAny().get()));
+		assertEquals(GRAVEL.defaultAppearance(),
+				getSurfaceForNode(nodeTagData.getMapNodes().stream().findAny().get()).get(new O2WConfig()));
 
 	}
 

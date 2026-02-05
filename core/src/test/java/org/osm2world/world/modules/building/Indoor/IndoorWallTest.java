@@ -26,6 +26,7 @@ public class IndoorWallTest {
 	@Test
 	public void testGetNewEndPoints(){
 
+		var config = new O2WConfig();
 		var builder = new MapDataBuilder();
 
 		/* generate building part */
@@ -55,7 +56,7 @@ public class IndoorWallTest {
 		VectorXZ startNodePos = wallNodes.get(0).getPos();
 		VectorXZ endNodePos = wallNodes.get(2).getPos();
 
-		IndoorWall wall = new IndoorWall(new IndoorObjectData(buildingPart, wallWay.getWaySegments().get(0)));
+		IndoorWall wall = new IndoorWall(new IndoorObjectData(buildingPart, wallWay.getWaySegments().get(0)), config);
 
 		/* test basic case */
 
@@ -77,7 +78,7 @@ public class IndoorWallTest {
 		VectorXZ secondEndNodePos = wallNodes.get(1).getPos();
 		VectorXZ secondRightNormal = secondWallWayLineSegment.getDirection().rightNormal();
 
-		IndoorWall secondWall = new IndoorWall(new IndoorObjectData(buildingPart, secondWallWay.getWaySegments().get(0)));
+		IndoorWall secondWall = new IndoorWall(new IndoorObjectData(buildingPart, secondWallWay.getWaySegments().get(0)), config);
 
 
 		List<VectorXZ> secondEndPointsList = secondWall.getNewEndPoints(secondWall.getWallSegmentNodes().get(0),2, 5, 7.5);
@@ -103,7 +104,7 @@ public class IndoorWallTest {
 		VectorXZ thirdEndNodePos = wallNodes.get(3).getPos();
 		VectorXZ thirdRightNormal = thirdWallWayLineSegment.getDirection().rightNormal();
 
-		IndoorWall thirdWall = new IndoorWall(new IndoorObjectData(buildingPart, thirdWallWay.getWaySegments().get(0)));
+		IndoorWall thirdWall = new IndoorWall(new IndoorObjectData(buildingPart, thirdWallWay.getWaySegments().get(0)), config);
 
 		endPointsList = wall.getNewEndPoints(wall.getWallSegmentNodes().get(0),2, 5, 7.5);
 		secondEndPointsList = secondWall.getNewEndPoints(secondWall.getWallSegmentNodes().get(0),2, 5, 7.5);
