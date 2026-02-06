@@ -248,6 +248,7 @@ public final class DefaultMaterials {
 
 
 	private static final Map<String, MaterialRef> surfaceMaterialMap;
+	private static final List<MaterialRef> defaultMaterials;
 
 	static {
 
@@ -287,6 +288,109 @@ public final class DefaultMaterials {
 		surfaceMaterialMap.put("woodchips", WOODCHIPS);
 		surfaceMaterialMap.put("scrub", SCRUB);
 
+		defaultMaterials = List.of(
+				TERRAIN_DEFAULT,
+				WATER,
+				ADOBE,
+				ASPHALT,
+				BRICK,
+				CONCRETE,
+				COPPER_ROOF,
+				CORRUGATED_STEEL,
+				EARTH,
+				GLASS,
+				GRASS,
+				GRASS_PAVER,
+				GRAVEL,
+				ICE,
+				SCRUB,
+				SETT,
+				SHELLS,
+				SLATE,
+				PAVING_STONE,
+				PEBBLESTONE,
+				PLASTIC,
+				ROCK,
+				SAND,
+				SANDSTONE,
+				SCREE,
+				SNOW,
+				STEEL,
+				STONE,
+				THATCH_ROOF,
+				UNHEWN_COBBLESTONE,
+				WOOD,
+				WOODCHIPS,
+				WOOD_WALL,
+				TARTAN,
+				TILES,
+				MARBLE,
+				CARPET,ROAD_MARKING,
+				ROAD_MARKING_DASHED,
+				ROAD_MARKING_ZEBRA,
+				ROAD_MARKING_CROSSING,
+				ROAD_MARKING_ARROW_THROUGH,
+				ROAD_MARKING_ARROW_THROUGH_RIGHT,
+				ROAD_MARKING_ARROW_RIGHT,
+				ROAD_MARKING_ARROW_RIGHT_LEFT,
+				RED_ROAD_MARKING,
+				KERB,
+				HANDRAIL_DEFAULT,RAIL_BALLAST,
+				RAILWAY,RUNWAY_CENTER_MARKING,
+				TAXIWAY_CENTER_MARKING,
+				HELIPAD_MARKING,
+				BUILDING_DEFAULT,
+				BUILDING_WINDOWS,
+				SINGLE_WINDOW,
+				ROOF_DEFAULT,
+				GLASS_ROOF,
+				GLASS_WALL,
+				ENTRANCE_DEFAULT,
+				GARAGE_DOOR,
+				GLASS_TRANSPARENT,
+				WALL_GABION,
+				HEDGE,
+				FENCE_DEFAULT,
+				SPLIT_RAIL_FENCE,
+				CHAIN_LINK_FENCE,
+				METAL_FENCE,
+				METAL_FENCE_POST,
+				BRIDGE_DEFAULT,
+				BRIDGE_PILLAR_DEFAULT,
+				TUNNEL_DEFAULT,
+				TREE_TRUNK,
+				TREE_CROWN,
+				TREE_BILLBOARD_BROAD_LEAVED,
+				TREE_BILLBOARD_BROAD_LEAVED_FRUIT,
+				TREE_BILLBOARD_CONIFEROUS,
+				POWER_TOWER_VERTICAL,
+				POWER_TOWER_HORIZONTAL,
+				ADVERTISING_POSTER,
+				BUS_STOP_SIGN,
+				POSTBOX_DEUTSCHEPOST,
+				POSTBOX_ROYALMAIL,
+				TELEKOM_MANGENTA,
+				FIREHYDRANT,
+				FLAGCLOTH,
+				SOLAR_PANEL,
+				PITCH_BEACHVOLLEYBALL,
+				PITCH_SOCCER,
+				PITCH_TENNIS_ASPHALT,
+				PITCH_TENNIS_CLAY,
+				PITCH_TENNIS_GRASS,
+				PITCH_TENNIS_SINGLES_ASPHALT,
+				PITCH_TENNIS_SINGLES_CLAY,
+				PITCH_TENNIS_SINGLES_GRASS,
+				TENNIS_NET,
+				SKYBOX,
+				VOID
+		);
+
+	}
+
+	/** returns all default materials defined here */
+	public static List<MaterialRef> getDefaultMaterials() {
+		return defaultMaterials;
 	}
 
 	/** returns a material reference for a surface value; null if none is found */

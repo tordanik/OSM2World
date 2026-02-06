@@ -41,6 +41,12 @@ public class PropertyStyle implements Style {
 
 		materialsByName = new HashMap<>();
 
+		/* initialize the map with default materials */
+
+		for (MaterialRef ref : DefaultMaterials.getDefaultMaterials()) {
+			materialsByName.put(ref.name().toUpperCase(Locale.ROOT), ref.defaultAppearance());
+		}
+
 		/* find all material-related properties and organize them by material */
 
 		Map<String, Set<String>> attributesPerMaterialName = new HashMap<>();
