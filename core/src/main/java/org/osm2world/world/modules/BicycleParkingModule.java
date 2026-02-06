@@ -42,7 +42,6 @@ import org.osm2world.scene.mesh.*;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.scene.model.Models;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.NodeWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -205,7 +204,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 				if (random.nextDouble() > bikeDensity) continue;
 
-				Model bikeModel = Models.getModel("BIKE", random);
+				Model bikeModel = config.mapStyle().getModel("BIKE", random);
 				Color bikeColor = BIKE_COLORS.get(random.nextInt(BIKE_COLORS.size()));
 
 				double bikeDirection = random.nextBoolean()

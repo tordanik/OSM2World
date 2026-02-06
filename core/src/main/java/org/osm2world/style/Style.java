@@ -4,12 +4,14 @@ import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.scene.material.DefaultMaterials.GLASS_TRANSPARENT;
 
 import java.util.Collection;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.material.MaterialRef;
+import org.osm2world.scene.model.Model;
 
 /**
  * A map style for OSM2World. It defines materials, models, and rules which control the visual appearance of the scene.
@@ -66,5 +68,17 @@ public interface Style {
 			default -> null;
 		};
 	}
+
+	/**
+	 * returns a model based on its name, if one is available
+	 *
+	 * @param name  case-insensitive name of the material
+	 */
+	@Nullable Model getModel(@Nullable String name);
+
+	/**
+	 * variant of {@link #getModel(String)} which picks one of several available models randomly.
+	 */
+	@Nullable Model getModel(@Nullable String name, Random random);
 
 }

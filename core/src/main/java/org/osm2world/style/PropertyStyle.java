@@ -18,8 +18,10 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.output.gltf.GltfModel;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.*;
+import org.osm2world.scene.model.Model;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.functions.Factory;
@@ -29,7 +31,11 @@ import org.osm2world.util.functions.Factory;
  */
 public class PropertyStyle implements Style {
 
+	/** map with all known materials; keys are in uppercase */
 	private final Map<String, Material> materialsByName;
+
+	/** map with all known models; keys are in uppercase */
+	private final Map<String, List<Model>> modelsByName;
 
 	private static final Pattern CONF_KEY_PATTERN = Pattern.compile(
 			"material_(.+)_(interpolation|color|doubleSided|shadow|ssao|transparency|texture\\d*_.+)");
@@ -39,7 +45,79 @@ public class PropertyStyle implements Style {
 	 */
 	public PropertyStyle(O2WConfig config) {
 
-		materialsByName = new HashMap<>();
+		materialsByName = loadMaterials(config);
+		modelsByName = loadModels(config);
+
+	}
+
+	@Override
+	public Collection<Material> getMaterials() {
+		return materialsByName.values();
+	}
+
+	@Override
+	public @Nullable Material resolveMaterial(@Nullable String name) {
+		if (name == null) return null;
+		return materialsByName.get(name.toUpperCase(Locale.ROOT));
+	}
+
+	@Override
+	public String getUniqueName(MaterialOrRef material) {
+
+		if (material == null) return null;
+
+		Material m = resolveMaterial(material);
+
+		// check by object identity first
+		for (var entry : materialsByName.entrySet()) {
+			if (entry.getValue().equals(m)) {
+				return entry.getKey();
+			}
+		}
+
+		// check by object equality second
+		for (var entry : materialsByName.entrySet()) {
+			if (entry.getValue().equals(m)) {
+				return entry.getKey();
+			}
+		}
+
+		// no match found
+		return null;
+
+	}
+
+	@Override
+	public @Nullable Model getModel(@Nullable String name) {
+
+		if (name == null) return null;
+
+		List<Model> knownModels = modelsByName.get(name.toUpperCase(Locale.ROOT));
+		if (knownModels != null && !knownModels.isEmpty()) {
+			return knownModels.get(0);
+		} else {
+			return null;
+		}
+
+	}
+
+	@Override
+	public @Nullable Model getModel(@Nullable String name, Random random) {
+
+		if (name == null) return null;
+
+		List<Model> knownModels = modelsByName.get(name.toUpperCase(Locale.ROOT));
+		if (knownModels != null && !knownModels.isEmpty()) {
+			return knownModels.get(random.nextInt(knownModels.size()));
+		} else {
+			return null;
+		}
+
+	}
+
+	private static Map<String, Material> loadMaterials(O2WConfig config) {
+
+		Map<String, Material> materialsByName = new HashMap<>();
 
 		/* initialize the map with default materials */
 
@@ -143,42 +221,7 @@ public class PropertyStyle implements Style {
 
 		}
 
-	}
-
-	@Override
-	public Collection<Material> getMaterials() {
-		return materialsByName.values();
-	}
-
-	@Override
-	public @Nullable Material resolveMaterial(@Nullable String name) {
-		if (name == null) return null;
-		return materialsByName.get(name.toUpperCase(Locale.ROOT));
-	}
-
-	@Override
-	public String getUniqueName(MaterialOrRef material) {
-
-		if (material == null) return null;
-
-		Material m = resolveMaterial(material);
-
-		// check by object identity first
-		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue().equals(m)) {
-				return entry.getKey();
-			}
-		}
-
-		// check by object equality second
-		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue().equals(m)) {
-				return entry.getKey();
-			}
-		}
-
-		// no match found
-		return null;
+		return materialsByName;
 
 	}
 
@@ -415,6 +458,46 @@ public class PropertyStyle implements Style {
 		}
 
 		return result;
+	}
+
+	private static Map<String, List<Model>> loadModels(O2WConfig config) {
+
+		Map<String, List<Model>> models = new HashMap<>();
+
+		Iterator<String> keyIterator = config.getKeys();
+
+		while (keyIterator.hasNext()) {
+
+			String key = keyIterator.next();
+
+			Matcher matcher = Pattern.compile("model_(.+)").matcher(key);
+
+			if (matcher.matches()) {
+
+				String modelName = matcher.group(1);
+				List<String> fileNames = config.getList(key);
+
+				try {
+					List<Model> ms = new ArrayList<>(fileNames.size());
+					for (String fileName : fileNames) {
+						URI modelUri = config.resolveFileConfigProperty(fileName, false, true);
+						if (modelUri == null) {
+							System.err.println("Can't read model file " + fileName);
+						} else {
+							ms.add(GltfModel.loadFromUri(modelUri, null, null));
+						}
+					}
+					models.put(modelName.toUpperCase(Locale.ROOT), ms);
+				} catch (IOException e) {
+					System.err.println("Unable to load model " + modelName + ":");
+					e.printStackTrace();
+				}
+
+			}
+		}
+
+		return models;
+
 	}
 
 }

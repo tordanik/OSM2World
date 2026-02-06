@@ -26,7 +26,6 @@ import org.osm2world.scene.mesh.LODRange;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.scene.model.Models;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;
@@ -109,7 +108,7 @@ public class ParkingModule extends AbstractModule {
 
 				if (random.nextDouble() > carDensity) continue;
 
-				Model carModel = Models.getModel("CAR", random);
+				Model carModel = config.mapStyle().getModel("CAR", random);
 				Color carColor = CAR_COLORS.get(random.nextInt(CAR_COLORS.size()));
 
 				if (carModel != null) {

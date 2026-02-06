@@ -23,7 +23,10 @@ import org.osm2world.math.shapes.PolylineXZ;
 import org.osm2world.output.gltf.GltfFlavor;
 import org.osm2world.output.gltf.GltfModel;
 import org.osm2world.scene.mesh.Mesh;
-import org.osm2world.scene.model.*;
+import org.osm2world.scene.model.ExternalModelSource;
+import org.osm2world.scene.model.InstanceParameters;
+import org.osm2world.scene.model.Model;
+import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.util.ValueParseUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentUtil;
@@ -46,7 +49,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 		for (MapElement element : mapData.getMapElements()) {
 			if (element.getPrimaryRepresentation() == null) {
 
-				Model model = Models.getModel(element.getElementWithId().toString());
+				Model model = config.mapStyle().getModel(element.getElementWithId().toString());
 
 				if (model == null && element.getTags().containsKey("3dmr")) {
 					Integer id = ValueParseUtil.parseInt(element.getTags().getValue("3dmr"));

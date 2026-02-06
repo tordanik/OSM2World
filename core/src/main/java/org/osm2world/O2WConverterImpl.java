@@ -50,8 +50,6 @@ import org.osm2world.output.Output;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.scene.Scene;
-import org.osm2world.scene.material.DefaultMaterials;
-import org.osm2world.scene.model.Models;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.json.JsonUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
@@ -164,10 +162,7 @@ class O2WConverterImpl {
 		/* apply world modules */
 		updatePhase(perfListener, ProgressListener.Phase.REPRESENTATION);
 
-		ConfigUtil.parseFonts(config);
-		Models.configureModels(config);
-		//this will cause problems if multiple conversions are run
-		//at the same time, because global variables are being modified
+		ConfigUtil.parseFonts(config); // FIXME this might cause problems if multiple conversions are run at the same time?
 
 		WorldCreator moduleManager = new WorldCreator(config, createModuleList(config));
 		moduleManager.addRepresentationsTo(mapData);
