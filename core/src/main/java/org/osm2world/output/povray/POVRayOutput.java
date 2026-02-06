@@ -265,7 +265,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 		for (Material material : config.mapStyle().getMaterials()) {
 
-			String uniqueName = config.mapStyle().getUniqueName(material);
+			String uniqueName = config.mapStyle().getMaterialName(material);
 			String name = "texture_" + uniqueName;
 
 			append("#ifndef (" + name + ")\n");
@@ -629,7 +629,7 @@ public class POVRayOutput extends AbstractOutput implements DrawBasedOutput {
 
 	private void appendMaterialOrName(Material material) {
 
-		String materialName = config.mapStyle().getUniqueName(material);
+		String materialName = config.mapStyle().getMaterialName(material);
 
 		if (materialName != null) {
 			append(" texture { texture_" + materialName + " }");

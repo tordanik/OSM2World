@@ -51,7 +51,7 @@ public interface Style {
 	 * To handle equal materials known under different names,
 	 * it attempts to look for object identity before object equality.
 	 */
-	String getUniqueName(MaterialOrRef material);
+	String getMaterialName(MaterialOrRef material);
 
 	/**
 	 * Returns the transparent variant of a material, if available.
@@ -61,7 +61,7 @@ public interface Style {
 	 * @return the transparent variant of the material, or null if none is available
 	 */
 	default @Nullable Material getTransparentVariant(Material material) {
-		return switch (requireNonNullElse(getUniqueName(material), "")) {
+		return switch (requireNonNullElse(getMaterialName(material), "")) {
 			case "GLASS" -> resolveMaterial(GLASS_TRANSPARENT);
 			case "GLASS_WALL" -> resolveMaterial("GLASS_WALL_TRANSPARENT", null);
 			case "GLASS_ROOF" -> resolveMaterial("GLASS_ROOF_TRANSPARENT", null);

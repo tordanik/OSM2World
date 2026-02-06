@@ -238,7 +238,7 @@ public class WallSurface {
 			Double fixedHeight = null;
 
 			if (windowHeight != null && (texLayer >= this.material.textureLayers().size()
-					|| Objects.equals(config.mapStyle().getUniqueName(this.material), "GLASS_WALL"))) {
+					|| Objects.equals(config.mapStyle().getMaterialName(this.material), "GLASS_WALL"))) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

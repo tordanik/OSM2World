@@ -117,7 +117,7 @@ public class ExteriorBuildingWall {
 				hasWindows = false;
 			}
 
-			if ("GLASS_WALL".equals(config.mapStyle().getUniqueName(material))) {
+			if ("GLASS_WALL".equals(config.mapStyle().getMaterialName(material))) {
 				// avoid placing windows into a glass front
 				// TODO: the check currently only works if GLASS_WALL is not colorable
 				hasWindows = false;

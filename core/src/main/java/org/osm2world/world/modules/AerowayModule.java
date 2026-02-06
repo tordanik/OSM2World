@@ -215,7 +215,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		Material getCenterlineSurface() {
 			Material material = getSurface();
-			if (List.of("ASPHALT", "CONCRETE").contains(config.mapStyle().getUniqueName(material))) {
+			if (List.of("ASPHALT", "CONCRETE").contains(config.mapStyle().getMaterialName(material))) {
 				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get(config).textureLayers());
 			} else {
 				return getSurface();
@@ -238,7 +238,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		Material getCenterlineSurface() {
 			Material material = getSurface();
-			if (List.of("ASPHALT", "CONCRETE").contains(config.mapStyle().getUniqueName(material))) {
+			if (List.of("ASPHALT", "CONCRETE").contains(config.mapStyle().getMaterialName(material))) {
 				return TAXIWAY_CENTER_MARKING.get(config);
 			} else {
 				return getSurface();

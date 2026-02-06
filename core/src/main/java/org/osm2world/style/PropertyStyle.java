@@ -62,7 +62,7 @@ public class PropertyStyle implements Style {
 	}
 
 	@Override
-	public String getUniqueName(MaterialOrRef material) {
+	public String getMaterialName(MaterialOrRef material) {
 
 		if (material == null) return null;
 

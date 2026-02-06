@@ -72,7 +72,7 @@ public class StatisticsDialog extends JDialog {
 			for (int row = 0; row < numMaterials; ++row) {
 
 				if (col == 0) {
-					String name = config.mapStyle().getUniqueName(materialList.get(row));
+					String name = config.mapStyle().getMaterialName(materialList.get(row));
 					if (name == null) {
 						name = materialList.get(row).toString();
 					}

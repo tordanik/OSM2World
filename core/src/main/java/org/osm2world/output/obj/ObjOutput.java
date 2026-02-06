@@ -204,7 +204,7 @@ public class ObjOutput extends FaceOutput {
 
 			String name = materialMap.get(material);
 			if (name == null) {
-				name = config.mapStyle().getUniqueName(material);
+				name = config.mapStyle().getMaterialName(material);
 				if (name == null) {
 					name = "MAT_" + anonymousMaterialCounter;
 					anonymousMaterialCounter += 1;

@@ -353,7 +353,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		}
 
 		if (material.shadow() == Shadow.FALSE
-				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(config.mapStyle().getUniqueName(material), ""))) {
+				|| DEFAULT_SHADOWLESS_MATERIALS.contains(Objects.requireNonNullElse(config.mapStyle().getMaterialName(material), ""))) {
 			materialBuilder.setCastShadow(false);
 		}
 

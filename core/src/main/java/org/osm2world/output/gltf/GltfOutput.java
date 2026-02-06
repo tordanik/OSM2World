@@ -640,7 +640,7 @@ public class GltfOutput extends AbstractOutput {
 
 	private @Nullable String getMaterialName(Material m, @Nullable TextureLayer textureLayer) {
 
-		String name = config.mapStyle().getUniqueName(m);
+		String name = config.mapStyle().getMaterialName(m);
 
 		if (name == null) {
 			if (textureLayer != null) {
