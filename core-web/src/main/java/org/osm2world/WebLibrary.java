@@ -12,6 +12,7 @@ import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.osm.creation.JsonStringReader;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
@@ -234,7 +235,7 @@ public class WebLibrary {
 	}
 
 	@JSExport
-	public static void convert(O2WConfig config, String elementType, String[] tags,
+	public static void convert(@Nullable O2WConfig config, String elementType, String[] tags,
 			JSConsumer<JSArray<WebMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
 
 		if (tags.length % 2 != 0) {
@@ -274,22 +275,7 @@ public class WebLibrary {
 
 				Scene scene = o2w.convert(mapData, null);
 
-				var meshStore = new MeshStore(scene.getMeshesWithMetadata());
-
-				meshStore = meshStore.process(List.of(
-						new MeshStore.EmulateDoubleSidedMaterials(),
-						new MeshStore.EmulateTextureLayers(),
-						new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
-				));
-				List<Mesh> meshes = meshStore.meshes();
-
-				List<WebMesh> webMeshes = new ArrayList<>();
-
-				for (Mesh mesh : meshes) {
-					webMeshes.add(new WebMesh(mesh.material, mesh.geometry.asTriangles()));
-				}
-
-				WebMesh[] meshArray = webMeshes.toArray(WebMesh[]::new);
+				WebMesh[] meshArray = sceneToMeshArray(scene);
 				onSuccess.accept(JSArray.of(meshArray));
 
 			} catch (Exception e) {
@@ -299,6 +285,63 @@ public class WebLibrary {
 			}
 
 		}).start();
+
+	}
+
+	/**
+	 * Converts OSM data in JSON format to 3D geometry.
+	 * Uses the OSM JSON dialect supported by Overpass API.
+	 *
+	 * @param osmJson  a JSON string
+	 * @param config  OSM2World configuration received from loadConfig, can be null
+	 * @param onSuccess  callback which will receive an array of WebMesh objects if the conversion succeeds
+	 * @param onError   optional error callback, can be null
+	 */
+	@JSExport
+	public static void convertJson(String osmJson, @Nullable O2WConfig config,
+			JSConsumer<JSArray<WebMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
+
+		var osmReader = new JsonStringReader(osmJson);
+
+		new Thread(() -> {
+
+			var o2w = new O2WConverterImpl(config != null ? config.getConfig() : null, List.of());
+
+			try {
+
+				Scene scene = o2w.convert(osmReader, null, null);
+
+				WebMesh[] meshArray = sceneToMeshArray(scene);
+				onSuccess.accept(JSArray.of(meshArray));
+
+			} catch (Exception e) {
+				if (onError != null) {
+					onError.accept(e.getMessage());
+				}
+			}
+
+		}).start();
+
+	}
+
+	private static WebMesh[] sceneToMeshArray(Scene scene) {
+
+		var meshStore = new MeshStore(scene.getMeshesWithMetadata());
+
+		meshStore = meshStore.process(List.of(
+				new MeshStore.EmulateDoubleSidedMaterials(),
+				new MeshStore.EmulateTextureLayers(),
+				new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
+		));
+		List<Mesh> meshes = meshStore.meshes();
+
+		List<WebMesh> webMeshes = new ArrayList<>();
+
+		for (Mesh mesh : meshes) {
+			webMeshes.add(new WebMesh(mesh.material, mesh.geometry.asTriangles()));
+		}
+
+		return webMeshes.toArray(WebMesh[]::new);
 
 	}
 
