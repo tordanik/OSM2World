@@ -2,10 +2,7 @@ package org.osm2world;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -24,7 +21,9 @@ import org.osm2world.util.json.JsonImplementationBrowser;
 import org.osm2world.util.json.JsonUtil;
 import org.osm2world.util.uri.BrowserHttpClient;
 import org.osm2world.util.uri.LoadUriUtil;
+import org.teavm.jso.JSBody;
 import org.teavm.jso.JSExport;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.JSTopLevel;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.function.JSConsumer;
@@ -200,19 +199,38 @@ public class WebLibrary {
 	}
 
 	@JSExport
-	public static void loadConfig(String uri, JSConsumer<O2WConfig> onSuccess, @Nullable JSConsumer<String> onError) {
+	public static void loadConfig(String uri, JSObject extraProperties,
+			JSConsumer<O2WConfig> onSuccess, @Nullable JSConsumer<String> onError) {
 
 		JSConsumer<String> handleError = (onError != null) ? onError : System.err::println;
 
 		new Thread(() -> {
 			try {
-				var config = new org.osm2world.conversion.O2WConfig(Map.of(), new URI(uri));
+				Map<String, ?> properties = jsObjectToMap(extraProperties);
+				var config = new org.osm2world.conversion.O2WConfig(properties, new URI(uri));
 				onSuccess.accept(new O2WConfig(config));
 			} catch (URISyntaxException e) {
 				handleError.accept(e.getMessage());
 			}
 		}).start();
 
+	}
+
+	@JSBody(params = {"obj"}, script = "return Object.keys(obj);")
+	private static native String[] getKeys(JSObject obj);
+
+	@JSBody(params = {"obj", "key"}, script = "return obj[key];")
+	private static native String getProperty(JSObject obj, String key);
+
+	private static Map<String, String> jsObjectToMap(JSObject obj) {
+		Map<String, String> map = new HashMap<>();
+		for (String key : getKeys(obj)) {
+			String value = getProperty(obj, key);
+			if (value != null) {
+				map.put(key, value);
+			}
+		}
+		return map;
 	}
 
 	@JSExport
