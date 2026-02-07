@@ -1,7 +1,7 @@
 package org.osm2world.style;
 
 import static java.util.Objects.requireNonNullElse;
-import static org.osm2world.scene.material.DefaultMaterials.GLASS_TRANSPARENT;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 
 import java.util.Collection;
 import java.util.Random;
@@ -60,11 +60,11 @@ public interface Style {
 	 *
 	 * @return the transparent variant of the material, or null if none is available
 	 */
-	default @Nullable Material getTransparentVariant(Material material) {
+	default @Nullable Material getTransparentVariant(MaterialOrRef material) {
 		return switch (requireNonNullElse(getMaterialName(material), "")) {
 			case "GLASS" -> resolveMaterial(GLASS_TRANSPARENT);
-			case "GLASS_WALL" -> resolveMaterial("GLASS_WALL_TRANSPARENT", null);
-			case "GLASS_ROOF" -> resolveMaterial("GLASS_ROOF_TRANSPARENT", null);
+			case "GLASS_WALL" -> resolveMaterial(GLASS_WALL_TRANSPARENT);
+			case "GLASS_ROOF" -> resolveMaterial(GLASS_ROOF_TRANSPARENT);
 			default -> null;
 		};
 	}

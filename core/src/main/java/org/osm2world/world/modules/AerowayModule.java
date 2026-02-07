@@ -177,7 +177,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 			List<VectorXYZ> leftInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 - relativeMarkingWidth));
 			List<VectorXYZ> rightInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 + relativeMarkingWidth));
 
-			Material material = getSurface();
+			Material material = getSurface().get(config);
 
 			List<VectorXYZ> leftVs = WorldModuleGeometryUtil.createTriangleStripBetween(leftOuter, leftInner);
 			target.drawTriangleStrip(material, leftVs, texCoordLists(leftVs, material, GLOBAL_X_Z));
@@ -193,8 +193,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		}
 
-		Material getSurface() {
-			return getSurfaceMaterial(segment.getTags().getValue("surface"), ASPHALT, config);
+		MaterialOrRef getSurface() {
+			return getSurfaceMaterialRef(segment.getTags().getValue("surface"), ASPHALT);
 		}
 
 		abstract Material getCenterlineSurface();
@@ -214,11 +214,11 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		@Override
 		Material getCenterlineSurface() {
-			Material material = getSurface();
-			if (List.of("ASPHALT", "CONCRETE").contains(config.mapStyle().getMaterialName(material))) {
-				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.get(config).textureLayers());
+			MaterialOrRef material = getSurface();
+			if (List.of((MaterialOrRef)ASPHALT, CONCRETE).contains(material)) {
+				return getSurface().get(config).withAddedLayers(RUNWAY_CENTER_MARKING.get(config).textureLayers());
 			} else {
-				return getSurface();
+				return material.get(config);
 			}
 		}
 
@@ -237,11 +237,11 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		@Override
 		Material getCenterlineSurface() {
-			Material material = getSurface();
-			if (List.of("ASPHALT", "CONCRETE").contains(config.mapStyle().getMaterialName(material))) {
+			MaterialOrRef material = getSurface();
+			if (List.of((MaterialOrRef)ASPHALT, CONCRETE).contains(material)) {
 				return TAXIWAY_CENTER_MARKING.get(config);
 			} else {
-				return getSurface();
+				return material.get(config);
 			}
 		}
 

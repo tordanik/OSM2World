@@ -65,6 +65,7 @@ public class PropertyStyle implements Style {
 	public String getMaterialName(MaterialOrRef material) {
 
 		if (material == null) return null;
+		if (material instanceof MaterialRef ref) return ref.name();
 
 		Material m = resolveMaterial(material);
 

@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.VectorXZ.listXYZ;
 import static org.osm2world.math.algorithms.GeometryUtil.insertIntoPolygon;
+import static org.osm2world.scene.material.DefaultMaterials.GLASS_WALL;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.inheritTags;
@@ -117,7 +118,8 @@ public class ExteriorBuildingWall {
 				hasWindows = false;
 			}
 
-			if ("GLASS_WALL".equals(config.mapStyle().getMaterialName(material))) {
+			if ("glass".equals(tags.getValue("building:material"))
+					|| GLASS_WALL.name().equals(config.mapStyle().getMaterialName(material))) {
 				// avoid placing windows into a glass front
 				// TODO: the check currently only works if GLASS_WALL is not colorable
 				hasWindows = false;

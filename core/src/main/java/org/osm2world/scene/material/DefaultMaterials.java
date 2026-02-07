@@ -144,7 +144,11 @@ public final class DefaultMaterials {
 		new Material(Interpolation.FLAT, new Color(0.8f, 0, 0)));
 	public static final MaterialRef GLASS_ROOF = new MaterialRef("GLASS_ROOF",
 			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+	public static final MaterialRef GLASS_ROOF_TRANSPARENT = new MaterialRef("GLASS_ROOF_TRANSPARENT",
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef GLASS_WALL = new MaterialRef("GLASS_WALL",
+			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
+	public static final MaterialRef GLASS_WALL_TRANSPARENT = new MaterialRef("GLASS_WALL_TRANSPARENT",
 			new Material(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f)));
 	public static final MaterialRef ENTRANCE_DEFAULT = new MaterialRef("ENTRANCE_DEFAULT",
 		new Material(Interpolation.FLAT, new Color(0.2f, 0, 0)));
@@ -344,7 +348,9 @@ public final class DefaultMaterials {
 				SINGLE_WINDOW,
 				ROOF_DEFAULT,
 				GLASS_ROOF,
+				GLASS_ROOF_TRANSPARENT,
 				GLASS_WALL,
+				GLASS_WALL_TRANSPARENT,
 				ENTRANCE_DEFAULT,
 				GARAGE_DOOR,
 				GLASS_TRANSPARENT,

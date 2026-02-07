@@ -2163,8 +2163,12 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		protected Material getSurface(TagSet roadTags, TagSet laneTags, O2WConfig config) {
 			Material material = super.getSurface(roadTags, laneTags, config);
-			if ("ASPHALT".equals(config.mapStyle().getMaterialName(material))) return RED_ROAD_MARKING.get(config);
-			else return material;
+			if (material == ASPHALT.defaultAppearance()
+					|| ASPHALT.name().equals(config.mapStyle().getMaterialName(material))) {
+				return RED_ROAD_MARKING.get(config);
+			} else {
+				return material;
+			}
 		}
 
 	};

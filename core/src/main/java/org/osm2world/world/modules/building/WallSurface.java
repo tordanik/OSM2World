@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.scene.material.DefaultMaterials.BUILDING_WINDOWS;
+import static org.osm2world.scene.material.DefaultMaterials.GLASS_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -238,7 +239,7 @@ public class WallSurface {
 			Double fixedHeight = null;
 
 			if (windowHeight != null && (texLayer >= this.material.textureLayers().size()
-					|| Objects.equals(config.mapStyle().getMaterialName(this.material), "GLASS_WALL"))) {
+					|| Objects.equals(config.mapStyle().getMaterialName(this.material), GLASS_WALL.name()))) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

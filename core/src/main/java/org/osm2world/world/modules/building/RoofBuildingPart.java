@@ -6,6 +6,7 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.MaterialOrRef;
 
 /**
  * a special kind of building part representing a roof without walls
@@ -48,22 +49,20 @@ public class RoofBuildingPart extends BuildingPart {
 		return modifyIfTransparent(super.createRoofMaterial(tags, config));
 	}
 
-	private Material modifyIfTransparent(Material material) {
-
-		Material result = material;
+	private Material modifyIfTransparent(MaterialOrRef material) {
 
 		if (isTransparent()) {
 
-			Material transparentMaterial = config.mapStyle().getTransparentVariant(result);
-			if (transparentMaterial != null) {
-				result = transparentMaterial;
+			Material result = config.mapStyle().getTransparentVariant(material);
+			if (result == null) {
+				result = material.get(config);
 			}
 
-			result = result.makeDoubleSided();
+			return result.makeDoubleSided();
 
+		} else {
+			return material.get(config);
 		}
-
-		return result;
 
 	}
 
