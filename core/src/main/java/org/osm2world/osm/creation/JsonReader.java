@@ -46,9 +46,12 @@ public abstract class JsonReader implements OSMDataReader {
 
 				long id = e.id;
 
-				List<Tag> tags = new ArrayList<>();
-				for (var t : e.tags.entrySet()) {
-					tags.add(new Tag(t.getKey(), t.getValue()));
+				List<Tag> tags = List.of();
+				if (e.tags != null) {
+					tags = new ArrayList<>();
+					for (var t : e.tags.entrySet()) {
+						tags.add(new Tag(t.getKey(), t.getValue()));
+					}
 				}
 
 				switch (e.type) {

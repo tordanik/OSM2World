@@ -12,8 +12,6 @@ import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.osm.data.OSMData;
 
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
-import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
-import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 
 /**
  * {@link OSMDataReader} fetching information from Overpass API.
@@ -29,7 +27,7 @@ public record OverpassReader(String apiURL) implements OSMDataReader {
 
 	@Override
 	public OSMData getData(LatLonBounds bounds) throws IOException {
-		return getData( "[bbox:"+bounds.minlat+","+bounds.minlon+","+bounds.maxlat+","+bounds.maxlon+"];"
+		return getData( "[out:json][bbox:"+bounds.minlat+","+bounds.minlon+","+bounds.maxlat+","+bounds.maxlon+"];"
 				+ "(node;rel(bn)->.x;way;node(w)->.x;rel(bw););out meta;");
 	}
 
@@ -54,10 +52,9 @@ public record OverpassReader(String apiURL) implements OSMDataReader {
 
 			try (InputStream inputStream = connection.getInputStream()) {
 
-				OsmXmlIterator iterator = new OsmXmlIterator(inputStream, false);
+				String jsonResult = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-				InMemoryMapDataSet data = MapDataSetLoader.read(iterator, true, true, true);
-				return new OSMData(data);
+				return new JsonStringReader(jsonResult).getAllData();
 
 			}
 
