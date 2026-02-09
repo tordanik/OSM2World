@@ -26,7 +26,7 @@
 
 		<dependency>
 			<groupId>org.osm2world</groupId>
-			<artifactId>osm2world-core</artifactId>
+			<artifactId>osm2world-core-jvm</artifactId>
 			<version>0.5.0-SNAPSHOT</version>
 		</dependency>
 

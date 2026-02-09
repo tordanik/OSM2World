@@ -8,6 +8,7 @@
 # Build
 /target
 /core/target
+/core-jvm/target
 /desktop/target
 /opengl/target
 /dist

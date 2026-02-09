@@ -10,6 +10,7 @@
 
 	<modules>
 		<module>core</module>
+		<module>core-jvm</module>
 		<module>desktop</module>
 		<module>opengl</module>
 	</modules>

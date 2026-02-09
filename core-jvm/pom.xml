@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.osm2world</groupId>
+		<artifactId>osm2world</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+	</parent>
+
+	<packaging>jar</packaging>
+	<artifactId>osm2world-core-jvm</artifactId>
+
+	<name>OSM2World Core JVM</name>
+	<description>OSM2World core library with JVM-specific extras</description>
+
+	<repositories>
+		<repository>
+			<id>jogamp-repo</id>
+			<url>https://jogamp.org/deployment/maven/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.osm2world</groupId>
+			<artifactId>osm2world-core</artifactId>
+			<version>0.5.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+	</dependencies>
+
+</project>
