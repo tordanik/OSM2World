@@ -261,24 +261,10 @@ public class PropertyStyle implements Style {
 
 					String materialName = pathParts[pathParts.length - 1];
 
-					BiFunction<URI, Factory<URI>, URI> uriIfExistsElse = (URI uri, Factory<URI> fallback) -> {
-						try {
-							HttpURLConnection huc = (HttpURLConnection) uri.toURL().openConnection();
-							huc.setRequestMethod("HEAD");
-							if (huc.getResponseCode() == HttpURLConnection.HTTP_OK) {
-								return uri;
-							}
-						} catch (IOException ignored) {}
-						return fallback.get();
-					};
-
-					baseColorTexture =
-							uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.png"),
-									() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.jpg"),
-											() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_Color.jpeg"),
-													() -> null)));
-
-					// TODO other types
+					baseColorTexture = tryTextureURIs(parentURI, materialName, "Color");
+					ormTexture = tryTextureURIs(parentURI, materialName, "ORM");
+					normalTexture = tryTextureURIs(parentURI, materialName, "Normal");
+					displacementTexture = tryTextureURIs(parentURI, materialName, "Displacement");
 
 				}
 
@@ -301,6 +287,26 @@ public class PropertyStyle implements Style {
 					createTexture(config, keyPrefix + "_displacement", displacementTexture),
 					config.getBoolean(keyPrefix + "_colorable", false));
 		}
+
+	}
+
+	private static URI tryTextureURIs(URI parentURI, String materialName, String suffix) {
+
+		BiFunction<URI, Factory<URI>, URI> uriIfExistsElse = (URI uri, Factory<URI> fallback) -> {
+			try {
+				HttpURLConnection huc = (HttpURLConnection) uri.toURL().openConnection();
+				huc.setRequestMethod("HEAD");
+				if (huc.getResponseCode() == HttpURLConnection.HTTP_OK) {
+					return uri;
+				}
+			} catch (IOException ignored) {}
+			return fallback.get();
+		};
+
+		return uriIfExistsElse.apply(parentURI.resolve(materialName + "_" + suffix + ".png"),
+				() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_" + suffix + ".jpg"),
+						() -> uriIfExistsElse.apply(parentURI.resolve(materialName + "_" + suffix + ".jpeg"),
+								() -> null)));
 
 	}
 
