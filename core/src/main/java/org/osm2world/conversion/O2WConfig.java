@@ -113,8 +113,8 @@ public class O2WConfig {
 		return new O2WConfig(copy);
 	}
 
-	public Iterator<String> getKeys() {
-		return props.stringPropertyNames().iterator();
+	public Set<String> getKeys() {
+		return props.stringPropertyNames();
 	}
 
 	public boolean containsKey(String key) {

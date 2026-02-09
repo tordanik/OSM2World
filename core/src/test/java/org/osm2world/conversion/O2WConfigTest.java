@@ -7,7 +7,9 @@ import static org.osm2world.util.test.TestFileUtil.getTestFile;
 import java.io.File;
 import java.net.URI;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 import org.osm2world.scene.color.Color;
@@ -38,6 +40,19 @@ public class O2WConfigTest {
 
 		URI textureURI = result.resolveFileConfigProperty("textures/test.png");
 		assertTrue(textureURI != null && new File(textureURI).exists());
+
+	}
+
+	@Test
+	public void testKeys() {
+
+		File config01 = getTestFile("config/testConfig_01.properties");
+		O2WConfig result = new O2WConfig(null, config01);
+
+		Set<String> keys = new HashSet<>(result.getKeys());
+		keys.remove("configBaseURI");
+
+		assertEquals(Set.of("treesPerSquareMeter", "keepOsmElements"), keys);
 
 	}
 

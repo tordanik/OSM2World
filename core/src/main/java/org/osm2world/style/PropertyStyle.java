@@ -130,10 +130,7 @@ public class PropertyStyle implements Style {
 
 		Map<String, Set<String>> attributesPerMaterialName = new HashMap<>();
 
-		Iterator<String> keyIterator = config.getKeys();
-
-		while (keyIterator.hasNext()) {
-			String key = keyIterator.next();
+		for (String key : config.getKeys()) {
 			Matcher matcher = CONF_KEY_PATTERN.matcher(key);
 			if (matcher.matches()) {
 				String materialName = matcher.group(1);
@@ -465,11 +462,7 @@ public class PropertyStyle implements Style {
 
 		Map<String, List<Model>> models = new HashMap<>();
 
-		Iterator<String> keyIterator = config.getKeys();
-
-		while (keyIterator.hasNext()) {
-
-			String key = keyIterator.next();
+		for (String key : config.getKeys()) {
 
 			Matcher matcher = Pattern.compile("model_(.+)").matcher(key);
 
