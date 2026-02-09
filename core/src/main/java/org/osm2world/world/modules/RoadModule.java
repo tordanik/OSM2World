@@ -26,11 +26,11 @@ import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createT
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.*;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.eclipse.collections.api.block.function.Function2;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
@@ -1397,7 +1397,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			record CrossSection(VectorXYZ center, VectorXYZ left, VectorXYZ right) {}
 
-			Function2<Road, Double, CrossSection> getCrossSectionAt = (Road roadSegment, Double offset) -> {
+			BiFunction<Road, Double, CrossSection> getCrossSectionAt = (Road roadSegment, Double offset) -> {
 				var line = roadSegment.getCenterlineXZ();
 				List<VectorXYZ> lineXYZ = roadSegment.getCenterline();
 				VectorXZ posXZ = line.pointAtOffset(offset);
