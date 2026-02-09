@@ -333,7 +333,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -479,7 +479,7 @@ public final class FrontendPbf {
       public Builder addAllCoords(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureCoordsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, coords_);
         onChanged();
         return this;
@@ -826,7 +826,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -972,7 +972,7 @@ public final class FrontendPbf {
       public Builder addAllCoords(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureCoordsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, coords_);
         onChanged();
         return this;
@@ -1306,7 +1306,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -1466,7 +1466,7 @@ public final class FrontendPbf {
       public Builder addAllStrings(
           java.lang.Iterable<java.lang.String> values) {
         ensureStringsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, strings_);
         onChanged();
         return this;
@@ -1824,7 +1824,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getShapesFieldBuilder();
         }
       }
@@ -1910,7 +1910,7 @@ public final class FrontendPbf {
               shapes_ = other.shapes_;
               bitField0_ = (bitField0_ & ~0x00000001);
               shapesBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getShapesFieldBuilder() : null;
             } else {
               shapesBuilder_.addAllMessages(other.shapes_);
@@ -2091,7 +2091,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.Shape> values) {
         if (shapesBuilder_ == null) {
           ensureShapesIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, shapes_);
           onChanged();
         } else {
@@ -2715,7 +2715,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -2941,7 +2941,7 @@ public final class FrontendPbf {
       public Builder addAllParameters(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureParametersIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, parameters_);
         onChanged();
         return this;
@@ -3291,7 +3291,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getMaterialsFieldBuilder();
         }
       }
@@ -3377,7 +3377,7 @@ public final class FrontendPbf {
               materials_ = other.materials_;
               bitField0_ = (bitField0_ & ~0x00000001);
               materialsBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getMaterialsFieldBuilder() : null;
             } else {
               materialsBuilder_.addAllMessages(other.materials_);
@@ -3558,7 +3558,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.Material> values) {
         if (materialsBuilder_ == null) {
           ensureMaterialsIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, materials_);
           onChanged();
         } else {
@@ -5313,7 +5313,7 @@ public final class FrontendPbf {
           maybeForceBuilderInitialization();
         }
         private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          if (alwaysUseFieldBuilders) {
           }
         }
         private static Builder create() {
@@ -6746,7 +6746,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getTextureLayerFieldBuilder();
         }
       }
@@ -6879,7 +6879,7 @@ public final class FrontendPbf {
               textureLayer_ = other.textureLayer_;
               bitField0_ = (bitField0_ & ~0x00000008);
               textureLayerBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getTextureLayerFieldBuilder() : null;
             } else {
               textureLayerBuilder_.addAllMessages(other.textureLayer_);
@@ -7217,7 +7217,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.Material.TextureLayer> values) {
         if (textureLayerBuilder_ == null) {
           ensureTextureLayerIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, textureLayer_);
           onChanged();
         } else {
@@ -7877,7 +7877,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getModelsFieldBuilder();
         }
       }
@@ -7963,7 +7963,7 @@ public final class FrontendPbf {
               models_ = other.models_;
               bitField0_ = (bitField0_ & ~0x00000001);
               modelsBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getModelsFieldBuilder() : null;
             } else {
               modelsBuilder_.addAllMessages(other.models_);
@@ -8184,7 +8184,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.WorldObject> values) {
         if (modelsBuilder_ == null) {
           ensureModelsIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, models_);
           onChanged();
         } else {
@@ -8879,7 +8879,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -9141,7 +9141,7 @@ public final class FrontendPbf {
       public Builder addAllVertices(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureVerticesIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, vertices_);
         onChanged();
         return this;
@@ -9273,7 +9273,7 @@ public final class FrontendPbf {
       public Builder addAllTexCoords(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureTexCoordsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, texCoords_);
         onChanged();
         return this;
@@ -10023,7 +10023,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -10369,7 +10369,7 @@ public final class FrontendPbf {
       public Builder addAllPath(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensurePathIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, path_);
         onChanged();
         return this;
@@ -10463,7 +10463,7 @@ public final class FrontendPbf {
       public Builder addAllUpVectors(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureUpVectorsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, upVectors_);
         onChanged();
         return this;
@@ -10557,7 +10557,7 @@ public final class FrontendPbf {
       public Builder addAllScaleFactors(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureScaleFactorsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, scaleFactors_);
         onChanged();
         return this;
@@ -11471,7 +11471,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getAnimationFieldBuilder();
         }
       }
@@ -11891,7 +11891,7 @@ public final class FrontendPbf {
       public Builder addAllPosition(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensurePositionIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, position_);
         onChanged();
         return this;
@@ -11993,7 +11993,7 @@ public final class FrontendPbf {
       public Builder addAllDirection(
           java.lang.Iterable<? extends java.lang.Integer> values) {
         ensureDirectionIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, direction_);
         onChanged();
         return this;
@@ -12094,7 +12094,7 @@ public final class FrontendPbf {
       public Builder addAllScale(
           java.lang.Iterable<? extends java.lang.Integer> values) {
         ensureScaleIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+        addAll(
             values, scale_);
         onChanged();
         return this;
@@ -12972,7 +12972,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
         }
       }
       private static Builder create() {
@@ -14121,7 +14121,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getTriangleGeometriesFieldBuilder();
           getExtrusionGeometriesFieldBuilder();
           getInstanceGeometriesFieldBuilder();
@@ -14273,7 +14273,7 @@ public final class FrontendPbf {
               triangleGeometries_ = other.triangleGeometries_;
               bitField0_ = (bitField0_ & ~0x00000004);
               triangleGeometriesBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getTriangleGeometriesFieldBuilder() : null;
             } else {
               triangleGeometriesBuilder_.addAllMessages(other.triangleGeometries_);
@@ -14299,7 +14299,7 @@ public final class FrontendPbf {
               extrusionGeometries_ = other.extrusionGeometries_;
               bitField0_ = (bitField0_ & ~0x00000008);
               extrusionGeometriesBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getExtrusionGeometriesFieldBuilder() : null;
             } else {
               extrusionGeometriesBuilder_.addAllMessages(other.extrusionGeometries_);
@@ -14325,7 +14325,7 @@ public final class FrontendPbf {
               instanceGeometries_ = other.instanceGeometries_;
               bitField0_ = (bitField0_ & ~0x00000010);
               instanceGeometriesBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getInstanceGeometriesFieldBuilder() : null;
             } else {
               instanceGeometriesBuilder_.addAllMessages(other.instanceGeometries_);
@@ -14712,7 +14712,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.TriangleGeometry> values) {
         if (triangleGeometriesBuilder_ == null) {
           ensureTriangleGeometriesIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, triangleGeometries_);
           onChanged();
         } else {
@@ -15024,7 +15024,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.ExtrusionGeometry> values) {
         if (extrusionGeometriesBuilder_ == null) {
           ensureExtrusionGeometriesIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, extrusionGeometries_);
           onChanged();
         } else {
@@ -15336,7 +15336,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.InstanceGeometry> values) {
         if (instanceGeometriesBuilder_ == null) {
           ensureInstanceGeometriesIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, instanceGeometries_);
           onChanged();
         } else {
@@ -16260,7 +16260,7 @@ public final class FrontendPbf {
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (alwaysUseFieldBuilders) {
           getVector3DBlockFieldBuilder();
           getVector2DBlockFieldBuilder();
           getStringBlockFieldBuilder();
@@ -16456,7 +16456,7 @@ public final class FrontendPbf {
               objects_ = other.objects_;
               bitField0_ = (bitField0_ & ~0x00000040);
               objectsBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                alwaysUseFieldBuilders ?
                    getObjectsFieldBuilder() : null;
             } else {
               objectsBuilder_.addAllMessages(other.objects_);
@@ -17369,7 +17369,7 @@ public final class FrontendPbf {
           java.lang.Iterable<? extends FrontendPbf.WorldObject> values) {
         if (objectsBuilder_ == null) {
           ensureObjectsIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          addAll(
               values, objects_);
           onChanged();
         } else {

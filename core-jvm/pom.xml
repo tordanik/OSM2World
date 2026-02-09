@@ -35,6 +35,36 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-pbf</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-xml</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.25.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.geodesk</groupId>
+			<artifactId>geodesk</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

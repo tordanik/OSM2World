@@ -1,8 +1,6 @@
 package org.osm2world.output.frontend_pbf;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.osm2world.math.VectorXZ.*;
 import static org.osm2world.util.test.TestFileUtil.createTempFile;
 
@@ -13,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.osm2world.O2WConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
@@ -28,7 +27,7 @@ import org.osm2world.output.frontend_pbf.FrontendPbfOutput.Block;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput.SimpleBlock;
 import org.osm2world.output.frontend_pbf.FrontendPbfOutput.VectorBlock;
 import org.osm2world.scene.Scene;
-import org.osm2world.test.TestWorldModule;
+import org.osm2world.util.test.TestWorldModule;
 
 public class FrontendPbfOutputTest {
 
@@ -37,18 +36,18 @@ public class FrontendPbfOutputTest {
 		List<VectorXZ> testVectors = asList(
 				new VectorXZ(5, 22.2), NULL_VECTOR, X_UNIT, Z_UNIT);
 
-		assertEquals(0, block.toIndex(testVectors.get(0)));
+		Assert.assertEquals(0, block.toIndex(testVectors.get(0)));
 
-		assertEquals(1, block.toIndex(testVectors.get(1)));
-		assertEquals(1, block.toIndex(testVectors.get(1)));
+		Assert.assertEquals(1, block.toIndex(testVectors.get(1)));
+		Assert.assertEquals(1, block.toIndex(testVectors.get(1)));
 
-		assertEquals(2, block.toIndex(testVectors.get(2)));
+		Assert.assertEquals(2, block.toIndex(testVectors.get(2)));
 
-		assertEquals(0, block.toIndex(testVectors.get(0)));
+		Assert.assertEquals(0, block.toIndex(testVectors.get(0)));
 
-		assertEquals(3, block.toIndex(testVectors.get(3)));
+		Assert.assertEquals(3, block.toIndex(testVectors.get(3)));
 
-		assertTrue(CollectionUtils.isEqualCollection(testVectors, block.getElements()));
+		Assert.assertTrue(CollectionUtils.isEqualCollection(testVectors, block.getElements()));
 
 	}
 
@@ -101,8 +100,8 @@ public class FrontendPbfOutputTest {
 
 			Optional<WorldObject> lampObject = tile.getObjectsList().stream()
 					.filter(o -> "n0".equals(o.getOsmId())).findAny();
-			assertTrue(lampObject.isPresent());
-			assertTrue(lampObject.get().getExtrusionGeometriesCount() > 0);
+			Assert.assertTrue(lampObject.isPresent());
+			Assert.assertTrue(lampObject.get().getExtrusionGeometriesCount() > 0);
 
 		}
 

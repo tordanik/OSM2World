@@ -49,22 +49,6 @@
 			<artifactId>osm4j-core</artifactId>
 			<version>1.4.1</version>
 		</dependency>
-		<dependency>
-			<groupId>de.topobyte</groupId>
-			<artifactId>osm4j-pbf</artifactId>
-			<version>1.4.1</version>
-		</dependency>
-		<dependency>
-			<groupId>de.topobyte</groupId>
-			<artifactId>osm4j-xml</artifactId>
-			<version>1.4.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>3.25.5</version>
-		</dependency>
 
 		<dependency>
 			<groupId>com.jhlabs</groupId>
@@ -115,12 +99,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.11.0</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.frequal.flavour</groupId>
 			<artifactId>teavm-flavour-json</artifactId>
 			<version>0.3.2</version>
@@ -131,12 +109,6 @@
 			<artifactId>jackson-annotations</artifactId>
 			<version>3.0-rc5</version>
 			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.geodesk</groupId>
-			<artifactId>geodesk</artifactId>
-			<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
