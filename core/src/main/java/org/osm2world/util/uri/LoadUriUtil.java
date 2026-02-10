@@ -13,7 +13,7 @@ import org.osm2world.util.functions.Factory;
  */
 public class LoadUriUtil {
 
-	private static Factory<HttpClient> clientFactory = JvmHttpClient::new;
+	private static Factory<HttpClient> clientFactory = null;
 
 	/**
 	 * Globally sets a different {@link HttpClient} implementation.

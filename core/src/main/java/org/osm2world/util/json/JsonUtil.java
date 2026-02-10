@@ -10,7 +10,7 @@ import java.io.Writer;
  */
 public class JsonUtil {
 
-	private static JsonImplementation implementation = new JsonImplementationJvm();
+	private static JsonImplementation implementation = null;
 
 	/**
 	 * Globally sets a different {@link JsonImplementation}.

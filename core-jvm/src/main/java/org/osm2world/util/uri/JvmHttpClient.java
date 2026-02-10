@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of {@link HttpClient} for use on the JVM.
  */
-class JvmHttpClient implements HttpClient {
+public class JvmHttpClient implements HttpClient {
 
 	@Override
 	public String fetchText(URI uri) throws IOException {

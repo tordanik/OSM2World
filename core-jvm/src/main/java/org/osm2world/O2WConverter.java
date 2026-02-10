@@ -17,6 +17,10 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.output.Output;
 import org.osm2world.scene.Scene;
+import org.osm2world.util.json.JsonImplementationJvm;
+import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.uri.JvmHttpClient;
+import org.osm2world.util.uri.LoadUriUtil;
 
 /**
  * This is the main class for using OSM2World as a library.
@@ -25,6 +29,11 @@ import org.osm2world.scene.Scene;
  * potentially setting a few options, and then using one of the methods to perform one or more conversions.
  */
 public class O2WConverter {
+
+	static {
+		LoadUriUtil.setClientFactory(JvmHttpClient::new);
+		JsonUtil.setImplementation(new JsonImplementationJvm());
+	}
 
 	private O2WConfig config = new O2WConfig();
 	private final List<ProgressListener> listeners = new ArrayList<>();
