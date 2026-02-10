@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.O2WConverter;
+import org.osm2world.O2WTestConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.Tag;
@@ -18,9 +18,9 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.output.statistics.StatisticsOutput;
 import org.osm2world.output.statistics.StatisticsOutput.Stat;
+import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.world.modules.PowerModule.RooftopSolarPanels.PanelTexCoordFunction;
 
 public class PowerModuleTest {
@@ -41,7 +41,7 @@ public class PowerModuleTest {
 		StatisticsOutput t1 = new StatisticsOutput();
 		StatisticsOutput t2 = new StatisticsOutput();
 
-		new O2WConverter().convert(mapDataBuilder.build(), null, t1, t2);
+		new O2WTestConverter().convert(mapDataBuilder.build(), null, t1, t2);
 
 		/* check whether the results are the same each time */
 

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.O2WConverter;
+import org.osm2world.O2WTestConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.TagSet;
@@ -32,7 +32,7 @@ public class ParkingModuleTest {
 
 		MapData mapData = builder.build();
 
-		O2WConverter o2w = new O2WConverter();
+		var o2w = new O2WTestConverter();
 		Scene scene = o2w.convert(mapData, null);
 
 		WorldObject object = scene.getWorldObjects().iterator().next();

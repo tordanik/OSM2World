@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.O2WConverter;
+import org.osm2world.O2WTestConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapWay;
 import org.osm2world.map_data.data.TagSet;
@@ -32,7 +32,7 @@ public class IndoorStepsTest {
 				builder.createNode(0, 10)
 		), TagSet.of("highway", "steps", "level", "0;2", "incline", "down"));
 
-		new O2WConverter().convert(builder.build(), null);
+		new O2WTestConverter().convert(builder.build(), null);
 
 		var object = stepsWay.getWaySegments().get(0).getPrimaryRepresentation();
 
@@ -69,7 +69,7 @@ public class IndoorStepsTest {
 				builder.createNode(0, 10, TagSet.of("level", "0"))
 		), TagSet.of("highway", "steps", "level", "0;1"));
 
-		new O2WConverter().convert(builder.build(), null);
+		new O2WTestConverter().convert(builder.build(), null);
 
 		var object = stepsWay.getWaySegments().get(0).getPrimaryRepresentation();
 

@@ -61,13 +61,7 @@ public class O2WConverter {
 	 */
 	public Scene convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
 			Output... outputs) throws IOException {
-
-		if (osmDataReader == null) {
-			throw new IllegalArgumentException("osmDataReader is required");
-		}
-
 		return new O2WConverterImpl(config, listeners).convert(osmDataReader, bounds, mapProjection, outputs);
-
 	}
 
 	/**
@@ -83,14 +77,8 @@ public class O2WConverter {
 	 *                       This will already have been written to all outputs,
 	 *                       so you can ignore it unless you want to process it yourself.
 	 */
-	public Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) throws IOException {
-
-		if (mapData == null) {
-			throw new IllegalArgumentException("mapData is required");
-		}
-
+	public Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) {
 		return new O2WConverterImpl(config, listeners).convert(mapData, mapProjection, outputs);
-
 	}
 
 }

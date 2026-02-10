@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.osm2world.O2WConverter;
+import org.osm2world.O2WTestConverter;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapNode;
@@ -51,7 +51,7 @@ public class TrafficSignModuleTest {
 
 			/* generate models */
 
-			var scene = new O2WConverter().convert(builder.build(), null);
+			var scene = new O2WTestConverter().convert(builder.build(), null);
 
 			/* extract results */
 

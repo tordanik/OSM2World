@@ -69,7 +69,8 @@ import com.google.common.collect.Streams;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 /**
- * Implementation of {@link O2WConverter}.
+ * Implementation of the <code>O2WConverter</code> class available in core-jvm for library users.
+ * See that class for documentation.
  * Provides an easy way to call all steps of the conversion process in the correct order.
  */
 class O2WConverterImpl {
@@ -82,11 +83,12 @@ class O2WConverterImpl {
 		this.listeners = new ArrayList<>(listeners);
 	}
 
-	/**
-	 * implementation of {@link O2WConverter#convert(OSMDataReader, GeoBounds, MapProjection, Output...)}
-	 */
-	Scene convert(OSMDataReader osmDataReader, GeoBounds bounds, MapProjection mapProjection, Output[] outputs)
+	Scene convert(OSMDataReader osmDataReader, GeoBounds bounds, MapProjection mapProjection, Output... outputs)
 			throws IOException{
+
+		if (osmDataReader == null) {
+			throw new IllegalArgumentException("osmDataReader is required");
+		}
 
 		setUpLogging();
 		var perfListener = new PerformanceListener();
@@ -133,10 +135,11 @@ class O2WConverterImpl {
 
 	}
 
-	/**
-	 * implementation of {@link O2WConverter#convert(MapData, MapProjection, Output...)}
-	 */
-	Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output[] outputs) {
+	Scene convert(MapData mapData, @Nullable MapProjection mapProjection, Output... outputs) {
+
+		if (mapData == null) {
+			throw new IllegalArgumentException("mapData is required");
+		}
 
 		setUpLogging();
 		var perfListener = new PerformanceListener();
