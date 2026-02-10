@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
+import org.osm2world.map_data.creation.MapMetadataMbtilesUtil;
 import org.osm2world.map_data.data.MapMetadata;
 import org.osm2world.math.geo.TileNumber;
 
@@ -35,7 +36,7 @@ public class MetadataOptions {
 			if (metadataFile.getName().endsWith(".mbtiles")) {
 				if (tile != null) {
 					try {
-						metadata = MapMetadata.metadataForTile(tile, metadataFile);
+						metadata = MapMetadataMbtilesUtil.metadataForTile(tile, metadataFile);
 					} catch (MBTilesReadException e) {
 						System.err.println("Cannot read tile metadata: " + e);
 					}

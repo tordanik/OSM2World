@@ -37,6 +37,11 @@
 			<artifactId>commons-collections4</artifactId>
 			<version>4.4</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.21.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.locationtech.jts</groupId>
@@ -109,24 +114,6 @@
 			<artifactId>jackson-annotations</artifactId>
 			<version>3.0-rc5</version>
 			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.imintel</groupId>
-			<artifactId>mbtiles4j</artifactId>
-			<version>1.0.6</version>
-		</dependency>
-
-		<!-- upgrades for vulnerable transitive dependencies in mbtiles4j -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.14.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.xerial</groupId>
-			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.41.2.2</version>
 		</dependency>
 
 	</dependencies>
