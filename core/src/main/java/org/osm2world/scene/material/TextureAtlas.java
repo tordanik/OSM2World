@@ -49,7 +49,7 @@ public class TextureAtlas extends RuntimeTexture {
 	}
 
 	@Override
-	protected BufferedImage createBufferedImage() {
+	public BufferedImage createBufferedImage() {
 
 		BufferedImage result = new BufferedImage(getResolution().width, getResolution().height, BufferedImage.TYPE_INT_ARGB);
 

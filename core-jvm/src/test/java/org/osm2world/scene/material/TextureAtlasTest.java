@@ -12,8 +12,14 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.scene.color.Color;
+import org.osm2world.util.image.ImageImplementationJvm;
+import org.osm2world.util.image.ImageUtil;
 
 public class TextureAtlasTest {
+
+	static {
+		ImageUtil.setImplementation(new ImageImplementationJvm());
+	}
 
 	@Test
 	public void testGetBufferedImage() {

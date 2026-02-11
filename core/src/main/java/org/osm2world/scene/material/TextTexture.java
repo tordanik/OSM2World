@@ -44,7 +44,7 @@ public class TextTexture extends RuntimeTexture {
 	}
 
 	@Override
-	protected BufferedImage createBufferedImage() {
+	public BufferedImage createBufferedImage() {
 
 		if (!text.isEmpty()) {
 

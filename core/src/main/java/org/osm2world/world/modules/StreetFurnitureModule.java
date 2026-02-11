@@ -58,6 +58,7 @@ import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.MapBasedTexCoordFunction;
+import org.osm2world.util.image.ImageUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
@@ -587,7 +588,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			 */
 			public TexturedFlag(Material material) {
 				this(material.textureLayers().isEmpty() ? 3 / 5.0
-						: 1.0 / requireNonNullElse(material.textureLayers().get(0).baseColorTexture.getAspectRatio(),
+						: 1.0 / requireNonNullElse(ImageUtil.getAspectRatio(material.textureLayers().get(0).baseColorTexture),
 								material.textureLayers().get(0).baseColorTexture.dimensions().getAspectRatio()),
 						material);
 			}

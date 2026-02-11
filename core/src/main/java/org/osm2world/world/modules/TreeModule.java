@@ -29,6 +29,7 @@ import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.style.Style;
+import org.osm2world.util.image.ImageUtil;
 import org.osm2world.world.data.*;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.modules.common.WorldModuleBillboardUtil;
@@ -316,7 +317,7 @@ public class TreeModule extends ConfigurableWorldModule {
 				if (textureDimensions.widthPerEntity() != null && textureDimensions.heightPerEntity() != null) {
 					return textureDimensions.heightPerEntity() / textureDimensions.widthPerEntity();
 				} else {
-					float aspectRatio = requireNonNullElse(texture.getAspectRatio(), texture.dimensions().getAspectRatio());
+					float aspectRatio = requireNonNullElse(ImageUtil.getAspectRatio(texture), texture.dimensions().getAspectRatio());
 					return 1.0 / aspectRatio;
 				}
 			} else {

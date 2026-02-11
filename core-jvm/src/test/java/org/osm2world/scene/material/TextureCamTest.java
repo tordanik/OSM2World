@@ -22,9 +22,15 @@ import org.osm2world.scene.material.TextureCam.ViewDirection;
 import org.osm2world.scene.material.TextureData.Wrap;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.util.image.ImageImplementationJvm;
+import org.osm2world.util.image.ImageUtil;
 import org.osm2world.util.test.TestFileUtil;
 
 public class TextureCamTest {
+	
+	static {
+		ImageUtil.setImplementation(new ImageImplementationJvm());
+	}
 
 	@Test
 	public void testNormalColorConversion() {

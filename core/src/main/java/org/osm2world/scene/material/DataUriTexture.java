@@ -23,7 +23,7 @@ public class DataUriTexture extends RuntimeTexture {
 	}
 
 	@Override
-	protected BufferedImage createBufferedImage() {
+	public BufferedImage createBufferedImage() {
 
 		var pattern = Pattern.compile("data:image/(?:png|jpg|jpeg);base64,(.+)");
 		var matcher = pattern.matcher(dataUri);

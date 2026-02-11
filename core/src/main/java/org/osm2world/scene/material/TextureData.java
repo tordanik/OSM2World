@@ -7,7 +7,6 @@ import static org.apache.commons.lang3.math.NumberUtils.min;
 import static org.osm2world.scene.material.RasterImageFormat.JPEG;
 import static org.osm2world.scene.material.RasterImageFormat.PNG;
 
-import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -15,8 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -31,6 +28,7 @@ import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
+import org.osm2world.util.image.ImageUtil;
 
 /**
  * a texture with metadata necessary for calculating texture coordinates.
@@ -72,12 +70,6 @@ public abstract class TextureData {
 	/** cached result of {@link #getAverageColor()} */
 	private LColor averageColor = null;
 
-	/** cached result of {@link #getBufferedImage()} */
-	private BufferedImage bufferedImage = null;
-
-	/** cached result of {@link #getBufferedImage(Resolution)} */
-	private final Map<Resolution, BufferedImage> bufferedImageByResolution = new HashMap<>();
-
 	protected TextureData(TextureDataDimensions dimensions,
 			Wrap wrap, @Nullable  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 		this.dimensions = dimensions;
@@ -90,33 +82,20 @@ public abstract class TextureData {
 	}
 
 	/**
-	 * returns the texture as a {@link BufferedImage}.
+	 * Returns the texture as a {@link BufferedImage}.
 	 * This may involve converting a vector or procedural texture into a raster image,
 	 * or simply reading an existing raster image from a file.
 	 *
 	 * @param resolution  parameter to request a specific resolution
 	 */
 	public final BufferedImage getBufferedImage(Resolution resolution) {
-		if (!bufferedImageByResolution.containsKey(resolution)) {
-			bufferedImageByResolution.put(resolution, createBufferedImage(resolution));
-		}
-		return bufferedImageByResolution.get(resolution);
+		return ImageUtil.loadTextureImage(this, resolution);
 	}
 
 	/** see {@link #getBufferedImage(Resolution)} */
 	public final BufferedImage getBufferedImage() {
-		if (bufferedImage == null) {
-			bufferedImage = createBufferedImage();
-			bufferedImageByResolution.put(Resolution.of(bufferedImage), bufferedImage);
-		}
-		return bufferedImage;
+		return ImageUtil.loadTextureImage(this);
 	}
-
-	protected BufferedImage createBufferedImage(Resolution resolution) {
-		return getScaledImage(getBufferedImage(), resolution);
-	}
-
-	protected abstract BufferedImage createBufferedImage();
 
 	/**
 	 * returns the texture as a data URI containing a raster image.
@@ -177,17 +156,6 @@ public abstract class TextureData {
 		writeRasterImageToStream(stream, 0.75f);
 	}
 
-	/**
-	 * Returns this texture's aspect ratio (same definition as {@link Resolution#getAspectRatio()}).
-	 * Where possible and applicable, this will return the aspect ratio of the original underlying image.
-	 *
-	 * @return aspect ratio of this texture, null if the aspect ratio cannot be determined
-	 *         (e.g. because the texture cannot be loaded in the current environment)
-	 */
-	public Float getAspectRatio() {
-		return Resolution.of(getBufferedImage()).getAspectRatio();
-	}
-
 	/** averages the color values (in linear color space) */
 	public LColor getAverageColor() {
 
@@ -228,15 +196,6 @@ public abstract class TextureData {
 		int y = min((int)floor(image.getHeight() * texCoord.z), image.getHeight() - 1);
 		return LColor.fromRGB(new Color(image.getRGB(x, y)));
 
-	}
-
-	protected static final BufferedImage getScaledImage(BufferedImage originalImage, Resolution newResolution) {
-		Image tmp = originalImage.getScaledInstance(newResolution.width, newResolution.height, Image.SCALE_SMOOTH);
-		BufferedImage result = new BufferedImage(newResolution.width, newResolution.height, originalImage.getType());
-		Graphics2D g2d = result.createGraphics();
-		g2d.drawImage(tmp, 0, 0, null);
-		g2d.dispose();
-		return result;
 	}
 
 }

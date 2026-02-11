@@ -1,16 +1,12 @@
 package org.osm2world.scene.material;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 import java.util.function.Function;
 
-import javax.imageio.ImageIO;
-
 import org.osm2world.scene.texcoord.TexCoordFunction;
 
-public class UriTexture extends RuntimeTexture {
+public class UriTexture extends TextureData {
 
 	private final URI imageUri;
 
@@ -23,14 +19,6 @@ public class UriTexture extends RuntimeTexture {
 	/** returns the URI of the texture image */
 	public URI getUri() {
 		return imageUri;
-	}
-
-	@Override protected BufferedImage createBufferedImage() {
-		try {
-			return ImageIO.read(imageUri.toURL());
-		} catch (IOException e) {
-			throw new RuntimeException("Could not read texture from URI " + imageUri, e);
-		}
 	}
 
 	@Override

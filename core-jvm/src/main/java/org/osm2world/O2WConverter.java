@@ -17,6 +17,8 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.output.Output;
 import org.osm2world.scene.Scene;
+import org.osm2world.util.image.ImageImplementationJvm;
+import org.osm2world.util.image.ImageUtil;
 import org.osm2world.util.json.JsonImplementationJvm;
 import org.osm2world.util.json.JsonUtil;
 import org.osm2world.util.uri.JvmHttpClient;
@@ -33,6 +35,7 @@ public class O2WConverter {
 	static {
 		LoadUriUtil.setClientFactory(JvmHttpClient::new);
 		JsonUtil.setImplementation(new JsonImplementationJvm());
+		ImageUtil.setImplementation(new ImageImplementationJvm());
 	}
 
 	private O2WConfig config = new O2WConfig();
