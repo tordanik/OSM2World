@@ -36,6 +36,7 @@ import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.uri.LoadUriUtil;
 
 public class GltfModel implements Model {
 
@@ -550,8 +551,11 @@ public class GltfModel implements Model {
 					if (source instanceof ExternalModelSource.LocalFileSource localFileSource) {
 						imageUri = localFileSource.file().toURI().resolve(imageUri);
 					}
-					textureData = new UriTexture(imageUri, dimensions, wrap, GLOBAL_X_Z);
-					textureData.getBufferedImage();
+					if (LoadUriUtil.checkExists(imageUri)) {
+						textureData = new UriTexture(imageUri, dimensions, wrap, GLOBAL_X_Z);
+					} else {
+						throw new IOException("Image URI does not exist: " + imageUri);
+					}
 				} catch (URISyntaxException e) {
 					throw new IOException(e);
 				}
