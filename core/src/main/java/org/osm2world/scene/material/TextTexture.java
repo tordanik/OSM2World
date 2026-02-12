@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.texcoord.TexCoordFunction;
@@ -15,7 +17,7 @@ import com.google.common.base.Objects;
 public class TextTexture extends RuntimeTexture {
 
 	public final String text;
-	public Font font;
+	public final @Nullable String font;
 	public final double topOffset;
 	public final double leftOffset;
 	public Color textColor;
@@ -26,7 +28,7 @@ public class TextTexture extends RuntimeTexture {
 	 */
 	public final double relativeFontSize;
 
-	public TextTexture(String text, Font font, TextureDataDimensions dimensions,
+	public TextTexture(String text, String font, TextureDataDimensions dimensions,
 			double topOffset, double leftOffset, Color textColor, double relativeFontSize,
 			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 
@@ -51,7 +53,15 @@ public class TextTexture extends RuntimeTexture {
 
 			Graphics2D g2d = image.createGraphics();
 
-			Font font = this.font == null ? new Font("Interstate", Font.BOLD, 100) : this.font ;
+			Font font = new Font("Dialog", Font.PLAIN, 100);
+
+			if (this.font != null) {
+				String[] values = this.font.split(",", 2);
+				if (values.length == 2) {
+					int fontStyle = TextTexture.FontStyle.getStyle(values[1].toUpperCase());
+					font = new Font(values[0], fontStyle, 100);
+				}
+			}
 
 			//extract font metrics
 			FontMetrics fm = g2d.getFontMetrics(font);

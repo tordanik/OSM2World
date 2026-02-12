@@ -3,13 +3,11 @@ package org.osm2world.style;
 import static java.util.Objects.requireNonNull;
 import static org.osm2world.scene.color.Color.WHITE;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.*;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -342,22 +340,7 @@ public class PropertyStyle implements Style {
 			}
 
 			//get font configuration
-			Font font = null;
-			if (config.getString(fontKey) == null) {
-
-				font = new Font("Dialog", Font.PLAIN, 100);
-
-			} else {
-
-				String[] values = config.getString(fontKey).split(",", 2);
-
-				if (values.length == 2) {
-					int fontStyle = TextTexture.FontStyle.getStyle(values[1].toUpperCase());
-					font = new Font(values[0], fontStyle, 100);
-				} else {
-					font = new Font("Dialog", Font.PLAIN, 100);
-				}
-			}
+			String font = config.getString(fontKey);
 
 			//get top/left offset configuration
 			String topOffset = config.getString(topOffsetKey);
