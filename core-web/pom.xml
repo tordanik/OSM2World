@@ -62,7 +62,7 @@
 						</goals>
 						<configuration>
 
-							<mainClass>org.osm2world.WebLibrary</mainClass>
+							<mainClass>org.osm2world.O2WConverterWeb</mainClass>
 
 							<!-- Directory where TeaVM should put generated files. This configuration conforms to the settings
 								 of the WAR plugin -->

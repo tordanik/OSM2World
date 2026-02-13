@@ -29,7 +29,7 @@ import org.teavm.jso.JSTopLevel;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.function.JSConsumer;
 
-public class WebLibrary {
+public class O2WConverterWeb {
 
 	static {
 		LoadUriUtil.setClientFactory(BrowserHttpClient::new);
