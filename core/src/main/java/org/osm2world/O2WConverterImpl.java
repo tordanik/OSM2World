@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.conversion.ConfigUtil;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.conversion.ProgressListener;
@@ -164,8 +163,6 @@ class O2WConverterImpl {
 
 		/* apply world modules */
 		updatePhase(perfListener, ProgressListener.Phase.REPRESENTATION);
-
-		ConfigUtil.parseFonts(config); // FIXME this might cause problems if multiple conversions are run at the same time?
 
 		WorldCreator moduleManager = new WorldCreator(config, createModuleList(config));
 		moduleManager.addRepresentationsTo(mapData);
