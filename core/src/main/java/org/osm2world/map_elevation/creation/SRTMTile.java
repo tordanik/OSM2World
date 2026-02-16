@@ -9,7 +9,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.annotation.Nonnull;
 
-import org.osm2world.util.uri.LoadUriUtil;
+import org.osm2world.util.platform.uri.LoadUriUtil;
 
 /**
  * a single SRTM data tile.

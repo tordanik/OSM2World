@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.osm2world.osm.data.OSMData;
-import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.platform.json.JsonUtil;
 import org.teavm.flavour.json.JsonPersistable;
 
 import com.slimjars.dist.gnu.trove.list.TLongList;

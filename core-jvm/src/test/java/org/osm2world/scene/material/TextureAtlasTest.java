@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.scene.color.Color;
-import org.osm2world.util.image.ImageImplementationJvm;
+import org.osm2world.util.platform.image.ImageImplementationJvm;
 
 public class TextureAtlasTest {
 

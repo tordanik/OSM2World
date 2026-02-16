@@ -54,7 +54,7 @@ import org.osm2world.scene.mesh.MeshStore.MergeMeshes.MergeOption;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.GlobalValues;
-import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.platform.json.JsonUtil;
 
 import com.google.common.collect.Multimap;
 

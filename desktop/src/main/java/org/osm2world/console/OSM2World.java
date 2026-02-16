@@ -11,9 +11,9 @@ import org.osm2world.console.legacy.LegacyCLI;
 import org.osm2world.math.geo.*;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.Resolution;
-import org.osm2world.util.image.ImageImplementationJvm;
-import org.osm2world.util.json.JsonImplementationJvm;
-import org.osm2world.util.uri.HttpUriImplementationJvm;
+import org.osm2world.util.platform.image.ImageImplementationJvm;
+import org.osm2world.util.platform.json.JsonImplementationJvm;
+import org.osm2world.util.platform.uri.HttpUriImplementationJvm;
 
 import picocli.CommandLine;
 

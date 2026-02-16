@@ -28,7 +28,7 @@ import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
-import org.osm2world.util.image.ImageUtil;
+import org.osm2world.util.platform.image.ImageUtil;
 
 /**
  * a texture with metadata necessary for calculating texture coordinates.

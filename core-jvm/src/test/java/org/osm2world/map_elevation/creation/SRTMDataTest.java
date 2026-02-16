@@ -12,7 +12,7 @@ import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.util.uri.HttpUriImplementationJvm;
+import org.osm2world.util.platform.uri.HttpUriImplementationJvm;
 
 public class SRTMDataTest {
 

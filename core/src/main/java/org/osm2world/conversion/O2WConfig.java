@@ -26,7 +26,7 @@ import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.style.PropertyStyle;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
-import org.osm2world.util.uri.LoadUriUtil;
+import org.osm2world.util.platform.uri.LoadUriUtil;
 
 /**
  * A set of configuration options for OSM2World.

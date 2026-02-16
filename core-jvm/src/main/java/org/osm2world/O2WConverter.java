@@ -17,9 +17,9 @@ import org.osm2world.math.geo.MapProjection;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.output.Output;
 import org.osm2world.scene.Scene;
-import org.osm2world.util.image.ImageImplementationJvm;
-import org.osm2world.util.json.JsonImplementationJvm;
-import org.osm2world.util.uri.HttpUriImplementationJvm;
+import org.osm2world.util.platform.image.ImageImplementationJvm;
+import org.osm2world.util.platform.json.JsonImplementationJvm;
+import org.osm2world.util.platform.uri.HttpUriImplementationJvm;
 
 /**
  * This is the main class for using OSM2World as a library.

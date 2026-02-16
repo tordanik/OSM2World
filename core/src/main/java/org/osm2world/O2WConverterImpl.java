@@ -50,7 +50,7 @@ import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.scene.Scene;
 import org.osm2world.util.FaultTolerantIterationUtil;
-import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.platform.json.JsonUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.creation.WorldCreator;

@@ -58,7 +58,7 @@ import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.MapBasedTexCoordFunction;
-import org.osm2world.util.image.ImageUtil;
+import org.osm2world.util.platform.image.ImageUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;

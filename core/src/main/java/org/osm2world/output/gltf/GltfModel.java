@@ -35,8 +35,8 @@ import org.osm2world.scene.model.ExternalModelSource;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.util.json.JsonUtil;
-import org.osm2world.util.uri.LoadUriUtil;
+import org.osm2world.util.platform.json.JsonUtil;
+import org.osm2world.util.platform.uri.LoadUriUtil;
 
 public class GltfModel implements Model {
 

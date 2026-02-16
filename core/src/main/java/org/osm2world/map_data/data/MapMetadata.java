@@ -7,7 +7,7 @@ import java.io.Reader;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.platform.json.JsonUtil;
 import org.teavm.flavour.json.JsonPersistable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

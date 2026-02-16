@@ -1,8 +1,8 @@
-package org.osm2world.util.image;
+package org.osm2world.util.platform.image;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static org.osm2world.util.image.ImageUtil.getScaledImage;
+import static org.osm2world.util.platform.image.ImageUtil.getScaledImage;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

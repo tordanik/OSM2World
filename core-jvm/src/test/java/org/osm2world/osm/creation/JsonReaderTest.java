@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.osm2world.osm.data.OSMData;
-import org.osm2world.util.json.JsonImplementationJvm;
+import org.osm2world.util.platform.json.JsonImplementationJvm;
 
 import de.topobyte.osm4j.core.model.iface.EntityType;
 import de.topobyte.osm4j.core.model.iface.OsmNode;

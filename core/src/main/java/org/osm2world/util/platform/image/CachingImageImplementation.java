@@ -1,4 +1,4 @@
-package org.osm2world.util.image;
+package org.osm2world.util.platform.image;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;

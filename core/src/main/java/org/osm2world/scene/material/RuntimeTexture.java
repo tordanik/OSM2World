@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
-import org.osm2world.util.image.ImageUtil;
+import org.osm2world.util.platform.image.ImageUtil;
 
 /**
  * a texture that is only generated (or turned into an image from some input data) during application runtime

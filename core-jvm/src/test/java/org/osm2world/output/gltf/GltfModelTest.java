@@ -15,7 +15,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.gltf.data.GltfAccessor;
 import org.osm2world.scene.model.InstanceParameters;
-import org.osm2world.util.json.JsonImplementationJvm;
+import org.osm2world.util.platform.json.JsonImplementationJvm;
 
 public class GltfModelTest {
 

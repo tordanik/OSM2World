@@ -1,4 +1,4 @@
-package org.osm2world.util.uri;
+package org.osm2world.util.platform.uri;
 
 import java.io.IOException;
 import java.net.URI;

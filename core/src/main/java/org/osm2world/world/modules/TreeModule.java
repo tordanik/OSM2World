@@ -29,7 +29,7 @@ import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.style.Style;
-import org.osm2world.util.image.ImageUtil;
+import org.osm2world.util.platform.image.ImageUtil;
 import org.osm2world.world.data.*;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.modules.common.WorldModuleBillboardUtil;

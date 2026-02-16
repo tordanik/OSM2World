@@ -27,7 +27,7 @@ import org.osm2world.output.tileset.tiles_data.TilesetEntry;
 import org.osm2world.output.tileset.tiles_data.TilesetParentEntry;
 import org.osm2world.output.tileset.tiles_data.TilesetRoot;
 import org.osm2world.scene.mesh.MeshStore;
-import org.osm2world.util.json.JsonUtil;
+import org.osm2world.util.platform.json.JsonUtil;
 
 /**
  * creates tiles according to the Cesium 3D Tiles specification.
