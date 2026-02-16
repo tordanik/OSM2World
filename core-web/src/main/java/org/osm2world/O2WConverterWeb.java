@@ -7,9 +7,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.map_data.creation.MapDataBuilder;
-import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.osm.creation.JsonStringReader;
@@ -230,60 +227,6 @@ public class O2WConverterWeb {
 			}
 		}
 		return map;
-	}
-
-	@JSExport
-	public static void convert(@Nullable O2WConfig config, String elementType, String[] tags,
-			JSConsumer<JSArray<WebMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
-
-		if (tags.length % 2 != 0) {
-			throw new IllegalArgumentException("tags must have an even number of strings (key-value pairs)");
-		}
-
-		new Thread(() -> {
-
-			var o2w = new O2WConverterImpl(config != null ? config.getConfig() : null, List.of());
-
-			var builder = new MapDataBuilder();
-
-			switch (elementType) {
-				case "node" -> builder.createNode(0, 0, TagSet.of(tags));
-				case "way" -> {
-					var wayNodes = List.of(
-							builder.createNode(-7.5, -5.0),
-							builder.createNode(7.5, 5.0)
-					);
-					builder.createWay(wayNodes, TagSet.of(tags));
-				}
-				case "area" -> {
-					var wayNodes = List.of(
-							builder.createNode(-7.5, -5.0),
-							builder.createNode(7.5, -5.0),
-							builder.createNode(7.5, 5.0),
-							builder.createNode(-7.5, 5.0)
-					);
-					builder.createWayArea(wayNodes, TagSet.of(tags));
-				}
-				default -> throw new IllegalArgumentException("elementType must be 'node', 'way' or 'area'");
-			}
-
-			MapData mapData = builder.build();
-
-			try {
-
-				Scene scene = o2w.convert(mapData, null);
-
-				WebMesh[] meshArray = sceneToMeshArray(scene);
-				onSuccess.accept(JSArray.of(meshArray));
-
-			} catch (Exception e) {
-				if (onError != null) {
-					onError.accept(e.getMessage());
-				}
-			}
-
-		}).start();
-
 	}
 
 	/**
