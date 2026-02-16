@@ -16,12 +16,11 @@ import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.gltf.data.GltfAccessor;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.util.json.JsonImplementationJvm;
-import org.osm2world.util.json.JsonUtil;
 
 public class GltfModelTest {
 
 	static {
-		JsonUtil.setImplementation(new JsonImplementationJvm());
+		JsonImplementationJvm.register();
 	}
 
 	@Test

@@ -7,9 +7,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link HttpClient} for use on the JVM.
+ * Implementation of {@link HttpUriImplementation} for use on the JVM.
  */
-public class JvmHttpClient implements HttpClient {
+public class HttpUriImplementationJvm implements HttpUriImplementation {
+
+	/** Sets up {@link LoadUriUtil} to use this implementation. */
+	public static void register() {
+		LoadUriUtil.setImplementation(new HttpUriImplementationJvm());
+	}
 
 	@Override
 	public String fetchText(URI uri) throws IOException {

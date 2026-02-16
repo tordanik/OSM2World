@@ -7,7 +7,15 @@ import java.io.Writer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+/**
+ * {@link JsonImplementation} for use on the JVM.
+ */
 public class JsonImplementationJvm implements JsonImplementation {
+
+	/** Sets up {@link JsonUtil} to use this implementation. */
+	public static void register() {
+		JsonUtil.setImplementation(new JsonImplementationJvm());
+	}
 
 	@Override
 	public void toJson(Object obj, Writer writer, boolean prettyPrinting) throws IOException {

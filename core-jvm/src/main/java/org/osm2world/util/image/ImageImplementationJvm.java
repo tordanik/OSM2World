@@ -22,9 +22,17 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.scene.material.*;
 import org.osm2world.util.Resolution;
 
+/**
+ * An {@link ImageImplementation} for use on the JVM.
+ */
 public class ImageImplementationJvm extends CachingImageImplementation {
 
 	private static final Resolution DEFAULT_SVG_RESOLUTION = new Resolution(512, 512);
+
+	/** Sets up {@link ImageUtil} to use this implementation. */
+	public static void register() {
+		ImageUtil.setImplementation(new ImageImplementationJvm());
+	}
 
 	@Override
 	protected BufferedImage createBufferedImage(TextureData texture, Resolution resolution) {

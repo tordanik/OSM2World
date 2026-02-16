@@ -7,7 +7,7 @@ import java.net.URI;
  * Client to load content via HTTP(S).
  * Only for use inside {@link LoadUriUtil}.
  */
-public interface HttpClient {
+interface HttpUriImplementation {
 
     String fetchText(URI uri) throws IOException;
     byte[] fetchBinary(URI uri) throws IOException;

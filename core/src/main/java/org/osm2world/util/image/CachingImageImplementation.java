@@ -8,7 +8,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.util.Resolution;
 
-public abstract class CachingImageImplementation implements ImageImplementation {
+/**
+ * An {@link ImageImplementation} which caches previously loaded texture images.
+ */
+abstract class CachingImageImplementation implements ImageImplementation {
 
 	/** Cached results of {@link #loadTextureImage(TextureData)} ()} */
 	private final Map<TextureData, BufferedImage> cachedImages = new HashMap<>();

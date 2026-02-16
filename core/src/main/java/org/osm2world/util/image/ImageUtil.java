@@ -8,6 +8,7 @@ import org.osm2world.util.Resolution;
 
 /**
  * Utility class for loading images from files and other data.
+ * Internally uses separate implementations for use on the browser and on JVM.
  * Most importantly, this allows platform-specific implementations of texture handling.
  */
 public class ImageUtil {
@@ -17,9 +18,9 @@ public class ImageUtil {
 	/**
 	 * Globally sets a different {@link ImageImplementation}.
 	 * This exists to support in-browser use.
-	 * Most code should never call this.
+	 * Most code should never call this method.
 	 */
-	public static void setImplementation(ImageImplementation implementation) {
+	static void setImplementation(ImageImplementation implementation) {
 		ImageUtil.implementation = implementation;
 	}
 

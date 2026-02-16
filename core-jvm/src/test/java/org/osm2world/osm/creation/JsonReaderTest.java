@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.osm.data.OSMData;
 import org.osm2world.util.json.JsonImplementationJvm;
-import org.osm2world.util.json.JsonUtil;
 
 import de.topobyte.osm4j.core.model.iface.EntityType;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
@@ -18,7 +17,7 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
 public class JsonReaderTest {
 
 	static {
-		JsonUtil.setImplementation(new JsonImplementationJvm());
+		JsonImplementationJvm.register();
 	}
 
 	private static final String TEST_JSON = """

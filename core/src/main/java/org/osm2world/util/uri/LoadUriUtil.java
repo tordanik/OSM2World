@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import org.osm2world.util.functions.Factory;
-
 /**
  * Loads content from {@link java.net.URI}s.
  * Supports file, http(s) and data URIs.
@@ -13,15 +11,15 @@ import org.osm2world.util.functions.Factory;
  */
 public class LoadUriUtil {
 
-	private static Factory<HttpClient> clientFactory = null;
+	private static HttpUriImplementation implementation = null;
 
 	/**
-	 * Globally sets a different {@link HttpClient} implementation.
+	 * Globally sets a different {@link HttpUriImplementation}.
 	 * This exists to support in-browser use.
-	 * Most code should never call this.
+	 * Most code should never call this method.
 	 */
-	public static void setClientFactory(Factory<HttpClient> clientFactory) {
-		LoadUriUtil.clientFactory = clientFactory;
+	static void setImplementation(HttpUriImplementation implementation) {
+		LoadUriUtil.implementation = implementation;
 	}
 
 	public static boolean checkExists(URI uri) {
@@ -31,8 +29,7 @@ public class LoadUriUtil {
 		} else if (uri.getScheme().equals("file")) {
 			return new File(uri).exists();
 		} else {
-			HttpClient client = clientFactory.get();
-			return client.checkExists(uri);
+			return implementation.checkExists(uri);
 		}
 
 	}
@@ -44,8 +41,7 @@ public class LoadUriUtil {
 			throw new UnsupportedOperationException("data URIs are not implemented yet");
 		}
 
-		HttpClient client = clientFactory.get();
-		return client.fetchText(uri);
+		return implementation.fetchText(uri);
 
 	}
 
@@ -56,8 +52,7 @@ public class LoadUriUtil {
 			throw new UnsupportedOperationException("data URIs are not implemented yet");
 		}
 
-		HttpClient client = clientFactory.get();
-		return client.fetchBinary(uri);
+		return implementation.fetchBinary(uri);
 
 	}
 

@@ -18,11 +18,8 @@ import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.output.Output;
 import org.osm2world.scene.Scene;
 import org.osm2world.util.image.ImageImplementationJvm;
-import org.osm2world.util.image.ImageUtil;
 import org.osm2world.util.json.JsonImplementationJvm;
-import org.osm2world.util.json.JsonUtil;
-import org.osm2world.util.uri.JvmHttpClient;
-import org.osm2world.util.uri.LoadUriUtil;
+import org.osm2world.util.uri.HttpUriImplementationJvm;
 
 /**
  * This is the main class for using OSM2World as a library.
@@ -33,9 +30,9 @@ import org.osm2world.util.uri.LoadUriUtil;
 public class O2WConverter {
 
 	static {
-		LoadUriUtil.setClientFactory(JvmHttpClient::new);
-		JsonUtil.setImplementation(new JsonImplementationJvm());
-		ImageUtil.setImplementation(new ImageImplementationJvm());
+		HttpUriImplementationJvm.register();
+		JsonImplementationJvm.register();
+		ImageImplementationJvm.register();
 	}
 
 	private O2WConfig config = new O2WConfig();

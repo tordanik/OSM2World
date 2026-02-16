@@ -6,9 +6,9 @@ import org.osm2world.scene.material.TextureData;
 import org.osm2world.util.Resolution;
 
 /**
- * implementation of the functionality exposed through {@link ImageUtil}
+ * Implementation of the functionality exposed through {@link ImageUtil}.
  */
-public interface ImageImplementation {
+interface ImageImplementation {
 
 	/**
 	 * Implementation of {@link ImageUtil#loadTextureImage(TextureData, Resolution)}

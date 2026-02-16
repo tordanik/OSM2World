@@ -7,9 +7,10 @@ import java.io.Writer;
 import org.apache.commons.io.IOUtils;
 
 /**
- * implementation of the functionality exposed through JsonUtil
+ * Implementation of the functionality exposed through {@link JsonUtil}.
+ * See that class for documentation.
  */
-public interface JsonImplementation {
+interface JsonImplementation {
 
 	void toJson(Object obj, Writer writer, boolean prettyPrinting) throws IOException;
 

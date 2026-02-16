@@ -9,9 +9,14 @@ import org.teavm.jso.typedarrays.ArrayBuffer;
 import org.teavm.jso.typedarrays.Int8Array;
 
 /**
- * Implementation of {@link HttpClient} for use in the browser.
+ * Implementation of {@link HttpUriImplementation} for use in the browser.
  */
-public class BrowserHttpClient implements HttpClient {
+public class HttpUriImplementationBrowser implements HttpUriImplementation {
+
+	/** Sets up {@link LoadUriUtil} to use this implementation. */
+	public static void register() {
+		LoadUriUtil.setImplementation(new HttpUriImplementationBrowser());
+	}
 
 	@Async
 	@Override

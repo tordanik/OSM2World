@@ -19,9 +19,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.json.JsonImplementationBrowser;
-import org.osm2world.util.json.JsonUtil;
-import org.osm2world.util.uri.BrowserHttpClient;
-import org.osm2world.util.uri.LoadUriUtil;
+import org.osm2world.util.uri.HttpUriImplementationBrowser;
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSExport;
 import org.teavm.jso.JSObject;
@@ -32,8 +30,8 @@ import org.teavm.jso.function.JSConsumer;
 public class O2WConverterWeb {
 
 	static {
-		LoadUriUtil.setClientFactory(BrowserHttpClient::new);
-		JsonUtil.setImplementation(new JsonImplementationBrowser());
+		HttpUriImplementationBrowser.register();
+		JsonImplementationBrowser.register();
 	}
 
 	@JSTopLevel

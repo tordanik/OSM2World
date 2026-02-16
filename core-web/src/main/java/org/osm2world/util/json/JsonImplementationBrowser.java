@@ -7,9 +7,14 @@ import org.teavm.flavour.json.JSON;
 import org.teavm.flavour.json.tree.Node;
 
 /**
- * Implementation of {@link JsonImplementation} for use in the browser.
+ * {@link JsonImplementation} for use in the browser.
  */
 public class JsonImplementationBrowser implements JsonImplementation {
+
+	/** Sets up {@link JsonUtil} to use this implementation. */
+	public static void register() {
+		JsonUtil.setImplementation(new JsonImplementationBrowser());
+	}
 
 	@Override
 	public void toJson(Object obj, Writer writer, boolean prettyPrint) throws IOException {

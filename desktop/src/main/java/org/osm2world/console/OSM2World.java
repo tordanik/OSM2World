@@ -11,10 +11,9 @@ import org.osm2world.console.legacy.LegacyCLI;
 import org.osm2world.math.geo.*;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.Resolution;
+import org.osm2world.util.image.ImageImplementationJvm;
 import org.osm2world.util.json.JsonImplementationJvm;
-import org.osm2world.util.json.JsonUtil;
-import org.osm2world.util.uri.JvmHttpClient;
-import org.osm2world.util.uri.LoadUriUtil;
+import org.osm2world.util.uri.HttpUriImplementationJvm;
 
 import picocli.CommandLine;
 
@@ -24,8 +23,9 @@ import picocli.CommandLine;
 public class OSM2World {
 
 	static {
-		LoadUriUtil.setClientFactory(JvmHttpClient::new);
-		JsonUtil.setImplementation(new JsonImplementationJvm());
+		HttpUriImplementationJvm.register();
+		JsonImplementationJvm.register();
+		ImageImplementationJvm.register();
 	}
 
 	public static void main(String[] args) throws Exception {

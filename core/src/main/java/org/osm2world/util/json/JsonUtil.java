@@ -15,9 +15,9 @@ public class JsonUtil {
 	/**
 	 * Globally sets a different {@link JsonImplementation}.
 	 * This exists to support in-browser use.
-	 * Most code should never call this.
+	 * Most code should never call this method.
 	 */
-	public static void setImplementation(JsonImplementation implementation) {
+	static void setImplementation(JsonImplementation implementation) {
 		JsonUtil.implementation = implementation;
 	}
 
