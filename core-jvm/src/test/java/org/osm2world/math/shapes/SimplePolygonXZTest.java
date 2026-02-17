@@ -3,8 +3,8 @@ package org.osm2world.math.shapes;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.osm2world.math.shapes.SimplePolygonXZ.isSelfIntersecting;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.math.shapes.SimplePolygonXZ.isSelfIntersecting;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import static org.osm2world.test.TestUtil.assertSameCyclicOrder;
 
@@ -18,7 +18,7 @@ import org.osm2world.math.VectorXZ;
 
 public class SimplePolygonXZTest {
 
-	private SimplePolygonXZ p1 = new SimplePolygonXZ(asList(
+	private final SimplePolygonXZ p1 = new SimplePolygonXZ(asList(
 			new VectorXZ(-1, -1),
 			new VectorXZ(-1,  0),
 			new VectorXZ(-1, +1),
@@ -26,7 +26,7 @@ public class SimplePolygonXZTest {
 			new VectorXZ(+1, -1),
 			new VectorXZ(-1, -1)));
 
-	private SimplePolygonXZ p2 = new SimplePolygonXZ(asList(
+	private final SimplePolygonXZ p2 = new SimplePolygonXZ(asList(
 			new VectorXZ(-0.5, -0.5),
 			new VectorXZ(-0.5, +1.5),
 			new VectorXZ(+1.5, +1.5),
@@ -127,7 +127,7 @@ public class SimplePolygonXZTest {
 
 		assertTrue(new SimplePolygonXZ(outlineA).isClockwise());
 
-		List<VectorXZ> outlineAInv = new ArrayList<VectorXZ>(outlineA);
+		List<VectorXZ> outlineAInv = new ArrayList<>(outlineA);
 		Collections.reverse(outlineAInv);
 		assertFalse(new SimplePolygonXZ(outlineAInv).isClockwise());
 
@@ -138,9 +138,31 @@ public class SimplePolygonXZTest {
 
 		assertTrue(new SimplePolygonXZ(outlineB).isClockwise());
 
-		List<VectorXZ> outlineBInv = new ArrayList<VectorXZ>(outlineB);
+		List<VectorXZ> outlineBInv = new ArrayList<>(outlineB);
 		Collections.reverse(outlineBInv);
 		assertFalse(new SimplePolygonXZ(outlineBInv).isClockwise());
+	}
+
+	@Test
+	public void testMakeCounterclockwise() {
+
+		for (List<VectorXZ> outline : List.of(outlineA, outlineB)) {
+
+			var poly = new SimplePolygonXZ(outline);
+			assertTrue(poly.isClockwise());
+
+			var polyCCW = poly.makeCounterclockwise();
+			assertFalse(polyCCW.isClockwise());
+			assertEquals(poly.getArea(), polyCCW.getArea(), 1e-3);
+
+			var polyInv = poly.reverse();
+			assertFalse(polyInv.isClockwise());
+			assertEquals(polyCCW, polyInv);
+
+			assertEquals(poly, polyInv.reverse());
+
+		}
+
 	}
 
 	@Test

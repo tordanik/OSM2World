@@ -50,6 +50,22 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	}
 
+	/**
+	 * Internal alternative to {@link #SimplePolygonXZ(List)} that omits validity checks
+	 * and, optionally, area calculations. This can avoid unnecessary performance costs for known-good data.
+	 */
+	private SimplePolygonXZ(List<VectorXZ> vertexLoop, Double signedArea) {
+
+		this.vertexLoop = vertexLoop;
+
+		if (signedArea != null) {
+			this.signedArea = signedArea;
+			this.area = Math.abs(signedArea);
+			this.clockwise = signedArea < 0;
+		}
+
+	}
+
 	public static final SimplePolygonXZ asSimplePolygon(SimpleClosedShapeXZ shape) {
 		if (shape instanceof SimplePolygonXZ) {
 			return (SimplePolygonXZ) shape;
@@ -310,9 +326,9 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	}
 
 	public SimplePolygonXZ reverse() {
-		List<VectorXZ> newVertexLoop = new ArrayList<VectorXZ>(vertexLoop);
+		List<VectorXZ> newVertexLoop = new ArrayList<>(vertexLoop);
 		Collections.reverse(newVertexLoop);
-		return new SimplePolygonXZ(newVertexLoop);
+		return new SimplePolygonXZ(newVertexLoop, -this.signedArea);
 	}
 
 	@Override
@@ -690,7 +706,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 */
 	private static void assertNoDuplicates(List<VectorXZ> vertexLoop) {
 		for (int i = 0; i < vertexLoop.size() - 1; i++) {
-			if (vertexLoop.get(i + 1).distanceTo(vertexLoop.get(i)) == 0) {
+			if (VectorXZ.distanceSquared(vertexLoop.get(i + 1), vertexLoop.get(i)) == 0) {
 				throw new InvalidGeometryException(
 						"polygon must not not have duplicate points\n"
 						+ "Polygon vertices: " + vertexLoop);
