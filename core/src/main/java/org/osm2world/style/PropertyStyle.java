@@ -24,6 +24,9 @@ import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.functions.Factory;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 /**
  * A map style based on properties files.
  */
@@ -31,6 +34,9 @@ public class PropertyStyle implements Style {
 
 	/** map with all known materials; keys are in uppercase */
 	private final Map<String, Material> materialsByName;
+
+	/** the inverse of {@link #materialsByName} */
+	private final Multimap<Material, String> materialsToName;
 
 	/** map with all known models; keys are in uppercase */
 	private final Map<String, List<Model>> modelsByName;
@@ -45,6 +51,11 @@ public class PropertyStyle implements Style {
 
 		materialsByName = loadMaterials(config);
 		modelsByName = loadModels(config);
+
+		materialsToName = HashMultimap.create();
+		for (var entry : materialsByName.entrySet()) {
+			materialsToName.put(entry.getValue(), entry.getKey());
+		}
 
 	}
 
@@ -66,19 +77,20 @@ public class PropertyStyle implements Style {
 		if (material instanceof MaterialRef ref) return ref.name();
 
 		Material m = resolveMaterial(material);
+		Collection<String> names = materialsToName.get(m);
 
-		// check by object identity first
-		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue() == m) {
-				return entry.getKey();
-			}
-		}
+		if (!names.isEmpty()) {
 
-		// check by object equality second
-		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue().equals(m)) {
-				return entry.getKey();
+			// check by object identity first
+			for (String name : names) {
+				if (materialsByName.get(name) == m) {
+					return name;
+				}
 			}
+
+			// check by object equality second
+			return names.iterator().next();
+
 		}
 
 		// no match found
