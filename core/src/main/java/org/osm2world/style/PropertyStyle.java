@@ -69,7 +69,7 @@ public class PropertyStyle implements Style {
 
 		// check by object identity first
 		for (var entry : materialsByName.entrySet()) {
-			if (entry.getValue().equals(m)) {
+			if (entry.getValue() == m) {
 				return entry.getKey();
 			}
 		}
