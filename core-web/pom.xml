@@ -82,7 +82,7 @@
 							<!-- Optimization level. Valid values are: SIMPLE, ADVANCED, FULL -->
 							<optimizationLevel>ADVANCED</optimizationLevel>
 
-							<jsModuleType>NONE</jsModuleType>
+							<jsModuleType>ES2015</jsModuleType>
 
 						</configuration>
 					</execution>
