@@ -59,11 +59,10 @@
 						</goals>
 						<configuration>
 
-							<mainClass>org.osm2world.O2WConverterWeb</mainClass>
+							<mainClass>org.osm2world.WebModule</mainClass>
 
-							<!-- Directory where TeaVM should put generated files. This configuration conforms to the settings
-								 of the WAR plugin -->
 							<targetDirectory>${project.build.directory}/generated/js/teavm</targetDirectory>
+							<targetFileName>osm2world-core-web.mjs</targetFileName>
 
 							<!-- Whether TeaVM should produce minified JavaScript. Can reduce JavaScript file size more than
 								 two times -->

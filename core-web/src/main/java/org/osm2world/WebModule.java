@@ -17,14 +17,15 @@ import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.platform.json.JsonImplementationBrowser;
 import org.osm2world.util.platform.uri.HttpUriImplementationBrowser;
-import org.teavm.jso.JSBody;
-import org.teavm.jso.JSExport;
-import org.teavm.jso.JSObject;
-import org.teavm.jso.JSTopLevel;
+import org.teavm.jso.*;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.function.JSConsumer;
 
-public class O2WConverterWeb {
+/**
+ * Contains the classes and functions which serve as the public interface of the web library.
+ */
+@JSExportClasses({ WebModule.O2WConverter.class })
+public class WebModule {
 
 	static {
 		HttpUriImplementationBrowser.register();
@@ -52,7 +53,7 @@ public class O2WConverterWeb {
 	}
 
 	@JSTopLevel
-	public static class WebMesh {
+	public static class O2WMesh {
 
 		private final String baseColorTexture;
 		private final String opacityTexture;
@@ -124,7 +125,7 @@ public class O2WConverterWeb {
 			return uvs;
 		}
 
-		public WebMesh(Material material, TriangleGeometry geom) {
+		public O2WMesh(Material material, TriangleGeometry geom) {
 
 			/* material fields */
 
@@ -194,8 +195,89 @@ public class O2WConverterWeb {
 
 	}
 
+	@JSTopLevel
+	public static class O2WConverter {
+
+		private O2WConfig config;
+
+		@JSExport
+		public O2WConverter() {
+			config = null;
+		}
+
+		/**
+		 * Sets an {@link O2WConfig} object with settings that controls various aspects of OSM2World.
+		 * If this method isn't called or the config is set to null, this converter will use default values.
+		 *
+		 * @param config  OSM2World configuration received from loadConfig, can be null
+		 */
+		@JSExport
+		public void setConfig(@Nullable O2WConfig config) {
+			this.config = config;
+		}
+
+		/**
+		 * Converts OSM data in JSON format to 3D geometry.
+		 * Uses the OSM JSON dialect supported by Overpass API.
+		 *
+		 * @param osmJson  a JSON string
+		 * @param onSuccess  callback which will receive an array of WebMesh objects if the conversion succeeds
+		 * @param onError   optional error callback, can be null
+		 */
+		@JSExport
+		public void convertJson(String osmJson,
+				JSConsumer<JSArray<O2WMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
+
+			var osmReader = new JsonStringReader(osmJson);
+
+			new Thread(() -> {
+
+				var o2wConfig = config != null ? config.getConfig()
+						: new org.osm2world.conversion.O2WConfig(Map.of("lod", "3"));
+				var o2w = new O2WConverterImpl(o2wConfig, List.of());
+
+				try {
+
+					Scene scene = o2w.convert(osmReader, null, null);
+
+					O2WMesh[] meshArray = sceneToMeshArray(scene);
+					onSuccess.accept(JSArray.of(meshArray));
+
+				} catch (Exception e) {
+					if (onError != null) {
+						onError.accept(e.getMessage());
+					}
+				}
+
+			}).start();
+
+		}
+
+		private static O2WMesh[] sceneToMeshArray(Scene scene) {
+
+			var meshStore = new MeshStore(scene.getMeshesWithMetadata());
+
+			meshStore = meshStore.process(List.of(
+					new MeshStore.EmulateDoubleSidedMaterials(),
+					new MeshStore.EmulateTextureLayers(),
+					new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
+			));
+			List<Mesh> meshes = meshStore.meshes();
+
+			List<O2WMesh> webMeshes = new ArrayList<>();
+
+			for (Mesh mesh : meshes) {
+				webMeshes.add(new O2WMesh(mesh.material, mesh.geometry.asTriangles()));
+			}
+
+			return webMeshes.toArray(O2WMesh[]::new);
+
+		}
+
+	}
+
 	@JSExport
-	public static void loadConfig(String uri, JSObject extraProperties,
+	public static void loadO2WConfig(String uri, JSObject extraProperties,
 			JSConsumer<O2WConfig> onSuccess, @Nullable JSConsumer<String> onError) {
 
 		JSConsumer<String> handleError = (onError != null) ? onError : System.err::println;
@@ -227,63 +309,6 @@ public class O2WConverterWeb {
 			}
 		}
 		return map;
-	}
-
-	/**
-	 * Converts OSM data in JSON format to 3D geometry.
-	 * Uses the OSM JSON dialect supported by Overpass API.
-	 *
-	 * @param osmJson  a JSON string
-	 * @param config  OSM2World configuration received from loadConfig, can be null
-	 * @param onSuccess  callback which will receive an array of WebMesh objects if the conversion succeeds
-	 * @param onError   optional error callback, can be null
-	 */
-	@JSExport
-	public static void convertJson(String osmJson, @Nullable O2WConfig config,
-			JSConsumer<JSArray<WebMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
-
-		var osmReader = new JsonStringReader(osmJson);
-
-		new Thread(() -> {
-
-			var o2w = new O2WConverterImpl(config != null ? config.getConfig() : null, List.of());
-
-			try {
-
-				Scene scene = o2w.convert(osmReader, null, null);
-
-				WebMesh[] meshArray = sceneToMeshArray(scene);
-				onSuccess.accept(JSArray.of(meshArray));
-
-			} catch (Exception e) {
-				if (onError != null) {
-					onError.accept(e.getMessage());
-				}
-			}
-
-		}).start();
-
-	}
-
-	private static WebMesh[] sceneToMeshArray(Scene scene) {
-
-		var meshStore = new MeshStore(scene.getMeshesWithMetadata());
-
-		meshStore = meshStore.process(List.of(
-				new MeshStore.EmulateDoubleSidedMaterials(),
-				new MeshStore.EmulateTextureLayers(),
-				new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
-		));
-		List<Mesh> meshes = meshStore.meshes();
-
-		List<WebMesh> webMeshes = new ArrayList<>();
-
-		for (Mesh mesh : meshes) {
-			webMeshes.add(new WebMesh(mesh.material, mesh.geometry.asTriangles()));
-		}
-
-		return webMeshes.toArray(WebMesh[]::new);
-
 	}
 
 }
