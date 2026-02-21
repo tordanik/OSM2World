@@ -355,6 +355,18 @@ public class PropertyStyle implements Style {
 			//get font configuration
 			String font = config.getString(fontKey);
 
+			String fontName;
+			TextTexture.FontStyle fontStyle;
+
+			String[] values = (font != null) ? font.split(",", 2) : new String[0];
+			if (values.length == 2) {
+				fontName = values[0];
+				fontStyle = TextTexture.FontStyle.parseValue(values[1]);
+			} else {
+				fontName = null;
+				fontStyle = TextTexture.FontStyle.PLAIN;
+			}
+
 			//get top/left offset configuration
 			String topOffset = config.getString(topOffsetKey);
 			if (topOffset != null) {
@@ -380,7 +392,7 @@ public class PropertyStyle implements Style {
 			//get relative font size
 			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
 
-			return new TextTexture(text, font, dimensions,
+			return new TextTexture(text, fontName, fontStyle, dimensions,
 					Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
 					relativeFontSize, wrap, coordFunction);
 

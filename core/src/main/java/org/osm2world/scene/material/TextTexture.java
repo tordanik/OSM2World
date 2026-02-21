@@ -2,8 +2,6 @@ package org.osm2world.scene.material;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -16,26 +14,56 @@ import com.google.common.base.Objects;
 
 public class TextTexture extends RuntimeTexture {
 
+	public enum FontStyle {
+
+		PLAIN, BOLD, ITALIC;
+
+		public static FontStyle parseValue(String s) {
+
+			if (s == null) {
+				return PLAIN;
+			} else {
+				return switch (s.toUpperCase()) {
+					case "BOLD" -> BOLD;
+					case "ITALIC" -> ITALIC;
+					default -> PLAIN;
+				};
+			}
+
+		}
+
+		public int getFontStyleInt() {
+			return switch (this) {
+				case PLAIN -> Font.PLAIN;
+				case BOLD -> Font.BOLD;
+				case ITALIC -> Font.ITALIC;
+			};
+		}
+
+	}
+
 	public final String text;
-	public final @Nullable String font;
+	public final @Nullable String fontName;
+	public final FontStyle fontStyle;
 	public final double topOffset;
 	public final double leftOffset;
 	public Color textColor;
 
 	/**
 	 * A scalar value to determine the size of the rendered text
-	 * in regards to the size of the image
+	 * in regard to the size of the image
 	 */
 	public final double relativeFontSize;
 
-	public TextTexture(String text, String font, TextureDataDimensions dimensions,
+	public TextTexture(String text, @Nullable String fontName, FontStyle fontStyle, TextureDataDimensions dimensions,
 			double topOffset, double leftOffset, Color textColor, double relativeFontSize,
 			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 
 		super(dimensions, wrap, texCoordFunction);
 
 		this.text = text;
-		this.font = font;
+		this.fontName = fontName;
+		this.fontStyle = fontStyle;
 		this.topOffset = topOffset;
 		this.leftOffset = leftOffset;
 		this.textColor = textColor;
@@ -53,15 +81,7 @@ public class TextTexture extends RuntimeTexture {
 
 			Graphics2D g2d = image.createGraphics();
 
-			Font font = new Font("Dialog", Font.PLAIN, 100);
-
-			if (this.font != null) {
-				String[] values = this.font.split(",", 2);
-				if (values.length == 2) {
-					int fontStyle = TextTexture.FontStyle.getStyle(values[1].toUpperCase());
-					font = new Font(values[0], fontStyle, 100);
-				}
-			}
+			Font font = new Font(fontName != null ? fontName : "Dialog", fontStyle.getFontStyleInt(), 100);
 
 			//extract font metrics
 			FontMetrics fm = g2d.getFontMetrics(font);
@@ -81,8 +101,8 @@ public class TextTexture extends RuntimeTexture {
 			g2d.setPaint(new java.awt.Color(textColor.getRGB()));
 
 			//place text
-			int xCoord = (int)(imageWidth*leftOffset/100 - stringWidth/2);
-			int yCoord = (int)(imageHeight*topOffset/100 + stringHeight/3 );
+			int xCoord = (int)(imageWidth*leftOffset/100 - (double) stringWidth / 2);
+			int yCoord = (int)(imageHeight*topOffset/100 + (double) stringHeight / 3);
 
 			g2d.drawString(this.text, xCoord, yCoord);
 
@@ -99,44 +119,6 @@ public class TextTexture extends RuntimeTexture {
 
 	}
 
-	public static enum FontStyle {
-
-		PLAIN, BOLD, ITALIC;
-
-		private static final Map<String, FontStyle> map = new HashMap<>(FontStyle.values().length);
-
-		//initialize the map
-		static {
-			map.put("PLAIN", PLAIN);
-			map.put("BOLD", BOLD);
-			map.put("ITALIC", ITALIC);
-		}
-
-		public static int getStyle(String s) {
-
-			/*using a map will return null if s is not a valid input
-			whereas valueOf(s) would result in a RuntimeException*/
-			FontStyle style = map.get(s);
-
-			if(style==null) {
-				return Font.PLAIN;
-			}else {
-
-				switch(style) {
-
-					case PLAIN:
-						return Font.PLAIN;
-					case BOLD:
-						return Font.BOLD;
-					case ITALIC:
-						return Font.ITALIC;
-					default:
-						return Font.PLAIN;
-				}
-			}
-		}
-	}
-
 	@Override
 	public String toString() {
 		return text;
@@ -145,13 +127,13 @@ public class TextTexture extends RuntimeTexture {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof TextTexture)) return false;
-		TextTexture other = (TextTexture) obj;
+		if (!(obj instanceof TextTexture other)) return false;
 		return dimensions().equals(other.dimensions())
 				&& Objects.equal(wrap, other.wrap)
 				&& Objects.equal(coordFunction, other.coordFunction)
 				&& Objects.equal(text, other.text)
-				&& Objects.equal(font, other.font)
+				&& Objects.equal(fontName, other.fontName)
+				&& Objects.equal(fontStyle, other.fontStyle)
 				&& topOffset == other.topOffset
 				&& leftOffset == other.leftOffset
 				&& Objects.equal(textColor, other.textColor)
@@ -165,7 +147,8 @@ public class TextTexture extends RuntimeTexture {
 		builder.append(wrap);
 		builder.append(coordFunction);
 		builder.append(text);
-		builder.append(font);
+		builder.append(fontName);
+		builder.append(fontStyle);
 		builder.append(topOffset);
 		builder.append(leftOffset);
 		builder.append(textColor);

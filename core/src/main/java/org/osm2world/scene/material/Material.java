@@ -217,7 +217,8 @@ public record Material(Interpolation interpolation, Color color, boolean doubleS
 				if (counter == numberOfTextLayer) {
 
 					//create a new TextTextureData instance with different textColor
-					TextTexture newTextTexture = new TextTexture(texture.text, texture.font, texture.dimensions,
+					TextTexture newTextTexture = new TextTexture(texture.text, texture.fontName,
+							texture.fontStyle, texture.dimensions,
 							texture.topOffset, texture.leftOffset,
 							color, texture.relativeFontSize,
 							texture.wrap, t -> texture.coordFunction);
@@ -298,7 +299,7 @@ public record Material(Interpolation interpolation, Color color, boolean doubleS
 
 			if (!newText.equals(textTexture.text)) {
 				return new TextTexture(newText,
-						textTexture.font, textTexture.dimensions,
+						textTexture.fontName, textTexture.fontStyle, textTexture.dimensions,
 						textTexture.topOffset, textTexture.leftOffset,
 						textTexture.textColor, textTexture.relativeFontSize,
 						textTexture.wrap, t -> textTexture.coordFunction);
