@@ -327,10 +327,11 @@ public class PropertyStyle implements Style {
 	private static @Nullable TextureData createTexture(O2WConfig config, String keyPrefix,
 			@Nullable URI defaultImageURI) {
 
-		TextureDataDimensions dimensions = createTextureDataDimensions(config, keyPrefix);
-		TextureData.Wrap wrap = getWrap(config.getString(keyPrefix + "_wrap"));
+		String normalizedPrefix = keyPrefix.replaceFirst("_(?:color|normal|orm|displacement)$", "");
+		TextureDataDimensions dimensions = createTextureDataDimensions(config, normalizedPrefix);
+		TextureData.Wrap wrap = getWrap(config.getString(normalizedPrefix + "_wrap"));
 		@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
-				getCoordFunction(config.getString(keyPrefix + "_coord_function"));
+				getCoordFunction(config.getString(normalizedPrefix + "_coord_function"));
 
 		//get texture layer type
 		String type = config.getString(keyPrefix + "_type", "image");
@@ -414,8 +415,6 @@ public class PropertyStyle implements Style {
 	 * @return  valid {@link TextureDataDimensions} extracted from the config file, possibly using default values
 	 */
 	private static TextureDataDimensions createTextureDataDimensions(O2WConfig config, String keyPrefix) {
-
-		keyPrefix  = keyPrefix.replaceFirst("_(?:color|normal|orm|displacement)$", "");
 
 		double width = config.getDouble(keyPrefix + "_width", 1.0);
 		double height = config.getDouble(keyPrefix + "_height", 1.0);
