@@ -3,6 +3,8 @@ package org.osm2world.util.platform.uri;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Base64;
+import java.util.regex.Pattern;
 
 /**
  * Loads content from {@link java.net.URI}s.
@@ -37,8 +39,7 @@ public class LoadUriUtil {
 	public static String fetchText(URI uri) throws IOException {
 
 		if (uri.getScheme().equals("data")) {
-			// TODO implement data uris
-			throw new UnsupportedOperationException("data URIs are not implemented yet");
+			return new String(decodeDataUri(uri));
 		}
 
 		return implementation.fetchText(uri);
@@ -48,12 +49,27 @@ public class LoadUriUtil {
 	public static byte[] fetchBinary(URI uri) throws IOException {
 
 		if (uri.getScheme().equals("data")) {
-			// TODO implement data uris
-			throw new UnsupportedOperationException("data URIs are not implemented yet");
+			return decodeDataUri(uri);
 		}
 
 		return implementation.fetchBinary(uri);
 
+	}
+
+	private static byte[] decodeDataUri(URI uri) throws IOException {
+		String s = uri.getSchemeSpecificPart();
+		var pattern = Pattern.compile("([^,]+),(.+)");
+		var matcher = pattern.matcher(s);
+		if (matcher.matches()) {
+			if (matcher.group(1).endsWith(";base64")) {
+				return Base64.getDecoder().decode(matcher.group(2));
+			} else {
+				return matcher.group(2).getBytes();
+			}
+		} else {
+			throw new IOException("Not a valid data URI, no match found: "
+				+ ((s.length() < 500) ? s : s.substring(0, 500) + "..."));
+		}
 	}
 
 }

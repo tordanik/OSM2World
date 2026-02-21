@@ -368,20 +368,20 @@ public class GltfModel implements Model {
 					" Any GLB buffers were not properly processed.");
 		}
 
-		var pattern = Pattern.compile("data:application/(?:gltf-buffer|octet-stream);base64,(.+)");
-		var matcher = pattern.matcher(buffer.uri);
+		try {
 
-		if (matcher.matches()) {
+			var pattern = Pattern.compile("data:application/(?:gltf-buffer|octet-stream);base64,(.+)");
+			var matcher = pattern.matcher(buffer.uri);
 
-			// load data URI
-			String encodedData = matcher.group(1);
-			byte[] data = Base64.getDecoder().decode(encodedData);
-			result = ByteBuffer.wrap(data);
+			if (matcher.matches()) {
 
-		} else {
+				// load data URI
+				byte[] data = LoadUriUtil.fetchBinary(new URI(buffer.uri));
+				result = ByteBuffer.wrap(data);
 
-			// load external .bin file
-			try {
+			} else {
+
+				// load external .bin file
 				URI bufferUri = new URI(buffer.uri);
 				if (source instanceof ExternalModelSource.LocalFileSource localFileSource) {
 					bufferUri = localFileSource.file().toURI().resolve(bufferUri);
@@ -391,10 +391,11 @@ public class GltfModel implements Model {
 				try (InputStream inputStream = bufferUri.toURL().openStream()) {
 					result = ByteBuffer.wrap(inputStream.readAllBytes());
 				}
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+
 			}
 
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 
 		int byteOffset = bufferView.byteOffset == null ? 0 : bufferView.byteOffset;
