@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.indoor;
 
-import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -11,7 +10,10 @@ import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
-import org.osm2world.math.shapes.*;
+import org.osm2world.math.shapes.LineSegmentXZ;
+import org.osm2world.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.math.shapes.TriangleXYZ;
+import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -41,8 +43,8 @@ public class Ceiling {
 
             double floorEle = buildingPart.getBuilding().getGroundLevelEle() + floorHeight - 0.001;
 
-            List<ShapeXZ> sides  = new ArrayList<>(singleton(polygon.getOuter().makeCounterclockwise()));
-            sides.addAll(polygon.getHoles().stream().map(SimplePolygonXZ::makeClockwise).collect(toList()));
+            List<LineSegmentXZ> sides = new ArrayList<>(polygon.getOuter().makeCounterclockwise().getSegments());
+            polygon.getHoles().forEach(p -> sides.addAll(p.makeClockwise().getSegments()));
 
             renderSides(target, sides, floorEle);
 
@@ -64,7 +66,8 @@ public class Ceiling {
         target.setCurrentAttachmentTypes();
     }
 
-    private void renderSides(CommonTarget target, List<ShapeXZ> sides, double floorEle) {
+    private void renderSides(CommonTarget target, List<LineSegmentXZ> sides, double floorEle) {
+
         VectorXYZ bottom = new VectorXYZ(0, floorEle - 0.2, 0);
         VectorXYZ top = new VectorXYZ(0, floorEle, 0);
 
@@ -72,8 +75,12 @@ public class Ceiling {
         path.add(bottom);
         path.add(top);
 
-        for (ShapeXZ side : sides) {
-            target.drawExtrudedShape(material, side, path, null, null, null);
+        for (LineSegmentXZ side : sides) {
+            // do not render ceiling sides which overlap with the outer wall of a building part
+            if (buildingPart.getPolygon().getRings().stream().noneMatch(
+                    r -> r.distanceToSegments(side.p1) < 0.05 && r.distanceToSegments(side.p2) < 0.05)) {
+                target.drawExtrudedShape(material, side, path, null, null, null);
+            }
         }
     }
 }
