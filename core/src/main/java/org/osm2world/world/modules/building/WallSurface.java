@@ -50,6 +50,8 @@ public class WallSurface {
 
 	private final List<VectorXYZ> lowerBoundaryXYZ;
 
+	private final PolylineXZ footprint;
+
 	private final List<WallElement> elements = new ArrayList<>();
 
 	/**
@@ -74,6 +76,8 @@ public class WallSurface {
 
 		/* TODO: check for other problems, e.g. intersecting lower and upper boundary,
 		   last points of the boundaries having different x values in wall surface coords, ... */
+
+		this.footprint = new PolylineXZ(lowerBoundaryXYZ.stream().map(VectorXYZ::xz).toList());
 
 		/* convert the boundaries to wall surface coords */
 
@@ -150,7 +154,7 @@ public class WallSurface {
 
 		for (WallElement element : elements) {
 			if (wallOutline.contains(element.outline())
-				&& this.elements.stream().noneMatch(e ->
+					&& this.elements.stream().noneMatch(e ->
 					e.outline().intersects(element.outline()) || e.outline().contains(element.outline()))) {
 				elementsToAdd.add(element);
 			}
@@ -194,7 +198,7 @@ public class WallSurface {
 
 			}
 		}
-		
+
 		/* decompose and triangulate the empty wall surface */
 
 		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).toList();
@@ -285,13 +289,11 @@ public class WallSurface {
 	 */
 	public VectorXZ toWallCoord(VectorXYZ v) {
 
-		PolylineXZ wallXZ = new PolylineXZ(lowerBoundaryXYZ.stream().map(VectorXYZ::xz).collect(toList()));
-
 		LineSegmentXZ closestSegment =
-				min(wallXZ.getSegments(), Comparator.comparing(s -> distanceFromLineSegment(v.xz(), s)));
+				min(footprint.getSegments(), Comparator.comparing(s -> distanceFromLineSegment(v.xz(), s)));
 
 		VectorXZ projectedPointXZ = projectPerpendicular(v.xz(), closestSegment.p1, closestSegment.p2);
-		double relativeLengthProjectedPoint = wallXZ.offsetOf(projectedPointXZ) / wallXZ.getLength();
+		double relativeLengthProjectedPoint = footprint.offsetOf(projectedPointXZ) / footprint.getLength();
 
 		return new VectorXZ(
 				relativeLengthProjectedPoint * this.getLength(),
