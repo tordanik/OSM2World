@@ -5,8 +5,9 @@ import static org.junit.Assert.assertEquals;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
 import org.junit.Test;
+import org.osm2world.util.exception.InvalidGeometryException;
 
-public class AxisAlignedRectangleTest {
+public class AxisAlignedRectangleXZTest {
 
 	@Test
 	public void testBboxUnion() {
@@ -21,6 +22,23 @@ public class AxisAlignedRectangleTest {
 		assertEquals(20, result.maxX, 0);
 		assertEquals(10, result.maxZ, 0);
 
+	}
+
+	@Test
+	public void testArea() {
+		AxisAlignedRectangleXZ rect = new AxisAlignedRectangleXZ(5, 5, 10, 10);
+		assertEquals(25, rect.area(), 0);
+	}
+
+	@Test(expected = InvalidGeometryException.class)
+	public void testInvalid_minGreaterMax() {
+		new AxisAlignedRectangleXZ(5, 5, 10, -5);
+	}
+
+	@Test(expected = InvalidGeometryException.class)
+	public void testInvalid_zeroWidth() {
+		var rect = new AxisAlignedRectangleXZ(5, 5, 5, 10);
+		rect.polygonXZ();
 	}
 
 }

@@ -29,8 +29,16 @@ public class TriangleXZTest {
 
 	@Test
 	public void testGetArea() {
-		assertAlmostEquals(triangleCW.getArea(), 0.5);
-		assertAlmostEquals(triangleCCW.getArea(), 1);
+		assertAlmostEquals(0.5, triangleCW.getArea());
+		assertAlmostEquals(1, triangleCCW.getArea());
+	}
+
+	@Test
+	public void testPolygonXZ() {
+		assertTrue(triangleCW.polygonXZ().isClockwise());
+		assertAlmostEquals(triangleCW.getArea(), triangleCW.polygonXZ().getArea());
+		assertFalse(triangleCCW.polygonXZ().isClockwise());
+		assertAlmostEquals(triangleCCW.getArea(), triangleCCW.polygonXZ().getArea());
 	}
 
 }

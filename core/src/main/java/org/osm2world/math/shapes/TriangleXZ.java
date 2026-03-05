@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
+import org.osm2world.util.exception.InvalidGeometryException;
 
 import com.google.common.collect.ImmutableList;
 
@@ -123,6 +124,15 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	@Override
 	public List<TriangleXZ> getTriangulation() {
 		return singletonList(this);
+	}
+
+	@Override
+	public SimplePolygonXZ polygonXZ() {
+		if (isDegenerateOrNaN()) {
+			throw new InvalidGeometryException("Triangle is degenerate: " + this);
+		}
+		double area = getArea();
+		return new SimplePolygonXZ(vertices(), isClockwise() ? -area : area);
 	}
 
 	/**

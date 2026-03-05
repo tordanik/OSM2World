@@ -253,4 +253,6 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 		return new SimplePolygonXZ(vertices().stream().map(v -> v.mirrorX(axisX)).collect(toList()));
 	}
 
+	SimplePolygonXZ polygonXZ();
+
 }

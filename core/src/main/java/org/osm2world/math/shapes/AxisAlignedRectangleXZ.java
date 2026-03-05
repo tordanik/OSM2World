@@ -11,6 +11,7 @@ import java.util.List;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.util.exception.InvalidGeometryException;
 
 /**
  * immutable representation of an axis-aligned rectangle with x and z dimensions.
@@ -24,6 +25,8 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 
 		if (!(isFinite(minX) && isFinite(minZ) && isFinite(maxX) && isFinite(maxZ))) {
 			throw new IllegalArgumentException("Bounds must be finite");
+		} else if (minX > maxX || minZ > maxZ) {
+			throw new InvalidGeometryException("Max values must be greater than min values");
 		}
 
 		this.minX = minX;
@@ -126,10 +129,13 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 
 	private SimplePolygonXZ polygonXZ;
 
+	@Override
 	public SimplePolygonXZ polygonXZ() {
 
 		if (polygonXZ == null) {
-			polygonXZ = new SimplePolygonXZ(vertices());
+			double area = area();
+			if (area <= 0) throw new InvalidGeometryException("Cannot construct polygon from zero area rectangle");
+			polygonXZ = new SimplePolygonXZ(vertices(), area);
 		}
 
 		return polygonXZ;

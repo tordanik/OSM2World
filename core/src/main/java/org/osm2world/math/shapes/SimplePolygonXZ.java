@@ -54,7 +54,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 * Internal alternative to {@link #SimplePolygonXZ(List)} that omits validity checks
 	 * and, optionally, area calculations. This can avoid unnecessary performance costs for known-good data.
 	 */
-	private SimplePolygonXZ(List<VectorXZ> vertexLoop, Double signedArea) {
+	SimplePolygonXZ(List<VectorXZ> vertexLoop, Double signedArea) {
 
 		this.vertexLoop = vertexLoop;
 
@@ -66,9 +66,11 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	}
 
-	public static final SimplePolygonXZ asSimplePolygon(SimpleClosedShapeXZ shape) {
-		if (shape instanceof SimplePolygonXZ) {
-			return (SimplePolygonXZ) shape;
+	public static SimplePolygonXZ asSimplePolygon(SimpleClosedShapeXZ shape) {
+		if (shape instanceof SimplePolygonXZ s) {
+			return s;
+		} else if (shape instanceof SimplePolygonShapeXZ s) {
+			return s.polygonXZ();
 		} else {
 			return new SimplePolygonXZ(shape.vertices());
 		}
@@ -431,6 +433,11 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 		return result;
 
+	}
+
+	@Override
+	public SimplePolygonXZ polygonXZ() {
+		return this;
 	}
 
 	@Override
