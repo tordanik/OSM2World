@@ -57,7 +57,7 @@ public final class GeometryUtil {
 			throw new IllegalArgumentException("vertex size must be multiple of 3");
 		}
 
-		List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>(vs.size() / 3);
+		List<TriangleXYZ> triangles = new ArrayList<>(vs.size() / 3);
 
 		for (int triangle = 0; triangle  < vs.size() / 3; triangle++) {
 
@@ -72,10 +72,40 @@ public final class GeometryUtil {
 
 	}
 
+	public static final List<TriangleXZ> trianglesXZFromVertexList(
+			List<? extends VectorXZ> vs) {
+
+		if (vs.size() % 3 != 0) {
+			throw new IllegalArgumentException("vertex size must be multiple of 3");
+		}
+
+		List<TriangleXZ> triangles = new ArrayList<>(vs.size() / 3);
+
+		for (int triangle = 0; triangle  < vs.size() / 3; triangle++) {
+
+			triangles.add(new TriangleXZ(
+					vs.get(triangle * 3),
+					vs.get(triangle * 3 + 1),
+					vs.get(triangle * 3 + 2)));
+
+		}
+
+		return triangles;
+
+	}
+
 	public static final List<TriangleXYZ> trianglesFromTriangleStrip(
 			List<? extends VectorXYZ> vs) {
 
 		return trianglesFromVertexList(
+				triangleVertexListFromTriangleStrip(vs));
+
+	}
+
+	public static final List<TriangleXZ> trianglesXZFromTriangleStrip(
+			List<? extends VectorXZ> vs) {
+
+		return trianglesXZFromVertexList(
 				triangleVertexListFromTriangleStrip(vs));
 
 	}

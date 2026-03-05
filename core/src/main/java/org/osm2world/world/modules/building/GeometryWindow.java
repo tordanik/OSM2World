@@ -4,7 +4,6 @@ import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.algorithms.FaceDecompositionUtil.splitPolygonIntoFaces;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulate;
@@ -265,7 +264,7 @@ public class GeometryWindow implements Window {
 		List<TriangleXZ> paneTrianglesXZ = paneOutline.getTriangulation();
 		List<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
 				.map(t -> surface.convertTo3D(t).shift(toBack))
-				.collect(toList());
+				.toList();
 
 		if (transparent) {
 			LODRange previousLodRange = null;
@@ -296,15 +295,27 @@ public class GeometryWindow implements Window {
 		/* draw outer frame */
 
 		SimplePolygonXZ outlinePolygon = asSimplePolygon(outline);
+		List<? extends SimplePolygonShapeXZ> innerOutlines;
+		List<TriangleXZ> frontFaceTriangles;
 
-		List<SimplePolygonShapeXZ> innerOutlines = JTSBufferUtil.bufferPolygon(outlinePolygon, -OUTER_FRAME_WIDTH)
-				.stream().map(p -> p.getOuter()).collect(toList());
+		if (outline instanceof AxisAlignedRectangleXZ outerRect) {
+			// specialized, faster implementation for rectangles
+			AxisAlignedRectangleXZ innerRect = new AxisAlignedRectangleXZ(outerRect.center(),
+					outerRect.sizeX() - 2 * OUTER_FRAME_WIDTH,
+					outerRect.sizeZ() - 2 * OUTER_FRAME_WIDTH);
+			innerOutlines = List.of(innerRect);
+			frontFaceTriangles = trianglesXZFromTriangleStrip(createTriangleStripBetween(
+					innerRect.vertices(), outerRect.vertices()));
+		} else {
+			innerOutlines = JTSBufferUtil.bufferPolygon(outlinePolygon, -OUTER_FRAME_WIDTH)
+					.stream().map(PolygonWithHolesXZ::getOuter).toList();
+			frontFaceTriangles = triangulate(outlinePolygon, innerOutlines);
+		}
 
-		List<TriangleXZ> frontFaceTriangles = triangulate(outlinePolygon, innerOutlines);
 		List<TriangleXYZ> frontFaceTrianglesXYZ = frontFaceTriangles.stream()
-				.map(t -> surface.convertTo3D(t))
+				.map(surface::convertTo3D)
 				.map(t -> t.shift(toOuterFrame))
-				.collect(toList());
+				.toList();
 		target.drawTriangles(params.frameMaterial, frontFaceTrianglesXYZ,
 				triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, surface::texCoordFunction));
 
@@ -331,9 +342,9 @@ public class GeometryWindow implements Window {
 		for (PolylineShapeXZ framePath : innerFramePaths) {
 
 			List<VectorXYZ> framePathXYZ = framePath.vertices().stream()
-					.map(v -> surface.convertTo3D(v))
+					.map(surface::convertTo3D)
 					.map(v -> v.add(toBack))
-					.collect(toList());
+					.toList();
 
 			target.drawExtrudedShape(params.frameMaterial, innerFrameShape,
 					framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
