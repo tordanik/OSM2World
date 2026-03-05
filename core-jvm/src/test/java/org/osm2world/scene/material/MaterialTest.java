@@ -80,7 +80,7 @@ public class MaterialTest {
 	private static Material createTextTestMaterial(String text) {
 		return new Material(Interpolation.FLAT, Color.WHITE, Transparency.TRUE, asList(new TextureLayer(
 				new TextTexture(text,
-				null, new TextureDataDimensions(1.0, 1.0), 50.0, 50.0, BLACK, 50.0,
+				null, TextTexture.FontStyle.PLAIN, new TextureDataDimensions(1.0, 1.0), 50.0, 50.0, BLACK, 50.0,
 				Wrap.CLAMP, GLOBAL_X_Z), null, null, null, false)));
 	}
 
