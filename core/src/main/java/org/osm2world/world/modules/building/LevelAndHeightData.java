@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Locale.ROOT;
+import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
@@ -133,13 +134,24 @@ public class LevelAndHeightData {
 				ConversionLog.warn("Non-integer building:levels value: " + parsedLevels, element);
 				buildingLevels = max(0, (int) Math.ceil(parsedLevels));
 			}
-		} else if (parseHeight(tags, -1) > 0) {
-			buildingLevels = max(buildingMinLevelWithUnderground + 1,
-					max(1, (int) (parseHeight(tags, -1) / defaults.heightPerLevel)));
-		} else if (buildingMinLevelWithUnderground > 0) {
-			buildingLevels = buildingMinLevelWithUnderground + 1;
 		} else {
-			buildingLevels = defaults.levels;
+
+			Double taggedHeight = parseHeight(tags);
+			Double taggedRoofHeight = parseMeasure(tags.getValue("roof:height"));
+			double taggedHeightWithoutRoof = requireNonNullElse(taggedHeight, 0.0) - requireNonNullElse(taggedRoofHeight, 0.0);
+
+			if (taggedHeight != null && taggedRoofHeight != null && taggedHeight <= taggedRoofHeight) {
+				// no non-roof levels
+				buildingLevels = 0;
+			} else if (taggedRoofHeight != null && taggedHeightWithoutRoof > 0) {
+				buildingLevels = max(buildingMinLevelWithUnderground + 1,
+						max(1, (int) (taggedHeightWithoutRoof / defaults.heightPerLevel)));
+			} else if (buildingMinLevelWithUnderground > 0) {
+				buildingLevels = buildingMinLevelWithUnderground + 1;
+			} else {
+				buildingLevels = defaults.levels;
+			}
+
 		}
 
 		/* determine roof height and roof levels */

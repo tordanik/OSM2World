@@ -220,6 +220,36 @@ public class LevelAndHeightDataTest {
 	}
 
 	@Test
+	public void testRoofHeightOnly() {
+
+		var builder = new MapDataBuilder();
+
+		List<MapNode> nodes = createTestBuildingOutline(builder);
+
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
+				"building", "yes",
+				"height", "2.5",
+				"roof:height", "2.5",
+				"roof:shape", "skillion"));
+		Building building = new Building(buildingArea, new O2WConfig());
+		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
+
+		assertEquals(2.5, levelStructure.height(), 0);
+		assertEquals(0, levelStructure.heightWithoutRoof(), 0);
+		assertEquals(0, levelStructure.bottomHeight(), 0);
+
+		assertEquals(1, levelStructure.levels.size());
+		assertEquals(emptyList(), levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)));
+		assertEquals(1, levelStructure.levels(EnumSet.of(LevelType.ROOF)).size());
+
+		LevelAndHeightData.Level level = levelStructure.level(0);
+		assertNotNull(level);
+		assertEquals(LevelType.ROOF, level.type);
+		assertEquals(2.5, level.height, 0);
+
+	}
+
+	@Test
 	public void testUndergroundLevelsOnly() {
 
 		var builder = new MapDataBuilder();

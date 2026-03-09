@@ -62,6 +62,11 @@ public class WorldModuleParseUtil {
 		return parseMeasure(tags, defaultValue, "height", "building:height", "est_height");
 	}
 
+	public static final @Nullable Double parseHeight(TagSet tags) {
+		double result = parseHeight(tags, Double.NaN);
+		return Double.isNaN(result) ? null : result;
+	}
+
 	/**
 	 * retrieves clearing using (in this priority order)
 	 * practical:maxheight tag, maxheight tag, defaultValue parameter
