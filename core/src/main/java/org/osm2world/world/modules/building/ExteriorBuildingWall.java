@@ -40,12 +40,22 @@ import org.osm2world.world.modules.building.LevelAndHeightData.Level.LevelType;
 import org.osm2world.world.modules.building.indoor.IndoorArea;
 import org.osm2world.world.modules.building.indoor.IndoorRoom;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Streams;
 
 /**
  * an outer wall of a {@link BuildingPart}
  */
 public class ExteriorBuildingWall {
+
+	/**
+	 * Whether building walls will always be spilt by level.
+	 * Even if this is deactivated, some buildings may still be split for performance reasons.
+	 * Known limitation of level splitting: Multi-level {@link WallElement}s won't show up
+	 * because they're not entirely contained within any {@link WallSurface} outline.
+	 */
+	public final static boolean FORCE_LEVEL_SPLIT = false;
 
 	final @Nullable MapWay wallWay;
 
@@ -95,6 +105,7 @@ public class ExteriorBuildingWall {
 		double baseEle = buildingPart.building.getGroundLevelEle();
 		double floorEle = baseEle + floorHeight;
 		double heightWithoutRoof = buildingPart.levelStructure.heightWithoutRoof();
+		List<Level> levelsWithoutRoof = buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND));
 
 		Material material = buildingPart.createWallMaterial(tags, buildingPart.config);
 
@@ -188,7 +199,7 @@ public class ExteriorBuildingWall {
 
 		List<VectorXYZ> topPoints = topPointsXZ.stream()
 				.map(p -> p.xyz(baseEle + heightWithoutRoof + buildingPart.roof.getRoofHeightAt(p)))
-				.collect(toList());
+				.toList();
 
 		/* use configuration to determine which implementation of window rendering to use */
 
@@ -206,49 +217,98 @@ public class ExteriorBuildingWall {
 
 			/* construct the surface(s) */
 
-			@Nullable WallSurface mainSurface, roofSurface;
+			Map<Integer, WallSurface> surfacesByLevelNumber = new HashMap<>();
+			Multimap<WallSurface, Level> levelsBySurface = HashMultimap.create();
 
 			double maxHeight = max(topPoints, comparingDouble(v -> v.y)).y - floorEle;
+			double roofBottomHeight = Math.min(heightWithoutRoof - floorHeight,
+					min(topPoints, comparingDouble(v -> v.y)).y - floorEle);
+			List<VectorXYZ> roofBottomPoints = bottomPoints.stream().map(p -> p.addY(roofBottomHeight)).toList();
 
-			if (windowImplementation != WindowImplementation.FLAT_TEXTURES
-					|| !hasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
+			boolean createRoofSurface;
 
-				roofSurface = null;
+			boolean separateLevelSurfaces = FORCE_LEVEL_SPLIT
+					// separate level surfaces significantly speed up the calculations for placing wall elements on large walls
+					|| EnumSet.of(WindowImplementation.FULL_GEOMETRY, WindowImplementation.INSET_TEXTURES).contains(windowImplementation);
 
-				try {
-					mainSurface = new WallSurface(material, bottomPoints, topPoints);
-				} catch (InvalidGeometryException e) {
-					mainSurface = null;
+			if (!separateLevelSurfaces) {
+
+				@Nullable WallSurface mainSurface = null;
+
+				if (windowImplementation != WindowImplementation.FLAT_TEXTURES
+						|| !hasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
+
+					try {
+						mainSurface = new WallSurface(material, bottomPoints, topPoints);
+					} catch (InvalidGeometryException ignored) {}
+
+					createRoofSurface = false;
+
+				} else {
+
+					// using window textures. Need to separate the bit of wall "in the roof" which should not have windows.
+
+					try {
+						mainSurface = new WallSurface(material, bottomPoints, roofBottomPoints);
+					} catch (InvalidGeometryException ignored) {}
+
+					createRoofSurface = true;
+
+				}
+
+				if (mainSurface != null) {
+					for (Level l : levelsWithoutRoof) {
+						surfacesByLevelNumber.put(l.level, mainSurface);
+						levelsBySurface.put(mainSurface, l);
+					}
 				}
 
 			} else {
 
-				// using window textures. Need to separate the bit of wall "in the roof" which should not have windows.
+				/* create a separate wall surface for each level */
 
-				double middlePointsHeight = Math.min(heightWithoutRoof - floorHeight,
-						min(topPoints, comparingDouble(v -> v.y)).y - floorEle);
+				for (Level level : levelsWithoutRoof) {
 
-				List<VectorXYZ> middlePoints = asList(
-						bottomPoints.get(0).addY(middlePointsHeight),
-						bottomPoints.get(bottomPoints.size() - 1).addY(middlePointsHeight));
+					try {
 
-				try {
-					mainSurface = new WallSurface(material, bottomPoints, middlePoints);
-				} catch (InvalidGeometryException e) {
-					mainSurface = null;
+						List<VectorXYZ> lower = (level.relativeEle <= floorEle + 0.02) ? bottomPoints
+								: bottomPoints.stream().map(p -> p.addY(level.relativeEle - floorHeight)).toList();
+
+						List<VectorXYZ> upper = (level.relativeEleTop() - floorHeight >= roofBottomHeight - 0.02) ? roofBottomPoints
+								: bottomPoints.stream().map(p -> p.addY(level.relativeEleTop() - floorHeight)).toList();
+
+						WallSurface levelSurface = new WallSurface(material, lower, upper);
+						surfacesByLevelNumber.put(level.level, levelSurface);
+						levelsBySurface.put(levelSurface, level);
+
+					} catch (InvalidGeometryException e) {
+						ConversionLog.warn("cannot construct wall surface for level " + level,
+								e, buildingPart.area);
+					}
+
 				}
 
+				createRoofSurface = true;
+
+			}
+
+			if (createRoofSurface) {
+
+				/* create a surface for the wall of the roof level(s) */
+
 				try {
-					roofSurface = new WallSurface(material, middlePoints, topPoints);
-				} catch (InvalidGeometryException e) {
-					roofSurface = null;
-				}
+					WallSurface roofSurface = new WallSurface(material, roofBottomPoints, topPoints);
+					for (Level l : buildingPart.levelStructure.levels(EnumSet.of(LevelType.ROOF))) {
+						surfacesByLevelNumber.put(l.level, roofSurface);
+						levelsBySurface.put(roofSurface, l);
+					}
+				} catch (InvalidGeometryException ignored) {}
 
 			}
 
 			boolean individuallyMappedWindows = false;
 
-			if (mainSurface != null && windowImplementation != WindowImplementation.NONE) {
+			if (!surfacesByLevelNumber.isEmpty() && windowImplementation != WindowImplementation.NONE) {
 
 				/* add individually mapped doors and windows (if any) */
 				//TODO: doors at corners of the building (or boundaries between building:wall=yes ways) do not work yet
@@ -260,13 +320,17 @@ public class ExteriorBuildingWall {
 					levels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
 					levels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
-					for (int level : levels) {
+					for (int levelNumber : levels) {
 
-						if (getBuildingPart().levelStructure.hasLevel(level)) {
+						Level level = buildingPart.levelStructure.level(levelNumber);
+						WallSurface surface = surfacesByLevelNumber.get(levelNumber);
+
+						if (surface != null && level != null) {
+
+							Level lowestLevelOfSurface = levelsBySurface.get(surface).stream().min(Comparator.comparingInt(l -> l.level)).get();
 
 							VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
-									buildingPart.levelStructure.level(level).relativeEle
-											- buildingPart.levelStructure.bottomHeight());
+									level.relativeEle - lowestLevelOfSurface.relativeEle);
 
 							if (Door.isDoorNode(node)) {
 
@@ -275,17 +339,17 @@ public class ExteriorBuildingWall {
 										|| buildingPart.config.lod().ordinal() < 3) {
 									params = params.withInset(0.0);
 								}
-								mainSurface.addElementIfSpaceFree(new Door(pos, params));
+								surface.addElementIfSpaceFree(new Door(pos, params));
 
 							} else if (node.getTags().containsKey("window")
 									&& !node.getTags().contains("window", "no")) {
 
-								boolean transparent = determineWindowTransparency(node, level);
+								boolean transparent = determineWindowTransparency(node, levelNumber);
 
 								TagSet windowTags = inheritTags(node.getTags(), tags);
-								WindowParameters params = new WindowParameters(windowTags, buildingPart.levelStructure.level(level).height, config);
+								WindowParameters params = new WindowParameters(windowTags, level.height, config);
 								GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params, transparent);
-								mainSurface.addElementIfSpaceFree(window);
+								surface.addElementIfSpaceFree(window);
 
 								individuallyMappedWindows = true;
 
@@ -296,7 +360,7 @@ public class ExteriorBuildingWall {
 
 			}
 
-			if (mainSurface != null) {
+			if (!surfacesByLevelNumber.isEmpty()) {
 
 				/* add garage doors */
 
@@ -304,7 +368,11 @@ public class ExteriorBuildingWall {
 					if (buildingPart.area.getBoundaryNodes().stream().noneMatch(Door::isDoorNode)) {
 						if (points.getLength() > buildingPart.area.getOuterPolygon().getOutlineLength() / 8) {
 							// not the narrow side of a long building with several garages
-							placeDefaultGarageDoors(mainSurface);
+							int lowestLevel = levelsWithoutRoof.get(0).level;
+							if (surfacesByLevelNumber.containsKey(lowestLevel)) {
+								WallSurface lowestSurface = surfacesByLevelNumber.get(lowestLevel);
+								placeDefaultGarageDoors(lowestSurface);
+							}
 						}
 					}
 				}
@@ -314,32 +382,37 @@ public class ExteriorBuildingWall {
 				if (hasWindows && !individuallyMappedWindows
 						&& (windowImplementation == WindowImplementation.INSET_TEXTURES
 						|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
-					placeDefaultWindows(mainSurface, windowImplementation, config);
+					placeDefaultWindows(surfacesByLevelNumber, levelsBySurface, windowImplementation, config);
 				}
 
 			}
 
 			/* draw the wall */
 
-			int levelCount = buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size();
-			Double windowHeight = (heightWithoutRoof - buildingPart.levelStructure.bottomHeight()) / levelCount;
+			for (WallSurface surface : levelsBySurface.keySet()) {
 
-			if (!hasWindows && buildingPart instanceof RoofBuildingPart) {
-				// the single "level" of wall below the roof is not a suitable indicator of level height for glass walls
-				windowHeight = null;
-			}
+				Collection<Level> levels = levelsBySurface.get(surface);
+				Level lowestLevel = levels.stream().min(Comparator.comparingInt(l -> l.level)).get();
+				double totalLevelHeight = levels.stream().mapToDouble(l -> l.height).sum();
 
-			if (mainSurface != null) {
-				mainSurface.renderTo(target, config, new VectorXZ(0, -floorHeight),
-						hasWindows && !individuallyMappedWindows
-								&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
-						windowHeight,
-						"wall", "wall_mounted");
-			}
+				Double windowHeight = totalLevelHeight / levels.size();
 
-			if (roofSurface != null) {
-				roofSurface.renderTo(target, config, NULL_VECTOR, false, windowHeight,
-						"wall", "wall_mounted");
+				if (!hasWindows && buildingPart instanceof RoofBuildingPart) {
+					// the single "level" of wall below the roof is not a suitable indicator of level height for glass walls
+					windowHeight = null;
+				}
+
+				if (lowestLevel.type == LevelType.ROOF) {
+					surface.renderTo(target, config, NULL_VECTOR, false, windowHeight,
+							"wall", "wall_mounted");
+				} else {
+					surface.renderTo(target, config, new VectorXZ(0, -(floorHeight + lowestLevel.relativeEle)),
+							hasWindows && !individuallyMappedWindows
+									&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
+							windowHeight,
+							"wall", "wall_mounted");
+				}
+
 			}
 
 		}
@@ -409,25 +482,29 @@ public class ExteriorBuildingWall {
 
 	}
 
-	/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
-	private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation, O2WConfig config) {
-
-		List<Window> windows = new ArrayList<>();
+	/** places the default (i.e. not explicitly mapped) windows rows onto wall surfaces */
+	private void placeDefaultWindows(Map<Integer, WallSurface> surfacesByLevel, Multimap<WallSurface, Level> levelsBySurface, WindowImplementation implementation, O2WConfig config) {
 
 		for (Level level : buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND))) {
 
+			List<Window> windows = new ArrayList<>();
+
+			WallSurface surface = surfacesByLevel.get(level.level);
+			if (surface == null) continue;
+
 			WindowParameters windowParams = new WindowParameters(tags, level.height, config);
 
-			double levelEle = level.relativeEle - buildingPart.levelStructure.bottomHeight();
+			Level lowestLevelOfSurface = levelsBySurface.get(surface).stream().min(Comparator.comparingInt(l -> l.level)).get();
+			double levelZOnSurface = level.relativeEle - lowestLevelOfSurface.relativeEle;
 
-			int numColums = windowParams.numberWindows != null
+			int numColumns = windowParams.numberWindows != null
 					? windowParams.numberWindows
 					: (int) round(surface.getLength() / (2 * windowParams.overallProperties.width));
 
-			for (int i = 0; i < numColums; i++) {
+			for (int i = 0; i < numColumns; i++) {
 
-				VectorXZ pos = new VectorXZ((i + 0.5) * surface.getLength() / numColums,
-						levelEle + windowParams.breast);
+				VectorXZ pos = new VectorXZ((i + 0.5) * surface.getLength() / numColumns,
+						levelZOnSurface + windowParams.breast);
 
 				Window window = implementation == WindowImplementation.FULL_GEOMETRY
 						? new GeometryWindow(pos, windowParams, false)
@@ -436,9 +513,9 @@ public class ExteriorBuildingWall {
 
 			}
 
-		}
+			surface.addElementsIfSpaceFree(windows);
 
-		surface.addElementsIfSpaceFree(windows);
+		}
 
 	}
 
