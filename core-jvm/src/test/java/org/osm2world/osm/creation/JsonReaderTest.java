@@ -40,7 +40,8 @@ public class JsonReaderTest {
 						"tags": {
 							"highway": "tertiary",
 							"surface": "asphalt",
-							"name": "Main Street"
+							"name": "Main Street",
+							"description": "The main \\"Main Street\\""
 						}
 					}, {
 						"type": "relation",
@@ -85,7 +86,7 @@ public class JsonReaderTest {
 
 			OsmWay way = result.getWays().iterator().next();
 			assertEquals(444L, way.getId());
-			assertEquals(3, way.getNumberOfTags());
+			assertEquals(4, way.getNumberOfTags());
 			assertEquals(3, way.getNumberOfNodes());
 
 			OsmRelation relation = result.getRelations().iterator().next();
