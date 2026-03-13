@@ -1,10 +1,14 @@
 package org.osm2world.map_data.data;
 
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.map_data.data.overlaps.MapElementId.TYPED_ID_PATTERN;
 
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.osm2world.map_data.data.overlaps.MapElementId;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.world.data.WorldObject;
@@ -104,6 +108,49 @@ public class MapData {
 	 */
 	public AxisAlignedRectangleXZ getDataBoundary() {
 		return dataBoundary;
+	}
+
+	/**
+	 * returns the element with the given ID
+	 * @param id  id formatted according to the syntax defined for {@link MapElementId}
+	 */
+	public @Nullable MapRelationElement getElement(String id) {
+		if (TYPED_ID_PATTERN.matcher(id).matches()) {
+			var mapId = new MapElementId(id);
+			return switch (mapId.type()) {
+				case NODE -> getMapNode(mapId.getId());
+				case WAY -> getMapWay(mapId.getId());
+				case RELATION -> getMapRelation(mapId.getId());
+			};
+		}
+		return null;
+	}
+
+	public @Nullable MapRelation getMapRelation(long id) {
+		for (MapRelation relation : mapRelations) {
+			if (relation.getId() == id) {
+				return relation;
+			}
+		}
+		return null;
+	}
+
+	public @Nullable MapWay getMapWay(long id) {
+		for (MapWay way : mapWays) {
+			if (way.getId() == id) {
+				return way;
+			}
+		}
+		return null;
+	}
+
+	public @Nullable MapNode getMapNode(long id) {
+		for (MapNode node : mapNodes) {
+			if (node.getId() == id) {
+				return node;
+			}
+		}
+		return null;
 	}
 
 	/**

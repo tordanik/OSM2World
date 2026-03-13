@@ -191,7 +191,6 @@ public class OSMToMapDataConverterTest {
 
 	/**
 	 * reads two nodes with the same coordinates
-	 * @throws EntityNotFoundException
 	 */
 	@Test
 	public void testSameCoordNodes() throws IOException, EntityNotFoundException {
@@ -202,6 +201,8 @@ public class OSMToMapDataConverterTest {
 
 		MapNode[] nodes = mapData.getMapNodes().toArray(new MapNode[2]);
 		assertNotSame(nodes[0].getId(), nodes[1].getId());
+
+		assertEquals(mapData.getMapNode(4).getPos(), mapData.getMapNode(5).getPos());
 
 	}
 
