@@ -8,6 +8,9 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.map_data.data.MapData;
+import org.osm2world.map_data.data.MapRelation;
+import org.osm2world.map_data.data.overlaps.MapElementId;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.osm.creation.JsonStringReader;
@@ -269,9 +272,10 @@ public class WebModule {
 			Predicate<WorldObject> filter = x -> true;
 
 			if (!filterIds.isEmpty()) {
+				List<String> expandedFilterIds = expandRelations(scene.getMapData(), filterIds);
 				filter = worldObject -> getAncestorsAndAttachmentTargets(worldObject).stream()
 								.map(o -> o.getPrimaryMapElement().getElementWithId().toString())
-								.anyMatch(filterIds::contains);
+								.anyMatch(expandedFilterIds::contains);
 			}
 
 			var meshOutput = new MeshOutput(filter);
@@ -293,6 +297,26 @@ public class WebModule {
 			}
 
 			return webMeshes.toArray(O2WMesh[]::new);
+
+		}
+
+		/**
+		 * returns the input ids, plus the ids of relation members if the input contains relation ids
+		 */
+		private static List<String> expandRelations(MapData mapData, List<String> elementIds) {
+
+			List<String> result = new ArrayList<>(elementIds);
+
+			for (String elementId : elementIds) {
+				MapElementId id = MapElementId.parse(elementId);
+				if (id != null && mapData.getElement(id.string()) instanceof MapRelation relation) {
+					for (var membership : relation.getMembers()) {
+						result.add(membership.getElement().toString());
+					}
+				}
+			}
+
+			return result;
 
 		}
 
