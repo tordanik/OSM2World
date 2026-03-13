@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
@@ -19,11 +21,12 @@ import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 abstract public class SpindleRoof extends Roof {
 
-	public SpindleRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, material);
+	public SpindleRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(buildingPart, originalPolygon, tags, material);
 	}
 
 	@Override

@@ -239,7 +239,7 @@ public class ExteriorBuildingWall {
 						|| !hasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
 
 					try {
-						mainSurface = new WallSurface(material, bottomPoints, topPoints);
+						mainSurface = new WallSurface(buildingPart, material, bottomPoints, topPoints);
 					} catch (InvalidGeometryException ignored) {}
 
 					createRoofSurface = false;
@@ -249,7 +249,7 @@ public class ExteriorBuildingWall {
 					// using window textures. Need to separate the bit of wall "in the roof" which should not have windows.
 
 					try {
-						mainSurface = new WallSurface(material, bottomPoints, roofBottomPoints);
+						mainSurface = new WallSurface(buildingPart, material, bottomPoints, roofBottomPoints);
 					} catch (InvalidGeometryException ignored) {}
 
 					createRoofSurface = true;
@@ -277,7 +277,7 @@ public class ExteriorBuildingWall {
 						List<VectorXYZ> upper = (level.relativeEleTop() - floorHeight >= roofBottomHeight - 0.02) ? roofBottomPoints
 								: bottomPoints.stream().map(p -> p.addY(level.relativeEleTop() - floorHeight)).toList();
 
-						WallSurface levelSurface = new WallSurface(material, lower, upper);
+						WallSurface levelSurface = new WallSurface(buildingPart, material, lower, upper);
 						surfacesByLevelNumber.put(level.level, levelSurface);
 						levelsBySurface.put(levelSurface, level);
 
@@ -297,7 +297,7 @@ public class ExteriorBuildingWall {
 				/* create a surface for the wall of the roof level(s) */
 
 				try {
-					WallSurface roofSurface = new WallSurface(material, roofBottomPoints, topPoints);
+					WallSurface roofSurface = new WallSurface(buildingPart, material, roofBottomPoints, topPoints);
 					for (Level l : buildingPart.levelStructure.levels(EnumSet.of(LevelType.ROOF))) {
 						surfacesByLevelNumber.put(l.level, roofSurface);
 						levelsBySurface.put(roofSurface, l);

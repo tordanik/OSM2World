@@ -1,6 +1,7 @@
 package org.osm2world.output.common;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.osm2world.output.Output;
 import org.osm2world.scene.mesh.Mesh;
@@ -14,9 +15,22 @@ import org.osm2world.world.data.WorldObject;
  */
 public class MeshOutput extends AbstractOutput implements DrawBasedOutput {
 
+	private final Predicate<WorldObject> worldObjectFilter;
+
 	protected final MeshStore meshStore = new MeshStore();
 
 	protected WorldObject currentWorldObject = null;
+
+	/**
+	 * @param worldObjectFilter  only {@link WorldObject}s matching this filter will be included in the output
+	 */
+	public MeshOutput(Predicate<WorldObject> worldObjectFilter) {
+		this.worldObjectFilter = worldObjectFilter;
+	}
+
+	public MeshOutput() {
+		this(x -> true);
+	}
 
 	@Override
 	public void beginObject(WorldObject object) {
@@ -25,6 +39,8 @@ public class MeshOutput extends AbstractOutput implements DrawBasedOutput {
 
 	@Override
 	public void drawMesh(Mesh mesh) {
+
+		if (!worldObjectFilter.test(currentWorldObject)) return;
 
 		MeshMetadata metadata = (currentWorldObject != null)
 				? new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),

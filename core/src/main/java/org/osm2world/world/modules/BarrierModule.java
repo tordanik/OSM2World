@@ -234,7 +234,7 @@ public class BarrierModule extends AbstractModule {
 
 			/* draw the sides of the wall */
 
-			target.setCurrentAttachmentTypes(baseEleFunction, "wall");
+			target.setCurrentAttachmentTypes(this, baseEleFunction, "wall");
 
 			reverse(leftTopOutline);
 			reverse(leftBottomOutline);

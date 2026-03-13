@@ -195,7 +195,7 @@ public class IndoorModule extends AbstractModule {
 
 					List<VectorXYZ> topPoints = new ArrayList<>(bottomPoints).stream().map(v -> v.addY(carHeight)).collect(toList());
 
-					WallSurface frontSurface = new WallSurface(STEEL.get(config), bottomPoints, topPoints);
+					WallSurface frontSurface = new WallSurface(this, STEEL.get(config), bottomPoints, topPoints);
 
 					List<VectorXYZ> bottomPointsReverse = new ArrayList<>(bottomPoints);
 					List<VectorXYZ> topPointsReverse = new ArrayList<>(topPoints);
@@ -203,7 +203,7 @@ public class IndoorModule extends AbstractModule {
 					Collections.reverse(bottomPointsReverse);
 					Collections.reverse(topPointsReverse);
 
-					WallSurface backSurface = new WallSurface(STEEL.get(config), bottomPointsReverse, topPointsReverse);
+					WallSurface backSurface = new WallSurface(this, STEEL.get(config), bottomPointsReverse, topPointsReverse);
 
 					LineSegmentXZ carSegment = new LineSegmentXZ(carOuterPoints.get((i + 1) % carOuterPoints.size()), carOuterPoints.get(i));
 					MapNode doorNode = lineSegIndexToDoorNode.get(i);

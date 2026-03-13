@@ -4,15 +4,18 @@ import static java.util.Arrays.asList;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 public class OnionRoof extends SpindleRoof {
 
-	public OnionRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, material.makeSmooth());
+	public OnionRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(buildingPart, originalPolygon, tags, material.makeSmooth());
 	}
 
 	@Override

@@ -4,12 +4,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.osm.creation.JsonStringReader;
+import org.osm2world.output.common.MeshOutput;
 import org.osm2world.scene.Scene;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
@@ -17,6 +19,8 @@ import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.platform.json.JsonImplementationBrowser;
 import org.osm2world.util.platform.uri.HttpUriImplementationBrowser;
+import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.data.WorldObject;
 import org.teavm.jso.*;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.function.JSConsumer;
@@ -223,10 +227,17 @@ public class WebModule {
 		 * @param osmJson  a JSON string
 		 * @param onSuccess  callback which will receive an array of WebMesh objects if the conversion succeeds
 		 * @param onError   optional error callback, can be null
+		 * @param options   object with extra options, can be null
 		 */
 		@JSExport
 		public void convertJson(String osmJson,
-				JSConsumer<JSArray<O2WMesh>> onSuccess, @Nullable JSConsumer<String> onError) {
+				JSConsumer<JSArray<O2WMesh>> onSuccess, @Nullable JSConsumer<String> onError,
+				JSObject options) {
+
+			Map<String, ?> optionMap = options != null ? jsObjectToMap(options) : Map.of();
+			List<String> filterIds = optionMap.get("filterIds") instanceof List<?> l
+					? l.stream().map(Object::toString).toList()
+					: List.of();
 
 			var osmReader = new JsonStringReader(osmJson);
 
@@ -240,7 +251,7 @@ public class WebModule {
 
 					Scene scene = o2w.convert(osmReader, null, null);
 
-					O2WMesh[] meshArray = sceneToMeshArray(scene);
+					O2WMesh[] meshArray = sceneToMeshArray(scene, filterIds);
 					onSuccess.accept(JSArray.of(meshArray));
 
 				} catch (Exception e) {
@@ -253,9 +264,20 @@ public class WebModule {
 
 		}
 
-		private static O2WMesh[] sceneToMeshArray(Scene scene) {
+		private static O2WMesh[] sceneToMeshArray(Scene scene, List<String> filterIds) {
 
-			var meshStore = new MeshStore(scene.getMeshesWithMetadata());
+			Predicate<WorldObject> filter = x -> true;
+
+			if (!filterIds.isEmpty()) {
+				filter = worldObject -> getAncestorsAndAttachmentTargets(worldObject).stream()
+								.map(o -> o.getPrimaryMapElement().getElementWithId().toString())
+								.anyMatch(filterIds::contains);
+			}
+
+			var meshOutput = new MeshOutput(filter);
+			meshOutput.outputScene(scene);
+
+			var meshStore = new MeshStore(meshOutput.getMeshesWithMetadata());
 
 			meshStore = meshStore.process(List.of(
 					new MeshStore.EmulateDoubleSidedMaterials(),
@@ -271,6 +293,52 @@ public class WebModule {
 			}
 
 			return webMeshes.toArray(O2WMesh[]::new);
+
+		}
+
+		/**
+		 * returns a set containing the world object itself, its ancestors (by reecursing through
+		 * {@link WorldObject#getParent()}) and anything this object's {@link AttachmentConnector}s
+		 * are attached to (again, recursively).
+		 */
+		private static Set<WorldObject> getAncestorsAndAttachmentTargets(WorldObject worldObject) {
+
+			Set<WorldObject> result = new HashSet<>();
+
+			Set<WorldObject> currentObjects = new HashSet<>();
+			currentObjects.add(worldObject);
+
+			while (!currentObjects.isEmpty()) {
+
+				result.addAll(currentObjects);
+				if (result.size() > 1000) throw new Error("Likely recursive loop detected");
+
+				Set<WorldObject> nextObjects = new HashSet<>();
+
+				for (WorldObject currentObject : currentObjects) {
+
+					if (currentObject.getParent() != null) {
+						nextObjects.add(currentObject.getParent());
+					}
+
+					for (AttachmentConnector connector : currentObject.getAttachmentConnectors()) {
+						if (connector.isAttached()) {
+							WorldObject attachmentTarget = connector.getAttachedSurface().getWorldObject();
+							if (attachmentTarget != null) {
+								nextObjects.add(attachmentTarget);
+							}
+						}
+					}
+
+					nextObjects.removeIf(result::contains);
+
+				}
+
+				currentObjects = nextObjects;
+
+			}
+
+			return result;
 
 		}
 
@@ -298,13 +366,23 @@ public class WebModule {
 	private static native String[] getKeys(JSObject obj);
 
 	@JSBody(params = {"obj", "key"}, script = "return obj[key];")
-	private static native String getProperty(JSObject obj, String key);
+	private static native JSObject getProperty(JSObject obj, String key);
 
-	private static Map<String, String> jsObjectToMap(JSObject obj) {
-		Map<String, String> map = new HashMap<>();
+	@JSBody(params = {"value"}, script = "return Array.isArray(value);")
+	private static native boolean isArray(JSObject value);
+
+	private static Map<String, Object> jsObjectToMap(JSObject obj) {
+		Map<String, Object> map = new HashMap<>();
 		for (String key : getKeys(obj)) {
-			String value = getProperty(obj, key);
-			if (value != null) {
+			JSObject value = getProperty(obj, key);
+			if (isArray(value)) {
+				JSArray<JSObject> jsArray = value.cast();
+				List<?> list = new ArrayList<>();
+				for (int i = 0; i < jsArray.getLength(); i++) {
+					list.add(jsArray.get(i).cast());
+				}
+				map.put(key, list);
+			} else if (value != null) {
 				map.put(key, value);
 			}
 		}

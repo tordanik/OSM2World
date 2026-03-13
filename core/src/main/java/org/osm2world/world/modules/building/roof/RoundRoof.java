@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
@@ -24,9 +26,9 @@ public class RoundRoof extends RoofWithRidge {
 	private final List<LineSegmentXZ> capParts;
 	private final int rings;
 
-	public RoundRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+	public RoundRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(0, originalPolygon, tags, material.makeSmooth());
+		super(buildingPart, 0, originalPolygon, tags, material.makeSmooth());
 
 		/* determine how many segments to use to simulate a round surface */
 

@@ -23,6 +23,7 @@ import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.modules.building.BuildingPart;
 
 /**
  * superclass for roofs that have exactly one height value
@@ -35,8 +36,8 @@ abstract public class HeightfieldRoof extends Roof {
 
 	protected @Nullable AttachmentSurface attachmentSurface;
 
-	public HeightfieldRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, material);
+	public HeightfieldRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(buildingPart, originalPolygon, tags, material);
 	}
 
 	/** returns segments within the roof polygon that define apex nodes of the roof */
@@ -103,11 +104,12 @@ abstract public class HeightfieldRoof extends Roof {
 			List<String> types = List.of("roof" + level, "roof", "floor" + level);
 
 			try {
-				attachmentSurface = new AttachmentSurface(types, getRoofTriangles(baseEle));
+				attachmentSurface = new AttachmentSurface(types, this.buildingPart, getRoofTriangles(baseEle));
 			} catch (Exception e) {
 				ConversionLog.error("Suppressed exception in HeightfieldRoof attachment surface generation", e);
 				PolygonXYZ flatPolygon = getPolygon().getOuter().xyz(baseEle);
-				attachmentSurface = new AttachmentSurface(types, List.of(new FaceXYZ(flatPolygon.vertices())));
+				attachmentSurface = new AttachmentSurface(types, this.buildingPart,
+						List.of(new FaceXYZ(flatPolygon.vertices())));
 			}
 
 		}

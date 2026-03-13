@@ -7,17 +7,20 @@ import static org.osm2world.math.algorithms.GeometryUtil.insertIntoPolygon;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 public class GabledRoof extends RoofWithRidge {
 
-	public GabledRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(0, originalPolygon, tags, material);
+	public GabledRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(buildingPart, 0, originalPolygon, tags, material);
 	}
 
 	@Override

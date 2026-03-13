@@ -31,6 +31,7 @@ import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.ProceduralWorldObject;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
@@ -43,6 +44,7 @@ import org.osm2world.world.data.ProceduralWorldObject;
  */
 public class WallSurface {
 
+	private final @Nullable WorldObject worldObject;
 	private final Material material;
 
 	private final List<VectorXZ> lowerBoundary;
@@ -57,15 +59,16 @@ public class WallSurface {
 	/**
 	 * Constructs a wall surface from a lower and upper wall boundary.
 	 *
-	 * @param lowerBoundaryXYZ  the lower boundary in global 3D space
-	 * @param upperBoundaryXYZ  the upper boundary in global 3D space. Must be above the lower boundary.
-	 *
-	 * @throws InvalidGeometryException  if the lower and upper boundary do not represent a proper surface.
-	 * This can happen, for example, because the wall has a zero or almost-zero height.
+	 * @param worldObject the parent {@link WorldObject}, used for identifying the attachment surface's owner, can be null
+	 * @param lowerBoundaryXYZ the lower boundary in global 3D space
+	 * @param upperBoundaryXYZ the upper boundary in global 3D space. Must be above the lower boundary.
+	 * @throws InvalidGeometryException if the lower and upper boundary do not represent a proper surface.
+	 *                                  This can happen, for example, because the wall has a zero or almost-zero height.
 	 */
-	public WallSurface(Material material, List<VectorXYZ> lowerBoundaryXYZ,
+	public WallSurface(@Nullable WorldObject worldObject, Material material, List<VectorXYZ> lowerBoundaryXYZ,
 			List<VectorXYZ> upperBoundaryXYZ) throws IllegalArgumentException {
 
+		this.worldObject = worldObject;
 		this.material = material;
 		this.lowerBoundaryXYZ = lowerBoundaryXYZ;
 
@@ -255,9 +258,9 @@ public class WallSurface {
 
 		/* render the wall */
 
-		target.setCurrentAttachmentTypes(attachmentTypes);
+		target.setCurrentAttachmentTypes(worldObject, attachmentTypes);
 		target.drawTriangles(material, trianglesXYZ, texCoordLists);
-		target.setCurrentAttachmentTypes();
+		target.setCurrentAttachmentTypes(worldObject);
 
 	}
 

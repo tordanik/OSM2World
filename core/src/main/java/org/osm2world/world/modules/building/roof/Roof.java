@@ -30,6 +30,8 @@ import org.osm2world.world.modules.building.LevelAndHeightData;
 /** the roof of a {@link BuildingPart} */
 abstract public class Roof {
 
+	protected final @Nullable BuildingPart buildingPart;
+
 	/**
 	 * the polygon of the {@link BuildingPart}.
 	 * The roof code may modify it by inserting additional points, see {@link #getPolygon()}
@@ -41,7 +43,8 @@ abstract public class Roof {
 
 	protected Double roofHeight;
 
-	public Roof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+	public Roof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		this.buildingPart = buildingPart;
 		this.originalPolygon = originalPolygon;
 		this.tags = tags;
 		this.material = material;
@@ -102,24 +105,24 @@ abstract public class Roof {
 	/**
 	 * creates the correct roof for the given roof:shape value
 	 */
-	public static final Roof createRoofForShape(String roofShape, MapArea area, PolygonWithHolesXZ originalPolygon,
+	public static final Roof createRoofForShape(String roofShape, BuildingPart buildingPart, MapArea area, PolygonWithHolesXZ originalPolygon,
 			TagSet tags, Material material, O2WConfig config) {
 
 		return switch (roofShape) {
-			case "pyramidal" -> new PyramidalRoof(originalPolygon, tags, material);
-			case "onion" -> new OnionRoof(originalPolygon, tags, material);
-			case "skillion" -> new SkillionRoof(originalPolygon, tags, material);
-			case "gabled" -> new GabledRoof(originalPolygon, tags, material);
-			case "hipped" -> new HippedRoof(originalPolygon, tags, material);
-			case "half-hipped" -> new HalfHippedRoof(originalPolygon, tags, material);
-			case "gambrel" -> new GambrelRoof(originalPolygon, tags, material);
-			case "mansard" -> new MansardRoof(originalPolygon, tags, material);
-			case "dome" -> new DomeRoof(originalPolygon, tags, material);
-			case "round" -> new RoundRoof(originalPolygon, tags, material);
-			case "cone" -> new ConeRoof(originalPolygon, tags, material);
-			case "chimney" -> new ChimneyRoof(originalPolygon, tags, material, config);
-			case "complex" -> new ComplexRoof(area, originalPolygon, tags, material);
-			default -> new FlatRoof(originalPolygon, tags, material);
+			case "pyramidal" -> new PyramidalRoof(buildingPart, originalPolygon, tags, material);
+			case "onion" -> new OnionRoof(buildingPart, originalPolygon, tags, material);
+			case "skillion" -> new SkillionRoof(buildingPart, originalPolygon, tags, material);
+			case "gabled" -> new GabledRoof(buildingPart, originalPolygon, tags, material);
+			case "hipped" -> new HippedRoof(buildingPart, originalPolygon, tags, material);
+			case "half-hipped" -> new HalfHippedRoof(buildingPart, originalPolygon, tags, material);
+			case "gambrel" -> new GambrelRoof(buildingPart, originalPolygon, tags, material);
+			case "mansard" -> new MansardRoof(buildingPart, originalPolygon, tags, material);
+			case "dome" -> new DomeRoof(buildingPart, originalPolygon, tags, material);
+			case "round" -> new RoundRoof(buildingPart, originalPolygon, tags, material);
+			case "cone" -> new ConeRoof(buildingPart, originalPolygon, tags, material);
+			case "chimney" -> new ChimneyRoof(buildingPart, originalPolygon, tags, material, config);
+			case "complex" -> new ComplexRoof(buildingPart, area, originalPolygon, tags, material);
+			default -> new FlatRoof(buildingPart, originalPolygon, tags, material);
 		};
 
 	}

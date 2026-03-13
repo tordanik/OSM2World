@@ -6,6 +6,8 @@ import static org.osm2world.util.ValueParseUtil.parseMeasure;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
@@ -18,6 +20,7 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.util.exception.InvalidGeometryException;
+import org.osm2world.world.modules.building.BuildingPart;
 
 /**
  * roof that has been mapped with explicit roof edge/ridge/apex elements
@@ -31,9 +34,9 @@ public class ComplexRoof extends HeightfieldRoof {
 	private Map<VectorXZ, Double> roofHeightMap;
 	private PolygonWithHolesXZ simplePolygon;
 
-	public ComplexRoof(MapArea area, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+	public ComplexRoof(@Nullable BuildingPart buildingPart, MapArea area, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(originalPolygon, tags, material);
+		super(buildingPart, originalPolygon, tags, material);
 
 		/* find ridge and/or edges
 		 * (apex nodes don't need to be handled separately

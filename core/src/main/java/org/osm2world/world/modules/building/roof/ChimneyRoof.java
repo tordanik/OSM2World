@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
@@ -22,14 +24,15 @@ import org.osm2world.scene.model.ExternalResourceModel;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
+import org.osm2world.world.modules.building.BuildingPart;
 
 /** the top of a chimney, modeled as a special kind of "roof" */
 public class ChimneyRoof extends Roof {
 
 	private final O2WConfig config;
 
-	public ChimneyRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material, O2WConfig config) {
-		super(originalPolygon, tags, material);
+	public ChimneyRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material, O2WConfig config) {
+		super(buildingPart, originalPolygon, tags, material);
 		this.config = config;
 	}
 

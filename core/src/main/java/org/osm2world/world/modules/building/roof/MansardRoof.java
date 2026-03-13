@@ -6,19 +6,22 @@ import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 public class MansardRoof extends RoofWithRidge {
 
 	private final LineSegmentXZ mansardEdge1, mansardEdge2;
 
-	public MansardRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+	public MansardRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(1/3.0, originalPolygon, tags, material);
+		super(buildingPart, 1/3.0, originalPolygon, tags, material);
 
 		mansardEdge1 = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, ridge.p1, 1/3.0),

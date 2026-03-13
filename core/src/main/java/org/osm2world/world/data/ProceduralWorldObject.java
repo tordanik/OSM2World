@@ -31,6 +31,7 @@ public interface ProceduralWorldObject extends WorldObject {
 
 		private @Nullable LODRange currentLodRange = null;
 		private List<String> currentAttachmentTypes = List.of();
+		private @Nullable WorldObject currentAttachmentObject = null;
 		private Function<VectorXZ, Double> currentBaseEleFunction = null;
 
 		public @Nullable LODRange getCurrentLodRange() {
@@ -45,13 +46,14 @@ public interface ProceduralWorldObject extends WorldObject {
 			this.setCurrentLodRange(new LODRange(minLod, maxLod));
 		}
 
-		public void setCurrentAttachmentTypes(String... attachmentTypes) {
-			setCurrentAttachmentTypes(null, attachmentTypes);
+		public void setCurrentAttachmentTypes(WorldObject worldObject, String... attachmentTypes) {
+			setCurrentAttachmentTypes(worldObject, null, attachmentTypes);
 		}
 
-		public void setCurrentAttachmentTypes(@Nullable Function<VectorXZ, Double> baseEleFunction,
-				String... attachmentTypes) {
+		public void setCurrentAttachmentTypes(WorldObject worldObject,
+				@Nullable Function<VectorXZ, Double> baseEleFunction, String... attachmentTypes) {
 			this.currentBaseEleFunction = baseEleFunction;
+			this.currentAttachmentObject = worldObject;
 			this.currentAttachmentTypes = List.of(attachmentTypes);
 		}
 
@@ -65,7 +67,7 @@ public interface ProceduralWorldObject extends WorldObject {
 			}
 
 			if (!currentAttachmentTypes.isEmpty()) {
-				attachmentSurfaces.add(AttachmentSurface.fromMeshes(currentAttachmentTypes, List.of(mesh), currentBaseEleFunction));
+				attachmentSurfaces.add(AttachmentSurface.fromMeshes(currentAttachmentTypes, currentAttachmentObject, List.of(mesh), currentBaseEleFunction));
 			}
 
 		}

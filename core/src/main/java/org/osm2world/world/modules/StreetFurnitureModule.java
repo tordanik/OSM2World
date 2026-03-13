@@ -242,7 +242,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public Collection<AttachmentSurface> getAttachmentSurfaces() {
-			return singleton(AttachmentSurface.fromMeshes("pole", buildMeshes()));
+			return singleton(AttachmentSurface.fromMeshes("pole", this, buildMeshes()));
 		}
 
 	}
@@ -1722,7 +1722,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw pole */
 
-			target.setCurrentAttachmentTypes("bus_stop", "pole");
+			target.setCurrentAttachmentTypes(this, "bus_stop", "pole");
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 
@@ -1732,7 +1732,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase(),
 					height - signHeight, 0.05, 0.05, false, true);
 
-			target.setCurrentAttachmentTypes();
+			target.setCurrentAttachmentTypes(this);
 
 			/* draw sign */
 			target.drawBox(BUS_STOP_SIGN.get(config),
@@ -1887,13 +1887,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw pole */
 
-			target.setCurrentAttachmentTypes("street_lamp");
+			target.setCurrentAttachmentTypes(this, "street_lamp");
 
 			target.drawExtrudedShape(material, new CircleXZ(NULL_VECTOR, 1),
 					asList(getBase(), getBase().addY(0.5), getBase().addY(0.5 + poleHeight)),
 					null, asList(0.16, 0.08, 0.08), null);
 
-			target.setCurrentAttachmentTypes();
+			target.setCurrentAttachmentTypes(this);
 
 			/* draw lamp */
 

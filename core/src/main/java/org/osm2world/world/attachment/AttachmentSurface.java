@@ -20,6 +20,7 @@ import org.osm2world.math.shapes.FaceXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.scene.mesh.Geometry;
 import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * a surface (consisting of one or more {@link FaceXYZ}s) that {@link AttachmentConnector} can attach to
@@ -28,6 +29,9 @@ public class AttachmentSurface implements BoundedObject {
 
 	/** the surface categories this surface belongs to, e.g. "pole" or "wall" */
 	private final Collection<String> types;
+
+	/** the object this surface belongs to */
+	private final @Nullable WorldObject worldObject;
 
 	/** the faces (flat polygons) that define the surface. All faces are counterclockwise */
 	private final Collection<? extends FlatSimplePolygonShapeXYZ> faces;
@@ -43,21 +47,26 @@ public class AttachmentSurface implements BoundedObject {
 
 	private final Collection<AttachmentConnector> attachedConnectors = new ArrayList<>();
 
-	public AttachmentSurface(Collection<String> types, Collection<? extends FlatSimplePolygonShapeXYZ> faces,
+	public AttachmentSurface(Collection<String> types, WorldObject worldObject, Collection<? extends FlatSimplePolygonShapeXYZ> faces,
 			Function<VectorXZ, Double> baseEleFunction) {
+		this.worldObject = worldObject;
 		if (types.isEmpty() || faces.isEmpty()) throw new IllegalArgumentException();
 		this.types = types;
 		this.faces = faces;
 		this.baseEleFunction = baseEleFunction;
 	}
 
-	public AttachmentSurface(Collection<String> types, Collection<? extends FlatSimplePolygonShapeXYZ> faces) {
-		this(types, faces, pos ->
+	public AttachmentSurface(Collection<String> types, WorldObject worldObject, Collection<? extends FlatSimplePolygonShapeXYZ> faces) {
+		this(types, worldObject, faces, pos ->
 				faces.stream().flatMap(f -> f.verticesNoDup().stream()).mapToDouble(v -> v.y).min().orElseGet(() -> 0));
 	}
 
 	public Collection<String> getTypes() {
 		return types;
+	}
+
+	public @Nullable WorldObject getWorldObject() {
+		return worldObject;
 	}
 
 	public Collection<? extends FlatSimplePolygonShapeXYZ> getFaces() {
@@ -99,27 +108,27 @@ public class AttachmentSurface implements BoundedObject {
 		return "{" + types + ", " + faces + "}";
 	}
 
-	public static AttachmentSurface fromGeometry(String type, Geometry... geometries) {
-		return fromGeometry(singletonList(type), geometries);
+	public static AttachmentSurface fromGeometry(String type, WorldObject worldObject, Geometry... geometries) {
+		return fromGeometry(singletonList(type), worldObject, geometries);
 	}
 
-	public static AttachmentSurface fromGeometry(Collection<String> types, Geometry... geometries) {
+	public static AttachmentSurface fromGeometry(Collection<String> types, WorldObject worldObject, Geometry... geometries) {
 		List<FaceXYZ> faces = new ArrayList<>();
 		for (Geometry g : geometries) {
 			g.asTriangles().triangles.forEach(t -> faces.add(new FaceXYZ(t.vertices())));
 		}
-		return new AttachmentSurface(types, faces);
+		return new AttachmentSurface(types, worldObject, faces);
 	}
 
-	public static AttachmentSurface fromMeshes(String type, Iterable<Mesh> meshes) {
-		return fromMeshes(singletonList(type), meshes);
+	public static AttachmentSurface fromMeshes(String type, WorldObject worldObject, Iterable<Mesh> meshes) {
+		return fromMeshes(singletonList(type), worldObject, meshes);
 	}
 
-	public static AttachmentSurface fromMeshes(Collection<String> types, Iterable<Mesh> meshes) {
-		return fromMeshes(types, meshes, null);
+	public static AttachmentSurface fromMeshes(Collection<String> types, WorldObject worldObject, Iterable<Mesh> meshes) {
+		return fromMeshes(types, worldObject, meshes, null);
 	}
 
-	public static AttachmentSurface fromMeshes(Collection<String> types, Iterable<Mesh> meshes,
+	public static AttachmentSurface fromMeshes(Collection<String> types, WorldObject worldObject, Iterable<Mesh> meshes,
 			@Nullable Function<VectorXZ, Double> baseEleFunction) {
 
 		List<FlatSimplePolygonShapeXYZ> faces = new ArrayList<>();
@@ -128,9 +137,9 @@ public class AttachmentSurface implements BoundedObject {
 		}
 
 		if (baseEleFunction != null) {
-			return new AttachmentSurface(types, faces, baseEleFunction);
+			return new AttachmentSurface(types, worldObject, faces, baseEleFunction);
 		} else {
-			return new AttachmentSurface(types, faces);
+			return new AttachmentSurface(types, worldObject, faces);
 		}
 
 	}

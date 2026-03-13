@@ -6,20 +6,23 @@ import static org.osm2world.math.algorithms.GeometryUtil.*;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 public class GambrelRoof extends RoofWithRidge {
 
 	private final LineSegmentXZ cap1part, cap2part;
 
-	public GambrelRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+	public GambrelRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(0, originalPolygon, tags, material);
+		super(buildingPart, 0, originalPolygon, tags, material);
 
 		cap1part = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, cap1.p2, 1/6.0),

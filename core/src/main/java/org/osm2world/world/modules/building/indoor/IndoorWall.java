@@ -832,7 +832,7 @@ public class IndoorWall {
 
 						List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight - topOffset);
 
-						WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
+						WallSurface mainSurface = new WallSurface(data.getBuildingPart(), material, bottomPoints, topPoints);
 
 						/* back wall surface */
 
@@ -845,7 +845,7 @@ public class IndoorWall {
 
 						List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight - topOffset);
 
-						WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
+						WallSurface backSurface = new WallSurface(data.getBuildingPart(), material, backBottomPoints, backTopPoints);
 
 						/* generate wall edges */
 
@@ -878,11 +878,11 @@ public class IndoorWall {
 							target.drawTriangles(innerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
 
 
-							rightSurface = new WallSurface(material,
+							rightSurface = new WallSurface(data.getBuildingPart(), material,
 									asList(bottomPoints.get(1), backBottomPoints.get(0)),
 									asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
 
-							leftSurface = new WallSurface(material,
+							leftSurface = new WallSurface(data.getBuildingPart(), material,
 									asList(backBottomPoints.get(1), bottomPoints.get(0)),
 									asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
 

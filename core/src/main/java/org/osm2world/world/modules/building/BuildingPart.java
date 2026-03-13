@@ -116,7 +116,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		Material materialRoof = createRoofMaterial(tags, config);
 
 		try {
-			roof = Roof.createRoofForShape(roofShape, area, polygon, tags, materialRoof, config);
+			roof = Roof.createRoofForShape(roofShape, this, area, polygon, tags, materialRoof, config);
 		} catch (InvalidGeometryException e) {
 			throw new InvalidGeometryException("error constructing roof for " + area + ": " + e);
 		}

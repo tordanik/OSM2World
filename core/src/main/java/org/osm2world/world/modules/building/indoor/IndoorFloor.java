@@ -49,7 +49,7 @@ public class IndoorFloor {
 
         if (attachmentSurface == null) {
 			List<TriangleXYZ> triangles = triangulateFloorPolygons(singleton(polygon));
-			attachmentSurface = new AttachmentSurface(List.of("floor" + this.level), triangles);
+			attachmentSurface = new AttachmentSurface(List.of("floor" + this.level), buildingPart, triangles);
         }
 
 		return List.of(attachmentSurface);

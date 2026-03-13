@@ -60,10 +60,10 @@ public class Ceiling {
                 .map(t -> t.makeClockwise().xyz(floorEle - 0.2))
                 .collect(toList());
 
-        target.setCurrentAttachmentTypes("ceiling" + this.level);
+        target.setCurrentAttachmentTypes(buildingPart, "ceiling" + this.level);
         target.drawTriangles(material, trianglesXYZ,
                 triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
-        target.setCurrentAttachmentTypes();
+        target.setCurrentAttachmentTypes(null);
     }
 
     private void renderSides(CommonTarget target, List<LineSegmentXZ> sides, double floorEle) {

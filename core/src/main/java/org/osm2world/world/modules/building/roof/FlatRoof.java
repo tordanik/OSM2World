@@ -4,16 +4,19 @@ import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.modules.building.BuildingPart;
 
 public class FlatRoof extends HeightfieldRoof {
 
-	public FlatRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(originalPolygon, tags, material);
+	public FlatRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(buildingPart, originalPolygon, tags, material);
 	}
 
 	@Override

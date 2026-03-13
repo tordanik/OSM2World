@@ -21,6 +21,7 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.util.exception.InvalidGeometryException;
+import org.osm2world.world.modules.building.BuildingPart;
 
 /**
  * tagged roof with a ridge.
@@ -47,10 +48,10 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 	 * @param relativeRoofOffset  distance of ridge to outline
 	 *    relative to length of roof cap; 0 if ridge ends at outline
 	 */
-	public RoofWithRidge(double relativeRoofOffset, PolygonWithHolesXZ originalPolygon,
-			TagSet tags, Material material) {
+	public RoofWithRidge(@Nullable BuildingPart buildingPart, double relativeRoofOffset,
+			PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(originalPolygon, tags, material);
+		super(buildingPart, originalPolygon, tags, material);
 
 		SimplePolygonXZ outerPoly = originalPolygon.getOuter();
 
