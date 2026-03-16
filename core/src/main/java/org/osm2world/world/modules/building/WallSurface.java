@@ -2,19 +2,20 @@ package org.osm2world.world.modules.building;
 
 import static com.google.common.collect.Iterables.getLast;
 import static java.lang.Math.*;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.util.Collections.*;
-import static java.util.Collections.min;
+import static java.util.Collections.reverse;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.math.algorithms.GeometryUtil.*;
+import static org.osm2world.math.algorithms.GeometryUtil.interpolateOn;
 import static org.osm2world.scene.material.DefaultMaterials.BUILDING_WINDOWS;
 import static org.osm2world.scene.material.DefaultMaterials.GLASS_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -275,7 +276,7 @@ public class WallSurface {
 	}
 
 	public TriangleXYZ convertTo3D(TriangleXZ t) {
-		return t.xyz(v -> convertTo3D(v));
+		return t.xyz(this::convertTo3D);
 	}
 
 	public PolygonXYZ convertTo3D(PolygonShapeXZ polygon) {
@@ -292,14 +293,31 @@ public class WallSurface {
 	 */
 	public VectorXZ toWallCoord(VectorXYZ v) {
 
-		LineSegmentXZ closestSegment =
-				min(footprint.getSegments(), Comparator.comparing(s -> distanceFromLineSegment(v.xz(), s)));
+		VectorXZ vXZ = v.xz();
 
-		VectorXZ projectedPointXZ = projectPerpendicular(v.xz(), closestSegment.p1, closestSegment.p2);
-		double relativeLengthProjectedPoint = footprint.offsetOf(projectedPointXZ) / footprint.getLength();
+		List<LineSegmentXZ> segments = footprint.getSegments();
+		VectorXZ[] closestPointPerSegment = new VectorXZ[segments.size()];
+
+		int closestSegment = -1;
+		double distanceClosestSegment = Double.POSITIVE_INFINITY;
+
+		for (int i = 0; i < segments.size(); i++) {
+			// FIXME: projects onto line, not segment
+			closestPointPerSegment[i] = segments.get(i).closestPoint(vXZ);
+			double distance = closestPointPerSegment[i].distanceTo(vXZ);
+			if (distance < distanceClosestSegment) {
+				distanceClosestSegment = distance;
+				closestSegment = i;
+			}
+		}
+
+		VectorXZ closestPoint = closestPointPerSegment[closestSegment];
+
+		double offsetClosestPoint = segments.get(closestSegment).p1.distanceTo(closestPoint);
+		for (int i = 0; i < closestSegment; i++) { offsetClosestPoint += segments.get(i).getLength(); }
 
 		return new VectorXZ(
-				relativeLengthProjectedPoint * this.getLength(),
+				offsetClosestPoint,
 				v.y - lowerBoundaryXYZ.get(0).y);
 
 	}
@@ -326,7 +344,7 @@ public class WallSurface {
 	}
 
 	/**
-	 * generates texture coordinates for textures placed on the wall surface.
+	 * Generates texture coordinates for textures placed on the wall surface.
 	 * One texture coordinate dimension running along the wall, the other running up the wall.
 	 * Input coordinates are surface coordinates.
 	 *
@@ -377,12 +395,12 @@ public class WallSurface {
 
 
 	/**
-	 * generates texture coordinates for textures placed on the wall surface,
+	 * Generates texture coordinates for textures placed on the wall surface,
 	 * compare {@link #texCoords(List, TextureDataDimensions, VectorXZ, Double)}.
 	 * Input coordinates are global coordinates and will be projected onto the wall.
 	 */
 	public List<VectorXZ> texCoordsGlobal(List<VectorXYZ> vs, TextureDataDimensions textureDimensions) {
-		List<VectorXZ> wallSurfaceVectors = vs.stream().map(v -> toWallCoord(v)).collect(toList());
+		List<VectorXZ> wallSurfaceVectors = vs.stream().map(this::toWallCoord).toList();
 		return texCoords(wallSurfaceVectors, textureDimensions, NULL_VECTOR, null);
 	}
 

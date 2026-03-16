@@ -89,7 +89,7 @@ public class PolygonXYZ implements BoundedObject {
 	}
 
 	public PolygonXYZ add(VectorXYZ v) {
-		return new PolygonXYZ(vertices().stream().map(v::add).collect(toList()));
+		return new PolygonXYZ(vertices().stream().map(v::add).toList());
 	}
 
 	@Override
