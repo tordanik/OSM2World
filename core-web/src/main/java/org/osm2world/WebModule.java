@@ -1,5 +1,8 @@
 package org.osm2world;
 
+import static java.util.Objects.requireNonNullElse;
+import static org.osm2world.scene.mesh.NameUtil.getMaterialName;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -62,6 +65,9 @@ public class WebModule {
 	@JSTopLevel
 	public static class O2WMesh {
 
+		private final String name;
+		private final String materialName;
+
 		private final String baseColorTexture;
 		private final String opacityTexture;
 		private final String normalTexture;
@@ -76,6 +82,16 @@ public class WebModule {
 		private final int[] indices;
 		private final float[] normals;
 		private final float[] uvs;
+
+		@JSExport
+		public String name() {
+			return name;
+		}
+
+		@JSExport
+		public String materialName() {
+			return materialName;
+		}
 
 		@JSExport
 		public String baseColorTexture() {
@@ -132,7 +148,10 @@ public class WebModule {
 			return uvs;
 		}
 
-		public O2WMesh(Material material, TriangleGeometry geom) {
+		public O2WMesh(String name, String materialName, Material material, TriangleGeometry geom) {
+
+			this.name = name;
+			this.materialName = materialName;
 
 			/* material fields */
 
@@ -254,7 +273,7 @@ public class WebModule {
 
 					Scene scene = o2w.convert(osmReader, null, null);
 
-					O2WMesh[] meshArray = sceneToMeshArray(scene, filterIds, config.config.keepOsmElements());
+					O2WMesh[] meshArray = sceneToMeshArray(scene, filterIds, config);
 					onSuccess.accept(JSArray.of(meshArray));
 
 				} catch (Exception e) {
@@ -267,7 +286,7 @@ public class WebModule {
 
 		}
 
-		private static O2WMesh[] sceneToMeshArray(Scene scene, List<String> filterIds, boolean keepOsmElements) {
+		private static O2WMesh[] sceneToMeshArray(Scene scene, List<String> filterIds, O2WConfig config) {
 
 			Predicate<WorldObject> filter = x -> true;
 
@@ -282,7 +301,7 @@ public class WebModule {
 			meshOutput.outputScene(scene);
 
 			var mergeOptions = EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES);
-			if (!keepOsmElements) {
+			if (!config.config.keepOsmElements()) {
 				mergeOptions.add(MeshStore.MergeMeshes.MergeOption.MERGE_ELEMENTS);
 			}
 
@@ -298,7 +317,10 @@ public class WebModule {
 			List<O2WMesh> webMeshes = new ArrayList<>();
 
 			for (Mesh mesh : meshes) {
-				webMeshes.add(new O2WMesh(mesh.material, mesh.geometry.asTriangles()));
+				int index = meshes.indexOf(mesh);
+				webMeshes.add(new O2WMesh("Mesh_" + index,
+						requireNonNullElse(getMaterialName(mesh.material, config.config), "Material_" + index),
+						mesh.material, mesh.geometry.asTriangles()));
 			}
 
 			return webMeshes.toArray(O2WMesh[]::new);

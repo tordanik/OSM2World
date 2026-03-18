@@ -47,11 +47,8 @@ import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.scene.material.TextureLayer;
-import org.osm2world.scene.mesh.LevelOfDetail;
-import org.osm2world.scene.mesh.Mesh;
-import org.osm2world.scene.mesh.MeshStore;
+import org.osm2world.scene.mesh.*;
 import org.osm2world.scene.mesh.MeshStore.MergeMeshes.MergeOption;
-import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.GlobalValues;
 import org.osm2world.util.platform.json.JsonUtil;
@@ -302,7 +299,7 @@ public class GltfOutput extends AbstractOutput {
 		GltfMaterial material = new GltfMaterial();
 		material.pbrMetallicRoughness = new PbrMetallicRoughness();
 
-		material.name = getMaterialName(m, textureLayer);
+		material.name = NameUtil.getMaterialName(m, textureLayer, config);
 
 		material.alphaMode = switch (m.transparency()) {
 			case FALSE -> "OPAQUE";
@@ -636,28 +633,6 @@ public class GltfOutput extends AbstractOutput {
 			}
 			return byteBuffer;
 		}
-	}
-
-	private @Nullable String getMaterialName(Material m, @Nullable TextureLayer textureLayer) {
-
-		String name = config.mapStyle().getMaterialName(m);
-
-		if (name == null) {
-			if (textureLayer != null) {
-				if (textureLayer.toString().startsWith("TextureAtlas")) {
-					name = "TextureAtlas " + Integer.toHexString(m.hashCode());
-				} else if (!textureLayer.toString().contains(",")) {
-					name = textureLayer.toString();
-				}
-			}
-		} else {
-			if (textureLayer != null && m.textureLayers().size() > 1) {
-				name += "_layer" + m.textureLayers().indexOf(textureLayer);
-			}
-		}
-
-		return name;
-
 	}
 
 	private static void addMeshNameAndExtras(GltfNode node, MeshMetadata metadata, O2WConfig config) {
