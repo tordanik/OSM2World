@@ -254,7 +254,7 @@ public class WebModule {
 
 					Scene scene = o2w.convert(osmReader, null, null);
 
-					O2WMesh[] meshArray = sceneToMeshArray(scene, filterIds);
+					O2WMesh[] meshArray = sceneToMeshArray(scene, filterIds, config.config.keepOsmElements());
 					onSuccess.accept(JSArray.of(meshArray));
 
 				} catch (Exception e) {
@@ -267,7 +267,7 @@ public class WebModule {
 
 		}
 
-		private static O2WMesh[] sceneToMeshArray(Scene scene, List<String> filterIds) {
+		private static O2WMesh[] sceneToMeshArray(Scene scene, List<String> filterIds, boolean keepOsmElements) {
 
 			Predicate<WorldObject> filter = x -> true;
 
@@ -281,12 +281,17 @@ public class WebModule {
 			var meshOutput = new MeshOutput(filter);
 			meshOutput.outputScene(scene);
 
+			var mergeOptions = EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES);
+			if (!keepOsmElements) {
+				mergeOptions.add(MeshStore.MergeMeshes.MergeOption.MERGE_ELEMENTS);
+			}
+
 			var meshStore = new MeshStore(meshOutput.getMeshesWithMetadata());
 
 			meshStore = meshStore.process(List.of(
 					new MeshStore.EmulateDoubleSidedMaterials(),
 					new MeshStore.EmulateTextureLayers(),
-					new MeshStore.MergeMeshes(EnumSet.of(MeshStore.MergeMeshes.MergeOption.SINGLE_COLOR_MESHES))
+					new MeshStore.MergeMeshes(mergeOptions)
 			));
 			List<Mesh> meshes = meshStore.meshes();
 
