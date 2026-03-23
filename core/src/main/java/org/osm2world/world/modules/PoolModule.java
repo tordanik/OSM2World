@@ -18,6 +18,7 @@ import java.util.List;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
@@ -25,7 +26,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -178,6 +178,7 @@ public class PoolModule extends AbstractModule {
 		public void buildMeshesAndModels(Target target) {
 
 			//TODO parse material (e.g. for steel slides) and apply color to it
+			Material material = PLASTIC.get(config);
 
 			Color color = parseColor(primarySegment.getTags().getValue("color"), CSS_COLORS);
 
@@ -185,11 +186,11 @@ public class PoolModule extends AbstractModule {
 				color = DEFAULT_COLOR;
 			}
 
-			Material material = new Material(Interpolation.SMOOTH, color);
+			material = material.makeSmooth().withColor(color);
 
 			/* construct the baseline */
 
-			List<VectorXYZ> baseline = new ArrayList<VectorXYZ>(eleConnectors.size());
+			List<VectorXYZ> baseline = new ArrayList<>(eleConnectors.size());
 
 			for (EleConnector eleConnector : eleConnectors) {
 				baseline.add(eleConnector.getPosXYZ());
@@ -205,7 +206,7 @@ public class PoolModule extends AbstractModule {
 
 			double height = parseHeight(primarySegment.getTags(), (float)totalLength * 0.1f);
 
-			List<VectorXYZ> path = new ArrayList<VectorXYZ>(baseline.size());
+			List<VectorXYZ> path = new ArrayList<>(baseline.size());
 
 			VectorXYZ previousVector = null;
 
@@ -240,7 +241,12 @@ public class PoolModule extends AbstractModule {
 
 			for (VectorXYZ v : equallyDistributePointsAlong(PILLAR_DISTANCE, false, path)) {
 
-				double bottomHeight = -100;
+				double bottomHeight = -0.5;
+
+				if (!(config.terrainInterpolator().get() instanceof ZeroInterpolator)) {
+					// TODO use terrain height
+					bottomHeight = -100;
+				}
 
 				target.drawColumn(STEEL.get(config), null, v.y(bottomHeight),
 						v.y - bottomHeight, 0.15, 0.15, false, false);
