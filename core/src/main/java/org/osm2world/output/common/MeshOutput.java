@@ -33,14 +33,17 @@ public class MeshOutput extends AbstractOutput implements DrawBasedOutput {
 	}
 
 	@Override
+	public boolean includeObject(WorldObject object) {
+		return worldObjectFilter.test(object);
+	}
+
+	@Override
 	public void beginObject(WorldObject object) {
 		this.currentWorldObject = object;
 	}
 
 	@Override
 	public void drawMesh(Mesh mesh) {
-
-		if (!worldObjectFilter.test(currentWorldObject)) return;
 
 		MeshMetadata metadata = (currentWorldObject != null)
 				? new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),

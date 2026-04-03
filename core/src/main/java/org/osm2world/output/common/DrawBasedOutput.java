@@ -28,6 +28,14 @@ public interface DrawBasedOutput extends Output, CommonTarget {
 		return getConfiguration().lod();
 	}
 
+	/**
+	 * Determines whether a particular {@link WorldObject} should be rendered.
+	 * Allows implementors to filter out objects.
+	 */
+	default boolean includeObject(WorldObject object) {
+		return true;
+	}
+
 	@Override
 	default void outputScene(Scene scene) {
 		this.outputScene(scene, false);
@@ -41,7 +49,7 @@ public interface DrawBasedOutput extends Output, CommonTarget {
 	default void outputScene(Scene scene, boolean keepOpen) {
 
 		forEach(scene.getWorldObjects(), (WorldObject r) -> {
-			if (r.getParent() == null) {
+			if (includeObject(r) && r.getParent() == null) {
 				if (requireNonNullElse(getConfiguration(), new O2WConfig()).renderUnderground() || r.getGroundState() != GroundState.BELOW) {
 					renderObject(r);
 				}
