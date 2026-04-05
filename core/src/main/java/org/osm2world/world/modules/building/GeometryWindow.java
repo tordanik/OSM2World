@@ -325,10 +325,12 @@ public class GeometryWindow implements Window {
 		}
 
 		for (SimplePolygonShapeXZ innerOutline : innerOutlines) {
-			PolygonXYZ innerOutlineXYZ = surface.convertTo3D(innerOutline);
+			SimplePolygonShapeXZ innerOutlineCCW = innerOutline.isClockwise()
+					? innerOutline.polygonXZ().makeCounterclockwise() : innerOutline;
+			PolygonXYZ innerOutlineXYZ = surface.convertTo3D(innerOutlineCCW);
 			List<VectorXYZ> vsFrameSideStrip = createTriangleStripBetween(
-					innerOutlineXYZ.add(toOuterFrame).vertices(),
-					innerOutlineXYZ.add(toBack).vertices());
+					innerOutlineXYZ.add(toBack).vertices(),
+					innerOutlineXYZ.add(toOuterFrame).vertices());
 			target.drawTriangleStrip(frameSideMaterial, vsFrameSideStrip,
 					texCoordLists(vsFrameSideStrip, frameSideMaterial, STRIP_WALL));
 		}
