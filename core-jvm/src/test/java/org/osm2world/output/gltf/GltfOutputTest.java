@@ -14,9 +14,14 @@ import org.osm2world.scene.Scene;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.util.platform.json.JsonImplementationJvm;
 import org.osm2world.util.test.TestWorldModule;
 
 public class GltfOutputTest {
+
+	static {
+		JsonImplementationJvm.register();
+	}
 
 	@Test
 	public void testSimpleGltf() throws IOException {
