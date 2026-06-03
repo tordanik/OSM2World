@@ -2,9 +2,12 @@ package org.osm2world.math.geo;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * an area on the globe represented by two coordinate pairs,
@@ -31,6 +34,11 @@ public class LatLonBounds implements GeoBounds {
 	@Override
 	public LatLonBounds latLonBounds() {
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		return String.format(Locale.ROOT, "(lat=%f..%f, lon=%f..%f)", minlat, maxlat, minlon, maxlon);
 	}
 
 	public double sizeLat() {
@@ -94,6 +102,20 @@ public class LatLonBounds implements GeoBounds {
 		}
 
 		return LatLonBounds.ofPoints(points);
+
+	}
+
+	/** returns bounds which are a bit larger than this one */
+	public LatLonBounds pad(double paddingSize) {
+
+		if (paddingSize < 0) throw new IllegalArgumentException("padding size must not be negative");
+		if (paddingSize == 0) return this;
+
+		return new LatLonBounds(
+				max(-90, minlat - paddingSize),
+				max(-180, minlon - paddingSize),
+				min(90, maxlat + paddingSize),
+				min(180, maxlon + paddingSize));
 
 	}
 

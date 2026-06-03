@@ -13,11 +13,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.osm2world.conversion.ConversionLog;
-import org.osm2world.math.VectorXYZ;
-import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.LatLonBounds;
-import org.osm2world.math.geo.MapProjection;
-import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.math.geo.LatLonEle;
 
 /**
  * SRTM data for a part of the planet
@@ -25,19 +22,22 @@ import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 public class SRTMData implements TerrainElevationData {
 
 	private final File tileDirectory;
-	private final MapProjection projection;
 	private final SRTMTile[][] tiles;
 
-	public SRTMData(File tileDirectory, MapProjection projection) {
+	public SRTMData(File tileDirectory) {
 		this.tileDirectory = tileDirectory;
-		this.projection = projection;
 		this.tiles = new SRTMTile[360][180];
 	}
 
-	public Collection<VectorXYZ> getSites(double minLon, double minLat,
-			double maxLon, double maxLat) throws IOException {
+	@Override
+	public Collection<LatLonEle> getSites(LatLonBounds bounds) throws IOException {
 
-		Collection<VectorXYZ> result = new ArrayList<>();
+		double minLon = bounds.minlon;
+		double minLat = bounds.minlat;
+		double maxLon = bounds.maxlon;
+		double maxLat = bounds.maxlat;
+
+		Collection<LatLonEle> result = new ArrayList<>();
 
 		int minLonInt = (int)floor(minLon);
 		int minLatInt = (int)floor(minLat);
@@ -56,26 +56,6 @@ public class SRTMData implements TerrainElevationData {
 		}
 
 		return result;
-
-	}
-
-	@Override
-	public Collection<VectorXYZ> getSites(AxisAlignedRectangleXZ bounds) throws IOException {
-
-		var latLonBounds = new LatLonBounds(
-				projection.toLatLon(bounds.bottomLeft()),
-				projection.toLatLon(bounds.topRight()));
-
-		double minLon = latLonBounds.minlon;
-		double minLat = latLonBounds.minlat;
-		double maxLon = latLonBounds.maxlon;
-		double maxLat = latLonBounds.maxlat;
-
-		// add a small seam for robustness
-		minLon -= 0.005; minLat -= 0.005;
-		maxLon += 0.005; maxLat += 0.005;
-
-		return getSites(minLon, minLat, maxLon, maxLat);
 
 	}
 
@@ -115,7 +95,7 @@ public class SRTMData implements TerrainElevationData {
 
 	}
 
-	private void addTileSites(Collection<VectorXYZ> result,
+	private void addTileSites(Collection<LatLonEle> result,
 			int tileLon, int tileLat,
 			double minLon, double minLat, double maxLon, double maxLat) {
 
@@ -144,11 +124,8 @@ public class SRTMData implements TerrainElevationData {
 				double lat = tileLat + 1.0 / SRTMTile.PIXELS * (y + 0.5);
 				double lon = tileLon + 1.0 / SRTMTile.PIXELS * (x + 0.5);
 
-				VectorXZ pos = projection.toXZ(lat, lon);
-
-				if (value != SRTMTile.BLANK_VALUE &&
-						!Double.isNaN(pos.x) && !Double.isNaN(pos.z)) {
-					result.add(pos.xyz(value));
+				if (value != SRTMTile.BLANK_VALUE) {
+					result.add(new LatLonEle(lat, lon, value));
 				}
 
 			}

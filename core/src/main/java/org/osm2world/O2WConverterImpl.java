@@ -176,13 +176,13 @@ class O2WConverterImpl {
 			if (mapProjection == null) {
 				throw new IllegalArgumentException("Using SRTM data requires a map projection");
 			}
-			eleData = new SRTMData(config.srtmDir(), mapProjection);
+			eleData = new SRTMData(config.srtmDir());
 		}
 
 		/* create terrain and attach connectors */
 		updatePhase(perfListener, ProgressListener.Phase.TERRAIN);
 
-		calculateElevations(mapData, eleData, config);
+		calculateElevations(mapData, mapProjection, eleData, config);
 		attachConnectors(mapData);
 
 		/* convert 3d scene to target representation */
@@ -348,7 +348,7 @@ class O2WConverterImpl {
 	 * source) to calculate elevations for all {@link EleConnector}s of the
 	 * {@link WorldObject}s
 	 */
-	private void calculateElevations(MapData mapData,
+	private void calculateElevations(MapData mapData, MapProjection projection,
 			TerrainElevationData eleData, O2WConfig config) {
 
 		TerrainInterpolator interpolator = config.terrainInterpolator().get();
@@ -364,7 +364,7 @@ class O2WConverterImpl {
 			Collection<VectorXYZ> sites = emptyList();
 
 			try {
-				sites = eleData.getSites(mapData.getDataBoundary().pad(10));
+				sites = eleData.getSites(mapData.getDataBoundary().pad(10), projection);
 			} catch (IOException e) {
 				ConversionLog.error("Could not read elevation data: " + e.getMessage(), e);
 			}

@@ -62,11 +62,11 @@ public abstract class TerrainInterpolatorDebugView extends StaticDebugView {
 
 		try {
 
-			TerrainElevationData eleData = new SRTMData(config.srtmDir(), mapProjection);
+			TerrainElevationData eleData = new SRTMData(config.srtmDir());
 
 			AxisAlignedRectangleXZ bound = scene.getBoundary();
 
-			Collection<VectorXYZ> sites = eleData.getSites(scene.getBoundary().pad(10));
+			Collection<VectorXYZ> sites = eleData.getSites(scene.getBoundary().pad(10), mapProjection);
 
 			TerrainInterpolator strategy = buildInterpolator();
 			strategy.setKnownSites(sites);
