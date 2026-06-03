@@ -1,6 +1,8 @@
 package org.osm2world.util.platform.image;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +22,11 @@ abstract class CachingImageImplementation implements ImageImplementation {
 	private final Map<Pair<TextureData, Resolution>, BufferedImage> cachedImagesByResolution = new HashMap<>();
 
 	@Override
+	public BufferedImage loadImageURI(URI imageURI) throws IOException {
+		return createBufferedImage(imageURI);
+	}
+
+	@Override
 	public BufferedImage loadTextureImage(TextureData texture, Resolution resolution) {
 		var key = Pair.of(texture, resolution);
 		if (!cachedImagesByResolution.containsKey(key)) {
@@ -37,6 +44,8 @@ abstract class CachingImageImplementation implements ImageImplementation {
 		}
 		return cachedImages.get(texture);
 	}
+
+	protected abstract BufferedImage createBufferedImage(URI imageUri) throws IOException;
 
 	protected abstract BufferedImage createBufferedImage(TextureData texture, Resolution resolution);
 

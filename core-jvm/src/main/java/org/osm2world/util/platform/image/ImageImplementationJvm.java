@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -50,6 +51,11 @@ public class ImageImplementationJvm extends CachingImageImplementation {
 		} catch (IOException e) {
 			throw new RuntimeException("Could not load image for texture " + texture, e);
 		}
+	}
+
+	@Override
+	protected BufferedImage createBufferedImage(URI imageUri) throws IOException {
+		return ImageIO.read(imageUri.toURL());
 	}
 
 	@Override

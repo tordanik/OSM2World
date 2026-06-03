@@ -2,6 +2,8 @@ package org.osm2world.util.platform.image;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
 
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.util.Resolution;
@@ -51,6 +53,23 @@ public class ImageUtil {
 		}
 
 		return implementation.loadTextureImage(texture);
+
+	}
+
+	/**
+	 * Loads a {@link BufferedImage} from a URI.
+	 */
+	public static BufferedImage loadImageURI(URI imageURI) throws IOException {
+
+		if (implementation == null) {
+			throw new UnsupportedOperationException("No platform-specific image implementation provided");
+		}
+
+		try {
+			return implementation.loadImageURI(imageURI);
+		} catch (IOException e) {
+			throw new IOException("Could not load image: " + imageURI, e);
+		}
 
 	}
 

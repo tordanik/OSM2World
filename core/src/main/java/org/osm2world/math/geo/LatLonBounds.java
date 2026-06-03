@@ -61,6 +61,10 @@ public class LatLonBounds implements GeoBounds {
 		return new LatLon(minlat + sizeLat() / 2, minlon + sizeLon() / 2);
 	}
 
+	public boolean contains(LatLon p) {
+		return p.lat >= minlat && p.lat <= maxlat && p.lon >= minlon && p.lon <= maxlon;
+	}
+
 	public static LatLonBounds ofPoints(Iterable<LatLon> points) {
 
 		double minLat = POSITIVE_INFINITY;

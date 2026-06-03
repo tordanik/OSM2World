@@ -1,6 +1,8 @@
 package org.osm2world.util.platform.image;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
 
 import org.osm2world.scene.material.TextureData;
 import org.osm2world.util.Resolution;
@@ -19,6 +21,11 @@ interface ImageImplementation {
 	 * Implementation of {@link ImageUtil#loadTextureImage(TextureData)}
 	 */
 	BufferedImage loadTextureImage(TextureData texture);
+
+	/**
+	 * Implementation of {@link ImageUtil#loadImageURI(URI)}
+	 */
+	BufferedImage loadImageURI(URI imageURI) throws IOException;
 
 	/**
 	 * Implementation of {@link ImageUtil#getAspectRatio(TextureData)}
