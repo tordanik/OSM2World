@@ -27,6 +27,7 @@ import org.osm2world.style.PropertyStyle;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.platform.uri.LoadUriUtil;
+import org.osm2world.util.tiles.TileUriPattern;
 
 /**
  * A set of configuration options for OSM2World.
@@ -380,6 +381,51 @@ public class O2WConfig {
 	}
 
 	/**
+	 * URL pointing to elevation data in any of the supported formats (SRTM .hgt or .hgt.zip, Terrarium XYZ tiles).
+	 * May contain {x}, {y}, {z} placeholders for XYZ tiles, or point to the root directory of a tileset.
+	 *
+	 * @return either an {@link URI} or a {@link TileUriPattern}
+	 */
+	public @Nullable Object eleDataUrl() {
+
+		String eleDataUrl = getString("eleDataUrl", null);
+
+		if (eleDataUrl != null) {
+
+			if (eleDataUrl.matches(".*\\{[xyz]}.*")) {
+				try {
+					return new TileUriPattern(eleDataUrl);
+				} catch (IllegalArgumentException e) {
+					ConversionLog.warn("Invalid tile URI pattern: " + eleDataUrl, e);
+					return null;
+				}
+			}
+
+			URI uri = null;
+			try {
+				uri = new URI(eleDataUrl);
+			} catch (URISyntaxException ignored) {}
+			if (uri == null || "file".equals(uri.getScheme())) {
+				return resolveFileConfigProperty(eleDataUrl, false, false);
+			} else {
+				return uri;
+			}
+
+		} else {
+
+			// support the old srtmDir config key for backwards compatibility
+			File srtmDir = srtmDir();
+			if (srtmDir != null) {
+				return srtmDir.toURI();
+			}
+
+			return null;
+
+		}
+
+	}
+
+	/**
 	 * Indicates which metadata (such as OSM IDs and tags from the source data) should be exported to the output file.
 	 * Only works with some output formats (currently glTF and glb).
 	 * By default, only OSM IDs are exported.
@@ -495,7 +541,8 @@ public class O2WConfig {
 	}
 
 	/**
-	 * A directory with SRTM data in .hgt or .hgt.zip format
+	 * A directory with SRTM data in .hgt or .hgt.zip format.
+	 * It is recommended for users to start using the {@link #eleDataUrl()} option instead.
 	 */
 	public @Nullable File srtmDir() {
 		URI srtmDirURI = resolveFileConfigProperty(getString("srtmDir", null), true, true);

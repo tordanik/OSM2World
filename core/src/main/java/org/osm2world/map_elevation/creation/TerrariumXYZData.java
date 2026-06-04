@@ -13,6 +13,7 @@ import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.scene.color.Color;
 import org.osm2world.util.platform.image.ImageUtil;
+import org.osm2world.util.tiles.TileUriPattern;
 
 /**
  * Elevation data stored as an XYZ raster tile layer with Terrarium encoding
@@ -21,15 +22,20 @@ public class TerrariumXYZData implements TerrainElevationData {
 
 	private final int zoom = 13;
 
-	private final String uriPattern;
+	private final TileUriPattern uriPattern;
 
 	private final Map<TileNumber, Tile> tileCache = new HashMap<>();
 
 	/**
 	 * @param uriPattern  tile URIs with {z}, {x}, {y} placeholders
 	 */
-	public TerrariumXYZData(String uriPattern) {
+	public TerrariumXYZData(TileUriPattern uriPattern) {
 		this.uriPattern = uriPattern;
+	}
+
+	@Override
+	public String toString() {
+		return "TerrariumXYZData(" + uriPattern + ')';
 	}
 
 	@Override
@@ -43,7 +49,7 @@ public class TerrariumXYZData implements TerrainElevationData {
 
 			Tile tile = tileCache.get(tileNumber);
 			if (tile == null) {
-				tile = new Tile(tileNumber, buildURI(uriPattern, tileNumber));
+				tile = new Tile(tileNumber, uriPattern.buildURI(tileNumber));
 				tileCache.put(tileNumber, tile);
 			}
 
@@ -57,13 +63,6 @@ public class TerrariumXYZData implements TerrainElevationData {
 
 	}
 
-	private URI buildURI(String uriPattern, TileNumber tileNumber) {
-
-		return URI.create(uriPattern.replace("{z}", Integer.toString(tileNumber.zoom))
-				.replace("{x}", Integer.toString(tileNumber.x))
-				.replace("{y}", Integer.toString(tileNumber.y)));
-
-	}
 
 	private static class Tile {
 

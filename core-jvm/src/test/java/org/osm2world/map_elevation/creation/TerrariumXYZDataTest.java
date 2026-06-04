@@ -12,6 +12,7 @@ import org.osm2world.math.geo.TileNumber;
 import org.osm2world.scene.color.Color;
 import org.osm2world.util.platform.image.ImageImplementationJvm;
 import org.osm2world.util.test.TestFileUtil;
+import org.osm2world.util.tiles.TileUriPattern;
 
 public class TerrariumXYZDataTest {
 
@@ -30,8 +31,8 @@ public class TerrariumXYZDataTest {
 		File tileDir = TestFileUtil.getTestFile("terrarium-xyz");
 		assertTrue(tileDir.isDirectory());
 
-		var eleData = new TerrariumXYZData("file://" + tileDir.getAbsolutePath()
-				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}.webp");
+		var eleData = new TerrariumXYZData(new TileUriPattern("file://" + tileDir.getAbsolutePath()
+				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}.webp"));
 
 		var bounds = new LatLonBounds(47.385, 8.566, 47.386, 8.567);
 		assertFalse(eleData.getSites(bounds).isEmpty());
@@ -44,8 +45,8 @@ public class TerrariumXYZDataTest {
 		File tileDir =  TestFileUtil.getTestFile("terrarium-xyz");
 		assertTrue(tileDir.isDirectory());
 
-		var eleData = new TerrariumXYZData("file://" + tileDir.getAbsolutePath()
-				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}.webp");
+		var eleData = new TerrariumXYZData(new TileUriPattern("file://" + tileDir.getAbsolutePath()
+				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}.webp"));
 
 		var testTiles = List.of(new TileNumber(13, 4290, 2868), new TileNumber(13, 4290, 2869));
 		var bounds = new LatLonBounds(
