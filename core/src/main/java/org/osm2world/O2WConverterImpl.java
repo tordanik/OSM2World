@@ -170,13 +170,10 @@ class O2WConverterImpl {
 		/* determine elevations */
 		updatePhase(perfListener, ProgressListener.Phase.ELEVATION);
 
-		TerrainElevationData eleData = null;
+		TerrainElevationData eleData = TerrainElevationDataUtil.eleDataSourceFromConfig(config);
 
-		if (config.srtmDir() != null) {
-			if (mapProjection == null) {
-				throw new IllegalArgumentException("Using SRTM data requires a map projection");
-			}
-			eleData = new SRTMData(config.srtmDir());
+		if (eleData == null && mapProjection == null) {
+			throw new IllegalArgumentException("Using elevation data requires a map projection");
 		}
 
 		/* create terrain and attach connectors */
@@ -344,7 +341,7 @@ class O2WConverterImpl {
 	}
 
 	/**
-	 * uses OSM data and a terrain elevation data (usually from an external
+	 * uses OSM data and terrain elevation data (usually from an external
 	 * source) to calculate elevations for all {@link EleConnector}s of the
 	 * {@link WorldObject}s
 	 */
