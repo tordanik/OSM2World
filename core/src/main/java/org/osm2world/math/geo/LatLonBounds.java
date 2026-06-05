@@ -2,8 +2,7 @@ package org.osm2world.math.geo;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,14 +111,24 @@ public class LatLonBounds implements GeoBounds {
 	/** returns bounds which are a bit larger than this one */
 	public LatLonBounds pad(double paddingSize) {
 
-		if (paddingSize < 0) throw new IllegalArgumentException("padding size must not be negative");
-		if (paddingSize == 0) return this;
-
-		return new LatLonBounds(
-				max(-90, minlat - paddingSize),
-				max(-180, minlon - paddingSize),
-				min(90, maxlat + paddingSize),
-				min(180, maxlon + paddingSize));
+		if (paddingSize == 0) {
+			return this;
+		} else if (paddingSize > 0) {
+			return new LatLonBounds(
+					max(-90, minlat - paddingSize),
+					max(-180, minlon - paddingSize),
+					min(90, maxlat + paddingSize),
+					min(180, maxlon + paddingSize));
+		} else {
+			if (abs(paddingSize) >= sizeLat() || abs(paddingSize) >= sizeLon()) {
+				throw new IllegalArgumentException("attempting to shrink bounds by more than their size");
+			}
+			return new LatLonBounds(
+					minlat - paddingSize,
+					minlon - paddingSize,
+					maxlat + paddingSize,
+					maxlon + paddingSize);
+		}
 
 	}
 
