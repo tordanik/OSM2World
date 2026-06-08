@@ -172,7 +172,7 @@ class O2WConverterImpl {
 
 		TerrainElevationData eleData = TerrainElevationDataUtil.eleDataSourceFromConfig(config);
 
-		if (eleData == null && mapProjection == null) {
+		if (eleData != null && mapProjection == null) {
 			throw new IllegalArgumentException("Using elevation data requires a map projection");
 		}
 
