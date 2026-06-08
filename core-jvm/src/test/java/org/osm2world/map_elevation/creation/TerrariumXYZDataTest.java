@@ -47,7 +47,7 @@ public class TerrariumXYZDataTest {
 	@Test
 	public void testGetSites() throws IOException {
 
-		var eleData = eleDataFromTestResources(13);
+		var eleData = eleDataFromTestResources(13, "webp");
 
 		var bounds = new LatLonBounds(47.385, 8.566, 47.386, 8.567);
 		assertFalse(eleData.getSites(bounds).isEmpty());
@@ -57,7 +57,7 @@ public class TerrariumXYZDataTest {
 	@Test
 	public void testGetSites_2Tiles() throws IOException {
 
-		var eleData = eleDataFromTestResources(13);
+		var eleData = eleDataFromTestResources(13, "webp");
 
 		var testTiles = List.of(new TileNumber(13, 4290, 2868), new TileNumber(13, 4290, 2869));
 		var bounds = new LatLonBounds(
@@ -78,7 +78,7 @@ public class TerrariumXYZDataTest {
 	@Test
 	public void testGetSites_ancestorTile() throws IOException {
 
-		var eleData = eleDataFromTestResources(6);
+		var eleData = eleDataFromTestResources(6, "png");
 
 		for (var tileColor : List.of(
 				Pair.of(new TileNumber(6, 2, 1), 42.0),
@@ -95,13 +95,13 @@ public class TerrariumXYZDataTest {
 	}
 
 	@Nonnull
-	private static TerrariumXYZData eleDataFromTestResources(Integer maxZoom) {
+	private static TerrariumXYZData eleDataFromTestResources(Integer maxZoom, String fileExt) {
 
 		File tileDir = TestFileUtil.getTestFile("terrarium-xyz");
 		assertTrue(tileDir.isDirectory());
 
 		return new TerrariumXYZData(maxZoom, new TileUriPattern("file://" + tileDir.getAbsolutePath()
-				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}.png"));
+				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}." + fileExt));
 
 	}
 
