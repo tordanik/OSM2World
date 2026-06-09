@@ -24,10 +24,10 @@ import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.modules.building.BuildingPart;
 
 /**
- * tagged roof with a ridge.
+ * roof with a ridge which has been described with a roof:shape tag rather than explicitly mapped ridge geometry.
  * Deals with ridge calculation for various subclasses.
  */
-abstract public class RoofWithRidge extends HeightfieldRoof {
+abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 	/** absolute distance of ridge to outline */
 	protected final double ridgeOffset;

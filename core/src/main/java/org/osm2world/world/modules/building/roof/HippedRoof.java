@@ -1,10 +1,10 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -22,23 +22,18 @@ public class HippedRoof extends RoofWithRidge {
 	}
 
 	@Override
-	public PolygonWithHolesXZ getPolygon() {
-		return originalPolygon;
-	}
-
-	@Override
 	public Collection<VectorXZ> getInnerPoints() {
 		return emptyList();
 	}
 
 	@Override
-	public Collection<LineSegmentXZ> getInnerSegments() {
-		return asList(
-				ridge,
-				new LineSegmentXZ(ridge.p1, cap1.p1),
-				new LineSegmentXZ(ridge.p1, cap1.p2),
-				new LineSegmentXZ(ridge.p2, cap2.p1),
-				new LineSegmentXZ(ridge.p2, cap2.p2));
+	protected Collection<InnerLine> getInnerLines() {
+		return List.of(
+				new InnerLine(ridge),
+				new InnerLine(new LineSegmentXZ(ridge.p1, cap1.p1)),
+				new InnerLine(new LineSegmentXZ(ridge.p1, cap1.p2)),
+				new InnerLine(new LineSegmentXZ(ridge.p2, cap2.p1)),
+				new InnerLine(new LineSegmentXZ(ridge.p2, cap2.p2)));
 	}
 
 	@Override

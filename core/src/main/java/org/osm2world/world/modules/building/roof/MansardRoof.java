@@ -1,10 +1,10 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -34,18 +34,13 @@ public class MansardRoof extends RoofWithRidge {
 	}
 
 	@Override
-	public PolygonWithHolesXZ getPolygon() {
-		return originalPolygon;
-	}
-
-	@Override
 	public Collection<VectorXZ> getInnerPoints() {
 		return emptyList();
 	}
 
 	@Override
-	public Collection<LineSegmentXZ> getInnerSegments() {
-		return asList(ridge,
+	protected Collection<InnerLine> getInnerLines() {
+		List<LineSegmentXZ> segments = List.of(ridge,
 				mansardEdge1,
 				mansardEdge2,
 				new LineSegmentXZ(ridge.p1, mansardEdge1.p1),
@@ -58,6 +53,7 @@ public class MansardRoof extends RoofWithRidge {
 				new LineSegmentXZ(cap2.p1, mansardEdge2.p2),
 				new LineSegmentXZ(mansardEdge1.p1, mansardEdge2.p1),
 				new LineSegmentXZ(mansardEdge1.p2, mansardEdge2.p2));
+		return segments.stream().map(InnerLine::new).toList();
 	}
 
 	@Override

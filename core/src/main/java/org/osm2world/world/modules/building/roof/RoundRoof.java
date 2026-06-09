@@ -2,7 +2,8 @@ package org.osm2world.world.modules.building.roof;
 
 import static java.lang.Math.*;
 import static java.util.Collections.emptyList;
-import static org.osm2world.math.algorithms.GeometryUtil.*;
+import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,7 +16,6 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.modules.building.BuildingPart;
 
@@ -51,29 +51,12 @@ public class RoundRoof extends RoofWithRidge {
 	}
 
 	@Override
-	public PolygonWithHolesXZ getPolygon() {
-
-		SimplePolygonXZ newOuter = originalPolygon.getOuter();
-
-		newOuter = insertIntoPolygon(newOuter, ridge.p1, SNAP_DISTANCE);
-		newOuter = insertIntoPolygon(newOuter, ridge.p2, SNAP_DISTANCE);
-
-		for (LineSegmentXZ capPart : capParts){
-			newOuter = insertIntoPolygon(newOuter, capPart.p1, SNAP_DISTANCE);
-			newOuter = insertIntoPolygon(newOuter, capPart.p2, SNAP_DISTANCE);
-		}
-
-		//TODO: add intersections of additional edges with outline?
-		return new PolygonWithHolesXZ(newOuter, originalPolygon.getHoles());
-
-	}
-
-	@Override
 	public Collection<VectorXZ> getInnerPoints() {
 		return emptyList();
 	}
+
 	@Override
-	public Collection<LineSegmentXZ> getInnerSegments() {
+	protected Collection<InnerLine> getInnerLines() {
 
 		List<LineSegmentXZ> innerSegments = new ArrayList<>(rings * 2 + 1);
 		innerSegments.add(ridge);
@@ -84,7 +67,8 @@ public class RoundRoof extends RoofWithRidge {
 			innerSegments.add(new LineSegmentXZ(cap1part.p2, cap2part.p1));
 		}
 
-		return innerSegments;
+		return innerSegments.stream().map(s -> new InnerLine(s, true)).toList();
+
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -12,7 +12,6 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.modules.building.BuildingPart;
 
@@ -35,31 +34,18 @@ public class HalfHippedRoof extends RoofWithRidge {
 	}
 
 	@Override
-	public PolygonWithHolesXZ getPolygon() {
-
-		SimplePolygonXZ newOuter = originalPolygon.getOuter();
-
-		newOuter = insertIntoPolygon(newOuter, cap1part.p1, SNAP_DISTANCE);
-		newOuter = insertIntoPolygon(newOuter, cap1part.p2, SNAP_DISTANCE);
-		newOuter = insertIntoPolygon(newOuter, cap2part.p1, SNAP_DISTANCE);
-		newOuter = insertIntoPolygon(newOuter, cap2part.p2, SNAP_DISTANCE);
-
-		return new PolygonWithHolesXZ(newOuter, originalPolygon.getHoles());
-
-	}
-
-	@Override
 	public Collection<VectorXZ> getInnerPoints() {
 		return emptyList();
 	}
 
 	@Override
-	public Collection<LineSegmentXZ> getInnerSegments() {
-		return asList(ridge,
-				new LineSegmentXZ(ridge.p1, cap1part.p1),
-				new LineSegmentXZ(ridge.p1, cap1part.p2),
-				new LineSegmentXZ(ridge.p2, cap2part.p1),
-				new LineSegmentXZ(ridge.p2, cap2part.p2));
+	protected Collection<InnerLine> getInnerLines() {
+		return List.of(
+				new InnerLine(ridge),
+				new InnerLine(new LineSegmentXZ(ridge.p1, cap1part.p1), null, false, true),
+				new InnerLine(new LineSegmentXZ(ridge.p1, cap1part.p2), null, false, true),
+				new InnerLine(new LineSegmentXZ(ridge.p2, cap2part.p1), null, false, true),
+				new InnerLine(new LineSegmentXZ(ridge.p2, cap2part.p2), null, false, true));
 	}
 
 	@Override
