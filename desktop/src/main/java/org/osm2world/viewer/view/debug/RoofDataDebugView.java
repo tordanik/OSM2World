@@ -26,7 +26,7 @@ public class RoofDataDebugView extends StaticDebugView {
 		for (Building building : scene.getWorldObjects(Building.class)) {
 			for (BuildingPart part : building.getParts()) {
 
-				if (!(part.getRoof() instanceof HeightfieldRoof roofData)) return;
+				if (!(part.getRoof() instanceof HeightfieldRoof roofData)) continue;
 
 				for (SimplePolygonShapeXZ polygon : roofData.getPolygon().getRings()) {
 					for (VectorXZ v : polygon.verticesNoDup()) {
