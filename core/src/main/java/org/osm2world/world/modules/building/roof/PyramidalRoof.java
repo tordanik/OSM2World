@@ -1,7 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Collections.singletonList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,11 +37,6 @@ public class PyramidalRoof extends HeightfieldRoof {
 	@Override
 	public PolygonWithHolesXZ getPolygon() {
 		return originalPolygon;
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return singletonList(apex);
 	}
 
 	@Override

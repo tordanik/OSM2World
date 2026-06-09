@@ -89,11 +89,6 @@ public class SkillionRoof extends HeightfieldRoof {
 	}
 
 	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
-	}
-
-	@Override
 	public Double calculatePreliminaryHeight() {
 		Double roofHeight = parseMeasure(tags.getValue("roof:height"));
 		if (roofHeight == null) {

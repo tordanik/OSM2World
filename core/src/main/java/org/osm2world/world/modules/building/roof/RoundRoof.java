@@ -1,7 +1,6 @@
 package org.osm2world.world.modules.building.roof;
 
 import static java.lang.Math.*;
-import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
@@ -48,11 +47,6 @@ public class RoundRoof extends RoofWithRidge {
 					interpolateBetween(cap2.p1, cap2.p2, i * step),
 					interpolateBetween(cap2.p1, cap2.p2, 1 - i * step)));
 		}
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
 	}
 
 	@Override

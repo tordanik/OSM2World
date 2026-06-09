@@ -17,7 +17,6 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
-import org.osm2world.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
@@ -39,9 +38,6 @@ abstract public class HeightfieldRoof extends Roof {
 	public HeightfieldRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 		super(buildingPart, originalPolygon, tags, material);
 	}
-
-	/** returns segments within the roof polygon that define apex nodes of the roof */
-	public abstract Collection<VectorXZ> getInnerPoints();
 
 	/**
 	 * returns roof height at a position.
@@ -150,23 +146,14 @@ abstract public class HeightfieldRoof extends Roof {
 
 		List<SimplePolygonXZ> holes = subtractPolys.stream().map(p -> asSimplePolygon(p.getOuter())).toList();
 
-		List<TriangleXZ> trianglesXZ;
+		Collection<PolygonWithHolesXZ> faces = FaceDecompositionUtil.splitPolygonIntoFaces(
+				getPolygon().getOuter(),
+				holes,
+				getInnerSegments()
+		);
 
-		if (getInnerPoints().isEmpty()) {
-			Collection<PolygonWithHolesXZ> faces = FaceDecompositionUtil.splitPolygonIntoFaces(
-					getPolygon().getOuter(),
-					holes,
-					getInnerSegments()
-			);
-			trianglesXZ = new ArrayList<>();
-			faces.forEach(f -> trianglesXZ.addAll(f.getTriangulation()));
-		} else {
-			trianglesXZ = JTSTriangulationUtil.triangulate(
-					getPolygon().getOuter(),
-					holes,
-					getInnerSegments(),
-					getInnerPoints());
-		}
+		List<TriangleXZ> trianglesXZ = new ArrayList<>();
+		faces.forEach(f -> trianglesXZ.addAll(f.getTriangulation()));
 
 		/* assign elevations to the triangulation */
 

@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
 import java.util.Collection;
@@ -31,11 +30,6 @@ public class MansardRoof extends RoofWithRidge {
 				interpolateBetween(cap1.p2, ridge.p1, 1/3.0),
 				interpolateBetween(cap2.p1, ridge.p2, 1/3.0));
 
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
 	}
 
 	@Override

@@ -11,7 +11,6 @@ import org.osm2world.world.modules.building.roof.HeightfieldRoof;
 
 public class RoofDataDebugView extends StaticDebugView {
 
-	private static final Color INNER_POINT_COLOR = Color.YELLOW;
 	private static final Color INNER_SEGMENT_COLOR = Color.GREEN;
 	private static final Color POLYGON_COLOR = Color.WHITE;
 	private static final Color EXTRA_OUTLINE_COLOR = Color.RED;
@@ -36,10 +35,6 @@ public class RoofDataDebugView extends StaticDebugView {
 					for (LineSegmentXZ s : polygon.getSegments()) {
 						output.drawLineStrip(POLYGON_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
 					}
-				}
-
-				for (VectorXZ v : roofData.getInnerPoints()) {
-					drawBoxAround(output, v, INNER_POINT_COLOR, 0.5f);
 				}
 
 				for (LineSegmentXZ s : roofData.getInnerSegments()) {

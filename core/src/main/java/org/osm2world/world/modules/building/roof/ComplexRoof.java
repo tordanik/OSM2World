@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 
@@ -87,11 +86,6 @@ public class ComplexRoof extends HeightfieldRoof {
 	public PolygonWithHolesXZ getPolygon() {
 		calculateRoofHeightMap();
 		return simplePolygon;
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
 	}
 
 	@Override

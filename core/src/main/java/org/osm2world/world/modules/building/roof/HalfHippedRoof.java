@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 
 import java.util.Collection;
@@ -31,11 +30,6 @@ public class HalfHippedRoof extends RoofWithRidge {
 				interpolateBetween(cap2.p1, cap2.p2, 0.5 - ridgeOffset / cap1.getLength()),
 				interpolateBetween(cap2.p1, cap2.p2, 0.5 + ridgeOffset / cap1.getLength()));
 
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
 	}
 
 	@Override

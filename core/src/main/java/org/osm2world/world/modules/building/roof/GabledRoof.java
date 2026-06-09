@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 
 import java.util.Collection;
@@ -18,11 +17,6 @@ public class GabledRoof extends RoofWithRidge {
 
 	public GabledRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 		super(buildingPart, 0, originalPolygon, tags, material);
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
 	}
 
 	@Override

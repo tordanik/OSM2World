@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
@@ -32,11 +31,6 @@ public class GambrelRoof extends RoofWithRidge {
 				interpolateBetween(cap2.p1, cap2.p2, 1/6.0),
 				interpolateBetween(cap2.p1, cap2.p2, 5/6.0));
 
-	}
-
-	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
 	}
 
 	@Override

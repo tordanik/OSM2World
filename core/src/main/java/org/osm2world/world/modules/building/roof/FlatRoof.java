@@ -25,11 +25,6 @@ public class FlatRoof extends HeightfieldRoof {
 	}
 
 	@Override
-	public Collection<VectorXZ> getInnerPoints() {
-		return emptyList();
-	}
-
-	@Override
 	public Collection<LineSegmentXZ> getInnerSegments() {
 		return emptyList();
 	}
