@@ -3,7 +3,6 @@ package org.osm2world.math.shapes;
 import static java.lang.Double.isFinite;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Arrays.asList;
 
 import java.util.Collection;
 import java.util.List;
@@ -92,6 +91,11 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
+	public double getArea() {
+		return area();
+	}
+
+	@Override
 	public List<VectorXZ> vertices() {
 
 		VectorXZ v0 = new VectorXZ(minX, minZ);
@@ -99,7 +103,19 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 		VectorXZ v2 = new VectorXZ(maxX, maxZ);
 		VectorXZ v3 = new VectorXZ(minX, maxZ);
 
-		return asList(v0, v1, v2, v3, v0);
+		return List.of(v0, v1, v2, v3, v0);
+
+	}
+
+	@Override
+	public List<VectorXZ> verticesNoDup() {
+
+		VectorXZ v0 = new VectorXZ(minX, minZ);
+		VectorXZ v1 = new VectorXZ(maxX, minZ);
+		VectorXZ v2 = new VectorXZ(maxX, maxZ);
+		VectorXZ v3 = new VectorXZ(minX, maxZ);
+
+		return List.of(v0, v1, v2, v3);
 
 	}
 
@@ -118,8 +134,8 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public SimplePolygonXZ minimumRotatedBoundingBox() {
-		return polygonXZ();
+	public RectangleXZ minimumRotatedBoundingBox() {
+		return rectangleXZ();
 	}
 
 	@Override
@@ -139,6 +155,17 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 		}
 
 		return polygonXZ;
+
+	}
+
+	public RectangleXZ rectangleXZ() {
+
+		VectorXZ v0 = new VectorXZ(minX, minZ);
+		VectorXZ v1 = new VectorXZ(maxX, minZ);
+		VectorXZ v2 = new VectorXZ(maxX, maxZ);
+		VectorXZ v3 = new VectorXZ(minX, maxZ);
+
+		return new RectangleXZ(v0, v1, v2, v3);
 
 	}
 

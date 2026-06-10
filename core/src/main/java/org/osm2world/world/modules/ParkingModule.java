@@ -18,7 +18,7 @@ import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
+import org.osm2world.math.shapes.RectangleXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
@@ -113,7 +113,7 @@ public class ParkingModule extends AbstractModule {
 
 				if (carModel != null) {
 
-					SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
+					RectangleXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
 
 					// determine the car's facing direction based on which side of the box is longer
 					VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
@@ -123,7 +123,7 @@ public class ParkingModule extends AbstractModule {
 					direction = direction.normalize();
 
 					// determine direction (with some randomness)
-					VectorXZ pos = bbox.getCenter().add(direction.mult(-0.2 + random.nextDouble(0.4)));
+					VectorXZ pos = bbox.getCentroid().add(direction.mult(-0.2 + random.nextDouble(0.4)));
 
 					// determine elevation
 					double ele = getEleAt(pos);

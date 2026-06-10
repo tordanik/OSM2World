@@ -15,10 +15,7 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.Intersection;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.math.shapes.LineSegmentXZ;
-import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
+import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.modules.building.BuildingPart;
@@ -150,7 +147,7 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 	private static @Nullable VectorXZ ridgeVectorFromRoofOrientation(TagSet tags,
 			SimplePolygonXZ polygon) {
 
-		SimplePolygonXZ rotatedBbox = polygon.minimumRotatedBoundingBox();
+		RectangleXZ rotatedBbox = polygon.minimumRotatedBoundingBox();
 		LineSegmentXZ longestSeg = max(rotatedBbox.getSegments(), comparingDouble(s -> s.getLength()));
 
 		VectorXZ result = longestSeg.p2.subtract(longestSeg.p1).normalize();

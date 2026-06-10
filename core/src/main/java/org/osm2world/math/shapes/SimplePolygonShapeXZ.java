@@ -1,7 +1,6 @@
 package org.osm2world.math.shapes;
 
 import static java.lang.Double.NaN;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -187,9 +186,9 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	 * Relies on the fact that one side of the box must be collinear with
 	 * one of the sides of the polygon's convex hull.
 	 *
-	 * @return  a simple polygon with exactly 4 vertices, representing the box
+	 * @return  a rectangle representing the bounding box
 	 */
-	public default SimplePolygonXZ minimumRotatedBoundingBox() {
+	public default RectangleXZ minimumRotatedBoundingBox() {
 
 		/*
 		 * For each side of the polygon, rotate the polygon to make that side
@@ -220,12 +219,11 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 		/* construct the result */
 
-		return new SimplePolygonXZ(asList(
+		return new RectangleXZ(
 				minBox.bottomLeft().rotate(angleForMinBox),
 				minBox.bottomRight().rotate(angleForMinBox),
 				minBox.topRight().rotate(angleForMinBox),
-				minBox.topLeft().rotate(angleForMinBox),
-				minBox.bottomLeft().rotate(angleForMinBox)));
+				minBox.topLeft().rotate(angleForMinBox));
 
 	}
 

@@ -1025,7 +1025,7 @@ public final class PowerModule extends AbstractModule {
 
 			/* fit a rectangle around the panels */
 
-			SimplePolygonXZ bbox = outerPolygon.minimumRotatedBoundingBox();
+			RectangleXZ bbox = outerPolygon.minimumRotatedBoundingBox();
 
 			VectorXZ downDirection;
 			if (roofNormal.xz().lengthSquared() > 0.01) {
@@ -1063,7 +1063,7 @@ public final class PowerModule extends AbstractModule {
 
 			List<LineSegmentXZ> segments = rotatedPolygon.getRings().stream()
 					.flatMap(r -> r.getSegments().stream())
-					.collect(toList());
+					.toList();
 
 			for (LineSegmentXZ s : segments) {
 

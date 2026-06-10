@@ -29,7 +29,7 @@ public class Earcut4JTriangulationTest {
 		List<TriangleXZ> result = Earcut4JTriangulationUtil.triangulate(outer, emptyList());
 
 		assertEquals(1, result.size());
-		assertSameCyclicOrder(true, result.get(0).getVertices(), outer.getVertex(0), outer.getVertex(1), outer.getVertex(2));
+		assertSameCyclicOrder(true, result.get(0).verticesNoDup(), outer.getVertex(0), outer.getVertex(1), outer.getVertex(2));
 
 	}
 

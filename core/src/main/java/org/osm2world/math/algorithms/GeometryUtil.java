@@ -27,7 +27,8 @@ import org.osm2world.scene.color.LColor;
 /**
  * utility class for some useful calculations involving geometric objects and shapes
  */
-public final class GeometryUtil {
+public final class
+GeometryUtil {
 
 	/** prevents instantiation */
 	private GeometryUtil() { }

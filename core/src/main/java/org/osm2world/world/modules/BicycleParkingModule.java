@@ -262,7 +262,7 @@ public class BicycleParkingModule extends AbstractModule {
 		@Override
 		protected PolylineShapeXZ lineThroughStandCenters() {
 
-			SimplePolygonXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
+			RectangleXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
 			VectorXZ midpoint1, midpoint2;
 
 			if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > bbox.getVertex(1).distanceTo(bbox.getVertex(0))) {

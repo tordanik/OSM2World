@@ -4,6 +4,7 @@ import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
 import static org.osm2world.math.shapes.SimplePolygonXZ.isSelfIntersecting;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import static org.osm2world.test.TestUtil.assertSameCyclicOrder;
@@ -382,53 +383,42 @@ public class SimplePolygonXZTest {
 
 		//axis aligned case
 
-		SimplePolygonXZ p1 = new SimplePolygonXZ(asList(
+		var p1 = new SimplePolygonXZ(closeLoop(
 				new VectorXZ(0, 0),
 				new VectorXZ(1, 0),
 				new VectorXZ(1, 1),
-				new VectorXZ(0, 1),
-				new VectorXZ(0, 0)));
+				new VectorXZ(0, 1)));
 
-		SimplePolygonXZ bbox1 = p1.minimumRotatedBoundingBox();
+		RectangleXZ bbox1 = p1.minimumRotatedBoundingBox();
 
-		assertSameCyclicOrder(true, bbox1.getVertices(),
-				new VectorXZ(0, 0),
-				new VectorXZ(1, 0),
-				new VectorXZ(1, 1),
-				new VectorXZ(0, 1));
+		assertSameCyclicOrder(true, p1.verticesNoDup(), bbox1.verticesNoDup());
 
 		//not aligned to axis
 
-		SimplePolygonXZ p2 = new SimplePolygonXZ(asList(
+		var p2 = new SimplePolygonXZ(closeLoop(
 				new VectorXZ(+.5,   0),
 				new VectorXZ(  0, +.5),
 				new VectorXZ(-.5,   0),
-				new VectorXZ(  0, -.5),
-				new VectorXZ(+.5,   0)));
+				new VectorXZ(  0, -.5)));
 
-		SimplePolygonXZ bbox2 = p2.minimumRotatedBoundingBox();
+		RectangleXZ bbox2 = p2.minimumRotatedBoundingBox();
 
-		assertSameCyclicOrder(true, bbox2.getVertices(),
-				new VectorXZ(+.5,   0),
-				new VectorXZ(  0, +.5),
-				new VectorXZ(-.5,   0),
-				new VectorXZ(  0, -.5));
+		assertSameCyclicOrder(true, p2.verticesNoDup(), bbox2.verticesNoDup());
 
 	}
 
 	@Test
 	public void testMinimumBoundingBox2() {
 
-		SimplePolygonXZ p = new SimplePolygonXZ(asList(
+		var p = new SimplePolygonXZ(closeLoop(
 				new VectorXZ(1, 1),
 				new VectorXZ(2, 1),
 				new VectorXZ(4, 3),
-				new VectorXZ(3, 3),
-				new VectorXZ(1, 1)));
+				new VectorXZ(3, 3)));
 
-		SimplePolygonXZ bbox = p.minimumRotatedBoundingBox();
+		RectangleXZ bbox = p.minimumRotatedBoundingBox();
 
-		assertSameCyclicOrder(true, bbox.getVertices(),
+		assertSameCyclicOrder(true, bbox.verticesNoDup(),
 				new VectorXZ(1, 1),
 				new VectorXZ(3.5, 3.5),
 				new VectorXZ(4, 3),

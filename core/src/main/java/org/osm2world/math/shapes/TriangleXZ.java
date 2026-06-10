@@ -11,8 +11,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * immutable 2D triangle
  */
@@ -32,11 +30,12 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 
 	@Override
 	public List<VectorXZ> vertices() {
-		return ImmutableList.of(v1, v2, v3, v1);
+		return List.of(v1, v2, v3, v1);
 	}
 
-	public List<VectorXZ> getVertices() {
-		return ImmutableList.of(v1, v2, v3);
+	@Override
+	public List<VectorXZ> verticesNoDup() {
+		return List.of(v1, v2, v3);
 	}
 
 	public VectorXZ getCenter() {

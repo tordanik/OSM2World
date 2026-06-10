@@ -19,6 +19,7 @@ import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
+import org.osm2world.math.shapes.RectangleXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.color.Color;
@@ -139,7 +140,7 @@ public class SportsModule extends AbstractModule {
 
 			/* approximate a rectangular shape for the pitch */
 
-			SimplePolygonXZ bbox = polygon.minimumRotatedBoundingBox();
+			RectangleXZ bbox = polygon.minimumRotatedBoundingBox();
 
 			VectorXZ origin = bbox.getVertex(0);
 
