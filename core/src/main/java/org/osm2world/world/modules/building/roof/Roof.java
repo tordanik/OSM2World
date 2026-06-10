@@ -3,8 +3,7 @@ package org.osm2world.world.modules.building.roof;
 import static java.lang.Math.PI;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.Angle.radiansBetween;
-import static org.osm2world.util.ValueParseUtil.parseAngle;
-import static org.osm2world.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.util.ValueParseUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,6 +116,7 @@ abstract public class Roof {
 			case "half-hipped" -> new HalfHippedRoof(buildingPart, originalPolygon, tags, material);
 			case "gambrel" -> new GambrelRoof(buildingPart, originalPolygon, tags, material);
 			case "mansard" -> new MansardRoof(buildingPart, originalPolygon, tags, material);
+			case "sawtooth" -> new SawtoothRoof(buildingPart, originalPolygon, tags, material);
 			case "dome" -> new DomeRoof(buildingPart, originalPolygon, tags, material);
 			case "round" -> new RoundRoof(buildingPart, originalPolygon, tags, material);
 			case "cone" -> new ConeRoof(buildingPart, originalPolygon, tags, material);
@@ -167,6 +167,15 @@ abstract public class Roof {
 			return angle;
 		}
 
+	}
+
+	protected static @Nullable Angle parseRoofAngle(TagSet tags) {
+		String roofAngleValue = tags.getValue("roof:angle");
+		Double angle = parseOsmDecimal(roofAngleValue, null);
+		if (angle != null && angle >= 0 && angle < 90.0) {
+			return Angle.ofDegrees(angle);
+		}
+		return null;
 	}
 
 }

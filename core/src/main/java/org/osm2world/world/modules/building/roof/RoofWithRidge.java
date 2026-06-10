@@ -1,10 +1,10 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.lang.Math.*;
+import static java.lang.Math.min;
+import static java.lang.Math.tan;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
-import static org.osm2world.util.ValueParseUtil.parseAngle;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 
 import java.util.List;
@@ -54,17 +54,7 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 		SimplePolygonXZ simplifiedPolygon = outerPoly.getSimplifiedPolygon();
 
-		/* determine ridge direction based on one of several supported tags */
-
-		VectorXZ ridgeDirection = ridgeVectorFromRoofDirection(tags, simplifiedPolygon);
-
-		if (ridgeDirection == null) {
-			ridgeDirection = ridgeVectorFromRidgeDirection(tags, simplifiedPolygon);
-		}
-
-		if (ridgeDirection == null) {
-			ridgeDirection = ridgeVectorFromRoofOrientation(tags, simplifiedPolygon);
-		}
+		VectorXZ ridgeDirection = ridgeDirectionFromTags(tags, simplifiedPolygon);
 
 		/* calculate the two outermost intersections of the
 		 * quasi-infinite ridge line with segments of the polygon */
@@ -119,6 +109,24 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 	}
 
+
+	/** Determine ridge direction based on one of several supported tags */
+	static VectorXZ ridgeDirectionFromTags(TagSet tags, SimplePolygonXZ simplifiedPolygon) {
+
+		VectorXZ ridgeDirection = ridgeVectorFromRoofDirection(tags, simplifiedPolygon);
+
+		if (ridgeDirection == null) {
+			ridgeDirection = ridgeVectorFromRidgeDirection(tags, simplifiedPolygon);
+		}
+
+		if (ridgeDirection == null) {
+			ridgeDirection = ridgeVectorFromRoofOrientation(tags, simplifiedPolygon);
+		}
+
+		return ridgeDirection;
+
+	}
+
 	/**
 	 * returns a ridge direction vector based on the roof:direction tag, if possible.
 	 * May modify the direction a bit to "snap" to directions parallel or orthogonal to polygon segments.
@@ -144,7 +152,7 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 	 * returns a ridge direction vector based on the roof:orientation tag.
 	 * If that tag is not set or has an unknown value, roof:orientation=along is assumed.
 	 */
-	private static @Nullable VectorXZ ridgeVectorFromRoofOrientation(TagSet tags,
+	private static VectorXZ ridgeVectorFromRoofOrientation(TagSet tags,
 			SimplePolygonXZ polygon) {
 
 		RectangleXZ rotatedBbox = polygon.minimumRotatedBoundingBox();
@@ -166,9 +174,9 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 		Double roofHeight = parseMeasure(tags.getValue("roof:height"));
 
 		if (roofHeight == null) {
-			Double angle = parseAngle(tags.getValue("roof:angle"));
-			if (angle != null && angle >= 0 && angle < 90.0) {
-				roofHeight = tan(toRadians(angle)) * maxDistanceToRidge;
+			Angle angle = parseRoofAngle(tags);
+			if (angle != null) {
+				roofHeight = tan(angle.radians) * maxDistanceToRidge;
 			}
 		}
 
