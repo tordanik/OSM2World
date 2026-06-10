@@ -229,7 +229,7 @@ public class ExteriorBuildingWall {
 
 			boolean separateLevelSurfaces = FORCE_LEVEL_SPLIT
 					// separate level surfaces significantly speed up the calculations for placing wall elements on large walls
-					|| EnumSet.of(WindowImplementation.FULL_GEOMETRY, WindowImplementation.INSET_TEXTURES).contains(windowImplementation);
+					|| hasWindows && EnumSet.of(WindowImplementation.FULL_GEOMETRY, WindowImplementation.INSET_TEXTURES).contains(windowImplementation);
 
 			if (!separateLevelSurfaces) {
 
