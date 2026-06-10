@@ -12,8 +12,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.GeometryUtil;
+import org.osm2world.util.exception.InvalidGeometryException;
 
 public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeXZ {
 
@@ -224,6 +226,54 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 				minBox.bottomRight().rotate(angleForMinBox),
 				minBox.topRight().rotate(angleForMinBox),
 				minBox.topLeft().rotate(angleForMinBox));
+
+	}
+
+
+	/**
+	 * Calculates the smallest possible bounding box for this polygon
+	 * which has two sides matching the given angle.
+	 *
+	 * @return  a counterclockwise rectangle representing the bounding box. Its first segment has the given angle.
+	 */
+	public default RectangleXZ rotatedBoundingBox(Angle angle) {
+
+		List<VectorXZ> rotatedVertices = new ArrayList<>();
+		for (VectorXZ v : vertices()) {
+			rotatedVertices.add(v.rotate(-angle.radians));
+		}
+
+		AxisAlignedRectangleXZ alignedBbox = bbox(rotatedVertices);
+
+		/* construct a correctly rotated rectangle */
+
+		var rect = new RectangleXZ(
+				alignedBbox.bottomLeft().rotate(angle.radians),
+				alignedBbox.bottomRight().rotate(angle.radians),
+				alignedBbox.topRight().rotate(angle.radians),
+				alignedBbox.topLeft().rotate(angle.radians));
+
+		/* find the side with the given angle and start the result at that side */
+
+		int startI = -1;
+
+		for (int i = 0; i < 4; i++) {
+			double sideIAngle = rect.getVertex(i).angleTo(rect.getVertex((i + 1) % 4));
+			if (Angle.radiansBetween(Angle.ofRadians(sideIAngle), angle) < 0.1) {
+				startI = i;
+				break;
+			}
+		}
+
+		if (startI < 0) {
+			throw new InvalidGeometryException("No side of the bbox matches the given angle");
+		}
+
+		return new RectangleXZ(
+			rect.getVertex(startI),
+			rect.getVertex((startI + 1) % 4),
+			rect.getVertex((startI + 2) % 4),
+			rect.getVertex((startI + 3) % 4));
 
 	}
 

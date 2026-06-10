@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 
 public class SimplePolygonXZTest {
@@ -423,6 +424,24 @@ public class SimplePolygonXZTest {
 				new VectorXZ(3.5, 3.5),
 				new VectorXZ(4, 3),
 				new VectorXZ(1.5, 0.5));
+
+	}
+
+	@Test
+	public void testRotatedBoundingBox() {
+
+		var p1 = new SimplePolygonXZ(closeLoop(
+				new VectorXZ(0, 0),
+				new VectorXZ(0, 1),
+				new VectorXZ(1, 1),
+				new VectorXZ(1, 0)));
+
+		RectangleXZ bbox = p1.rotatedBoundingBox(Angle.ofRadians(0));
+
+		assertEquals(new VectorXZ(1, 0), bbox.v0());
+		assertEquals(new VectorXZ(1, 1), bbox.v1());
+		assertEquals(new VectorXZ(0, 1), bbox.v2());
+		assertEquals(new VectorXZ(0, 0), bbox.v3());
 
 	}
 

@@ -12,6 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
@@ -33,6 +34,15 @@ public class RoundRoof extends RoofWithRidge {
 
 		double height = Objects.requireNonNullElse(super.calculatePreliminaryHeight(), BuildingPart.DEFAULT_RIDGE_HEIGHT);
 		rings = (int)max(3, height / ROOF_SUBDIVISIONS_PER_HEIGHT_METER);
+
+		/* get a bbox around the roof (segments will be orthogonal to the ridge and cover this bbox) */
+
+		Angle ridgeAngle = Angle.ofRadians(ridge.getDirection().angle());
+		var bbox = this.originalPolygon.getOuter().rotatedBoundingBox(ridgeAngle);
+		List<LineSegmentXZ> bboxSegments = bbox.getSegments();
+
+		var cap1 = bboxSegments.get(3);
+		var cap2 = bboxSegments.get(1);
 
 		/* decide where to place the segments */
 
