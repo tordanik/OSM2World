@@ -242,7 +242,8 @@ public class ExteriorBuildingWall {
 						mainSurface = new WallSurface(buildingPart, material, bottomPoints, topPoints);
 					} catch (InvalidGeometryException ignored) {}
 
-					createRoofSurface = false;
+					// usually create no roof surface, except if there is no level to attach the main surface to
+					createRoofSurface = levelsWithoutRoof.isEmpty();
 
 				} else {
 
