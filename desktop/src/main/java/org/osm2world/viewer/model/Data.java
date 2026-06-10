@@ -49,7 +49,7 @@ public class Data extends Observable {
 
 	/** reloads the configuration from the config file */
 	public void reloadConfig(RenderOptions options) {
-		var config = new O2WConfig(Map.of("lod", options.lod.ordinal()), configFiles.toArray(new File[0]));
+		var config = new O2WConfig(Map.of(), configFiles.toArray(new File[0]));
 		this.setConfig(config);
 	}
 
