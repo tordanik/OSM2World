@@ -21,8 +21,9 @@ public class RoofTest {
 	@Test
 	public void testRoofConstruction() {
 
-		for (String roofShape : List.of("flat", "pyramidal", "onion", "skillion", "gabled", "hipped", "side_hipped",
-				"half-hipped", "side_half-hipped", "gambrel", "mansard", "sawtooth", "dome", "round", "cone")) {
+		for (String roofShape : List.of("flat", "pyramidal", "onion", "skillion", "saltbox", "gabled",
+				"hipped", "side_hipped", "half-hipped", "side_half-hipped", "gambrel", "mansard", "sawtooth",
+				"dome", "round", "cone")) {
 			for (String roofDirection : List.of("N", "E", "S", "W", "45", "135")) {
 
 				var builder = new MapDataBuilder();

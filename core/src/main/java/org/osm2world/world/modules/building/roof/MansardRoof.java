@@ -24,11 +24,11 @@ public class MansardRoof extends RoofWithRidge {
 
 		mansardEdge1 = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, ridge.p1, 1/3.0),
-				interpolateBetween(cap2.p2, ridge.p2, 1/3.0));
+				interpolateBetween(cap2.p1, ridge.p2, 1/3.0));
 
 		mansardEdge2 = new LineSegmentXZ(
 				interpolateBetween(cap1.p2, ridge.p1, 1/3.0),
-				interpolateBetween(cap2.p1, ridge.p2, 1/3.0));
+				interpolateBetween(cap2.p2, ridge.p2, 1/3.0));
 
 	}
 
@@ -42,9 +42,9 @@ public class MansardRoof extends RoofWithRidge {
 				new LineSegmentXZ(ridge.p2, mansardEdge1.p2),
 				new LineSegmentXZ(ridge.p2, mansardEdge2.p2),
 				new LineSegmentXZ(cap1.p1, mansardEdge1.p1),
-				new LineSegmentXZ(cap2.p2, mansardEdge1.p2),
+				new LineSegmentXZ(cap2.p1, mansardEdge1.p2),
 				new LineSegmentXZ(cap1.p2, mansardEdge2.p1),
-				new LineSegmentXZ(cap2.p1, mansardEdge2.p2),
+				new LineSegmentXZ(cap2.p2, mansardEdge2.p2),
 				new LineSegmentXZ(mansardEdge1.p1, mansardEdge2.p1),
 				new LineSegmentXZ(mansardEdge1.p2, mansardEdge2.p2));
 		return segments.stream().map(InnerLine::new).toList();

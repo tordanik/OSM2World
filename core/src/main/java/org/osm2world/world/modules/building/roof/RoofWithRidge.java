@@ -3,7 +3,9 @@ package org.osm2world.world.modules.building.roof;
 import static java.lang.Math.*;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
+import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.math.algorithms.GeometryUtil.isRightOf;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 
 import java.util.List;
@@ -14,7 +16,10 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Angle;
 import org.osm2world.math.Intersection;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.shapes.*;
+import org.osm2world.math.shapes.LineSegmentXZ;
+import org.osm2world.math.shapes.PolygonWithHolesXZ;
+import org.osm2world.math.shapes.RectangleXZ;
+import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.modules.building.BuildingPart;
@@ -33,9 +38,9 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 	protected final LineSegmentXZ ridge;
 
-	/** the roof cap that is closer to the first vertex of the ridge */
+	/** the roof cap that is closer to the first vertex of the ridge. Points to the right of the ridge. */
 	protected final LineSegmentXZ cap1;
-	/** the roof cap that is closer to the second vertex of the ridge */
+	/** the roof cap that is closer to the second vertex of the ridge. Points to the right of the ridge. */
 	protected final LineSegmentXZ cap2;
 
 	/** maximum distance of any outline vertex to the ridge */
@@ -50,20 +55,26 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 	 */
 	public RoofWithRidge(@Nullable BuildingPart buildingPart, double relativeRidgeOffset,
 			PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		this(buildingPart, relativeRidgeOffset, relativeRidgeOffset, false, originalPolygon, tags, material);
+		this(buildingPart, relativeRidgeOffset, relativeRidgeOffset, false, null,
+				originalPolygon, tags, material);
 	}
 
 	/**
 	 * Variant of the constructor for certain more unusual roof shapes.
-	 * Supports separate offsets for the start and end of the ridge and different roof:direction interpretations.
+	 * Supports separate offsets for the start and end of the ridge, the ability to move the ridge forward/backward,
+	 * and different roof:direction interpretations.
 	 *
-	 * @param ridgeAlongDirection  whether the ridge goes along the roof:direction instead of being orthogonal to it
+	 * @param ridgeAlongDirection   whether the ridge goes along the roof:direction instead of being orthogonal to it
+	 * @param relativeRidgeLocation where between the front and back of the roof the ridge is placed
+	 *                              (0.5: in the center, 1.0: in the back).
 	 */
 	public RoofWithRidge(@Nullable BuildingPart buildingPart, double relativeRidgeOffset1,
-			double relativeRidgeOffset2, boolean ridgeAlongDirection, PolygonWithHolesXZ originalPolygon, TagSet tags,
-			Material material) {
+			double relativeRidgeOffset2, boolean ridgeAlongDirection, @Nullable Double relativeRidgeLocation,
+			PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
 		super(buildingPart, originalPolygon, tags, material);
+
+		relativeRidgeLocation = requireNonNullElse(relativeRidgeLocation, 0.5);
 
 		SimplePolygonXZ outerPoly = originalPolygon.getOuter();
 
@@ -75,12 +86,16 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 		/* calculate the two outermost intersections of the
 		 * quasi-infinite ridge line with segments of the polygon */
 
-		var bbox = AxisAlignedRectangleXZ.bbox(outerPoly.vertices());
+		var bbox = outerPoly.rotatedBoundingBox(Angle.ofRadians(ridgeDirection.angle()));
 
 		VectorXZ p1 = outerPoly.getCentroid();
+
+		LineSegmentXZ toBack = bbox.getSegments().get(3);
+		p1 = p1.add((toBack.p2.subtract(toBack.p1)).mult(relativeRidgeLocation - 0.5));
+
 		LineSegmentXZ intersectionLine = new LineSegmentXZ(
-				p1.add(ridgeDirection.mult(-(bbox.sizeX() + bbox.sizeZ()))),
-				p1.add(ridgeDirection.mult(bbox.sizeX() + bbox.sizeZ()))
+				p1.add(ridgeDirection.mult(-bbox.getDiameter())),
+				p1.add(ridgeDirection.mult(bbox.getDiameter()))
 		);
 
 		List<Intersection> intersections = simplifiedPolygon.intersections(intersectionLine);
@@ -93,20 +108,17 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 		Intersection i1 = intersections.get(0);
 		Intersection i2 = intersections.get(intersections.size() - 1);
 
-		cap1 = i1.segment();
-		cap2 = i2.segment();
-
 		VectorXZ c1 = i1.point();
 		VectorXZ c2 = i2.point();
 
 		/* consider an offset for ridges which do not end at the wall of the building */
 
 		ridgeOffset1 = min(
-				cap1.getLength() * relativeRidgeOffset1,
+				i1.segment().getLength() * relativeRidgeOffset1,
 				0.4 * c1.distanceTo(c2));
 
 		ridgeOffset2 = min(
-				cap1.getLength() * relativeRidgeOffset2,
+				i2.segment().getLength() * relativeRidgeOffset2,
 				0.4 * c1.distanceTo(c2));
 
 		if (ridgeOffset1 == 0 && ridgeOffset2 == 0) {
@@ -120,6 +132,9 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 					c2.add( p1.subtract(c2).normalize().mult(ridgeOffset2) ));
 
 		}
+
+		cap1 = isRightOf(i1.segment().p2, ridge.p1, ridge.p2) ? i1.segment() : i1.segment().reverse();
+		cap2 = isRightOf(i2.segment().p2, ridge.p1, ridge.p2) ? i2.segment() : i2.segment().reverse();
 
 		/* calculate maxDistanceToRidge */
 

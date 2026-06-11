@@ -22,7 +22,7 @@ public abstract class AbstractHalfHippedRoof extends RoofWithRidge {
 	public AbstractHalfHippedRoof(@Nullable BuildingPart buildingPart, double relativeRidgeOffset1,
 			double relativeRidgeOffset2, boolean ridgeAlongDirection, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
-		super(buildingPart, relativeRidgeOffset1, relativeRidgeOffset2, ridgeAlongDirection, originalPolygon, tags, material);
+		super(buildingPart, relativeRidgeOffset1, relativeRidgeOffset2, ridgeAlongDirection, null, originalPolygon, tags, material);
 
 		cap1part = new LineSegmentXZ(
 				interpolateBetween(cap1.p1, cap1.p2, 0.5 - ridgeOffset1 / cap1.getLength()),

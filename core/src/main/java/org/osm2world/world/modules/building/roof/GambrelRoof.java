@@ -37,8 +37,8 @@ public class GambrelRoof extends RoofWithRidge {
 	protected Collection<InnerLine> getInnerLines() {
 		return List.of(
 				new InnerLine(ridge, true),
-				new InnerLine(new LineSegmentXZ(cap1part.p1, cap2part.p2), true),
-				new InnerLine(new LineSegmentXZ(cap1part.p2, cap2part.p1), true));
+				new InnerLine(new LineSegmentXZ(cap1part.p1, cap2part.p1), true),
+				new InnerLine(new LineSegmentXZ(cap1part.p2, cap2part.p2), true));
 	}
 
 	@Override

@@ -6,10 +6,10 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.modules.building.BuildingPart;
 
-public class GabledRoof extends AbstractGabledRoof {
+public class SaltboxRoof extends AbstractGabledRoof {
 
-	public GabledRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(buildingPart, null, originalPolygon, tags, material);
+	public SaltboxRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		super(buildingPart, 0.7, originalPolygon, tags, material);
 	}
 
 }

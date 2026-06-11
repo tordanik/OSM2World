@@ -1,5 +1,6 @@
 package org.osm2world.math.shapes;
 
+import static java.lang.Math.sqrt;
 import static org.junit.Assert.*;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
@@ -21,6 +22,20 @@ public class RectangleXZTest {
 
 		assertEquals(20, rect.getArea(), 0.001);
 		assertEquals(rect.getArea(), rect.polygonXZ().getArea(), 0.001);
+
+	}
+
+	@Test
+	public void testGetDiameter() {
+
+		RectangleXZ rect = new RectangleXZ(
+				new VectorXZ(0, 0),
+				new VectorXZ(0, -2),
+				new VectorXZ(10, -2),
+				new VectorXZ(10, 0));
+
+		assertEquals(sqrt(100 + 4), rect.getDiameter(), 0.001);
+		assertEquals(rect.getDiameter(), rect.polygonXZ().getDiameter(), 0.001);
 
 	}
 

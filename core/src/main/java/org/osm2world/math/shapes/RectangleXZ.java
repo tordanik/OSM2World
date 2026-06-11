@@ -82,6 +82,11 @@ public record RectangleXZ(VectorXZ v0, VectorXZ v1, VectorXZ v2, VectorXZ v3) im
 	}
 
 	@Override
+	public double getDiameter() {
+		return v0.distanceTo(v2);
+	}
+
+	@Override
 	public boolean isClockwise() {
 		return GeometryUtil.isRightOf(v2, v0, v1);
 	}

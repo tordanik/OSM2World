@@ -111,6 +111,7 @@ abstract public class Roof {
 			case "pyramidal" -> new PyramidalRoof(buildingPart, originalPolygon, tags, material);
 			case "onion" -> new OnionRoof(buildingPart, originalPolygon, tags, material);
 			case "skillion" -> new SkillionRoof(buildingPart, originalPolygon, tags, material);
+			case "saltbox" -> new SaltboxRoof(buildingPart, originalPolygon, tags, material);
 			case "gabled" -> new GabledRoof(buildingPart, originalPolygon, tags, material);
 			case "hipped" -> new HippedRoof(buildingPart, originalPolygon, tags, material);
 			case "side_hipped" -> new SideHippedRoof(buildingPart, originalPolygon, tags, material);
