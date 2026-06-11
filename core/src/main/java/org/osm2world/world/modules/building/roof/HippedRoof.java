@@ -1,40 +1,17 @@
 package org.osm2world.world.modules.building.roof;
 
-import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
-
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.math.VectorXZ;
-import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.modules.building.BuildingPart;
 
-public class HippedRoof extends RoofWithRidge {
+public class HippedRoof extends AbstractHippedRoof {
+
+	static final double RIDGE_OFFSET = 1/3.0;
 
 	public HippedRoof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
-		super(buildingPart, 1/3.0, originalPolygon, tags, material);
-	}
-
-	@Override
-	protected Collection<InnerLine> getInnerLines() {
-		return List.of(
-				new InnerLine(ridge),
-				new InnerLine(new LineSegmentXZ(ridge.p1, cap1.p1)),
-				new InnerLine(new LineSegmentXZ(ridge.p1, cap1.p2)),
-				new InnerLine(new LineSegmentXZ(ridge.p2, cap2.p1)),
-				new InnerLine(new LineSegmentXZ(ridge.p2, cap2.p2)));
-	}
-
-	@Override
-	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
-		double distRidge = distanceFromLineSegment(pos, ridge);
-		double relativePlacement = distRidge / maxDistanceToRidge;
-		return roofHeight - roofHeight * relativePlacement;
+		super(buildingPart, RIDGE_OFFSET, RIDGE_OFFSET, false, originalPolygon, tags, material);
 	}
 
 }

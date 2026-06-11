@@ -113,7 +113,9 @@ abstract public class Roof {
 			case "skillion" -> new SkillionRoof(buildingPart, originalPolygon, tags, material);
 			case "gabled" -> new GabledRoof(buildingPart, originalPolygon, tags, material);
 			case "hipped" -> new HippedRoof(buildingPart, originalPolygon, tags, material);
+			case "side_hipped" -> new SideHippedRoof(buildingPart, originalPolygon, tags, material);
 			case "half-hipped" -> new HalfHippedRoof(buildingPart, originalPolygon, tags, material);
+			case "side_half-hipped" -> new SideHalfHippedRoof(buildingPart, originalPolygon, tags, material);
 			case "gambrel" -> new GambrelRoof(buildingPart, originalPolygon, tags, material);
 			case "mansard" -> new MansardRoof(buildingPart, originalPolygon, tags, material);
 			case "sawtooth" -> new SawtoothRoof(buildingPart, originalPolygon, tags, material);

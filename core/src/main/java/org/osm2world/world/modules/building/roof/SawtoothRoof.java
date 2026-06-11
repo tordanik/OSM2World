@@ -35,7 +35,7 @@ public class SawtoothRoof extends RoofWithInnerLines {
 
 		SimplePolygonXZ simplifiedPolygon = originalPolygon.getOuter().getSimplifiedPolygon();
 
-		VectorXZ ridgeDirection = RoofWithRidge.ridgeDirectionFromTags(tags, simplifiedPolygon);
+		VectorXZ ridgeDirection = RoofWithRidge.ridgeDirectionFromTags(tags, false, simplifiedPolygon, null);
 
 		/* get a bbox around the roof (segments will be orthogonal to the ridge and cover this bbox) */
 

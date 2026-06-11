@@ -1,7 +1,6 @@
 package org.osm2world.world.modules.building.roof;
 
-import static java.lang.Math.min;
-import static java.lang.Math.tan;
+import static java.lang.Math.*;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
@@ -26,8 +25,11 @@ import org.osm2world.world.modules.building.BuildingPart;
  */
 abstract public class RoofWithRidge extends RoofWithInnerLines {
 
-	/** absolute distance of ridge to outline */
-	protected final double ridgeOffset;
+	/** absolute distance of ridge to outline at the start */
+	protected final double ridgeOffset1;
+
+	/** absolute distance of ridge to outline at the end */
+	protected final double ridgeOffset2;
 
 	protected final LineSegmentXZ ridge;
 
@@ -39,14 +41,27 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 	/** maximum distance of any outline vertex to the ridge */
 	protected final double maxDistanceToRidge;
 
+
 	/**
 	 * creates an instance and calculates the final fields
 	 *
-	 * @param relativeRoofOffset  distance of ridge to outline
-	 *    relative to length of roof cap; 0 if ridge ends at outline
+	 * @param relativeRidgeOffset  distance of ridge to outline relative to length of roof cap;
+	 *                             0 if ridge touches outline
 	 */
-	public RoofWithRidge(@Nullable BuildingPart buildingPart, double relativeRoofOffset,
+	public RoofWithRidge(@Nullable BuildingPart buildingPart, double relativeRidgeOffset,
 			PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
+		this(buildingPart, relativeRidgeOffset, relativeRidgeOffset, false, originalPolygon, tags, material);
+	}
+
+	/**
+	 * Variant of the constructor for certain more unusual roof shapes.
+	 * Supports separate offsets for the start and end of the ridge and different roof:direction interpretations.
+	 *
+	 * @param ridgeAlongDirection  whether the ridge goes along the roof:direction instead of being orthogonal to it
+	 */
+	public RoofWithRidge(@Nullable BuildingPart buildingPart, double relativeRidgeOffset1,
+			double relativeRidgeOffset2, boolean ridgeAlongDirection, PolygonWithHolesXZ originalPolygon, TagSet tags,
+			Material material) {
 
 		super(buildingPart, originalPolygon, tags, material);
 
@@ -54,7 +69,8 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 		SimplePolygonXZ simplifiedPolygon = outerPoly.getSimplifiedPolygon();
 
-		VectorXZ ridgeDirection = ridgeDirectionFromTags(tags, simplifiedPolygon);
+		VectorXZ ridgeDirection = ridgeDirectionFromTags(tags, ridgeAlongDirection,
+				simplifiedPolygon, defaultDirection());
 
 		/* calculate the two outermost intersections of the
 		 * quasi-infinite ridge line with segments of the polygon */
@@ -85,19 +101,23 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 		/* consider an offset for ridges which do not end at the wall of the building */
 
-		ridgeOffset = min(
-				cap1.getLength() * relativeRoofOffset,
+		ridgeOffset1 = min(
+				cap1.getLength() * relativeRidgeOffset1,
 				0.4 * c1.distanceTo(c2));
 
-		if (relativeRoofOffset == 0) {
+		ridgeOffset2 = min(
+				cap1.getLength() * relativeRidgeOffset2,
+				0.4 * c1.distanceTo(c2));
+
+		if (ridgeOffset1 == 0 && ridgeOffset2 == 0) {
 
 			ridge = new LineSegmentXZ(c1, c2);
 
 		} else {
 
 			ridge = new LineSegmentXZ(
-					c1.add( p1.subtract(c1).normalize().mult(ridgeOffset) ),
-					c2.add( p1.subtract(c2).normalize().mult(ridgeOffset) ));
+					c1.add( p1.subtract(c1).normalize().mult(ridgeOffset1) ),
+					c2.add( p1.subtract(c2).normalize().mult(ridgeOffset2) ));
 
 		}
 
@@ -109,18 +129,28 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 	}
 
-
 	/** Determine ridge direction based on one of several supported tags */
-	static VectorXZ ridgeDirectionFromTags(TagSet tags, SimplePolygonXZ simplifiedPolygon) {
+	static VectorXZ ridgeDirectionFromTags(TagSet tags, boolean ridgeAlongDirection,
+			SimplePolygonXZ simplifiedPolygon, @Nullable VectorXZ defaultDirection) {
 
-		VectorXZ ridgeDirection = ridgeVectorFromRoofDirection(tags, simplifiedPolygon);
+		VectorXZ ridgeDirection = ridgeVectorFromRoofDirection(tags, ridgeAlongDirection, simplifiedPolygon);
 
 		if (ridgeDirection == null) {
 			ridgeDirection = ridgeVectorFromRidgeDirection(tags, simplifiedPolygon);
 		}
 
 		if (ridgeDirection == null) {
-			ridgeDirection = ridgeVectorFromRoofOrientation(tags, simplifiedPolygon);
+			if (defaultDirection == null) {
+				ridgeDirection = ridgeVectorFromRoofOrientation(tags, simplifiedPolygon);
+			} else if (tags.containsKey("roof:orientation")) {
+				ridgeDirection = ridgeVectorFromRoofOrientation(tags, simplifiedPolygon);
+				// use defaultDirection to pick between the two possible directions for a roof:orientation value
+				if (VectorXZ.angleBetween(ridgeDirection, defaultDirection) > 0.9 * PI) {
+					ridgeDirection = ridgeDirection.invert();
+				}
+			} else {
+				ridgeDirection = defaultDirection;
+			}
 		}
 
 		return ridgeDirection;
@@ -131,12 +161,17 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 	 * returns a ridge direction vector based on the roof:direction tag, if possible.
 	 * May modify the direction a bit to "snap" to directions parallel or orthogonal to polygon segments.
 	 */
-	private static @Nullable VectorXZ ridgeVectorFromRoofDirection(TagSet tags, SimplePolygonXZ polygon) {
+	private static @Nullable VectorXZ ridgeVectorFromRoofDirection(TagSet tags, boolean ridgeAlongDirection,
+			SimplePolygonXZ polygon) {
 		Angle angle = snapDirection(tags.getValue("roof:direction"), polygon.getSegments());
 		if (angle == null) {
 			return null;
 		} else {
-			return VectorXZ.fromAngle(angle).rightNormal();
+			if (ridgeAlongDirection) {
+				return VectorXZ.fromAngle(angle);
+			} else {
+				return VectorXZ.fromAngle(angle).rightNormal();
+			}
 		}
 	}
 
@@ -182,6 +217,14 @@ abstract public class RoofWithRidge extends RoofWithInnerLines {
 
 		return roofHeight;
 
+	}
+
+	/**
+	 * returns the default direction if no explicit roof:direction tag is set.
+	 * Only intended for a subset of roof shapes which have special logic for this.
+	 */
+	protected @Nullable VectorXZ defaultDirection() {
+		return null;
 	}
 
 }
