@@ -30,7 +30,7 @@ public abstract class AbstractGabledRoof extends RoofWithRidge {
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
 		double distRidge = distanceFromLineSegment(pos, ridge);
 		double relativePlacement = distRidge / maxDistanceToRidge;
-		return roofHeight - roofHeight * relativePlacement;
+		return roofHeight() - roofHeight() * relativePlacement;
 	}
 
 }

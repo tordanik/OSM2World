@@ -52,7 +52,7 @@ abstract public class SpindleRoof extends Roof {
 		List<Double> scaleFactors = new ArrayList<>();
 
 		getSpindleSteps().forEach(pair -> {
-			heights.add(baseEle + pair.getKey() * roofHeight);
+			heights.add(baseEle + pair.getKey() * roofHeight());
 			scaleFactors.add(pair.getValue());
 		});
 

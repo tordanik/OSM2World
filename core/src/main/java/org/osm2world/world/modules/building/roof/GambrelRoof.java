@@ -48,9 +48,9 @@ public class GambrelRoof extends RoofWithRidge {
 		double relativePlacement = distRidge / maxDistanceToRidge;
 
 		if (relativePlacement < 2/3.0) {
-			return roofHeight - 1/2.0 * roofHeight * relativePlacement;
+			return roofHeight() - 1/2.0 * roofHeight() * relativePlacement;
 		} else {
-			return roofHeight - 1/3.0 * roofHeight - 2 * roofHeight * (relativePlacement - 2/3.0);
+			return roofHeight() - 1/3.0 * roofHeight() - 2 * roofHeight() * (relativePlacement - 2/3.0);
 		}
 
 	}

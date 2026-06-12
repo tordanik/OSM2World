@@ -54,14 +54,14 @@ public class MansardRoof extends RoofWithRidge {
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
 
 		if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) {
-			return roofHeight;
+			return roofHeight();
 		} else if (getPolygon().getOuter().getVertexCollection().contains(pos)) {
 			return 0.0;
 		} else if (mansardEdge1.p1.equals(pos)
 				|| mansardEdge1.p2.equals(pos)
 				|| mansardEdge2.p1.equals(pos)
 				|| mansardEdge2.p2.equals(pos)) {
-			return roofHeight - 1/3.0 * roofHeight;
+			return roofHeight() - 1/3.0 * roofHeight();
 		} else {
 			return null;
 		}

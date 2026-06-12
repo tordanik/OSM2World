@@ -56,6 +56,8 @@ public abstract class AbstractHippedRoof extends RoofWithRidge {
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
 
+		double roofHeight = roofHeight();
+
 		// The logic which would be used for a gabled roof.
 		// Can be used here as well, except for the triangular segments at both ends.
 		Function<VectorXZ, VectorXYZ> heightFromRidgeDistance = (VectorXZ p) -> {

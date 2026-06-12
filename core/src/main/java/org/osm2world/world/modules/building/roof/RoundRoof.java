@@ -79,10 +79,10 @@ public class RoundRoof extends RoofWithRidge {
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
 
 		double radius;
-		if (roofHeight < maxDistanceToRidge) {
-			double squaredHeight = roofHeight * roofHeight;
+		if (roofHeight() < maxDistanceToRidge) {
+			double squaredHeight = roofHeight() * roofHeight();
 			double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
-			double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
+			double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight());
 			radius = sqrt(squaredDist + centerY * centerY);
 		} else {
 			radius = 0;
@@ -93,11 +93,11 @@ public class RoundRoof extends RoofWithRidge {
 
 		if (radius > 0) {
 			double relativePlacement = distRidge / radius;
-			result = roofHeight - radius + sqrt(1.0 - relativePlacement * relativePlacement) * radius;
+			result = roofHeight() - radius + sqrt(1.0 - relativePlacement * relativePlacement) * radius;
 		} else {
 			// This could be any interpolator
 			double relativePlacement = distRidge / maxDistanceToRidge;
-			result = (1 - pow(relativePlacement, 2.5)) * roofHeight;
+			result = (1 - pow(relativePlacement, 2.5)) * roofHeight();
 		}
 
 		return max(result, 0.0);

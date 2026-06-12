@@ -47,7 +47,7 @@ public class PyramidalRoof extends HeightfieldRoof {
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
 		if (apex.equals(pos)) {
-			return roofHeight;
+			return roofHeight();
 		} else if (originalPolygon.getOuter().getVertices().contains(pos)) {
 			return 0.0;
 		} else {

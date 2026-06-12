@@ -104,9 +104,9 @@ public class SawtoothRoof extends RoofWithInnerLines {
 
 		double downslopeProportion = lastTooth ? 1.0 : 1 - UPSLOPE_PROPORTION;
 		if (relativeDistanceAlongTooth < downslopeProportion) {
-			return roofHeight * max(lastTooth ? 0 : 0.05, (1 - (relativeDistanceAlongTooth / (downslopeProportion))));
+			return roofHeight() * max(lastTooth ? 0 : 0.05, (1 - (relativeDistanceAlongTooth / (downslopeProportion))));
 		} else {
-			return roofHeight * max(lastTooth ? 0 : 0.05, (relativeDistanceAlongTooth - (downslopeProportion)) / UPSLOPE_PROPORTION);
+			return roofHeight() * max(lastTooth ? 0 : 0.05, (relativeDistanceAlongTooth - (downslopeProportion)) / UPSLOPE_PROPORTION);
 		}
 
 	}

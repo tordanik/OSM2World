@@ -102,6 +102,7 @@ public class SkillionRoof extends HeightfieldRoof {
 
 	@Override
 	protected Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
+		double roofHeight = roofHeight();
 		if (ridge == null) {
 			return roofHeight;
 		} else {

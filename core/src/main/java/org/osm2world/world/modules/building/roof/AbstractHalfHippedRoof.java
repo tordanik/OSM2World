@@ -51,6 +51,7 @@ public abstract class AbstractHalfHippedRoof extends RoofWithRidge {
 
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
+		double roofHeight = roofHeight();
 		if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) { // point on the ridge
 			return roofHeight;
 		} else if (distanceFromLineSegment(pos, cap1part) < 0.05) { // point ~on cap1part

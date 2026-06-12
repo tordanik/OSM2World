@@ -40,14 +40,13 @@ abstract public class Roof {
 	protected final TagSet tags;
 	protected final Material material;
 
-	protected Double roofHeight;
+	private Double roofHeight = null;
 
 	public Roof(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 		this.buildingPart = buildingPart;
 		this.originalPolygon = originalPolygon;
 		this.tags = tags;
 		this.material = material;
-		this.roofHeight = calculatePreliminaryHeight();
 	}
 
 	/**
@@ -59,6 +58,13 @@ abstract public class Roof {
 
 	public void setRoofHeight(double roofHeight) {
 		this.roofHeight = roofHeight;
+	}
+
+	protected double roofHeight() {
+		if (roofHeight == null) {
+			roofHeight = calculatePreliminaryHeight();
+		}
+		return roofHeight;
 	}
 
 	/**

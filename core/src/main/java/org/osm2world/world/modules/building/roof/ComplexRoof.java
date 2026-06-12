@@ -106,8 +106,6 @@ public class ComplexRoof extends HeightfieldRoof {
 
 	private void calculateRoofHeightMap() {
 
-		if (roofHeight == null) throw new IllegalStateException("Roof height not set yet");
-
 		roofHeightMap = new HashMap<>();
 
 		Set<VectorXZ> nodeSet = new HashSet<>();
@@ -124,7 +122,7 @@ public class ComplexRoof extends HeightfieldRoof {
 				} else if (waySegment.getTags().containsKey("roof:height")) {
 					nodeHeight = parseMeasure(waySegment.getTags().getValue("roof:height"));
 				} else if (node.getTags().contains("roof:apex",	"yes")) {
-					nodeHeight = roofHeight;
+					nodeHeight = roofHeight();
 				}
 
 				if (nodeHeight == null) {
@@ -145,7 +143,7 @@ public class ComplexRoof extends HeightfieldRoof {
 			if (waySegment.getTags().containsKey("roof:height")) {
 				nodeHeight = parseMeasure(waySegment.getTags().getValue("roof:height"));
 			} else {
-				nodeHeight = roofHeight;
+				nodeHeight = roofHeight();
 			}
 
 			for (MapNode node : waySegment.getStartEndNodes()) {
