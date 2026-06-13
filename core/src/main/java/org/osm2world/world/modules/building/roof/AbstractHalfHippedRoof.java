@@ -1,5 +1,6 @@
 package org.osm2world.world.modules.building.roof;
 
+import static java.lang.Math.max;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 
 import java.util.ArrayList;
@@ -60,10 +61,10 @@ public abstract class AbstractHalfHippedRoof extends RoofWithRidge {
 			return roofHeight - roofHeight * ridgeOffset2 / (cap2.getLength()/2);
 		} else if (distanceFromLineSegment(pos, cap1) < 0.05) { // point ~on cap1
 			double relativeRidgeDist = distanceFromLine(pos, ridge.p1, ridge.p2) / (cap1.getLength() / 2);
-			return roofHeight * (1 - relativeRidgeDist);
+			return max(roofHeight * (1 - relativeRidgeDist), 0.0);
 		} else if (distanceFromLineSegment(pos, cap2) < 0.05) { // point ~on cap2
 			double relativeRidgeDist = distanceFromLine(pos, ridge.p1, ridge.p2) / (cap2.getLength() / 2);
-			return roofHeight * (1 - relativeRidgeDist);
+			return max(roofHeight * (1 - relativeRidgeDist), 0.0);
 		} else if (getPolygon().getOuter().getVertexCollection().contains(pos)) { // other points on the outline
 			return 0.0;
 		} else {

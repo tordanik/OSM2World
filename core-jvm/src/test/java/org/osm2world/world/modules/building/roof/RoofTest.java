@@ -1,7 +1,7 @@
 package org.osm2world.world.modules.building.roof;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static java.lang.Math.abs;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,8 @@ public class RoofTest {
 				"dome", "round", "cone")) {
 			for (String roofDirection : List.of("N", "E", "S", "W", "45", "135")) {
 
+				double roofHeight = 3.5;
+
 				var builder = new MapDataBuilder();
 
 				var nodes = List.of(
@@ -38,7 +40,9 @@ public class RoofTest {
 				TagSet tags = TagSet.of(
 						"building", "yes",
 						"roof:shape", roofShape,
-						"roof:direction", roofDirection
+						"roof:direction", roofDirection,
+						"height", (10 + roofHeight) + " m",
+						"roof:height", roofHeight + " m"
 				);
 
 				builder.createWayArea(nodes, tags);
@@ -60,11 +64,22 @@ public class RoofTest {
 					assertFalse(roofTriangles.isEmpty());
 
 					if (roof instanceof HeightfieldRoof) {
+
 						double totalAreaXZ = roofTriangles.stream().mapToDouble(t -> t.xz().getArea()).sum();
 						assertEquals(150.0, totalAreaXZ, 0.1);
+
+						if (!"flat".equals(roofShape)) {
+							var roofVertices = roofTriangles.stream().flatMap(t -> t.vertices().stream()).toList();
+							var minY = roofVertices.stream().mapToDouble(v -> v.y).min().orElseThrow(AssertionError::new);
+							var maxY = roofVertices.stream().mapToDouble(v -> v.y).max().orElseThrow(AssertionError::new);
+							assertTrue("Distance between " + minY + " and " + maxY + " must match roof height",
+									abs(maxY - minY) - roofHeight <= 0.1);
+
+						}
+
 					}
 
-				} catch (Exception e) {
+				} catch (AssertionError | Exception e) {
 					Assert.fail("Failed for " + tags + ": " + e.getMessage());
 				}
 
