@@ -30,7 +30,7 @@ public class ComplexRoof extends HeightfieldRoof {
 	private final List<MapWaySegment> edges;
 	private final List<MapWaySegment> ridges;
 
-	private Map<VectorXZ, Double> roofHeightMap;
+	private Map<VectorXZ, Double> roofHeightMap = null;
 	private PolygonWithHolesXZ simplePolygon;
 
 	public ComplexRoof(@Nullable BuildingPart buildingPart, MapArea area, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
@@ -50,9 +50,9 @@ public class ComplexRoof extends HeightfieldRoof {
 
 		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 
-			if (overlap instanceof MapOverlapWA) {
+			if (overlap instanceof MapOverlapWA overlapWA) {
 
-				MapWaySegment waySegment = ((MapOverlapWA) overlap).e1;
+				MapWaySegment waySegment = overlapWA.e1;
 
 				boolean isRidge = waySegment.getTags().contains("roof:ridge", "yes");
 				boolean isEdge = waySegment.getTags().contains("roof:edge", "yes");
@@ -96,12 +96,10 @@ public class ComplexRoof extends HeightfieldRoof {
 
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
-		calculateRoofHeightMap();
-		if (roofHeightMap.containsKey(pos)) {
-			return roofHeightMap.get(pos);
-		} else {
-			return null;
+		if (roofHeightMap == null) {
+			calculateRoofHeightMap();
 		}
+		return roofHeightMap.getOrDefault(pos, null);
 	}
 
 	private void calculateRoofHeightMap() {
@@ -130,7 +128,7 @@ public class ComplexRoof extends HeightfieldRoof {
 					continue;
 				}
 
-				roofHeightMap.put(node.getPos(), (double) nodeHeight);
+				roofHeightMap.put(node.getPos(), nodeHeight);
 
 			}
 		}
@@ -138,7 +136,7 @@ public class ComplexRoof extends HeightfieldRoof {
 		for (MapWaySegment waySegment : ridges) {
 
 			// height of node (above roof base)
-			Double nodeHeight = null;
+			Double nodeHeight;
 
 			if (waySegment.getTags().containsKey("roof:height")) {
 				nodeHeight = parseMeasure(waySegment.getTags().getValue("roof:height"));
@@ -147,12 +145,12 @@ public class ComplexRoof extends HeightfieldRoof {
 			}
 
 			for (MapNode node : waySegment.getStartEndNodes()) {
-				roofHeightMap.put(node.getPos(), (double) nodeHeight);
+				roofHeightMap.put(node.getPos(), nodeHeight);
 			}
 
 		}
 
-		/* join colinear segments, but not the nodes that are connected to ridge/edges
+		/* join collinear segments, but not the nodes that are connected to ridge/edges
 		 * often there are nodes that are only added to join one building to another
 		 * but these interfere with proper triangulation.
 		 * TODO: do the same for holes */
@@ -226,7 +224,7 @@ public class ComplexRoof extends HeightfieldRoof {
 
 	}
 
-	public static final boolean hasComplexRoof(MapArea area) {
+	public static boolean hasComplexRoof(MapArea area) {
 		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 			if (overlap instanceof MapOverlapWA) {
 				TagSet tags = overlap.e1.getTags();
