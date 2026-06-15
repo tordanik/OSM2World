@@ -41,7 +41,7 @@ public abstract class AbstractHippedRoof extends RoofWithRidge {
 	@Override
 	protected Collection<InnerLine> getInnerLines() {
 		List<InnerLine> innerLines = new ArrayList<>(5);
-		innerLines.add(new InnerLine(ridge, null, ridgeOffset1 == 0, ridgeOffset2 == 0));
+		innerLines.add(new InnerLine(ridge, ridgeOffset1 == 0, ridgeOffset2 == 0));
 		if (ridgeOffset1 > 0) {
 			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p1, cap1.p1)));
 			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p1, cap1.p2)));

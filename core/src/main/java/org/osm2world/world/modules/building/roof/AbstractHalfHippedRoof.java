@@ -38,14 +38,14 @@ public abstract class AbstractHalfHippedRoof extends RoofWithRidge {
 	@Override
 	protected Collection<InnerLine> getInnerLines() {
 		List<InnerLine> innerLines = new ArrayList<>(5);
-		innerLines.add(new InnerLine(ridge, null, ridgeOffset1 == 0, ridgeOffset2 == 0));
+		innerLines.add(new InnerLine(ridge, ridgeOffset1 == 0, ridgeOffset2 == 0));
 		if (ridgeOffset1 > 0) {
-			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p1, cap1part.p1), null, false, true));
-			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p1, cap1part.p2), null, false, true));
+			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p1, cap1part.p1), false, true));
+			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p1, cap1part.p2), false, true));
 		}
 		if (ridgeOffset2 > 0) {
-			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p2, cap2part.p1), null, false, true));
-			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p2, cap2part.p2), null, false, true));
+			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p2, cap2part.p1), false, true));
+			innerLines.add(new InnerLine(new LineSegmentXZ(ridge.p2, cap2part.p2), false, true));
 		}
 		return innerLines;
 	}

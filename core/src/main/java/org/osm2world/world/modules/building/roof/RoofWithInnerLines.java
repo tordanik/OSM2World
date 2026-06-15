@@ -27,17 +27,16 @@ public abstract class RoofWithInnerLines extends HeightfieldRoof {
 
 	protected record InnerLine(
 		LineSegmentXZ segment,
-		Double height,
 		boolean extendAtStart,
 		boolean extendAtEnd
 	) {
 
 		InnerLine(LineSegmentXZ segment) {
-			this(segment, null, false, false);
+			this(segment, false, false);
 		}
 
 		InnerLine(LineSegmentXZ segment, boolean extendAtStartAndEnd) {
-			this(segment, null, extendAtStartAndEnd, extendAtStartAndEnd);
+			this(segment, extendAtStartAndEnd, extendAtStartAndEnd);
 		}
 
 		/**
