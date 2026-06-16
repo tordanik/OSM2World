@@ -66,11 +66,15 @@ public class SurfaceAreaModule extends AbstractModule {
 		if (!area.getRepresentations().isEmpty()) return;
 
 		TagSet tags = area.getTags();
+		String surface = tags.getValue("surface");
 
-		if (tags.containsKey("surface")) {
-			if (!tags.contains("surface", EMPTY_SURFACE_VALUE)
-					|| config.getBoolean("createTerrain", true)) {
-				area.addRepresentation(new SurfaceArea(area, tags.getValue("surface"), config));
+		if (surface != null) {
+			if (EMPTY_SURFACE_VALUE.equals(surface)) {
+				if (config.getBoolean("createTerrain", true)) {
+					area.addRepresentation(new SurfaceArea(area, surface, config));
+				}
+			} else if (DefaultMaterials.getSurfaceMaterialRef(surface) != null) {
+				area.addRepresentation(new SurfaceArea(area, surface, config));
 			}
 		} else {
 
@@ -102,7 +106,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				this.material = DefaultMaterials.TERRAIN_DEFAULT.get(config);
 			} else {
-				this.material = DefaultMaterials.getSurfaceMaterial(surface, config).get(config);
+				this.material = DefaultMaterials.getSurfaceMaterial(surface, DefaultMaterials.TERRAIN_DEFAULT, config).get(config);
 			}
 
 		}
