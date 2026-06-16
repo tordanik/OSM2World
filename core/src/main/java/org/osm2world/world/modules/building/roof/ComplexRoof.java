@@ -1,6 +1,5 @@
 package org.osm2world.world.modules.building.roof;
 
-import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 
 import java.util.*;
@@ -14,24 +13,22 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.material.Material;
-import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.modules.building.BuildingPart;
 
 /**
  * roof that has been mapped with explicit roof edge/ridge/apex elements
  */
-public class ComplexRoof extends HeightfieldRoof {
+public class ComplexRoof extends RoofWithInnerLines {
 
 	private final Collection<LineSegmentXZ> ridgeAndEdgeSegments;
 	private final List<MapWaySegment> edges;
 	private final List<MapWaySegment> ridges;
 
 	private Map<VectorXZ, Double> roofHeightMap = null;
-	private PolygonWithHolesXZ simplePolygon;
 
 	public ComplexRoof(@Nullable BuildingPart buildingPart, MapArea area, PolygonWithHolesXZ originalPolygon, TagSet tags, Material material) {
 
@@ -61,13 +58,14 @@ public class ComplexRoof extends HeightfieldRoof {
 					continue;
 
 				boolean inside = originalPolygon.contains(waySegment.getCenter());
+				boolean intersects = originalPolygon.intersects(waySegment.getLineSegment());
 
 				// check also endpoints as pnpoly algo is not reliable when
 				// segment lies on the polygon edge
 				boolean containsStart = nodes.contains(waySegment.getStartNode());
 				boolean containsEnd = nodes.contains(waySegment.getEndNode());
 
-				if (!inside && !(containsStart && containsEnd))
+				if (!inside && !intersects && !(containsStart && containsEnd))
 					continue;
 
 				if (isEdge) {
@@ -83,16 +81,9 @@ public class ComplexRoof extends HeightfieldRoof {
 	}
 
 	@Override
-	public PolygonWithHolesXZ getPolygon() {
-		calculateRoofHeightMap();
-		return simplePolygon;
+	protected Collection<InnerLine> getInnerLines() {
+		return ridgeAndEdgeSegments.stream().map(InnerLine::new).toList();
 	}
-
-	@Override
-	public Collection<LineSegmentXZ> getInnerSegments() {
-		return ridgeAndEdgeSegments;
-	}
-
 
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
@@ -106,7 +97,7 @@ public class ComplexRoof extends HeightfieldRoof {
 
 		roofHeightMap = new HashMap<>();
 
-		Set<VectorXZ> nodeSet = new HashSet<>();
+		CalculationResults calculationResults = super.calculatePolygonAndInnerSegments();
 
 		for (MapWaySegment waySegment : edges) {
 			for (MapNode node : waySegment.getStartEndNodes()) {
@@ -123,12 +114,9 @@ public class ComplexRoof extends HeightfieldRoof {
 					nodeHeight = roofHeight();
 				}
 
-				if (nodeHeight == null) {
-					nodeSet.add(node.getPos());
-					continue;
+				if (nodeHeight != null) {
+					roofHeightMap.put(node.getPos(), nodeHeight);
 				}
-
-				roofHeightMap.put(node.getPos(), nodeHeight);
 
 			}
 		}
@@ -150,57 +138,25 @@ public class ComplexRoof extends HeightfieldRoof {
 
 		}
 
-		/* join collinear segments, but not the nodes that are connected to ridge/edges
-		 * often there are nodes that are only added to join one building to another
-		 * but these interfere with proper triangulation.
-		 * TODO: do the same for holes */
-		List<VectorXZ> vertices = originalPolygon.getOuter().vertices();
-		List<VectorXZ> simplified = new ArrayList<>();
-		VectorXZ vPrev = vertices.get(vertices.size() - 2);
+		/* add heights for intersection points which aren't nodes */
 
-		for (int i = 0, size = vertices.size() - 1; i < size; i++) {
-			VectorXZ v = vertices.get(i);
+		Map<VectorXZ, InnerLine> extraPoints = calculationResults.extraPoints();
 
-			if (i == 0 || roofHeightMap.containsKey(v) || nodeSet.contains(v)) {
-				simplified.add(v);
-				vPrev = v;
-				continue;
+		for (VectorXZ v : extraPoints.keySet()) {
+			LineSegmentXZ segment = extraPoints.get(v).segment();
+			double h0 = roofHeightMap.get(segment.p1);
+			double h1 = roofHeightMap.get(segment.p2);
+			if (h0 == h1) {
+				roofHeightMap.put(v, h0);
+			} else {
+				roofHeightMap.put(v, GeometryUtil.interpolateValue(v, segment.p1, h0, segment.p2, h1));
 			}
-			VectorXZ vNext = vertices.get(i + 1);
-			LineSegmentXZ l = new LineSegmentXZ(vPrev, vNext);
-
-			// TODO define as static somewhere: 10 cm tolerance
-			if (distanceFromLineSegment(v, l) < 0.01){
-				continue;
-			}
-
-			roofHeightMap.put(v, 0.0);
-			simplified.add(v);
-			vPrev = v;
-		}
-
-		if (simplified.size() > 2) {
-			try {
-				simplified.add(simplified.get(0));
-				simplePolygon = new PolygonWithHolesXZ(new SimplePolygonXZ(simplified), originalPolygon.getHoles());
-			} catch (InvalidGeometryException e) {
-				System.err.print(e.getMessage());
-				simplePolygon = originalPolygon;
-			}
-		} else {
-			simplePolygon = originalPolygon;
 		}
 
 		/* add heights for outline nodes that don't have one yet */
 
-		for (VectorXZ v : simplePolygon.getOuter().getVertices()) {
-			if (!roofHeightMap.containsKey(v)) {
-				roofHeightMap.put(v, 0.0);
-			}
-		}
-
-		for (SimplePolygonXZ hole : simplePolygon.getHoles()) {
-			for (VectorXZ v : hole.getVertices()) {
+		for (var ring : calculationResults.polygon().getRings()) {
+			for (VectorXZ v : ring.getVertices()) {
 				if (!roofHeightMap.containsKey(v)) {
 					roofHeightMap.put(v, 0.0);
 				}

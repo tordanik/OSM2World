@@ -3,11 +3,8 @@ package org.osm2world.world.modules.building.roof;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.algorithms.GeometryUtil.insertIntoPolygon;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.Intersection;
@@ -55,6 +52,22 @@ public abstract class RoofWithInnerLines extends HeightfieldRoof {
 
 	}
 
+	/**
+	 * the results of #calculatePolygonAndInnerSegments()
+	 *
+	 * @param polygon  modified polygon for {@link #getPolygon()}
+	 * @param innerSegments  inner segments for {@link #getInnerSegments()}
+	 * @param extraPoints  extra points that were created at intersections,
+	 *                     mapped to their originating {@link InnerLine}s.
+	 *                     Some subclasses may use this for their height calculations.
+	 */
+	protected record CalculationResults(
+			PolygonWithHolesXZ polygon,
+			Collection<LineSegmentXZ> innerSegments,
+			Map<VectorXZ, InnerLine> extraPoints
+
+	) {}
+
 	public RoofWithInnerLines(@Nullable BuildingPart buildingPart, PolygonWithHolesXZ originalPolygon,
 			TagSet tags, Material material) {
 		super(buildingPart, originalPolygon, tags, material);
@@ -62,23 +75,29 @@ public abstract class RoofWithInnerLines extends HeightfieldRoof {
 
 	@Override
 	public final Collection<LineSegmentXZ> getInnerSegments() {
-		return calculatePolygonAndInnerSegments().getRight();
+		return calculatePolygonAndInnerSegments().innerSegments();
 	}
 
 	@Override
 	public final PolygonWithHolesXZ getPolygon() {
-		return calculatePolygonAndInnerSegments().getLeft();
+		return calculatePolygonAndInnerSegments().polygon();
 	}
 
+	/**
+	 * Method for the subclasses to supply the inner lines which structure this roof shape.
+	 * These are the "raw" lines which may still exceed the outline etc., they will be processed by this class
+	 * before the result is provided through {@link #getInnerSegments()}.
+	 */
 	protected abstract Collection<InnerLine> getInnerLines();
 
-	private Pair<PolygonWithHolesXZ, Collection<LineSegmentXZ>> calculatePolygonAndInnerSegments() {
+	protected CalculationResults calculatePolygonAndInnerSegments() {
 
 		SimplePolygonXZ newOuter = originalPolygon.getOuter();
 		List<SimplePolygonXZ> newHoles = originalPolygon.getHoles().isEmpty()
 				? List.of() : new ArrayList<>(originalPolygon.getHoles());
 
 		List<LineSegmentXZ> innerSegments = new ArrayList<>();
+		Map<VectorXZ, InnerLine> extraPoints = new HashMap<>();
 
 		for (InnerLine innerLine : getInnerLines()) {
 
@@ -91,6 +110,7 @@ public abstract class RoofWithInnerLines extends HeightfieldRoof {
 			for (Intersection intersection : newOuter.intersections(segment)) {
 				newOuter = insertIntoPolygon(newOuter, intersection.point(), SNAP_DISTANCE);
 				splitPoints.add(intersection.point());
+				extraPoints.put(intersection.point(), innerLine);
 			}
 
 			for (int i = 0; i < newHoles.size(); i++) {
@@ -99,6 +119,7 @@ public abstract class RoofWithInnerLines extends HeightfieldRoof {
 					hole = insertIntoPolygon(hole, intersection.point(), SNAP_DISTANCE);
 					newHoles.set(i, hole);
 					splitPoints.add(intersection.point());
+					extraPoints.put(intersection.point(), innerLine);
 				}
 			}
 
@@ -124,7 +145,9 @@ public abstract class RoofWithInnerLines extends HeightfieldRoof {
 
 		}
 
-		return Pair.of(new PolygonWithHolesXZ(newOuter, newHoles), innerSegments);
+		return new CalculationResults(
+				new PolygonWithHolesXZ(newOuter, newHoles),
+				innerSegments, extraPoints);
 
 	}
 
