@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.map_elevation.creation.TerrainElevationData;
-import org.osm2world.map_elevation.creation.TerrainElevationDataUtil;
+import org.osm2world.map_elevation.creation.TerrainEleDataSource;
+import org.osm2world.map_elevation.creation.TerrainEleDataUtil;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.VectorGridXZ;
@@ -44,7 +44,7 @@ public abstract class TerrainInterpolatorDebugView extends StaticDebugView {
 	@Override
 	public boolean canBeUsed() {
 		return scene != null && mapProjection != null && config != null
-				&& TerrainElevationDataUtil.eleDataSourceFromConfig(config) != null;
+				&& TerrainEleDataUtil.eleDataSourceFromConfig(config) != null;
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public abstract class TerrainInterpolatorDebugView extends StaticDebugView {
 
 		try {
 
-			TerrainElevationData eleData = TerrainElevationDataUtil.eleDataSourceFromConfig(config);
+			TerrainEleDataSource eleData = TerrainEleDataUtil.eleDataSourceFromConfig(config);
 
 			AxisAlignedRectangleXZ bound = scene.getBoundary();
 

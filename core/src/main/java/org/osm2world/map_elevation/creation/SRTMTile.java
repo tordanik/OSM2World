@@ -14,7 +14,7 @@ import org.osm2world.util.platform.uri.LoadUriUtil;
 /**
  * a single SRTM data tile.
  *
- * Multiple such tiles are used by {@link SRTMData} to build coverage
+ * Multiple such tiles are used by {@link SRTMDataSource} to build coverage
  * for larger regions.
  */
 class SRTMTile {

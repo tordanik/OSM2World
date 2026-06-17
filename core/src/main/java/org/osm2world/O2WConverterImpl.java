@@ -170,7 +170,7 @@ class O2WConverterImpl {
 		/* determine elevations */
 		updatePhase(perfListener, ProgressListener.Phase.ELEVATION);
 
-		TerrainElevationData eleData = TerrainElevationDataUtil.eleDataSourceFromConfig(config);
+		TerrainEleDataSource eleData = TerrainEleDataUtil.eleDataSourceFromConfig(config);
 
 		if (eleData != null && mapProjection == null) {
 			throw new IllegalArgumentException("Using elevation data requires a map projection");
@@ -346,7 +346,7 @@ class O2WConverterImpl {
 	 * {@link WorldObject}s
 	 */
 	private void calculateElevations(MapData mapData, MapProjection projection,
-			TerrainElevationData eleData, O2WConfig config) {
+			TerrainEleDataSource eleData, O2WConfig config) {
 
 		TerrainInterpolator interpolator = config.terrainInterpolator().get();
 

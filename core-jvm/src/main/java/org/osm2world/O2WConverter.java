@@ -10,7 +10,7 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapData;
-import org.osm2world.map_elevation.creation.SRTMData;
+import org.osm2world.map_elevation.creation.SRTMDataSource;
 import org.osm2world.math.geo.GeoBounds;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
@@ -80,7 +80,7 @@ public class O2WConverter {
 	 * @param mapData        input data. Usually converted from some input data source
 	 *                       or created with {@link MapDataBuilder}.
 	 * @param mapProjection  projection for converting between {@link LatLon} and local coordinates in {@link MapData}.
-	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMData}.
+	 *                       May be null, but that prevents accessing additional data sources such as {@link SRTMDataSource}.
 	 * @param outputs        receivers of the conversion results
 	 * @return               the scene which has been produced as the result of the conversion.
 	 *                       This will already have been written to all outputs,

@@ -22,7 +22,7 @@ import org.osm2world.util.tiles.TileUriPattern;
 /**
  * Elevation data stored as an XYZ raster tile layer with Terrarium encoding
  */
-public class TerrariumXYZData implements TerrainElevationData {
+public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 	private static final int DEFAULT_MAX_ZOOM = 13;
 
@@ -35,12 +35,12 @@ public class TerrariumXYZData implements TerrainElevationData {
 	 * @param maxZoom  maximum zoom level to attempt to retrieve. If it's not available, lower zoom levels will be tried.
 	 * @param uriPattern  tile URI with {z}, {x}, {y} placeholders
 	 */
-	public TerrariumXYZData(int maxZoom, TileUriPattern uriPattern) {
+	public TerrariumXYZDataSource(int maxZoom, TileUriPattern uriPattern) {
 		this.maxZoom = maxZoom;
 		this.uriPattern = uriPattern;
 	}
 
-	public TerrariumXYZData(TileUriPattern uriPattern) {
+	public TerrariumXYZDataSource(TileUriPattern uriPattern) {
 		this(DEFAULT_MAX_ZOOM, uriPattern);
 	}
 
@@ -50,7 +50,7 @@ public class TerrariumXYZData implements TerrainElevationData {
 	}
 
 	@Override
-	public Collection<LatLonEle> getSites(LatLonBounds bounds) {
+	public TerrainEleData getSites(LatLonBounds bounds) {
 
 		Collection<LatLonEle> result = new ArrayList<>();
 
@@ -70,7 +70,7 @@ public class TerrariumXYZData implements TerrainElevationData {
 
 		}
 
-		return result;
+		return new TerrainEleDataCollection(bounds, result);
 
 	}
 
@@ -135,7 +135,7 @@ public class TerrariumXYZData implements TerrainElevationData {
 				for (int y = 0; y < sizeY; y++) {
 					for (int x = 0; x < sizeX; x++) {
 						int rgb = image.getRGB(startX + x, startY + y);
-						data[x][y] = TerrariumXYZData.decodeValue(rgb);
+						data[x][y] = TerrariumXYZDataSource.decodeValue(rgb);
 					}
 				}
 

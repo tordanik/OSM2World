@@ -26,14 +26,14 @@ public class SRTMDataTest {
 		File srtmDir = getTestFile("srtm");
 
 		var projection = new OrthographicAzimuthalMapProjection(new LatLon(4, 33));
-		var srtmData = new SRTMData(srtmDir);
+		var srtmData = new SRTMDataSource(srtmDir);
 
 		var bounds1 = new LatLonBounds(4.1, 33.1, 4.2, 33.2);
-		Assert.assertFalse(srtmData.getSites(bounds1).isEmpty());
+		Assert.assertFalse(srtmData.getSites(bounds1).sites().isEmpty());
 		Assert.assertFalse(srtmData.getSites(projectBounds(projection, bounds1), projection).isEmpty());
 
 		var bounds2 = new LatLonBounds(4.1, 34.1, 4.2, 34.2);
-		Assert.assertFalse(srtmData.getSites(bounds2).isEmpty());
+		Assert.assertFalse(srtmData.getSites(bounds2).sites().isEmpty());
 		Assert.assertFalse(srtmData.getSites(projectBounds(projection, bounds2), projection).isEmpty());
 
 	}

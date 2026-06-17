@@ -29,18 +29,18 @@ public class TerrariumXYZDataTest {
 
 	@Test
 	public void testDecodeValue() {
-		assertEquals(2523.265625, TerrariumXYZData.decodeValue(new Color(137, 219, 68).getRGB()), 0.0);
+		assertEquals(2523.265625, TerrariumXYZDataSource.decodeValue(new Color(137, 219, 68).getRGB()), 0.0);
 	}
 
 	@Test
 	public void testEncodeValue() {
-		assertEquals(new Color(137, 219, 68).getRGB(), TerrariumXYZData.encodeValue(2523.265625));
+		assertEquals(new Color(137, 219, 68).getRGB(), TerrariumXYZDataSource.encodeValue(2523.265625));
 	}
 
 	@Test
 	public void testEncodeDecode() {
 		for (Color c : List.of(Color.WHITE, Color.BLACK, Color.RED, Color.YELLOW, Color.PINK)) {
-			assertEquals(c.getRGB(), TerrariumXYZData.encodeValue(TerrariumXYZData.decodeValue(c.getRGB())));
+			assertEquals(c.getRGB(), TerrariumXYZDataSource.encodeValue(TerrariumXYZDataSource.decodeValue(c.getRGB())));
 		}
 	}
 
@@ -50,7 +50,7 @@ public class TerrariumXYZDataTest {
 		var eleData = eleDataFromTestResources(13, "webp");
 
 		var bounds = new LatLonBounds(47.385, 8.566, 47.386, 8.567);
-		assertFalse(eleData.getSites(bounds).isEmpty());
+		assertFalse(eleData.getSites(bounds).sites().isEmpty());
 
 	}
 
@@ -64,7 +64,7 @@ public class TerrariumXYZDataTest {
 				testTiles.get(1).latLonBounds().getCenter().lat, 8.566,
 				testTiles.get(0).latLonBounds().getCenter().lat, 8.567);
 
-		var sites = eleData.getSites(bounds);
+		var sites = eleData.getSites(bounds).sites();
 
 		assertFalse(sites.isEmpty());
 		assertTrue(sites.stream().anyMatch(site -> testTiles.get(0).latLonBounds().contains(site.latLon())));
@@ -86,7 +86,7 @@ public class TerrariumXYZDataTest {
 
 			TileNumber tile = tileColor.getLeft();
 			LatLonBounds bounds = tile.latLonBounds().pad(-0.1);
-			Collection<LatLonEle> sites = eleData.getSites(bounds);
+			Collection<LatLonEle> sites = eleData.getSites(bounds).sites();
 			assertEquals(4, sites.size());
 			sites.forEach(site -> assertEquals(tileColor.getRight(), site.ele, 0.0));
 
@@ -95,12 +95,12 @@ public class TerrariumXYZDataTest {
 	}
 
 	@Nonnull
-	private static TerrariumXYZData eleDataFromTestResources(Integer maxZoom, String fileExt) {
+	private static TerrariumXYZDataSource eleDataFromTestResources(Integer maxZoom, String fileExt) {
 
 		File tileDir = TestFileUtil.getTestFile("terrarium-xyz");
 		assertTrue(tileDir.isDirectory());
 
-		return new TerrariumXYZData(maxZoom, new TileUriPattern("file://" + tileDir.getAbsolutePath()
+		return new TerrariumXYZDataSource(maxZoom, new TileUriPattern("file://" + tileDir.getAbsolutePath()
 				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}." + fileExt));
 
 	}

@@ -19,18 +19,18 @@ import org.osm2world.math.geo.LatLonEle;
 /**
  * SRTM data for a part of the planet
  */
-public class SRTMData implements TerrainElevationData {
+public class SRTMDataSource implements TerrainEleDataSource {
 
 	private final File tileDirectory;
 	private final SRTMTile[][] tiles;
 
-	public SRTMData(File tileDirectory) {
+	public SRTMDataSource(File tileDirectory) {
 		this.tileDirectory = tileDirectory;
 		this.tiles = new SRTMTile[360][180];
 	}
 
 	@Override
-	public Collection<LatLonEle> getSites(LatLonBounds bounds) throws IOException {
+	public TerrainEleData getSites(LatLonBounds bounds) throws IOException {
 
 		double minLon = bounds.minlon;
 		double minLat = bounds.minlat;
@@ -55,7 +55,7 @@ public class SRTMData implements TerrainElevationData {
 			}
 		}
 
-		return result;
+		return new TerrainEleDataCollection(bounds, result);
 
 	}
 
