@@ -1,5 +1,6 @@
 package org.osm2world.math.geo;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,6 +75,17 @@ public class LatLonEle {
 	@Override
 	public String toString() {
 		return lat + "," + lon;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof LatLonEle other)) return false;
+		return Double.compare(lat, other.lat) == 0 && Double.compare(lon, other.lon) == 0 && Double.compare(ele, other.ele) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(lat, lon, ele);
 	}
 
 }

@@ -1,5 +1,7 @@
 package org.osm2world.math.geo;
 
+import static java.lang.Math.*;
+
 import java.util.Objects;
 
 /**
@@ -40,6 +42,19 @@ public class LatLon {
 		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
 			throw new IllegalArgumentException("Latitude or longitude not valid: " + lat + ", " + lon);
 		}
+	}
+
+	/** returns the approximate distance to another coordinate in meters */
+	public double distanceTo(LatLon pos) {
+		/* Haversine formula. Assumes spherical earth, does not consider elevation. */
+		final double earthRadius = 6371 * 1000.0;
+		double latDistance = toRadians(pos.lat - this.lat);
+		double lonDistance = toRadians(pos.lon - this.lon);
+		double a = sin(latDistance / 2) * sin(latDistance / 2)
+				+ cos(toRadians(this.lat)) * cos(toRadians(pos.lat))
+				* sin(lonDistance / 2) * sin(lonDistance / 2);
+		double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+		return earthRadius * c;
 	}
 
 	@Override
