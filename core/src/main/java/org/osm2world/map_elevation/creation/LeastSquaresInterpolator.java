@@ -1,5 +1,6 @@
 package org.osm2world.map_elevation.creation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Locale.ROOT;
@@ -13,6 +14,7 @@ import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.datastructures.IndexGrid;
+import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 
 /**
@@ -28,12 +30,12 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 	private Collection<SiteWithPolynomial> sites;
 	private IndexGrid<SiteWithPolynomial> siteGrid;
 
-	@Override
-	public void setKnownSites(Collection<VectorXYZ> siteVectors) {
+	public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
 
-		if (siteVectors.isEmpty()) {
-			throw new IllegalArgumentException("No sites with elevation available");
-		}
+		checkNotNull(eleData);
+		checkNotNull(projection);
+
+		List<VectorXYZ> siteVectors = eleData.sites().stream().map(projection::toXYZ).toList();
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();

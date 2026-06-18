@@ -1,12 +1,14 @@
 package org.osm2world.map_elevation.creation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.osm2world.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 
 /**
@@ -18,15 +20,14 @@ public class LinearInterpolator implements TerrainInterpolator {
 
 	private DelaunayTriangulation triangulation;
 
-	@Override
-	public void setKnownSites(Collection<VectorXYZ> sites) {
+	public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
 
-		if (sites.isEmpty()) {
-			throw new IllegalArgumentException("No sites with elevation available");
-		}
+		checkNotNull(eleData);
+		checkNotNull(projection);
 
-		AxisAlignedRectangleXZ boundingBox = bbox(sites);
-		boundingBox = boundingBox.pad(100);
+		List<VectorXYZ> sites = eleData.sites().stream().map(projection::toXYZ).toList();
+
+		AxisAlignedRectangleXZ boundingBox = bbox(sites).pad(100);
 
 		triangulation = new DelaunayTriangulation(boundingBox);
 

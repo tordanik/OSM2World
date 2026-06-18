@@ -1,5 +1,6 @@
 package org.osm2world.math.geo;
 
+import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 
 /**
@@ -22,6 +23,9 @@ public interface MapProjection {
 
 	/** performs projection into the internal coordinate system */
 	public VectorXZ toXZ(double lat, double lon);
+
+	/** performs projection into the internal coordinate system and preserves elevation value */
+	default VectorXYZ toXYZ(LatLonEle latLonEle) { return toXZ(latLonEle.lat, latLonEle.lon).xyz(latLonEle.ele); }
 
 	/** inverse for {@link #toXZ(LatLon)} */
 	default public LatLon toLatLon(VectorXZ pos) {

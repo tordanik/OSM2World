@@ -4,7 +4,6 @@ import static java.lang.Math.abs;
 import static java.lang.Math.ceil;
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
 import static java.util.Objects.requireNonNullElse;
@@ -358,19 +357,19 @@ class O2WConverterImpl {
 
 		if (!(interpolator instanceof ZeroInterpolator)) {
 
-			Collection<VectorXYZ> sites = emptyList();
-
 			try {
-				sites = eleData.getSites(mapData.getDataBoundary().pad(10), projection);
+
+				TerrainEleData sites = eleData.getSites(mapData.getDataBoundary().pad(10), projection);
+
+				if (!sites.isEmpty()) {
+					interpolator.setKnownSites(sites, projection);
+				} else {
+					ConversionLog.error("No sites with known elevation available");
+					interpolator = new ZeroInterpolator();
+				}
+
 			} catch (IOException e) {
 				ConversionLog.error("Could not read elevation data: " + e.getMessage(), e);
-			}
-
-			if (!sites.isEmpty()) {
-				interpolator.setKnownSites(sites);
-			} else {
-				ConversionLog.error("No sites with known elevation available");
-				interpolator = new ZeroInterpolator();
 			}
 
 		}

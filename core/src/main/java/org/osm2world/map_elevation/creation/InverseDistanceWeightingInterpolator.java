@@ -1,13 +1,16 @@
 package org.osm2world.map_elevation.creation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Math.*;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.datastructures.IndexGrid;
+import org.osm2world.math.geo.MapProjection;
 
 
 public class InverseDistanceWeightingInterpolator implements TerrainInterpolator {
@@ -15,7 +18,6 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 	private static final double CUTOFF = 300;
 
 	private final double negExp;
-	private Collection<VectorXYZ> sites;
 	private IndexGrid<VectorXYZ> siteGrid;
 
 	public InverseDistanceWeightingInterpolator() {
@@ -27,16 +29,15 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 	}
 
 	@Override
-	public void setKnownSites(Collection<VectorXYZ> sites) {
+	public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
 
-		if (sites.isEmpty()) {
-			throw new IllegalArgumentException("No sites with elevation available");
-		}
+		checkNotNull(eleData);
+		checkNotNull(projection);
 
-		this.sites = sites;
+		List<VectorXYZ> sites = eleData.sites().stream().map(projection::toXYZ).toList();
 
-		siteGrid = new IndexGrid<VectorXYZ>(
-				bbox(sites).pad(CUTOFF/2),
+		siteGrid = new IndexGrid<>(
+				bbox(sites).pad(CUTOFF / 2),
 				CUTOFF, CUTOFF);
 
 		for (VectorXYZ site : sites) {

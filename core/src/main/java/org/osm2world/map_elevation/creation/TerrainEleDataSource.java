@@ -1,9 +1,7 @@
 package org.osm2world.map_elevation.creation;
 
 import java.io.IOException;
-import java.util.Collection;
 
-import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
@@ -23,7 +21,7 @@ public interface TerrainEleDataSource {
 	 * returns all points with known elevation within the bounds,
 	 * projected to the local coordinate system
 	 */
-	default Collection<VectorXYZ> getSites(AxisAlignedRectangleXZ bounds, MapProjection projection) throws IOException {
+	default TerrainEleData getSites(AxisAlignedRectangleXZ bounds, MapProjection projection) throws IOException {
 
 		var latLonBounds = new LatLonBounds(
 				projection.toLatLon(bounds.bottomLeft()),
@@ -31,9 +29,7 @@ public interface TerrainEleDataSource {
 
 		var bufferedBounds = latLonBounds.pad(0.005);
 
-		return getSites(bufferedBounds).sites().stream()
-				.map(p -> projection.toXZ(p.lat, p.lon).xyz(p.ele))
-				.toList();
+		return getSites(bufferedBounds);
 
 	}
 

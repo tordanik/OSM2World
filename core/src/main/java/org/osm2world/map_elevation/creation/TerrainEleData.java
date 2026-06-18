@@ -16,4 +16,6 @@ public interface TerrainEleData {
 
 	Collection<LatLonEle> sites();
 
+	default boolean isEmpty() { return sites().isEmpty(); }
+
 }

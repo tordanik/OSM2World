@@ -3,9 +3,9 @@ package org.osm2world.viewer.view.debug;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.map_elevation.creation.TerrainEleData;
 import org.osm2world.map_elevation.creation.TerrainEleDataSource;
 import org.osm2world.map_elevation.creation.TerrainEleDataUtil;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
@@ -63,14 +63,14 @@ public abstract class TerrainInterpolatorDebugView extends StaticDebugView {
 
 		try {
 
-			TerrainEleDataSource eleData = TerrainEleDataUtil.eleDataSourceFromConfig(config);
-
 			AxisAlignedRectangleXZ bound = scene.getBoundary();
 
-			Collection<VectorXYZ> sites = eleData.getSites(scene.getBoundary().pad(10), mapProjection);
+			TerrainEleDataSource eleDataSource = TerrainEleDataUtil.eleDataSourceFromConfig(config);
+			assert eleDataSource != null; // due to canBeUsed check
+			TerrainEleData eleData = eleDataSource.getSites(scene.getBoundary().pad(10), mapProjection);
 
 			TerrainInterpolator strategy = buildInterpolator();
-			strategy.setKnownSites(sites);
+			strategy.setKnownSites(eleData, mapProjection);
 
 			VectorGridXZ sampleGrid = new VectorGridXZ(bound, SAMPLE_DIST);
 
