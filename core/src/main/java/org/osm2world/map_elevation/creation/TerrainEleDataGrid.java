@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.LatLonEle;
@@ -76,17 +78,13 @@ public class TerrainEleDataGrid implements TerrainEleData {
 	 */
 	public List<LatLonEle> findSurroundingSites(LatLon pos) {
 
-		int i = (int) floor((pos.lat - bounds.minlat) / latSize * (numLat - 1));
-		int j = (int) floor((pos.lon - bounds.minlon) / lonSize * (numLon - 1));
-
-		i = max(0, min(i, numLat - 2));
-		j = max(0, min(j, numLon - 2));
+		var cell = cellForPos(pos);
 
 		return List.of(
-				sites[i][j],
-				sites[i][j + 1],
-				sites[i + 1][j],
-				sites[i + 1][j + 1]
+				sites[cell.i][cell.j],
+				sites[cell.i][cell.j + 1],
+				sites[cell.i + 1][cell.j],
+				sites[cell.i + 1][cell.j + 1]
 		);
 
 	}
@@ -103,8 +101,16 @@ public class TerrainEleDataGrid implements TerrainEleData {
 			if (n < 4) {
 				candidates = new ArrayList<>(findSurroundingSites(pos));
 			} else {
-				// TODO implement a faster solution which narrows down the candidates first
-				return TerrainEleData.super.findClosestSites(pos, n);
+				CellCoords cell = cellForPos(pos);
+				int cellRange = (int)ceil(sqrt(n) / 2) - 1; // usually gets it right the first try, but not always (corners, non-square grids)
+				do {
+					candidates = new ArrayList<>();
+					for (int i = max(0, cell.i - cellRange); i < min(numLat, cell.i + cellRange + 2); i++) {
+						candidates.addAll(asList(sites[i]).subList(max(0, cell.j - cellRange), min(numLon, cell.j + cellRange + 2)));
+					}
+					cellRange++;
+				} while (candidates.size() < n && (cellRange < numLat || cellRange < numLon));
+				if (candidates.size() < n) { throw new IllegalStateException("n too large for number of sites " + n); }
 			}
 
 			candidates.sort(Comparator.comparingDouble(it -> pos.distanceTo(it.latLon())));
@@ -113,4 +119,20 @@ public class TerrainEleDataGrid implements TerrainEleData {
 		}
 
 	}
+
+	@Nonnull
+	private CellCoords cellForPos(LatLon pos) {
+
+		int i = (int) floor((pos.lat - bounds.minlat) / latSize * (numLat - 1));
+		int j = (int) floor((pos.lon - bounds.minlon) / lonSize * (numLon - 1));
+
+		i = max(0, min(i, numLat - 2));
+		j = max(0, min(j, numLon - 2));
+
+		return new CellCoords(i, j);
+
+	}
+
+	private record CellCoords(int i, int j) {}
+
 }

@@ -76,6 +76,9 @@ public class TerrainEleDataGridTest {
 						new LatLonEle(0.79, 42.43, 9)),
 				new HashSet<>(closest8Sites));
 
+		List<LatLonEle> closestSitesAll = testData.findClosestSites(pos1, 101 * 51);
+		assertEquals(new HashSet<>(testData.sites()), new HashSet<>(closestSitesAll));
+
 	}
 
 	@Test
