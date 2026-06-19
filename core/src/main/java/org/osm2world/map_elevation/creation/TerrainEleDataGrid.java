@@ -57,6 +57,11 @@ public class TerrainEleDataGrid implements TerrainEleData {
 	}
 
 	@Override
+	public int size() {
+		return numLat * numLon;
+	}
+
+	@Override
 	public boolean isEmpty() {
 		return false;
 	}

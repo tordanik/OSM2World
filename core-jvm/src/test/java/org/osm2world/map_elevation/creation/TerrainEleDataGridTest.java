@@ -32,6 +32,7 @@ public class TerrainEleDataGridTest {
 	public void testSize() {
 
 		assertFalse(testData.isEmpty());
+		assertEquals(101 * 51, testData.size());
 		assertEquals(101 * 51, testData.sites().size());
 
 	}

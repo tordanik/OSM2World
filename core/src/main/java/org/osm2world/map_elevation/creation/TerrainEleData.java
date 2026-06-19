@@ -21,8 +21,11 @@ public interface TerrainEleData {
 	/** returns all sites */
 	Collection<LatLonEle> sites();
 
-	/** checks whether this data contains any sites */
-	default boolean isEmpty() { return sites().isEmpty(); }
+	/** returns the number of sites */
+	default int size() { return sites().size(); }
+
+	/** checks whether this data contains any sites, i.e. whether {@link #size()} is 0 */
+	default boolean isEmpty() { return size() == 0; }
 
 	/** returns the n closest sites to the given position */
 	default List<LatLonEle> findClosestSites(LatLon pos, int n) {
