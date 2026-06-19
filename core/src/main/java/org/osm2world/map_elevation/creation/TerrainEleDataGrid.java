@@ -24,30 +24,35 @@ public class TerrainEleDataGrid implements TerrainEleData {
 	private final LatLonBounds bounds;
 	private final LatLonEle[][] sites;
 
-	private final int numLat;
-	private final int numLon;
+	private final int numX;
+	private final int numZ;
 
-	private final double latSize;
 	private final double lonSize;
+	private final double latSize;
 
+	/**
+	 * @param sites  non-jagged array of sites, at least 2 in each dimension.
+	 *               The first index is the x/longitude dimension, the second index is the z/latitude direction.
+	 *               Smallest lon and lat at 0,0.
+	 */
 	public TerrainEleDataGrid(LatLonEle[][] sites) {
 
-		checkArgument(sites != null && sites.length != 0 && sites[0].length != 0);
+		checkArgument(sites != null && sites.length >= 2 && sites[0].length >= 2);
 
-		this.numLat = sites.length;
-		this.numLon = sites[0].length;
+		this.numX = sites.length;
+		this.numZ = sites[0].length;
 
 		LatLonEle firstSite = sites[0][0];
-		LatLonEle lastSite = sites[numLat - 1][numLon - 1];
+		LatLonEle lastSite = sites[numX - 1][numZ - 1];
 
-		checkArgument(firstSite.lat <= lastSite.lat);
 		checkArgument(firstSite.lon <= lastSite.lon);
+		checkArgument(firstSite.lat <= lastSite.lat);
 
 		this.sites = sites;
 
 		this.bounds = LatLonBounds.ofPoints(List.of(firstSite.latLon(), lastSite.latLon()));
-		this.latSize = bounds.sizeLat();
 		this.lonSize = bounds.sizeLon();
+		this.latSize = bounds.sizeLat();
 
 	}
 
@@ -58,7 +63,7 @@ public class TerrainEleDataGrid implements TerrainEleData {
 
 	@Override
 	public int size() {
-		return numLat * numLon;
+		return numX * numZ;
 	}
 
 	@Override
@@ -68,9 +73,9 @@ public class TerrainEleDataGrid implements TerrainEleData {
 
 	@Override
 	public Collection<LatLonEle> sites() {
-		List<LatLonEle> result = new ArrayList<>(numLat * numLon);
-		for (int i = 0; i < numLat; i++) {
-			result.addAll(asList(sites[i]));
+		List<LatLonEle> result = new ArrayList<>(numX * numZ);
+		for (int x = 0; x < numX; x++) {
+			result.addAll(asList(sites[x]));
 		}
 		return result;
 	}
@@ -86,10 +91,10 @@ public class TerrainEleDataGrid implements TerrainEleData {
 		var cell = cellForPos(pos);
 
 		return List.of(
-				sites[cell.i][cell.j],
-				sites[cell.i][cell.j + 1],
-				sites[cell.i + 1][cell.j],
-				sites[cell.i + 1][cell.j + 1]
+				sites[cell.x][cell.z],
+				sites[cell.x + 1][cell.z],
+				sites[cell.x][cell.z + 1],
+				sites[cell.x + 1][cell.z + 1]
 		);
 
 	}
@@ -97,7 +102,9 @@ public class TerrainEleDataGrid implements TerrainEleData {
 	@Override
 	public List<LatLonEle> findClosestSites(LatLon pos, int n) {
 
-		if (n == 4) {
+		if (n == 0) {
+			return List.of();
+		} else if (n == 4) {
 			return findSurroundingSites(pos);
 		} else {
 
@@ -110,11 +117,11 @@ public class TerrainEleDataGrid implements TerrainEleData {
 				int cellRange = (int)ceil(sqrt(n) / 2) - 1; // usually gets it right the first try, but not always (corners, non-square grids)
 				do {
 					candidates = new ArrayList<>();
-					for (int i = max(0, cell.i - cellRange); i < min(numLat, cell.i + cellRange + 2); i++) {
-						candidates.addAll(asList(sites[i]).subList(max(0, cell.j - cellRange), min(numLon, cell.j + cellRange + 2)));
+					for (int x = max(0, cell.x - cellRange); x < min(numX, cell.x + cellRange + 2); x++) {
+						candidates.addAll(asList(sites[x]).subList(max(0, cell.z - cellRange), min(numZ, cell.z + cellRange + 2)));
 					}
 					cellRange++;
-				} while (candidates.size() < n && (cellRange < numLat || cellRange < numLon));
+				} while (candidates.size() < n && (cellRange < numX || cellRange < numZ));
 				if (candidates.size() < n) { throw new IllegalStateException("n too large for number of sites " + n); }
 			}
 
@@ -128,16 +135,16 @@ public class TerrainEleDataGrid implements TerrainEleData {
 	@Nonnull
 	private CellCoords cellForPos(LatLon pos) {
 
-		int i = (int) floor((pos.lat - bounds.minlat) / latSize * (numLat - 1));
-		int j = (int) floor((pos.lon - bounds.minlon) / lonSize * (numLon - 1));
+		int x = (int) floor((pos.lon - bounds.minlon) / lonSize * (numX - 1));
+		int z = (int) floor((pos.lat - bounds.minlat) / latSize * (numZ - 1));
 
-		i = max(0, min(i, numLat - 2));
-		j = max(0, min(j, numLon - 2));
+		x = max(0, min(x, numX - 2));
+		z = max(0, min(z, numZ - 2));
 
-		return new CellCoords(i, j);
+		return new CellCoords(x, z);
 
 	}
 
-	private record CellCoords(int i, int j) {}
+	private record CellCoords(int x, int z) {}
 
 }

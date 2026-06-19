@@ -1,13 +1,14 @@
 package org.osm2world.map_elevation.creation;
 
 import static org.junit.Assert.*;
+import static org.osm2world.math.geo.LatLon.LonLat;
+import static org.osm2world.math.geo.LatLonEle.LonLatEle;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonEle;
 
 public class TerrainEleDataGridGroupTest {
@@ -16,19 +17,19 @@ public class TerrainEleDataGridGroupTest {
 
 	static {
 
-		LatLonEle[][] grid0 = new LatLonEle[6][3];
+		var grid0 = new LatLonEle[3][6];
 
-		for (int i = 0; i < 6; i++) {
-			for (int j = 0; j < 3; j++) {
-				grid0[i][j] = new LatLonEle(i, j, -7);
+		for (int x = 0; x < 3; x++) {
+			for (int z = 0; z < 6; z++) {
+				grid0[x][z] = LonLatEle(x, z, -7);
 			}
 		}
 
-		LatLonEle[][] grid1 = new LatLonEle[5][2];
+		var grid1 = new LatLonEle[2][5];
 
-		for (int i = 0; i < 5; i++) {
-			for (int j = 0; j < 2; j++) {
-				grid1[i][j] = new LatLonEle(i * 1.25, 3 + j, -8);
+		for (int x = 0; x < 2; x++) {
+			for (int z = 0; z < 5; z++) {
+				grid1[x][z] = LonLatEle(3 + x, z * 1.25, -8);
 			}
 		}
 
@@ -51,13 +52,13 @@ public class TerrainEleDataGridGroupTest {
 	@Test
 	public void testGridAt() {
 
-		assertNull(testData.gridAt(new LatLon(-1, 3)));
+		assertNull(testData.gridAt(LonLat(3, -1)));
 
-		TerrainEleDataGrid result0 = testData.gridAt(new LatLon(4, 1));
+		TerrainEleDataGrid result0 = testData.gridAt(LonLat(1, 4));
 		assertNotNull(result0);
 		assertEquals(18, result0.size());
 
-		TerrainEleDataGrid result1 = testData.gridAt(new LatLon(2, 3.5));
+		TerrainEleDataGrid result1 = testData.gridAt(LonLat(3.5, 2));
 		assertNotNull(result1);
 		assertEquals(10, result1.size());
 
@@ -66,26 +67,26 @@ public class TerrainEleDataGridGroupTest {
 	@Test
 	public void testFindSites_grid0() {
 
-		var pos = new LatLon(0.4, 1.4);
+		var pos = LonLat(1.4, 0.4);
 
 		assertTrue(testData.findClosestSites(pos, 0).isEmpty());
 
-		assertEquals(List.of(new LatLonEle(0, 1, -7)), testData.findClosestSites(pos, 1));
+		assertEquals(List.of(LonLatEle(1, 0, -7)), testData.findClosestSites(pos, 1));
 
 		List<LatLonEle> closest4Sites = testData.findClosestSites(pos, 4);
-		assertEquals(Set.of(new LatLonEle(0, 1, -7),
-						new LatLonEle(1, 1, -7),
-						new LatLonEle(0, 2, -7),
-						new LatLonEle(1, 2, -7)),
+		assertEquals(Set.of(LonLatEle(1, 0, -7),
+						LonLatEle(1, 1, -7),
+						LonLatEle(2, 0, -7),
+						LonLatEle(2, 1, -7)),
 				new HashSet<>(closest4Sites));
 
 		List<LatLonEle> closestSitesAll = testData.findClosestSites(pos, 28);
 		assertEquals(new HashSet<>(testData.sites()), new HashSet<>(closestSitesAll));
 
-		var posOutside = new LatLon(0.5, -100);
+		var posOutside = LonLat(-100, 0.5);
 
-		assertEquals(Set.of(new LatLonEle(0, 0, -7),
-						new LatLonEle(1, 0, -7)),
+		assertEquals(Set.of(LonLatEle(0, 0, -7),
+						LonLatEle(0, 1, -7)),
 				new HashSet<>(testData.findClosestSites(posOutside, 2)));
 
 	}
@@ -93,19 +94,20 @@ public class TerrainEleDataGridGroupTest {
 	@Test
 	public void testFindSites_betweenGrids() {
 
-		var pos = new LatLon(3.75, 2.3);
+		var pos = LonLat(2.3, 3.75);
 
 		assertTrue(testData.findClosestSites(pos, 0).isEmpty());
 
 		List<LatLonEle> closest4Sites = testData.findClosestSites(pos, 3);
-		assertEquals(Set.of(new LatLonEle(3, 2, -7),
-						new LatLonEle(4, 2, -7),
-						new LatLonEle(3.75, 3, -8)),
+		assertEquals(Set.of(LonLatEle(2, 3, -7),
+						LonLatEle(2, 4, -7),
+						LonLatEle(3, 3.75, -8)),
 				new HashSet<>(closest4Sites));
 
 		List<LatLonEle> closestSitesAll = testData.findClosestSites(pos, 28);
 		assertEquals(new HashSet<>(testData.sites()), new HashSet<>(closestSitesAll));
 
 	}
+
 
 }

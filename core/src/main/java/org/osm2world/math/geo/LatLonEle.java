@@ -58,6 +58,11 @@ public class LatLonEle {
 		}
 	}
 
+
+	public static LatLonEle LonLatEle(double lon, double lat, double ele) {
+		return new LatLonEle(lat, lon, ele);
+	}
+
 	/**
 	 * @throws IllegalArgumentException  for incorrect field values
 	 */
@@ -74,7 +79,7 @@ public class LatLonEle {
 
 	@Override
 	public String toString() {
-		return lat + "," + lon;
+		return lat + "," + lon + "," + ele;
 	}
 
 	@Override

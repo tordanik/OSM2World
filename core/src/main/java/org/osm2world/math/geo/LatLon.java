@@ -44,6 +44,10 @@ public class LatLon {
 		}
 	}
 
+	public static LatLon LonLat(double lon, double lat) {
+		return new LatLon(lat, lon);
+	}
+
 	/** returns the approximate distance to another coordinate in meters */
 	public double distanceTo(LatLon pos) {
 		/* Haversine formula. Assumes spherical earth, does not consider elevation. */

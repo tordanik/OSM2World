@@ -1,13 +1,14 @@
 package org.osm2world.map_elevation.creation;
 
 import static org.junit.Assert.*;
+import static org.osm2world.math.geo.LatLon.LonLat;
+import static org.osm2world.math.geo.LatLonEle.LonLatEle;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonEle;
 
 public class TerrainEleDataGridTest {
@@ -16,11 +17,11 @@ public class TerrainEleDataGridTest {
 
 	static {
 
-		LatLonEle[][] sites = new LatLonEle[101][51];
+		var sites = new LatLonEle[51][101];
 
-		for (int i = 0; i < 101; i++) {
-			for (int j = 0; j < 51; j++) {
-				sites[i][j] = new LatLonEle(0.01 * i, 42 + 0.01 * j, 9);
+		for (int x = 0; x < 51; x++) {
+			for (int z = 0; z < 101; z++) {
+				sites[x][z] = LonLatEle(42 + 0.01 * x, 0.01 * z, 9);
 			}
 		}
 
@@ -32,49 +33,59 @@ public class TerrainEleDataGridTest {
 	public void testSize() {
 
 		assertFalse(testData.isEmpty());
-		assertEquals(101 * 51, testData.size());
-		assertEquals(101 * 51, testData.sites().size());
+		assertEquals(51 * 101, testData.size());
+		assertEquals(51 * 101, testData.sites().size());
+
+	}
+
+	@Test
+	public void testBounds() {
+
+		assertEquals(42.0, testData.bounds().minlon, 0);
+		assertEquals(42.5, testData.bounds().maxlon, 0);
+		assertEquals(0.0, testData.bounds().minlat, 0);
+		assertEquals(1.0, testData.bounds().maxlat, 0);
 
 	}
 
 	@Test
 	public void testFindSites() {
 
-		LatLon pos1 = new LatLon(0.777, 42.424);
+		var pos1 = LonLat(42.424, 0.777);
 
 		assertTrue(testData.findClosestSites(pos1, 0).isEmpty());
 
-		assertEquals(List.of(new LatLonEle(0.78, 42.42, 9)), testData.findClosestSites(pos1, 1));
+		assertEquals(List.of(LonLatEle(42.42, 0.78, 9)), testData.findClosestSites(pos1, 1));
 
 		List<LatLonEle> closest4Sites = testData.findClosestSites(pos1, 4);
 		List<LatLonEle> surroundingSites = testData.findSurroundingSites(pos1);
 
 		assertEquals(4, closest4Sites.size());
-		assertEquals(List.of(new LatLonEle(0.77, 42.42, 9),
-						new LatLonEle(0.77, 42.43, 9),
-						new LatLonEle(0.78, 42.42, 9),
-						new LatLonEle(0.78, 42.43, 9)),
+		assertEquals(List.of(LonLatEle(42.42, 0.77, 9),
+						LonLatEle(42.43, 0.77, 9),
+						LonLatEle(42.42, 0.78, 9),
+						LonLatEle(42.43, 0.78, 9)),
 				surroundingSites);
 		assertEquals(new HashSet<>(closest4Sites), new HashSet<>(surroundingSites));
 
 		List<LatLonEle> closest6Sites = testData.findClosestSites(pos1, 6);
-		assertEquals(Set.of(new LatLonEle(0.77, 42.42, 9),
-						new LatLonEle(0.77, 42.43, 9),
-						new LatLonEle(0.78, 42.41, 9),
-						new LatLonEle(0.78, 42.42, 9),
-						new LatLonEle(0.78, 42.43, 9),
-						new LatLonEle(0.79, 42.42, 9)),
+		assertEquals(Set.of(LonLatEle(42.42, 0.77, 9),
+						LonLatEle(42.43, 0.77, 9),
+						LonLatEle(42.41, 0.78, 9),
+						LonLatEle(42.42, 0.78, 9),
+						LonLatEle(42.43, 0.78, 9),
+						LonLatEle(42.42, 0.79, 9)),
 				new HashSet<>(closest6Sites));
 
 		List<LatLonEle> closest8Sites = testData.findClosestSites(pos1, 8);
-		assertEquals(Set.of(new LatLonEle(0.77, 42.41, 9),
-						new LatLonEle(0.77, 42.42, 9),
-						new LatLonEle(0.77, 42.43, 9),
-						new LatLonEle(0.78, 42.41, 9),
-						new LatLonEle(0.78, 42.42, 9),
-						new LatLonEle(0.78, 42.43, 9),
-						new LatLonEle(0.79, 42.42, 9),
-						new LatLonEle(0.79, 42.43, 9)),
+		assertEquals(Set.of(LonLatEle(42.41, 0.77, 9),
+						LonLatEle(42.42, 0.77, 9),
+						LonLatEle(42.43, 0.77, 9),
+						LonLatEle(42.41, 0.78, 9),
+						LonLatEle(42.42, 0.78, 9),
+						LonLatEle(42.43, 0.78, 9),
+						LonLatEle(42.42, 0.79, 9),
+						LonLatEle(42.43, 0.79, 9)),
 				new HashSet<>(closest8Sites));
 
 		List<LatLonEle> closestSitesAll = testData.findClosestSites(pos1, 101 * 51);
@@ -85,41 +96,41 @@ public class TerrainEleDataGridTest {
 	@Test
 	public void testFindSites_pointNearCorner() {
 
-		LatLon pos1 = new LatLon(0.003, 42.002);
+		var pos1 = LonLat(42.002, 0.003);
 
 		assertTrue(testData.findClosestSites(pos1, 0).isEmpty());
 
-		assertEquals(List.of(new LatLonEle(0.00, 42.00, 9)), testData.findClosestSites(pos1, 1));
+		assertEquals(List.of(LonLatEle(42.00, 0.00, 9)), testData.findClosestSites(pos1, 1));
 
 		List<LatLonEle> closest4Sites = testData.findClosestSites(pos1, 4);
 		List<LatLonEle> surroundingSites = testData.findSurroundingSites(pos1);
 
 		assertEquals(4, closest4Sites.size());
-		assertEquals(List.of(new LatLonEle(0.00, 42.00, 9),
-						new LatLonEle(0.00, 42.01, 9),
-						new LatLonEle(0.01, 42.00, 9),
-						new LatLonEle(0.01, 42.01, 9)),
+		assertEquals(List.of(LonLatEle(42.00, 0.00, 9),
+						LonLatEle(42.01, 0.00, 9),
+						LonLatEle(42.00, 0.01, 9),
+						LonLatEle(42.01, 0.01, 9)),
 				surroundingSites);
 		assertEquals(new HashSet<>(closest4Sites), new HashSet<>(surroundingSites));
 
 		List<LatLonEle> closest6Sites = testData.findClosestSites(pos1, 6);
-		assertEquals(Set.of(new LatLonEle(0.00, 42.00, 9),
-						new LatLonEle(0.00, 42.01, 9),
-						new LatLonEle(0.00, 42.02, 9),
-						new LatLonEle(0.01, 42.00, 9),
-						new LatLonEle(0.01, 42.01, 9),
-						new LatLonEle(0.02, 42.00, 9)),
+		assertEquals(Set.of(LonLatEle(42.00, 0.00, 9),
+						LonLatEle(42.01, 0.00, 9),
+						LonLatEle(42.02, 0.00, 9),
+						LonLatEle(42.00, 0.01, 9),
+						LonLatEle(42.01, 0.01, 9),
+						LonLatEle(42.00, 0.02, 9)),
 				new HashSet<>(closest6Sites));
 
 		List<LatLonEle> closest8Sites = testData.findClosestSites(pos1, 8);
-		assertEquals(Set.of(new LatLonEle(0.00, 42.00, 9),
-						new LatLonEle(0.00, 42.01, 9),
-						new LatLonEle(0.00, 42.02, 9),
-						new LatLonEle(0.01, 42.00, 9),
-						new LatLonEle(0.01, 42.01, 9),
-						new LatLonEle(0.01, 42.02, 9),
-						new LatLonEle(0.02, 42.00, 9),
-						new LatLonEle(0.02, 42.01, 9)),
+		assertEquals(Set.of(LonLatEle(42.00, 0.00, 9),
+						LonLatEle(42.01, 0.00, 9),
+						LonLatEle(42.02, 0.00, 9),
+						LonLatEle(42.00, 0.01, 9),
+						LonLatEle(42.01, 0.01, 9),
+						LonLatEle(42.02, 0.01, 9),
+						LonLatEle(42.00, 0.02, 9),
+						LonLatEle(42.01, 0.02, 9)),
 				new HashSet<>(closest8Sites));
 
 	}
@@ -128,8 +139,8 @@ public class TerrainEleDataGridTest {
 	public void testFindSites_edgeCases() {
 
 		var positions = List.of(
-				new LatLon(0.0, 42.0),
-				new LatLon(1.0, 42.5)
+				LonLat(42.0, 0.0),
+				LonLat(42.5, 1.0)
 		);
 
 		for (var pos : positions) {
