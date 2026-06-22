@@ -5,8 +5,11 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Math.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+
+import javax.annotation.Nullable;
 
 /**
  * an area on the globe represented by two coordinate pairs,
@@ -113,6 +116,26 @@ public class LatLonBounds implements GeoBounds {
 		}
 
 		return LatLonBounds.ofPoints(points);
+
+	}
+
+
+	/**
+	 * Returns the intersection of a nonempty group of {@link LatLonBounds}.
+	 * @return  null if the intersection is empty
+	 */
+	public static @Nullable LatLonBounds intersection(Collection<LatLonBounds> bounds) {
+
+		double minlat = bounds.stream().mapToDouble(b -> b.minlat).max().orElseThrow(IllegalStateException::new);
+		double maxlat = bounds.stream().mapToDouble(b -> b.maxlat).min().orElseThrow(IllegalStateException::new);
+		double minlon = bounds.stream().mapToDouble(b -> b.minlon).max().orElseThrow(IllegalStateException::new);
+		double maxlon = bounds.stream().mapToDouble(b -> b.maxlon).min().orElseThrow(IllegalStateException::new);
+
+		if (maxlat <= minlat || maxlon <= minlon) {
+			return null;
+		} else {
+			return new LatLonBounds(minlat, minlon, maxlat, maxlon);
+		}
 
 	}
 

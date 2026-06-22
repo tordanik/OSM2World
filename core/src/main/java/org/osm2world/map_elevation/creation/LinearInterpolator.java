@@ -5,11 +5,13 @@ import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.util.List;
 
-import org.osm2world.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.geo.LatLon;
+import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.math.shapes.TriangleXYZ;
 
 /**
  * triangulates the point set of elevation sites,
@@ -18,33 +20,115 @@ import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
  */
 public class LinearInterpolator implements TerrainInterpolator {
 
-	private DelaunayTriangulation triangulation;
+	private TerrainInterpolator implementation;
 
+	@Override
 	public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
-
-		checkNotNull(eleData);
-		checkNotNull(projection);
-
-		List<VectorXYZ> sites = eleData.sites().stream().map(projection::toXYZ).toList();
-
-		AxisAlignedRectangleXZ boundingBox = bbox(sites).pad(100);
-
-		triangulation = new DelaunayTriangulation(boundingBox);
-
-		for (VectorXYZ site : sites) {
-			triangulation.insert(site);
+		if (eleData instanceof TerrainEleDataGridGroup) {
+			implementation = new GridImplementation();
+		} else {
+			implementation = new GeneralImplementation();
 		}
-
+		implementation.setKnownSites(eleData, projection);
 	}
 
 	@Override
 	public VectorXYZ interpolateEle(VectorXZ pos) {
+		return implementation.interpolateEle(pos);
+	}
 
-		DelaunayTriangle triangle = triangulation.getEnclosingTriangle(pos);
+	/** implementation that works for data no matter how the sites are distributed */
+	private static class GeneralImplementation implements TerrainInterpolator {
 
-		double ele = triangle.asTriangleXYZ().getYAt(pos);
+		private DelaunayTriangulation triangulation;
 
-		return pos.xyz(ele);
+		public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
+
+			checkNotNull(eleData);
+			checkNotNull(projection);
+
+			List<VectorXYZ> sites = eleData.sites().stream().map(projection::toXYZ).toList();
+
+			AxisAlignedRectangleXZ boundingBox = bbox(sites).pad(100);
+
+			triangulation = new DelaunayTriangulation(boundingBox);
+
+			for (VectorXYZ site : sites) {
+				triangulation.insert(site);
+			}
+
+		}
+
+		@Override
+		public VectorXYZ interpolateEle(VectorXZ pos) {
+
+			DelaunayTriangulation.DelaunayTriangle triangle = triangulation.getEnclosingTriangle(pos);
+
+			double ele = triangle.asTriangleXYZ().getYAt(pos);
+
+			return pos.xyz(ele);
+
+		}
+
+	}
+
+	/** implementation specifically for data with a grid structure */
+	private static class GridImplementation implements TerrainInterpolator {
+
+		private TerrainEleDataGridGroup eleData;
+		private MapProjection projection;
+
+		public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
+
+			this.projection = projection;
+
+			if (eleData instanceof TerrainEleDataGridGroup group) {
+				this.eleData = group;
+			} else if (eleData instanceof TerrainEleDataGrid grid) {
+				this.eleData = new TerrainEleDataGridGroup(List.of(grid));
+			} else {
+				throw new IllegalArgumentException("Unsupported TerrainEleData type: " + eleData.getClass());
+			}
+
+		}
+
+		@Override
+		public VectorXYZ interpolateEle(VectorXZ pos) {
+
+			LatLon posLatLon = projection.toLatLon(pos);
+
+			/* find the correct grid */
+
+			TerrainEleDataGrid grid = eleData.gridAt(posLatLon);
+
+			if (grid != null) {
+
+				List<LatLonEle> surroundingSites = grid.findSurroundingSites(posLatLon);
+
+				TriangleXYZ t = new TriangleXYZ(
+						projection.toXYZ(surroundingSites.get(0)),
+						projection.toXYZ(surroundingSites.get(1)),
+						projection.toXYZ(surroundingSites.get(2)));
+
+				if (!t.xz().contains(pos)) {
+					t = new TriangleXYZ(
+							projection.toXYZ(surroundingSites.get(1)),
+							projection.toXYZ(surroundingSites.get(2)),
+							projection.toXYZ(surroundingSites.get(3)));
+				}
+
+				return pos.xyz(t.getYAt(pos));
+
+			} else {
+
+				List<LatLonEle> closestSites = eleData.findClosestSites(posLatLon, 3);
+
+				// FIXME implement proper interpolation between closest sites
+				return pos.xyz(closestSites.get(0).ele);
+
+			}
+
+		}
 
 	}
 

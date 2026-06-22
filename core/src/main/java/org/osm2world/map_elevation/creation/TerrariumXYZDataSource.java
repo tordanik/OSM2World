@@ -6,7 +6,10 @@ import static java.lang.Math.max;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -52,11 +55,13 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 	@Override
 	public TerrainEleData getSites(LatLonBounds bounds) {
 
-		Collection<LatLonEle> result = new ArrayList<>();
+		List<TerrainEleDataGrid> resultGrids = new ArrayList<>();
 
 		List<TileNumber> tiles = TileNumber.tilesForBounds(maxZoom, bounds);
 
 		for (TileNumber tileNumber : tiles) {
+
+			LatLonBounds gridBounds = LatLonBounds.union(List.of(bounds, tileNumber.latLonBounds()));
 
 			Tile tile = tileCache.get(tileNumber);
 			if (tile == null) {
@@ -64,13 +69,21 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 				tileCache.put(tileNumber, tile);
 			}
 
-			tile.getSites().stream()
+			TerrainEleDataGrid sites = tile.getSites();
+			if (sites != null) {
+				resultGrids.add(sites);
+			}
+
+			// TODO: filter against gridBounds
+			/*
+			tile.getSites().sites().stream()
 					.filter(s -> bounds.contains(s.latLon()))
 					.forEach(result::add);
+			 */
 
 		}
 
-		return new TerrainEleDataCollection(bounds, result);
+		return new TerrainEleDataGridGroup(resultGrids);
 
 	}
 
@@ -146,25 +159,26 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 		}
 
-		public Collection<LatLonEle> getSites() {
-
-			if (data == null) return List.of();
+		public @Nullable TerrainEleDataGrid getSites() {
 
 			var bounds = tileNumber.latLonBounds();
 			double sizeLat = bounds.sizeLat();
 			double sizeLon = bounds.sizeLon();
 
-			List<LatLonEle> result = new ArrayList<>();
+			if (data == null) return null;
 
-			for (int y = 0; y < data.length; y++) {
-				for (int x = 0; x < data[y].length; x++) {
-					double lat = bounds.maxlat - (0.5 + y) / data.length * sizeLat;
-					double lon = bounds.minlon + (0.5 + x) / data[y].length * sizeLon;
-					result.add(new LatLonEle(lat, lon, data[x][y]));
+			LatLonEle[][] result = new LatLonEle[data.length][data[0].length];
+
+			for (int x = 0; x < data.length; x++) {
+				result[x] = new LatLonEle[data[x].length];
+				for (int y = 0; y < data[x].length; y++) {
+					double lon = bounds.minlon + (0.5 + x) / data.length * sizeLon;
+					double lat = bounds.maxlat - (0.5 + y) / data[x].length * sizeLat;
+					result[x][data[x].length - y - 1] = new LatLonEle(lat, lon, data[x][y]);
 				}
 			}
 
-			return result;
+			return new TerrainEleDataGrid(result);
 
 		}
 
