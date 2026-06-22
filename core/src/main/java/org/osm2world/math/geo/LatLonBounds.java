@@ -75,6 +75,11 @@ public class LatLonBounds implements GeoBounds {
 		return p.lat >= minlat && p.lat <= maxlat && p.lon >= minlon && p.lon <= maxlon;
 	}
 
+	public boolean contains(LatLonBounds other) {
+		return other.minlat >= this.minlat && other.maxlat <= this.maxlat
+				&& other.minlon >= this.minlon && other.maxlon <= this.maxlon;
+	}
+
 	public static LatLonBounds ofPoints(Iterable<LatLon> points) {
 
 		double minLat = POSITIVE_INFINITY;

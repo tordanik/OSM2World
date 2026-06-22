@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.LatLonEle;
 
 public class TerrainEleDataGridTest {
@@ -45,6 +46,17 @@ public class TerrainEleDataGridTest {
 		assertEquals(42.5, testData.bounds().maxlon, 0);
 		assertEquals(0.0, testData.bounds().minlat, 0);
 		assertEquals(1.0, testData.bounds().maxlat, 0);
+
+	}
+
+	@Test
+	public void testClipped() {
+
+		assertEquals(testData.size(), testData.clipped(testData.bounds()).size());
+		assertEquals(testData.size(), testData.clipped(new LatLonBounds(0, 40, 50, 60)).size());
+
+		TerrainEleDataGrid clipped = testData.clipped(new LatLonBounds(0, 42.03, 1.0, 42.05));
+		assertEquals(3 * 101, clipped.size());
 
 	}
 

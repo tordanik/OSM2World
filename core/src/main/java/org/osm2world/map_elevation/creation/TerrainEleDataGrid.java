@@ -80,6 +80,34 @@ public class TerrainEleDataGrid implements TerrainEleData {
 		return result;
 	}
 
+	/** returns a subregion of this elevation grid */
+	public TerrainEleDataGrid clipped(LatLonBounds clipBounds) {
+
+		if (clipBounds.contains(bounds)) {
+			return this;
+		}
+
+		clipBounds = LatLonBounds.intersection(List.of(clipBounds, bounds));
+
+		if (clipBounds == null) {
+			throw new IllegalArgumentException("clipBounds does not intersect this grid's bounds");
+		}
+
+		int minX = max(0, (int) floor((clipBounds.minlon - bounds.minlon) / lonSize * (numX - 1)));
+		int minZ = max(0, (int) floor((clipBounds.minlat - bounds.minlat) / latSize * (numZ - 1)));
+		int maxX = min(numX - 1, (int) ceil((clipBounds.maxlon - bounds.minlon) / lonSize * (numX - 1)));
+		int maxZ = min(numZ - 1, (int) ceil((clipBounds.maxlat - bounds.minlat) / latSize * (numZ - 1)));
+
+		var newData = new LatLonEle[maxX - minX + 1][maxZ - minZ + 1];
+
+		for (int x = minX; x <= maxX; x++) {
+			System.arraycopy(sites[x], minZ, newData[x - minX], 0, maxZ - minZ + 1);
+		}
+
+		return new TerrainEleDataGrid(newData);
+
+	}
+
 	/**
 	 * Returns the 4 sites surrounding the given position in this grid.
 	 *

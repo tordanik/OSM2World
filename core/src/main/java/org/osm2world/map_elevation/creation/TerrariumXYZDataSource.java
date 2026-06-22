@@ -61,25 +61,16 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 		for (TileNumber tileNumber : tiles) {
 
-			LatLonBounds gridBounds = LatLonBounds.union(List.of(bounds, tileNumber.latLonBounds()));
-
 			Tile tile = tileCache.get(tileNumber);
 			if (tile == null) {
 				tile = new Tile(tileNumber, uriPattern);
 				tileCache.put(tileNumber, tile);
 			}
 
-			TerrainEleDataGrid sites = tile.getSites();
-			if (sites != null) {
-				resultGrids.add(sites);
+			TerrainEleDataGrid grid = tile.getSites();
+			if (grid != null) {
+				resultGrids.add(grid.clipped(bounds));
 			}
-
-			// TODO: filter against gridBounds
-			/*
-			tile.getSites().sites().stream()
-					.filter(s -> bounds.contains(s.latLon()))
-					.forEach(result::add);
-			 */
 
 		}
 
