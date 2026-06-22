@@ -56,6 +56,14 @@ public class LatLonBounds implements GeoBounds {
 		return new LatLon(maxlat, maxlon);
 	}
 
+	public List<LatLon> getCorners() {
+		return List.of(
+				new LatLon(minlat, minlon),
+				new LatLon(minlat, maxlon),
+				new LatLon(maxlat, maxlon),
+				new LatLon(maxlat, minlon));
+	}
+
 	public LatLon getCenter() {
 		return new LatLon(minlat + sizeLat() / 2, minlon + sizeLon() / 2);
 	}

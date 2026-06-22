@@ -41,6 +41,10 @@ public class TerrainEleDataGridGroup implements TerrainEleData {
 		return null;
 	}
 
+	public List<TerrainEleDataGrid> grids() {
+		return grids;
+	}
+
 	@Override
 	public LatLonBounds bounds() {
 		return bounds;

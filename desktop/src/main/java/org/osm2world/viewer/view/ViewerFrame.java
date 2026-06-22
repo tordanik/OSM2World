@@ -159,6 +159,8 @@ public class ViewerFrame extends JFrame {
 					new AttachmentSurfaceDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new AttachmentConnectorDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new EleDataSourceDebugView());
 			initAndAddDebugView(subMenu, VK_E, false,
 					new EleConnectorDebugView());
 			initAndAddDebugView(subMenu, VK_C, false,
