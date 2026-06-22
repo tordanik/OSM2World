@@ -23,13 +23,13 @@ public interface TerrainEleDataSource {
 	 */
 	default TerrainEleData getSites(AxisAlignedRectangleXZ bounds, MapProjection projection) throws IOException {
 
+		var bufferedBounds = bounds.pad(100);
+
 		var latLonBounds = new LatLonBounds(
-				projection.toLatLon(bounds.bottomLeft()),
-				projection.toLatLon(bounds.topRight()));
+				projection.toLatLon(bufferedBounds.bottomLeft()),
+				projection.toLatLon(bufferedBounds.topRight()));
 
-		var bufferedBounds = latLonBounds.pad(0.005);
-
-		return getSites(bufferedBounds);
+		return getSites(latLonBounds);
 
 	}
 
