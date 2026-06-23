@@ -14,12 +14,15 @@ import org.osm2world.math.shapes.*;
  * triangulation utility class that picks a suitable implementation, such as
  * {@link Earcut4JTriangulationUtil} or {@link JTSTriangulationUtil}
  */
-public class TriangulationUtil {
+public final class TriangulationUtil {
+
+	/** prevents instantiation */
+	private TriangulationUtil() {}
 
 	/**
 	 * triangulates a two-dimensional polygon with holes and unconnected points.
 	 */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			SimplePolygonShapeXZ outerPolygon,
 			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {
@@ -31,7 +34,7 @@ public class TriangulationUtil {
 	/**
 	 * triangulates a two-dimensional polygon with holes.
 	 */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			SimplePolygonShapeXZ outerPolygon,
 			Collection<? extends SimplePolygonShapeXZ> holes) {
 
@@ -40,7 +43,7 @@ public class TriangulationUtil {
 	}
 
 	/** triangulates multiple polygons with holes and unconnected points */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			Collection<PolygonShapeXZ> polygons,
 			Collection<VectorXZ> points) {
 
@@ -52,7 +55,7 @@ public class TriangulationUtil {
 	}
 
 	/** variant of {@link #triangulate(Collection, Collection)} with no unconnected points */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			Collection<PolygonShapeXZ> polygons) {
 		return triangulate(polygons, List.of());
 	}
@@ -60,7 +63,7 @@ public class TriangulationUtil {
 	/**
 	 * @see #triangulate(SimplePolygonShapeXZ, Collection)
 	 */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			PolygonShapeXZ polygon) {
 
 		return triangulate(polygon.getOuter(), polygon.getHoles());
@@ -68,7 +71,7 @@ public class TriangulationUtil {
 	}
 
 	/**
-	 * triangulates a 3D polygon.
+	 * Triangulates a 3D polygon.
 	 * Only works if the polygon can be projected into a simple 2D polygon in the XZ plane.
 	 */
 	public static List<TriangleXYZ> triangulateXYZ(PolygonXYZ polygon) {

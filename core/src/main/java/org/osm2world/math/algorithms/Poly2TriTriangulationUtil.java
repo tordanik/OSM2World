@@ -6,7 +6,7 @@ import java.util.*;
 
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
+import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.util.exception.TriangulationException;
 import org.poly2tri.Poly2Tri;
@@ -17,7 +17,7 @@ import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 import org.poly2tri.triangulation.point.TPoint;
 
 /**
- * uses the poly2tri library for triangulation.
+ * Uses the poly2tri library for triangulation.
  * Creates a Constrained Delaunay Triangulation, not true Delaunay!
  */
 public final class Poly2TriTriangulationUtil {
@@ -25,39 +25,37 @@ public final class Poly2TriTriangulationUtil {
 	private Poly2TriTriangulationUtil() { }
 
 	/**
-	 * triangulates of a polygon with holes.
-	 *
+	 * Triangulates a polygon with holes.
 	 * Accepts some unconnected points within the polygon area
 	 * and will create triangle vertices at these points.
 	 * It will also accept line segments as edges that must be integrated
 	 * into the resulting triangulation.
 	 * @throws TriangulationException if triangulation fails
 	 */
-	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ outerPolygon,
-			Collection<SimplePolygonXZ> holes,
+	public static List<TriangleXZ> triangulate(
+			SimplePolygonShapeXZ outerPolygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<LineSegmentXZ> segments,
 			Collection<VectorXZ> points) throws TriangulationException {
 
 		/* remove any problematic data (duplicate points) from the input */
 
-		Set<VectorXZ> knownVectors =
-				new HashSet<VectorXZ>(outerPolygon.getVertexCollection());
+		Set<VectorXZ> knownVectors = new HashSet<>(outerPolygon.vertices());
 
-		List<SimplePolygonXZ> filteredHoles = new ArrayList<SimplePolygonXZ>();
+		List<SimplePolygonShapeXZ> filteredHoles = new ArrayList<>();
 
-		for (SimplePolygonXZ hole : holes) {
+		for (SimplePolygonShapeXZ hole : holes) {
 
-			if (disjoint(hole.getVertexCollection(), knownVectors)) {
+			if (disjoint(hole.verticesNoDup(), knownVectors)) {
 				filteredHoles.add(hole);
-				knownVectors.addAll(hole.getVertices());
+				knownVectors.addAll(hole.verticesNoDup());
 			}
 
 		}
 
 		//TODO filter segments
 
-		Set<VectorXZ> filteredPoints = new HashSet<VectorXZ>(points);
+		Set<VectorXZ> filteredPoints = new HashSet<>(points);
 		filteredPoints.removeAll(knownVectors);
 
 		// remove points that are *almost* the same as a known vector
@@ -79,14 +77,14 @@ public final class Poly2TriTriangulationUtil {
 	}
 
 	/**
-	 * variant of {@link #triangulate(SimplePolygonXZ, Collection, Collection, Collection)}
+	 * Variant of {@link #triangulate(SimplePolygonShapeXZ, Collection, Collection, Collection)}
 	 * that does not validate the input. This is obviously faster,
 	 * but the caller needs to make sure that there are no problems.
 	 * @throws TriangulationException if triangulation fails
 	 */
-	public static final List<TriangleXZ> triangulateFast(
-			SimplePolygonXZ outerPolygon,
-			Collection<SimplePolygonXZ> holes,
+	public static List<TriangleXZ> triangulateFast(
+			SimplePolygonShapeXZ outerPolygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<LineSegmentXZ> segments,
 			Collection<VectorXZ> points) throws TriangulationException {
 
@@ -94,7 +92,7 @@ public final class Poly2TriTriangulationUtil {
 
 		Polygon triangulationPolygon = toPolygon(outerPolygon);
 
-		for (SimplePolygonXZ hole : holes) {
+		for (SimplePolygonShapeXZ hole : holes) {
 			triangulationPolygon.addHole(toPolygon(hole));
 		}
 
@@ -114,7 +112,7 @@ public final class Poly2TriTriangulationUtil {
 
 			List<DelaunayTriangle> triangles = triangulationPolygon.getTriangles();
 
-			List<TriangleXZ> result = new ArrayList<TriangleXZ>(triangles.size());
+			List<TriangleXZ> result = new ArrayList<>(triangles.size());
 
 			for (DelaunayTriangle triangle : triangles) {
 				result.add(toTriangleXZ(triangle));
@@ -122,27 +120,25 @@ public final class Poly2TriTriangulationUtil {
 
 			return result;
 
-		} catch (Exception e) {
-			throw new TriangulationException(e);
-		} catch (StackOverflowError e) {
+		} catch (Exception | StackOverflowError e) {
 			throw new TriangulationException(e);
 		}
 
 	}
 
-	private static final TPoint toTPoint(VectorXZ v) {
+	private static TPoint toTPoint(VectorXZ v) {
 		return new TPoint(v.x, v.z);
 	}
 
-	private static final VectorXZ toVectorXZ(TriangulationPoint points) {
+	private static VectorXZ toVectorXZ(TriangulationPoint points) {
 		return new VectorXZ(points.getX(), points.getY());
 	}
 
-	private static final Polygon toPolygon(SimplePolygonXZ polygon) {
+	private static Polygon toPolygon(SimplePolygonShapeXZ polygon) {
 
-		List<PolygonPoint> points = new ArrayList<PolygonPoint>(polygon.size());
+		List<PolygonPoint> points = new ArrayList<>(polygon.size());
 
-		for (VectorXZ v : polygon.getVertices()) {
+		for (VectorXZ v : polygon.verticesNoDup()) {
 			points.add(new PolygonPoint(v.x, v.z));
 		}
 
@@ -150,7 +146,7 @@ public final class Poly2TriTriangulationUtil {
 
 	}
 
-	private static final TriangleXZ toTriangleXZ(DelaunayTriangle triangle) {
+	private static TriangleXZ toTriangleXZ(DelaunayTriangle triangle) {
 
 		return new TriangleXZ(
 				toVectorXZ(triangle.points[0]),

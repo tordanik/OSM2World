@@ -17,14 +17,19 @@ import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
 /**
- * uses the earcut4j library for triangulation.
+ * Uses the earcut4j library for triangulation.
+ * Contrary to the library's documentation, this does not reliably respect inner points
+ * but is otherwise fast and high-quality.
  */
-public class Earcut4JTriangulationUtil {
+public final class Earcut4JTriangulationUtil {
+
+	/** prevents instantiation */
+	private Earcut4JTriangulationUtil() {}
 
 	/**
 	 * triangulate a polygon with holes
 	 */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			SimplePolygonShapeXZ polygon,
 			Collection<? extends SimplePolygonShapeXZ> holes) {
 
@@ -37,7 +42,7 @@ public class Earcut4JTriangulationUtil {
 	 * that accepts some unconnected points within the polygon area
 	 * and will try to create triangle vertices at these points.
 	 */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			SimplePolygonShapeXZ polygon,
 			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {

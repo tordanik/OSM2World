@@ -11,14 +11,11 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.shapes.LineSegmentXZ;
-import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.math.shapes.TriangleXZ;
+import org.osm2world.math.shapes.*;
 
 /**
- * uses the JTS library for triangulation.
- * Creates a Conforming Delaunay Triangulation with Steiner points!
+ * Uses the JTS library for triangulation. This triangulation library has the benefit of respecting inner points.
+ * (Creates a Conforming Delaunay Triangulation with Steiner points.)
  */
 public final class JTSTriangulationUtil {
 
@@ -27,12 +24,11 @@ public final class JTSTriangulationUtil {
 	private JTSTriangulationUtil() { }
 
 	/**
-	 * triangulation of a polygon with holes, based on a
-	 * conforming delaunay triangulation
+	 * triangulates a polygon with holes using on conforming delaunay triangulation
 	 */
-	public static final List<TriangleXZ> triangulate(
+	public static List<TriangleXZ> triangulate(
 			SimplePolygonXZ polygon,
-			Collection<SimplePolygonXZ> holes) {
+			Collection<? extends SimplePolygonShapeXZ> holes) {
 
 		List<VectorXZ> points = emptyList();
 		List<LineSegmentXZ> segments = emptyList();
@@ -41,27 +37,26 @@ public final class JTSTriangulationUtil {
 	}
 
 	/**
-	 * variant of {@link #triangulate(SimplePolygonXZ, Collection)}
+	 * Variant of {@link #triangulate(SimplePolygonXZ, Collection)}
 	 * that accepts some unconnected points within the polygon area
 	 * and will try to create triangle vertices at these points.
-	 * It will also accept line segment as edges that must be integrated
+	 * It will also accept line segments as edges that must be integrated
 	 * into the resulting triangulation.
 	 */
-	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ polygon,
-			Collection<SimplePolygonXZ> holes,
+	public static List<TriangleXZ> triangulate(
+			SimplePolygonShapeXZ polygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<LineSegmentXZ> segments,
 			Collection<VectorXZ> points) {
 
 		ConformingDelaunayTriangulationBuilder triangulationBuilder =
 			new ConformingDelaunayTriangulationBuilder();
 
-		List<Geometry> constraints =
-			new ArrayList<Geometry>(1 + holes.size() + segments.size());
+		List<Geometry> constraints = new ArrayList<>(1 + holes.size() + segments.size());
 
 		constraints.add(toJTS(polygon));
 
-		for (SimplePolygonXZ hole : holes) {
+		for (SimplePolygonShapeXZ hole : holes) {
 			constraints.add(toJTS(hole));
 		}
 
@@ -69,7 +64,7 @@ public final class JTSTriangulationUtil {
 			constraints.add(toJTSLineString(segment));
 		}
 
-		ArrayList<Point> jtsPoints = new ArrayList<Point>();
+		ArrayList<Point> jtsPoints = new ArrayList<>();
 		for (VectorXZ p : points) {
 			CoordinateSequence coordinateSequence =
 				new CoordinateArraySequence(new Coordinate[] {
@@ -93,12 +88,12 @@ public final class JTSTriangulationUtil {
 		Collection<PolygonWithHolesXZ> trianglesAsPolygons =
 			polygonsFromJTS(triangulationResult);
 
-		List<TriangleXZ> triangles = new ArrayList<TriangleXZ>();
+		List<TriangleXZ> triangles = new ArrayList<>();
 
 		for (PolygonWithHolesXZ triangleAsPolygon : trianglesAsPolygons) {
 
 			boolean triangleInHole = false;
-			for (SimplePolygonXZ hole : holes) {
+			for (SimplePolygonShapeXZ hole : holes) {
 				if (hole.contains(triangleAsPolygon.getOuter().getCenter())) {
 					triangleInHole = true;
 					break;
