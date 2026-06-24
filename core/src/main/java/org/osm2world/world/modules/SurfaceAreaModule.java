@@ -19,7 +19,7 @@ import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.algorithms.TriangulationUtil;
+import org.osm2world.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
@@ -151,7 +151,11 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			/* triangulate, using elevation information from all participants */
 
-			triangulationXZ = TriangulationUtil.triangulate(footprint, eleConnectorPoints);
+			triangulationXZ = footprint.stream()
+					.map(p -> JTSTriangulationUtil.triangulate(p,
+							eleConnectorPoints.stream().filter(p::contains).toList()))
+					.flatMap(List::stream)
+					.toList();
 
 			return triangulationXZ;
 

@@ -26,8 +26,7 @@ public final class JTSTriangulationUtil {
 	/**
 	 * triangulates a polygon with holes using on conforming delaunay triangulation
 	 */
-	public static List<TriangleXZ> triangulate(
-			SimplePolygonXZ polygon,
+	public static List<TriangleXZ> triangulate(SimplePolygonShapeXZ polygon,
 			Collection<? extends SimplePolygonShapeXZ> holes) {
 
 		List<VectorXZ> points = emptyList();
@@ -37,7 +36,7 @@ public final class JTSTriangulationUtil {
 	}
 
 	/**
-	 * Variant of {@link #triangulate(SimplePolygonXZ, Collection)}
+	 * Variant of {@link #triangulate(SimplePolygonShapeXZ, Collection)}
 	 * that accepts some unconnected points within the polygon area
 	 * and will try to create triangle vertices at these points.
 	 * It will also accept line segments as edges that must be integrated
@@ -110,6 +109,24 @@ public final class JTSTriangulationUtil {
 		}
 
 		return triangles;
+
+	}
+
+	public static List<TriangleXZ> triangulate(PolygonShapeXZ polygon) {
+		return triangulate(polygon.getOuter(), polygon.getHoles());
+	}
+
+	public static List<TriangleXZ> triangulate(PolygonShapeXZ polygon, Collection<VectorXZ> points) {
+		return triangulate(polygon.getOuter(), polygon.getHoles(), List.of(), points);
+	}
+
+	/** triangulates multiple polygons with holes and unconnected points */
+	public static List<TriangleXZ> triangulate(Collection<PolygonShapeXZ> polygons, Collection<VectorXZ> points) {
+
+		return polygons.stream()
+				.map(p -> triangulate(p, points.stream().filter(p::contains).toList()))
+				.flatMap(List::stream)
+				.toList();
 
 	}
 
