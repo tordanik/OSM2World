@@ -84,26 +84,16 @@ public final class JTSTriangulationUtil {
 		/* interpret the resulting polygons as triangles,
 		 * filter out those which are outside the polygon or in a hole */
 
-		Collection<PolygonWithHolesXZ> trianglesAsPolygons =
-			polygonsFromJTS(triangulationResult);
+		Collection<PolygonWithHolesXZ> trianglesAsPolygons = polygonsFromJTS(triangulationResult);
 
 		List<TriangleXZ> triangles = new ArrayList<>();
 
 		for (PolygonWithHolesXZ triangleAsPolygon : trianglesAsPolygons) {
-
-			boolean triangleInHole = false;
-			for (SimplePolygonShapeXZ hole : holes) {
-				if (hole.contains(triangleAsPolygon.getOuter().getCenter())) {
-					triangleInHole = true;
-					break;
-				}
-			}
-
-			if (!triangleInHole && polygon.contains(
-					triangleAsPolygon.getOuter().getCenter())) { //TODO: create single method for this query within PolygonWithHoles
-
-				triangles.add(triangleAsPolygon.asTriangleXZ());
-
+			TriangleXZ triangle = triangleAsPolygon.asTriangleXZ();
+			VectorXZ tCenter = triangle.getCenter();
+			if (polygon.contains(tCenter)
+				&& holes.stream().noneMatch(hole -> hole.contains(tCenter))) {
+				triangles.add(triangle);
 			}
 
 		}

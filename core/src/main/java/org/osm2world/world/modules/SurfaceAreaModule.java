@@ -151,11 +151,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			/* triangulate, using elevation information from all participants */
 
-			triangulationXZ = footprint.stream()
-					.map(p -> JTSTriangulationUtil.triangulate(p,
-							eleConnectorPoints.stream().filter(p::contains).toList()))
-					.flatMap(List::stream)
-					.toList();
+			triangulationXZ = JTSTriangulationUtil.triangulate(footprint, eleConnectorPoints);
 
 			return triangulationXZ;
 

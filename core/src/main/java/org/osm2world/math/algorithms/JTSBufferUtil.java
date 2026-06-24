@@ -16,9 +16,9 @@ public final class JTSBufferUtil {
 	private JTSBufferUtil() {}
 
 	/** grows or shrinks a polygon */
-	public static final List<PolygonWithHolesXZ> bufferPolygon(PolygonShapeXZ polygon, double distance) {
+	public static List<PolygonWithHolesXZ> bufferPolygon(PolygonShapeXZ polygon, double distance) {
 
-		BufferParameters bufferParams = new BufferParameters();
+		var bufferParams = new BufferParameters();
 		bufferParams.setJoinStyle(BufferParameters.JOIN_MITRE);
 		bufferParams.setMitreLimit(BufferParameters.DEFAULT_MITRE_LIMIT);
 		BufferOp op = new BufferOp(toJTS(polygon), bufferParams);

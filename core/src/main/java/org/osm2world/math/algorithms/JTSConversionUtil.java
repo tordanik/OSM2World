@@ -1,7 +1,6 @@
 package org.osm2world.math.algorithms;
 
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,20 +13,23 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.util.exception.InvalidGeometryException;
 
 /**
- * converts between OSM2World's own geometry classes and the JTS geometry representations.
- *
+ * Converts between OSM2World's own geometry classes and the JTS geometry representations.
+ * <p>
  * When handling three-dimensional coordinates, the y and z information will
  * be swapped when converting from or to JTS. JTS uses x and y as 2D plane, z as elevation info.
  */
-public class JTSConversionUtil {
+public final class JTSConversionUtil {
 
 	public static final GeometryFactory GF = new GeometryFactory();
 
-	public static final Coordinate toJTS(VectorXZ v) {
+	/** prevents instantiation */
+	private JTSConversionUtil() {}
+
+	public static Coordinate toJTS(VectorXZ v) {
 		return new Coordinate(v.x, v.z);
 	}
 
-	public static final VectorXZ fromJTS(Coordinate c) {
+	public static VectorXZ fromJTS(Coordinate c) {
 		return new VectorXZ(c.x, c.y);
 	}
 
@@ -36,27 +38,27 @@ public class JTSConversionUtil {
 	}
 
 	public static LineString toJTSLineString(PolylineShapeXZ polyline) {
-		List<Coordinate> ps = polyline.vertices().stream().map(p -> toJTS(p)).collect(toList());
+		List<Coordinate> ps = polyline.vertices().stream().map(JTSConversionUtil::toJTS).toList();
 		return new LineString(new CoordinateArraySequence(ps.toArray(new Coordinate[0])), GF);
 	}
 
-	public static final Polygon toJTS(SimplePolygonShapeXZ polygon) {
+	public static Polygon toJTS(SimplePolygonShapeXZ polygon) {
 		return new Polygon(toJTSLinearRing(polygon), null, GF);
 	}
 
-	public static final Polygon toJTS(PolygonShapeXZ polygon) {
+	public static Polygon toJTS(PolygonShapeXZ polygon) {
 
 		LinearRing shell = toJTSLinearRing(polygon.getOuter());
 
 		LinearRing[] holes = polygon.getHoles().stream()
-				.map(h -> toJTSLinearRing(h))
+				.map(JTSConversionUtil::toJTSLinearRing)
 				.toArray(LinearRing[]::new);
 
 		return new Polygon(shell, holes, GF);
 
 	}
 
-	private static final LinearRing toJTSLinearRing(SimplePolygonShapeXZ polygon) {
+	private static LinearRing toJTSLinearRing(SimplePolygonShapeXZ polygon) {
 
 		List<VectorXZ> vertices = polygon.vertices();
 
@@ -70,7 +72,7 @@ public class JTSConversionUtil {
 
 	}
 
-	public static final PolygonWithHolesXZ fromJTS(Polygon polygon) {
+	public static PolygonWithHolesXZ fromJTS(Polygon polygon) {
 
 		/* create outer polygon */
 
@@ -91,7 +93,7 @@ public class JTSConversionUtil {
 
 	}
 
-	private static final SimplePolygonXZ polygonFromJTS(LineString lineString) {
+	private static SimplePolygonXZ polygonFromJTS(LineString lineString) {
 
 		List<VectorXZ> vertexLoop = new ArrayList<>(lineString.getNumPoints());
 
@@ -102,7 +104,7 @@ public class JTSConversionUtil {
 		return new SimplePolygonXZ(vertexLoop);
 	}
 
-	public static final List<PolygonWithHolesXZ> polygonsFromJTS(Geometry geometry) {
+	public static List<PolygonWithHolesXZ> polygonsFromJTS(Geometry geometry) {
 
 		List<PolygonWithHolesXZ> result = new ArrayList<>(1);
 
