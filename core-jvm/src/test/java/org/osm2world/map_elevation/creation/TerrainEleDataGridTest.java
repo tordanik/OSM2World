@@ -3,6 +3,7 @@ package org.osm2world.map_elevation.creation;
 import static org.junit.Assert.*;
 import static org.osm2world.math.geo.LatLon.LonLat;
 import static org.osm2world.math.geo.LatLonEle.LonLatEle;
+import static org.osm2world.test.TestUtil.assertAlmostEqualsLLE;
 
 import java.util.HashSet;
 import java.util.List;
@@ -159,6 +160,46 @@ public class TerrainEleDataGridTest {
 			assertEquals(4, testData.findSurroundingSites(pos).size());
 			assertEquals(99, testData.findClosestSites(pos, 99).size());
 		}
+
+	}
+
+	@Test
+	public void testFindSites_squishedGrid() {
+
+		var sites = new LatLonEle[11][11];
+
+		for (int x = 0; x < 11; x++) {
+			for (int z = 0; z < 11; z++) {
+				sites[x][z] = LonLatEle(0.1 * x, 70 + z, -5);
+			}
+		}
+
+		// create a grid where cells are much taller than they are wide
+		var squishedGrid = new TerrainEleDataGrid(sites);
+
+		var pos1 = LonLat(0.36, 77.9);
+
+		assertTrue(squishedGrid.findClosestSites(pos1, 0).isEmpty());
+
+		assertEquals(List.of(LonLatEle(0.4, 78, -5)), squishedGrid.findClosestSites(pos1, 1));
+
+		assertAlmostEqualsLLE(Set.of(LonLatEle(0.2, 78, -5),
+						LonLatEle(0.3, 78, -5),
+						LonLatEle(0.4, 78, -5),
+						LonLatEle(0.5, 78, -5)),
+				new HashSet<>(squishedGrid.findClosestSites(pos1, 4)));
+
+		var posNearCorner = LonLat(0.99, 70.0);
+
+		assertAlmostEqualsLLE(Set.of(LonLatEle(1.0, 70, -5),
+						LonLatEle(0.9, 70, -5),
+						LonLatEle(0.8, 70, -5)),
+				new HashSet<>(squishedGrid.findClosestSites(posNearCorner, 3)));
+
+		assertEquals(new HashSet<>(squishedGrid.sites()),
+				new HashSet<>(squishedGrid.findClosestSites(pos1, 11 * 11)));
+		assertEquals(new HashSet<>(squishedGrid.sites()),
+				new HashSet<>(squishedGrid.findClosestSites(posNearCorner, 11 * 11)));
 
 	}
 

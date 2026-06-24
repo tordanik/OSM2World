@@ -10,6 +10,8 @@ import java.util.*;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.geo.LatLon;
+import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
@@ -143,6 +145,58 @@ public final class TestUtil {
 
 	public static final void assertAlmostEquals(PolygonXYZ expected, PolygonXYZ actual) {
 		assertAlmostEqualsXYZ(expected.verticesNoDup(), actual.verticesNoDup());
+	}
+
+	private static boolean almostEquals(LatLon a, LatLon b) {
+		return a.distanceTo(b) <= 0.001;
+	}
+
+	private static boolean almostEquals(LatLonEle a, LatLonEle b) {
+		return a.latLon().distanceTo(b.latLon()) <= 0.001 && abs(a.ele - b.ele) <= 0.001;
+	}
+
+	public static void assertAlmostEquals(LatLon expected, LatLon actual) {
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
+	}
+
+	public static void assertAlmostEquals(LatLonEle expected, LatLonEle actual) {
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
+	}
+
+	/**
+	 * @throws AssertionError unless the two sets contain the "same" points
+	 * (by the standards of {@link #assertAlmostEquals(LatLon, LatLon)})
+	 */
+	public static void assertAlmostEqualsLL(Set<LatLon> expected, Set<LatLon> actual) {
+
+		assertSame(expected.size(), actual.size());
+
+		for (LatLon expectedPoint : expected) {
+			if (actual.stream().noneMatch(actualPoint -> almostEquals(expectedPoint, actualPoint))) {
+				fail("expected point " + expectedPoint + " missing from " + actual);
+			}
+		}
+
+	}
+
+	/**
+	 * @throws AssertionError unless the two sets contain the "same" points
+	 * (by the standards of {@link #assertAlmostEquals(LatLonEle, LatLonEle)})
+	 */
+	public static void assertAlmostEqualsLLE(Set<LatLonEle> expected, Set<LatLonEle> actual) {
+
+		assertSame(expected.size(), actual.size());
+
+		for (LatLonEle expectedPoint : expected) {
+			if (actual.stream().noneMatch(actualPoint -> almostEquals(expectedPoint, actualPoint))) {
+				fail("expected point " + expectedPoint + " missing from " + actual);
+			}
+		}
+
 	}
 
 	public static final void assertAlmostEquals(Color expected, Color actual) {

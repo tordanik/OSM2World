@@ -132,26 +132,20 @@ public class TerrainEleDataGrid implements TerrainEleData {
 
 		if (n == 0) {
 			return List.of();
-		} else if (n == 4) {
-			return findSurroundingSites(pos);
 		} else {
 
 			List<LatLonEle> candidates;
 
-			if (n < 4) {
-				candidates = new ArrayList<>(findSurroundingSites(pos));
-			} else {
-				CellCoords cell = cellForPos(pos);
-				int cellRange = (int)ceil(sqrt(n) / 2) - 1; // usually gets it right the first try, but not always (corners, non-square grids)
-				do {
-					candidates = new ArrayList<>();
-					for (int x = max(0, cell.x - cellRange); x < min(numX, cell.x + cellRange + 2); x++) {
-						candidates.addAll(asList(sites[x]).subList(max(0, cell.z - cellRange), min(numZ, cell.z + cellRange + 2)));
-					}
-					cellRange++;
-				} while (candidates.size() < n && (cellRange < numX || cellRange < numZ));
-				if (candidates.size() < n) { throw new IllegalStateException("n too large for number of sites " + n); }
-			}
+			CellCoords cell = cellForPos(pos);
+			int cellRange = (n - 1) / 2; // usually gets it right the first try, but not always (near the edge)
+			do {
+				candidates = new ArrayList<>();
+				for (int x = max(0, cell.x - cellRange); x < min(numX, cell.x + cellRange + 2); x++) {
+					candidates.addAll(asList(sites[x]).subList(max(0, cell.z - cellRange), min(numZ, cell.z + cellRange + 2)));
+				}
+				cellRange *= 2;
+			} while (candidates.size() < n && (cellRange < numX || cellRange < numZ));
+			if (candidates.size() < n) { throw new IllegalStateException("n too large for number of sites " + n); }
 
 			candidates.sort(Comparator.comparingDouble(it -> pos.distanceTo(it.latLon())));
 			return candidates.subList(0, n);
