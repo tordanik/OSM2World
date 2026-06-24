@@ -69,9 +69,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.github.earcut4j</groupId>
+			<groupId>org.maplibre</groupId>
 			<artifactId>earcut4j</artifactId>
-			<version>2.2.2</version>
+			<version>3.0.0</version>
 		</dependency>
 
 		<dependency>

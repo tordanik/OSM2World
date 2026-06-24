@@ -6,20 +6,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.maplibre.earcut4j.Earcut;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.math.shapes.TriangleXZ;
 
 import com.google.common.primitives.Ints;
 
-import earcut4j.Earcut;
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-
 /**
  * Uses the earcut4j library for triangulation.
- * Contrary to the library's documentation, this does not reliably respect inner points
- * but is otherwise fast and high-quality.
  */
 public final class Earcut4JTriangulationUtil {
 
@@ -47,12 +42,9 @@ public final class Earcut4JTriangulationUtil {
 			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {
 
-		// FIXME: points are currently disabled - not only do they not work properly, they cause OutOfMemory errors
-		points = List.of();
-
 		/* convert input data to the required format */
 
-		int numVertices = polygon.size() + holes.stream().mapToInt(h -> h.size()).sum() + points.size() * 2;
+		int numVertices = polygon.size() + points.size() + holes.stream().mapToInt(SimplePolygonShapeXZ::size).sum();
 		double[] data = new double[2 * numVertices];
 		List<Integer> holeIndices = new ArrayList<>();
 
@@ -75,34 +67,18 @@ public final class Earcut4JTriangulationUtil {
 			}
 		}
 
-		/* points are simulated as holes with 2 almost identical points which are merged back together later.
-		 * (Single-point holes get a special treatment by earcut4j and may not be contained in the result at all.) */
-
-		TIntIntMap mergeIndexMap = new TIntIntHashMap(points.size() * 2,  0.75f, -1, -1);
+		/* points are added as single-vertex holes */
 
 		for (VectorXZ point : points) {
 			holeIndices.add(dataIndex);
 			data[2 * dataIndex] = point.x;
 			data[2 * dataIndex + 1] = point.z;
-			data[2 * (dataIndex + 1)] = point.x + 1e-6;
-			data[2 * (dataIndex + 1) + 1] = point.z + 1e-6;
-			mergeIndexMap.put(dataIndex + 1, dataIndex);
-			dataIndex +=2;
+			dataIndex +=1;
 		}
 
 		/* run the triangulation */
 
 		List<Integer> rawResult = Earcut.earcut(data, Ints.toArray(holeIndices), 2);
-
-		/* undo the duplication of individual points by merging their indices back together
-		 * (this also requires checking triangles for duplicate indices later) */
-
-		for (int i = 0; i < rawResult.size(); i++) {
-			Integer rawValue = rawResult.get(i);
-			if (mergeIndexMap.containsKey(rawValue)) {
-				rawResult.set(i, mergeIndexMap.get(rawValue));
-			}
-		}
 
 		/* turn the result (index lists) into TriangleXZ instances */
 

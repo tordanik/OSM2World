@@ -9,7 +9,6 @@ import static org.osm2world.test.TestUtil.assertSameCyclicOrder;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
@@ -82,7 +81,6 @@ public abstract class AbstractTriangulationUtilTest {
 
 	}
 
-	@Ignore // points are currently ignored in Earcut4JTriangulationUtil
 	@Test
 	public void testTriangulate_triangleWithPoint() {
 
@@ -101,7 +99,6 @@ public abstract class AbstractTriangulationUtilTest {
 
 	}
 
-	@Ignore // TODO: fix the triangulation errors that happen with a sufficient number of inner points
 	@Test
 	public void testTriangulate_multiplePoints() {
 
