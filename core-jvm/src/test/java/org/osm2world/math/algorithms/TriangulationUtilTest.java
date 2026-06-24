@@ -1,12 +1,16 @@
 package org.osm2world.math.algorithms;
 
-import org.junit.Test;
+import java.util.Collection;
+
+import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.PolygonShapeXZ;
+import org.osm2world.math.shapes.TriangleXZ;
 
 public class TriangulationUtilTest extends AbstractTriangulationUtilTest {
 
-	@Test
-	public void testTriangulate() {
-		testTriangulate(TriangulationUtil::triangulate);
+	@Override
+	protected Collection<TriangleXZ> triangulate(PolygonShapeXZ p, Collection<VectorXZ> points) {
+		return TriangulationUtil.triangulate(p.getOuter(), p.getHoles(), points);
 	}
 
 }

@@ -1,79 +1,30 @@
 package org.osm2world.math.algorithms;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
-import static org.osm2world.test.TestUtil.assertSameCyclicOrder;
+import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.PolygonShapeXZ;
+import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXZ;
 
 public class Earcut4JTriangulationUtilTest extends AbstractTriangulationUtilTest {
 
-	@Test
-	public void testTriangulate() {
-		testTriangulate(p -> Earcut4JTriangulationUtil.triangulate(p.getOuter(), p.getHoles(), List.of()));
-	}
-
-	@Test
-	public void testTriangulate_triangle() {
-
-		SimplePolygonXZ outer = new SimplePolygonXZ(closeLoop(
-				new VectorXZ(-1, 0),
-				new VectorXZ(1, 0),
-				new VectorXZ(0, 1)
-		));
-
-		List<TriangleXZ> result = Earcut4JTriangulationUtil.triangulate(outer, List.of());
-
-		assertEquals(1, result.size());
-		assertSameCyclicOrder(true, result.get(0).getVertices(), outer.getVertex(0), outer.getVertex(1), outer.getVertex(2));
-
-	}
-
-	@Ignore // points are currently ignored
-	@Test
-	public void testTriangulate_triangleWithPoint() {
-
-		SimplePolygonXZ outer = new SimplePolygonXZ(closeLoop(
-				new VectorXZ(-1, 0),
-				new VectorXZ(1, 0),
-				new VectorXZ(0, 1)
-		));
-
-		VectorXZ point = new VectorXZ(0, 0.3);
-
-		List<TriangleXZ> result = Earcut4JTriangulationUtil.triangulate(outer, List.of(), List.of(point));
-
-		assertEquals(3, result.size());
-
-	}
-
-	@Test
-	public void testTriangulate_rectangle() {
-
-		SimplePolygonXZ outer = new SimplePolygonXZ(closeLoop(
-				new VectorXZ(0, 0),
-				new VectorXZ(1, 0),
-				new VectorXZ(1, 1),
-				new VectorXZ(0, 1)
-		));
-
-		List<TriangleXZ> result = Earcut4JTriangulationUtil.triangulate(outer, List.of());
-
-		assertEquals(2, result.size());
-
+	@Override
+	protected Collection<TriangleXZ> triangulate(PolygonShapeXZ p, Collection<VectorXZ> points) {
+		return Earcut4JTriangulationUtil.triangulate(p.getOuter(), p.getHoles(), points);
 	}
 
 	@Test
 	public void testTriangulate_rectangleWithHole() {
 
-		SimplePolygonXZ outer = new SimplePolygonXZ(closeLoop(
+		var outer = new SimplePolygonXZ(closeLoop(
 				new VectorXZ(0, 0),
 				new VectorXZ(1, 0),
 				new VectorXZ(1, 1),
@@ -87,32 +38,10 @@ public class Earcut4JTriangulationUtilTest extends AbstractTriangulationUtilTest
 				new VectorXZ(0.25, 0.75)
 		));
 
-		List<TriangleXZ> result = Earcut4JTriangulationUtil.triangulate(outer, List.of(inner));
+		Collection<TriangleXZ> result = triangulate(new PolygonWithHolesXZ(outer, List.of(inner)), List.of());
 
 		assertEquals(8, result.size());
-
-	}
-
-	@Ignore // TODO: fix the triangulation errors that happen with a sufficient number of inner points
-	@Test
-	public void testTriangulate_multiplePoints() {
-
-		SimplePolygonXZ outer = new SimplePolygonXZ(closeLoop(
-				new VectorXZ(-10, -10),
-				new VectorXZ(+10, -10),
-				new VectorXZ(+10, +10),
-				new VectorXZ(-10, +10)
-		));
-
-		List<VectorXZ> points = List.of(
-				new VectorXZ(-5, -5),
-				new VectorXZ(-3, 4),
-				new VectorXZ(3, 3),
-				new VectorXZ(5, -2));
-
-		List<TriangleXZ> result = Earcut4JTriangulationUtil.triangulate(outer, List.of(), points);
-
-		assertTrue(result.size() > 5);
+		assertAlmostEquals(outer.getArea() - inner.getArea(), result.stream().mapToDouble(TriangleXZ::getArea).sum());
 
 	}
 
