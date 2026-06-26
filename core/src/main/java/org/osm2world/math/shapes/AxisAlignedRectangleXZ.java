@@ -5,8 +5,10 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.Vector3D;
@@ -81,6 +83,13 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 
 		return new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 
+	}
+
+	@Override
+	public String toString() {
+		var df = new DecimalFormat("0.#");
+		return String.format(Locale.ROOT, "(x=%s..%s, z=%s..%s)",
+				df.format(minX), df.format(maxX), df.format(minZ), df.format(maxZ));
 	}
 
 	public double sizeX() { return maxX - minX; }
