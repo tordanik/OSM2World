@@ -83,8 +83,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>3.0-rc5</version>
-			<scope>compile</scope>
+			<version>2.22</version> <!-- do not use the dead-end 3.0-rc branch! -->
+		</dependency>
+
+		<dependency>
+			<groupId>io.tileverse.pmtiles</groupId>
+			<artifactId>tileverse-pmtiles</artifactId>
+			<version>1.4.0</version>
 		</dependency>
 
 	</dependencies>

@@ -383,6 +383,7 @@ public class O2WConfig {
 	/**
 	 * URL pointing to elevation data in any of the supported formats (SRTM .hgt or .hgt.zip, Terrarium XYZ tiles).
 	 * May contain {x}, {y}, {z} placeholders for XYZ tiles, or point to the root directory of a tileset.
+	 * Alternatively, it can point to a PMTiles file containing the tiles.
 	 *
 	 * @return either an {@link URI} or a {@link TileUriPattern}
 	 */
@@ -405,7 +406,7 @@ public class O2WConfig {
 			try {
 				uri = new URI(eleDataUrl);
 			} catch (URISyntaxException ignored) {}
-			if (uri == null || "file".equals(uri.getScheme())) {
+			if (uri == null || uri.getScheme() == null || "file".equals(uri.getScheme())) {
 				return resolveFileConfigProperty(eleDataUrl, false, false);
 			} else {
 				return uri;

@@ -4,23 +4,19 @@ import static java.lang.Math.floor;
 import static java.lang.Math.max;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.scene.color.Color;
-import org.osm2world.util.platform.image.ImageUtil;
-import org.osm2world.util.platform.uri.LoadUriUtil;
-import org.osm2world.util.tiles.TileUriPattern;
+import org.osm2world.util.tiles.TileSet;
 
 /**
  * Elevation data stored as an XYZ raster tile layer with Terrarium encoding
@@ -30,26 +26,25 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 	private static final int DEFAULT_MAX_ZOOM = 13;
 
 	private final int maxZoom;
-	private final TileUriPattern uriPattern;
+	private final TileSet<byte[]> tileSet;
 
 	private final Map<TileNumber, Tile> tileCache = new HashMap<>();
 
 	/**
 	 * @param maxZoom  maximum zoom level to attempt to retrieve. If it's not available, lower zoom levels will be tried.
-	 * @param uriPattern  tile URI with {z}, {x}, {y} placeholders
 	 */
-	public TerrariumXYZDataSource(int maxZoom, TileUriPattern uriPattern) {
+	public TerrariumXYZDataSource(int maxZoom, TileSet<byte[]> tileSet) {
 		this.maxZoom = maxZoom;
-		this.uriPattern = uriPattern;
+		this.tileSet = tileSet;
 	}
 
-	public TerrariumXYZDataSource(TileUriPattern uriPattern) {
-		this(DEFAULT_MAX_ZOOM, uriPattern);
+	public TerrariumXYZDataSource(TileSet<byte[]> tileSet) {
+		this(DEFAULT_MAX_ZOOM, tileSet);
 	}
 
 	@Override
 	public String toString() {
-		return "TerrariumXYZData(" + uriPattern + ')';
+		return "TerrariumXYZData(" + tileSet + ')';
 	}
 
 	@Override
@@ -63,7 +58,7 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 			Tile tile = tileCache.get(tileNumber);
 			if (tile == null) {
-				tile = new Tile(tileNumber, uriPattern);
+				tile = new Tile(tileNumber, tileSet);
 				tileCache.put(tileNumber, tile);
 			}
 
@@ -84,7 +79,7 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 		private final TileNumber tileNumber;
 		private @Nullable double[][] data;
 
-		public Tile(TileNumber tileNumber, TileUriPattern uriPattern) {
+		public Tile(TileNumber tileNumber, TileSet<byte[]> tileSet) {
 
 			this.tileNumber = tileNumber;
 
@@ -93,18 +88,17 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 				/* try to load an image for the tile number or one of its ancestors */
 
 				TileNumber t = tileNumber;
-				URI uri = uriPattern.buildURI(tileNumber);
 
-				while (!LoadUriUtil.checkExists(uri)) {
+				while (!tileSet.tileExists(t)) {
 					if (t.zoom > 0) {
 						t = t.ancestor(t.zoom - 1);
-						uri = uriPattern.buildURI(t);
 					} else {
 						throw new IOException("Unable to find elevation data for tile or its ancestors: " + tileNumber);
 					}
 				}
 
-				BufferedImage image = ImageUtil.loadImageURI(uri);
+				var imageStream = new ByteArrayInputStream(Objects.requireNonNull(tileSet.getTileData(t)));
+				BufferedImage image = ImageIO.read(imageStream);
 
 				/* determine which part of the image to load
 				 * (if an ancestor tile was loaded, we want only part of the image) */

@@ -3,7 +3,6 @@ package org.osm2world.map_elevation.creation;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,9 +17,11 @@ import org.osm2world.scene.color.Color;
 import org.osm2world.util.platform.image.ImageImplementationJvm;
 import org.osm2world.util.platform.uri.HttpUriImplementationJvm;
 import org.osm2world.util.test.TestFileUtil;
+import org.osm2world.util.tiles.PMTilesTileSet;
 import org.osm2world.util.tiles.TileUriPattern;
+import org.osm2world.util.tiles.UriTileSet;
 
-public class TerrariumXYZDataTest {
+public class TerrariumXYZDataSourceTest {
 
 	static {
 		HttpUriImplementationJvm.register();
@@ -45,30 +46,38 @@ public class TerrariumXYZDataTest {
 	}
 
 	@Test
-	public void testGetSites() throws IOException {
+	public void testGetSites() {
 
-		var eleData = eleDataFromTestResources(13, "webp");
+		for (var tileSet : List.of(uriTileSetFromTestResources("webp"), pmtilesTileSetFromTestResources())) {
 
-		var bounds = new LatLonBounds(47.385, 8.566, 47.386, 8.567);
-		assertFalse(eleData.getSites(bounds).sites().isEmpty());
+			var eleData = new TerrariumXYZDataSource(13, tileSet);
+
+			var bounds = new LatLonBounds(47.385, 8.566, 47.386, 8.567);
+			assertFalse(eleData.getSites(bounds).sites().isEmpty());
+
+		}
 
 	}
 
 	@Test
-	public void testGetSites_2Tiles() throws IOException {
+	public void testGetSites_2Tiles() {
 
-		var eleData = eleDataFromTestResources(13, "webp");
+		for (var tileSet : List.of(uriTileSetFromTestResources("webp"), pmtilesTileSetFromTestResources())) {
 
-		var testTiles = List.of(new TileNumber(13, 4290, 2868), new TileNumber(13, 4290, 2869));
-		var bounds = new LatLonBounds(
-				testTiles.get(1).latLonBounds().getCenter().lat, 8.566,
-				testTiles.get(0).latLonBounds().getCenter().lat, 8.567);
+			var eleData = new TerrariumXYZDataSource(13, tileSet);
 
-		var sites = eleData.getSites(bounds).sites();
+			var testTiles = List.of(new TileNumber(13, 4290, 2868), new TileNumber(13, 4290, 2869));
+			var bounds = new LatLonBounds(
+					testTiles.get(1).latLonBounds().getCenter().lat, 8.566,
+					testTiles.get(0).latLonBounds().getCenter().lat, 8.567);
 
-		assertFalse(sites.isEmpty());
-		assertTrue(sites.stream().anyMatch(site -> testTiles.get(0).latLonBounds().contains(site.latLon())));
-		assertTrue(sites.stream().anyMatch(site -> testTiles.get(1).latLonBounds().contains(site.latLon())));
+			var sites = eleData.getSites(bounds).sites();
+
+			assertFalse(sites.isEmpty());
+			assertTrue(sites.stream().anyMatch(site -> testTiles.get(0).latLonBounds().contains(site.latLon())));
+			assertTrue(sites.stream().anyMatch(site -> testTiles.get(1).latLonBounds().contains(site.latLon())));
+
+		}
 
 	}
 
@@ -76,9 +85,9 @@ public class TerrariumXYZDataTest {
 	 * tests a situation where the requested tile number itself does not exist, so data is pulled from an ancestor tile
 	 */
 	@Test
-	public void testGetSites_ancestorTile() throws IOException {
+	public void testGetSites_ancestorTile() {
 
-		var eleData = eleDataFromTestResources(6, "png");
+		var eleData = new TerrariumXYZDataSource(6, uriTileSetFromTestResources("png"));
 
 		for (var tileColor : List.of(
 				Pair.of(new TileNumber(6, 2, 1), 42.0),
@@ -95,14 +104,21 @@ public class TerrariumXYZDataTest {
 	}
 
 	@Nonnull
-	private static TerrariumXYZDataSource eleDataFromTestResources(Integer maxZoom, String fileExt) {
+	private static UriTileSet uriTileSetFromTestResources(String fileExt) {
 
 		File tileDir = TestFileUtil.getTestFile("terrarium-xyz");
 		assertTrue(tileDir.isDirectory());
 
-		return new TerrariumXYZDataSource(maxZoom, new TileUriPattern("file://" + tileDir.getAbsolutePath()
-				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}." + fileExt));
+		var tileUriPattern = new TileUriPattern("file://" + tileDir.getAbsolutePath()
+				+ File.separator + "{z}" + File.separator + "{x}" + File.separator + "{y}." + fileExt);
+		return new UriTileSet(tileUriPattern);
 
+	}
+
+	@Nonnull
+	private static PMTilesTileSet pmtilesTileSetFromTestResources() {
+		File pmtilesFile = TestFileUtil.getTestFile("terrarium-xyz/terrarium.pmtiles");
+		return new PMTilesTileSet(pmtilesFile.toURI());
 	}
 
 }

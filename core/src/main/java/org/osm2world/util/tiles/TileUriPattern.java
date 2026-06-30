@@ -2,10 +2,12 @@ package org.osm2world.util.tiles;
 
 import java.net.URI;
 
+import javax.annotation.Nonnull;
+
 import org.osm2world.math.geo.TileNumber;
 
 /**
- * A URI pattern with placeholders for XYZ tile coordinates
+ * A URI pattern with {z}, {x}, {y} placeholders for XYZ tile coordinates
  */
 public record TileUriPattern(String pattern) {
 
@@ -15,6 +17,11 @@ public record TileUriPattern(String pattern) {
 			throw new IllegalArgumentException("No placeholder in pattern: " + pattern);
 		}
 
+	}
+
+	@Override
+	public @Nonnull String toString() {
+		return pattern;
 	}
 
 	public URI buildURI(TileNumber tileNumber) {
