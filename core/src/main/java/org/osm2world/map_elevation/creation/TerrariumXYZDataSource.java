@@ -69,7 +69,11 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 		}
 
-		return new TerrainEleDataGridGroup(resultGrids);
+		if (resultGrids.isEmpty()) {
+			return new TerrainEleDataCollection(bounds, List.of());
+		} else {
+			return new TerrainEleDataGridGroup(resultGrids);
+		}
 
 	}
 
