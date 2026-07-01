@@ -1,6 +1,9 @@
 package org.osm2world.map_elevation.creation;
 
+import static org.osm2world.map_elevation.creation.TerrariumXYZDataSource.DEFAULT_MAX_ZOOM;
+
 import java.net.URI;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -21,19 +24,37 @@ public final class TerrainEleDataUtil {
 		if (config.srtmDir() != null) {
 			return new SRTMDataSource(config.srtmDir());
 		} else {
-			Object url = config.eleDataUrl();
-			if (url instanceof TileUriPattern pattern) {
-				return new TerrariumXYZDataSource(new UriTileSet(pattern));
-			} else if (url instanceof URI uri) {
-				if (uri.getPath().endsWith(".pmtiles")) {
-					return new TerrariumXYZDataSource(new PMTilesTileSet(uri));
-				} else {
-					// TODO support URIs pointing to the root directory of a Terrarium XYZ or SRTM HGT tileset
-					return null;
-				}
+			return eleDataSourceFromUrlList(config.eleDataUrls());
+		}
+
+	}
+
+	private static @Nullable TerrainEleDataSource eleDataSourceFromUrlList(List<?> urls) {
+
+		return switch (urls.size()) {
+			case 0 -> null;
+			case 1 -> eleDataSourceFromUrl(urls.get(0), false);
+			default -> new TerrainEleDataSourceWithFallback(
+					eleDataSourceFromUrl(urls.get(0), true),
+					eleDataSourceFromUrlList(urls.subList(1, urls.size()))
+			);
+		};
+
+	}
+
+	private static @Nullable TerrainEleDataSource eleDataSourceFromUrl(Object url, boolean hasFallback) {
+
+		if (url instanceof TileUriPattern pattern) {
+			return new TerrariumXYZDataSource(DEFAULT_MAX_ZOOM, new UriTileSet(pattern), hasFallback);
+		} else if (url instanceof URI uri) {
+			if (uri.getPath().endsWith(".pmtiles")) {
+				return new TerrariumXYZDataSource(DEFAULT_MAX_ZOOM, new PMTilesTileSet(uri), hasFallback);
 			} else {
+				// TODO support URIs pointing to the root directory of a Terrarium XYZ or SRTM HGT tileset
 				return null;
 			}
+		} else {
+			return null;
 		}
 
 	}

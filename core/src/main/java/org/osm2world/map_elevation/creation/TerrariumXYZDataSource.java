@@ -23,19 +23,27 @@ import org.osm2world.util.tiles.TileSet;
  */
 public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
-	private static final int DEFAULT_MAX_ZOOM = 13;
+	public static final int DEFAULT_MAX_ZOOM = 13;
 
 	private final int maxZoom;
 	private final TileSet<byte[]> tileSet;
+	private final boolean hasFallback;
 
 	private final Map<TileNumber, Tile> tileCache = new HashMap<>();
 
 	/**
 	 * @param maxZoom  maximum zoom level to attempt to retrieve. If it's not available, lower zoom levels will be tried.
+	 * @param hasFallback  whether this data source has a fallback
+	 *                     (and it's therefore expected rather than an error that data may sometimes be missing)
 	 */
-	public TerrariumXYZDataSource(int maxZoom, TileSet<byte[]> tileSet) {
+	public TerrariumXYZDataSource(int maxZoom, TileSet<byte[]> tileSet, boolean hasFallback) {
 		this.maxZoom = maxZoom;
 		this.tileSet = tileSet;
+		this.hasFallback = hasFallback;
+	}
+
+	public TerrariumXYZDataSource(int maxZoom, TileSet<byte[]> tileSet) {
+		this(maxZoom, tileSet, false);
 	}
 
 	public TerrariumXYZDataSource(TileSet<byte[]> tileSet) {
@@ -58,7 +66,7 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 			Tile tile = tileCache.get(tileNumber);
 			if (tile == null) {
-				tile = new Tile(tileNumber, tileSet);
+				tile = new Tile(tileNumber);
 				tileCache.put(tileNumber, tile);
 			}
 
@@ -78,12 +86,12 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 	}
 
 
-	private static class Tile {
+	private class Tile {
 
 		private final TileNumber tileNumber;
 		private @Nullable double[][] data;
 
-		public Tile(TileNumber tileNumber, TileSet<byte[]> tileSet) {
+		public Tile(TileNumber tileNumber) {
 
 			this.tileNumber = tileNumber;
 
@@ -142,7 +150,9 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 				}
 
 			} catch (IOException e) {
-				ConversionLog.error("Unable to load elevation data for tile " + tileNumber, e);
+				if (!hasFallback) {
+					ConversionLog.error("Unable to load elevation data for tile " + tileNumber, e);
+				}
 				data = null;
 			}
 

@@ -144,6 +144,18 @@ public class LatLonBounds implements GeoBounds {
 
 	}
 
+	/** Returns the approximate area covered by these bounds in square meters. */
+	public double area() {
+
+		double height = new LatLon(minlat, minlon).distanceTo(new LatLon(maxlat, minlon));
+
+		double width0 = new LatLon(minlat, minlon).distanceTo(new LatLon(minlat, maxlon));
+		double width1 = new LatLon(maxlat, minlon).distanceTo(new LatLon(maxlat, maxlon));
+
+		return height * (width0 + width1) / 2;
+
+	}
+
 	/** returns bounds which are a bit larger than this one */
 	public LatLonBounds pad(double paddingSize) {
 

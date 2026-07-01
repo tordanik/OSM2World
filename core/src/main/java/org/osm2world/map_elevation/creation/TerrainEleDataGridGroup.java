@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.LatLonEle;
@@ -21,7 +19,7 @@ import org.osm2world.math.geo.LatLonEle;
  * Grids are checked in order, with the first having the highest priority.
  * Sites from lower-priority grids may be ignored if a higher-priority grid "overlaps" it.
  */
-public class TerrainEleDataGridGroup implements TerrainEleData {
+public class TerrainEleDataGridGroup implements TerrainEleDataGridOrGridGroup {
 
 	private final LatLonBounds bounds;
 	private final List<TerrainEleDataGrid> grids;
@@ -32,15 +30,7 @@ public class TerrainEleDataGridGroup implements TerrainEleData {
 		this.bounds = LatLonBounds.union(grids.stream().map(TerrainEleData::bounds).toList());
 	}
 
-	public @Nullable TerrainEleDataGrid gridAt(LatLon pos) {
-		for (TerrainEleDataGrid grid : grids) {
-			if (grid.bounds().contains(pos)) {
-				return grid;
-			}
-		}
-		return null;
-	}
-
+	@Override
 	public List<TerrainEleDataGrid> grids() {
 		return grids;
 	}

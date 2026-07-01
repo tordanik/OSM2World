@@ -381,46 +381,57 @@ public class O2WConfig {
 	}
 
 	/**
-	 * URL pointing to elevation data in any of the supported formats (SRTM .hgt or .hgt.zip, Terrarium XYZ tiles).
+	 * List of URLs pointing to elevation data in any supported format (SRTM .hgt or .hgt.zip, Terrarium XYZ tiles).
 	 * May contain {x}, {y}, {z} placeholders for XYZ tiles, or point to the root directory of a tileset.
 	 * Alternatively, it can point to a PMTiles file containing the tiles.
 	 *
-	 * @return either an {@link URI} or a {@link TileUriPattern}
+	 * @return  a list in which every entry is either an {@link URI} or a {@link TileUriPattern}. May be empty.
 	 */
-	public @Nullable Object eleDataUrl() {
+	public List<?> eleDataUrls() {
 
-		String eleDataUrl = getString("eleDataUrl", null);
+		List<String> eleDataUrls = getList("eleDataUrls", getList("eleDataUrl"));
 
-		if (eleDataUrl != null) {
+		if (eleDataUrls != null) {
 
-			if (eleDataUrl.matches(".*\\{[xyz]}.*")) {
-				try {
-					return new TileUriPattern(eleDataUrl);
-				} catch (IllegalArgumentException e) {
-					ConversionLog.warn("Invalid tile URI pattern: " + eleDataUrl, e);
-					return null;
+			List<Object> result = new ArrayList<>();
+
+			for (String eleDataUrl : eleDataUrls) {
+
+				if (eleDataUrl.matches(".*\\{[xyz]}.*")) {
+					try {
+						result.add(new TileUriPattern(eleDataUrl));
+						continue;
+					} catch (IllegalArgumentException e) {
+						ConversionLog.warn("Invalid tile URI pattern: " + eleDataUrl, e);
+					}
 				}
+
+				URI uri;
+				try {
+					uri = new URI(eleDataUrl);
+				} catch (URISyntaxException ignored) {
+					uri = null;
+				}
+				if (uri == null || uri.getScheme() == null || "file".equals(uri.getScheme())) {
+					URI fileUri = resolveFileConfigProperty(eleDataUrl, false, false);
+					if (fileUri != null) { result.add(fileUri); }
+				} else {
+					result.add(uri);
+				}
+
 			}
 
-			URI uri = null;
-			try {
-				uri = new URI(eleDataUrl);
-			} catch (URISyntaxException ignored) {}
-			if (uri == null || uri.getScheme() == null || "file".equals(uri.getScheme())) {
-				return resolveFileConfigProperty(eleDataUrl, false, false);
-			} else {
-				return uri;
-			}
+			return result;
 
 		} else {
 
 			// support the old srtmDir config key for backwards compatibility
 			File srtmDir = srtmDir();
 			if (srtmDir != null) {
-				return srtmDir.toURI();
+				return List.of(srtmDir.toURI());
 			}
 
-			return null;
+			return List.of();
 
 		}
 
@@ -543,7 +554,7 @@ public class O2WConfig {
 
 	/**
 	 * A directory with SRTM data in .hgt or .hgt.zip format.
-	 * It is recommended for users to start using the {@link #eleDataUrl()} option instead.
+	 * It is recommended for users to start using the {@link #eleDataUrls()} option instead.
 	 */
 	public @Nullable File srtmDir() {
 		URI srtmDirURI = resolveFileConfigProperty(getString("srtmDir", null), true, true);

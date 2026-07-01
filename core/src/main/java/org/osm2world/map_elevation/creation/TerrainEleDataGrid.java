@@ -19,7 +19,7 @@ import org.osm2world.math.geo.LatLonEle;
  * Terrain elevation data with a grid structure.
  * Knowing this overall structure can sometimes be exploited for better performance.
  */
-public class TerrainEleDataGrid implements TerrainEleData {
+public class TerrainEleDataGrid implements TerrainEleDataGridOrGridGroup {
 
 	private final LatLonBounds bounds;
 	private final LatLonEle[][] sites;
@@ -69,6 +69,11 @@ public class TerrainEleDataGrid implements TerrainEleData {
 	@Override
 	public boolean isEmpty() {
 		return false;
+	}
+
+	@Override
+	public List<TerrainEleDataGrid> grids() {
+		return List.of(this);
 	}
 
 	@Override
