@@ -99,14 +99,10 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 				/* try to load an image for the tile number or one of its ancestors */
 
-				TileNumber t = tileNumber;
+				TileNumber t = tileSet.firstExistingAncestor(tileNumber);
 
-				while (!tileSet.tileExists(t)) {
-					if (t.zoom > 0) {
-						t = t.ancestor(t.zoom - 1);
-					} else {
-						throw new IOException("Unable to find elevation data for tile or its ancestors: " + tileNumber);
-					}
+				if (t == null) {
+					throw new IOException("Unable to find elevation data for tile or its ancestors: " + tileNumber);
 				}
 
 				var imageStream = new ByteArrayInputStream(Objects.requireNonNull(tileSet.getTileData(t)));

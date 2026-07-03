@@ -19,7 +19,7 @@ public class UriTileSet implements TileSet<byte[]> {
 	}
 
 	@Override
-	public boolean tileExists(TileNumber tileNumber) throws IOException {
+	public boolean tileExists(TileNumber tileNumber) {
 		return LoadUriUtil.checkExists(uriPattern.buildURI(tileNumber));
 	}
 

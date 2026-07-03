@@ -117,7 +117,7 @@ public class TerrariumXYZDataSourceTest {
 
 	@Nonnull
 	private static PMTilesTileSet pmtilesTileSetFromTestResources() {
-		File pmtilesFile = TestFileUtil.getTestFile("terrarium-xyz/terrarium.pmtiles");
+		File pmtilesFile = TestFileUtil.getTestFile("terrarium-xyz/terrarium_12_2145_1434.pmtiles");
 		return new PMTilesTileSet(pmtilesFile.toURI());
 	}
 

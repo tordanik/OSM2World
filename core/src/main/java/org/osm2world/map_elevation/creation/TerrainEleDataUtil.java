@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.util.tiles.PMTilesTileSet;
+import org.osm2world.util.tiles.TileSet;
 import org.osm2world.util.tiles.TileUriPattern;
 import org.osm2world.util.tiles.UriTileSet;
 
@@ -44,15 +45,25 @@ public final class TerrainEleDataUtil {
 
 	private static @Nullable TerrainEleDataSource eleDataSourceFromUrl(Object url, boolean hasFallback) {
 
+		TileSet<byte[]> tileSet = null;
+
 		if (url instanceof TileUriPattern pattern) {
-			return new TerrariumXYZDataSource(DEFAULT_MAX_ZOOM, new UriTileSet(pattern), hasFallback);
+			if (pattern.pattern().endsWith(".pmtiles")) {
+				tileSet = new PMTilesTileSet(pattern);
+			} else {
+				tileSet = new UriTileSet(pattern);
+			}
 		} else if (url instanceof URI uri) {
 			if (uri.getPath().endsWith(".pmtiles")) {
-				return new TerrariumXYZDataSource(DEFAULT_MAX_ZOOM, new PMTilesTileSet(uri), hasFallback);
+				tileSet = new PMTilesTileSet(uri);
 			} else {
 				// TODO support URIs pointing to the root directory of a Terrarium XYZ or SRTM HGT tileset
 				return null;
 			}
+		}
+
+		if (tileSet != null) {
+			return new TerrariumXYZDataSource(DEFAULT_MAX_ZOOM, tileSet, hasFallback);
 		} else {
 			return null;
 		}

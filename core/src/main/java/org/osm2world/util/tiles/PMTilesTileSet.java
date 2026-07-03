@@ -18,11 +18,15 @@ import io.tileverse.rangereader.file.FileRangeReader;
 import io.tileverse.rangereader.http.HttpRangeReader;
 import io.tileverse.tiling.pyramid.TileIndex;
 
+/**
+ * {@link TileSet} which pulls tile data from one or more PMTiles files.
+ */
 public class PMTilesTileSet implements TileSet<byte[]> {
 
 	private static final @Nullable String API_TOKEN = null;
 
-	private final @Nonnull URI uri;
+	private final @Nullable URI uri;
+	private final @Nullable TileUriPattern uriPattern;
 
 	/**
 	 * @param uri  HTTP or file URI
@@ -30,6 +34,16 @@ public class PMTilesTileSet implements TileSet<byte[]> {
 	public PMTilesTileSet(@Nonnull URI uri) {
 		checkNotNull(uri);
 		this.uri = uri;
+		this.uriPattern = null;
+	}
+
+	/**
+	 * @param uriPattern  pattern of HTTP or file URIs, representing a collection of pmtiles databases
+	 */
+	public PMTilesTileSet(@Nonnull TileUriPattern uriPattern) {
+		checkNotNull(uriPattern);
+		this.uri = null;
+		this.uriPattern = uriPattern;
 	}
 
 	@Override
@@ -40,7 +54,26 @@ public class PMTilesTileSet implements TileSet<byte[]> {
 	@Override
 	public @Nullable byte[] getTileData(TileNumber tileNumber) throws IOException {
 
-		try (PMTilesReader reader = buildReader()) {
+		/* in the case of multiple PMTiles files, find the right one first */
+
+		URI uri;
+
+		if (this.uri != null) {
+			uri = this.uri;
+		} else {
+			assert this.uriPattern != null;
+			UriTileSet uriTileSet = new UriTileSet(uriPattern);
+			TileNumber t = uriTileSet.firstExistingAncestor(tileNumber);
+			if (t != null) {
+				uri = uriPattern.buildURI(t);
+			} else {
+				return null;
+			}
+		}
+
+		/* read and return data from the PMTiles file */
+
+		try (PMTilesReader reader = buildReader(uri)) {
 
 			var tileIndex = TileIndex.zxy(tileNumber.zoom, tileNumber.x, tileNumber.y);
 			Optional<ByteBuffer> tileData = reader.getTile(tileIndex);
@@ -51,7 +84,7 @@ public class PMTilesTileSet implements TileSet<byte[]> {
 	}
 
 	@Nonnull
-	private PMTilesReader buildReader() throws IOException {
+	private PMTilesReader buildReader(URI uri) throws IOException {
 
 		if (uri.getScheme().equals("file")) {
 

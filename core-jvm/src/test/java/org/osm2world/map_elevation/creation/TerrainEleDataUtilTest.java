@@ -46,7 +46,7 @@ public class TerrainEleDataUtilTest {
 
 		var config = new O2WConfig(Map.of("eleDataUrl",
 				"file://" + terrariumDir.getAbsolutePath() + "{z}/{x}/{y}.webp;"
-						+ terrariumDir.getAbsolutePath() + "/terrarium.pmtiles;   "
+						+ terrariumDir.getAbsolutePath() + "/terrarium_12_2145_1434.pmtiles;   "
 						+ "https://tiles.mapterhorn.com/{z}/{x}/{y}.webp"));
 		var data = eleDataSourceFromConfig(config);
 

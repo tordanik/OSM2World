@@ -20,9 +20,25 @@ public class PMTilesTileSetTest {
 	@Test
 	public void testGetTileData() throws IOException {
 
-		File tileDir = TestFileUtil.getTestFile("terrarium-xyz/terrarium.pmtiles");
+		File pmtilesFile = TestFileUtil.getTestFile("terrarium-xyz/terrarium_12_2145_1434.pmtiles");
 
-		var tileSet = new PMTilesTileSet(tileDir.toURI());
+		var tileSet = new PMTilesTileSet(pmtilesFile.toURI());
+
+		assertTrue(tileSet.tileExists(new TileNumber("13/4290/2868")));
+		assertTrue(tileSet.tileExists(new TileNumber("13/4290/2869")));
+		assertFalse(tileSet.tileExists(new TileNumber("13/4290/2870")));
+
+	}
+
+	@Test
+	public void testGetTileDataFromMultifileSource() throws IOException {
+
+		File pmtilesFile = TestFileUtil.getTestFile("terrarium-xyz/terrarium_12_2145_1434.pmtiles");
+
+		String fileUri = "file:" + pmtilesFile.getAbsolutePath();
+		fileUri = fileUri.replace("12_2145_1434", "{z}_{x}_{y}");
+
+		var tileSet = new PMTilesTileSet(new TileUriPattern(fileUri));
 
 		assertTrue(tileSet.tileExists(new TileNumber("13/4290/2868")));
 		assertTrue(tileSet.tileExists(new TileNumber("13/4290/2869")));

@@ -19,4 +19,25 @@ public interface TileSet<P> {
 
 	@Nullable P getTileData(TileNumber tileNumber) throws IOException;
 
+	/**
+	 * Returns the tile itself if it exists.
+	 * If it doesn't exist, goes up the ancestor chain and returns the first ancestor which exists.
+	 * If none exist, returns null.
+	 */
+	default @Nullable TileNumber firstExistingAncestor(TileNumber tileNumber) throws IOException {
+
+		TileNumber t = tileNumber;
+
+		while (!tileExists(t)) {
+			if (t.zoom > 0) {
+				t = t.ancestor(t.zoom - 1);
+			} else {
+				return null;
+			}
+		}
+
+		return t;
+
+	}
+
 }
