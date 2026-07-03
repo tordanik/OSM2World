@@ -14,7 +14,7 @@ import org.osm2world.math.geo.OrthographicAzimuthalMapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.util.platform.uri.HttpUriImplementationJvm;
 
-public class SRTMDataTest {
+public class SRTMDataSourceTest {
 
 	static {
 		HttpUriImplementationJvm.register();

@@ -24,7 +24,7 @@ public class LinearInterpolator implements TerrainInterpolator {
 
 	@Override
 	public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
-		if (eleData instanceof TerrainEleDataGridGroup) {
+		if (eleData instanceof TerrainEleDataGridOrGridGroup) {
 			implementation = new GridImplementation();
 		} else {
 			implementation = new GeneralImplementation();
@@ -75,17 +75,15 @@ public class LinearInterpolator implements TerrainInterpolator {
 	/** implementation specifically for data with a grid structure */
 	private static class GridImplementation implements TerrainInterpolator {
 
-		private TerrainEleDataGridGroup eleData;
+		private TerrainEleDataGridOrGridGroup eleData;
 		private MapProjection projection;
 
 		public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
 
 			this.projection = projection;
 
-			if (eleData instanceof TerrainEleDataGridGroup group) {
-				this.eleData = group;
-			} else if (eleData instanceof TerrainEleDataGrid grid) {
-				this.eleData = new TerrainEleDataGridGroup(List.of(grid));
+			if (eleData instanceof TerrainEleDataGridOrGridGroup grid) {
+				this.eleData = grid;
 			} else {
 				throw new IllegalArgumentException("Unsupported TerrainEleData type: " + eleData.getClass());
 			}
