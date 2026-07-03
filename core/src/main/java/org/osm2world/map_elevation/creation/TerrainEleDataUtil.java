@@ -2,6 +2,7 @@ package org.osm2world.map_elevation.creation;
 
 import static org.osm2world.map_elevation.creation.TerrariumXYZDataSource.DEFAULT_MAX_ZOOM;
 
+import java.io.File;
 import java.net.URI;
 import java.util.List;
 
@@ -48,18 +49,31 @@ public final class TerrainEleDataUtil {
 		TileSet<byte[]> tileSet = null;
 
 		if (url instanceof TileUriPattern pattern) {
+
 			if (pattern.pattern().endsWith(".pmtiles")) {
 				tileSet = new PMTilesTileSet(pattern);
 			} else {
 				tileSet = new UriTileSet(pattern);
 			}
+
 		} else if (url instanceof URI uri) {
+
 			if (uri.getPath().endsWith(".pmtiles")) {
 				tileSet = new PMTilesTileSet(uri);
 			} else {
+
+				if ("file".equals(uri.getScheme()) && new File(uri).isDirectory()) {
+					File srtmDir = new File(uri);
+					File[] contents = srtmDir.listFiles((f, name) -> name.toLowerCase().contains(".hgt"));
+					if (contents != null && contents.length > 0) {
+						return new SRTMDataSource(srtmDir);
+					}
+				}
+
 				// TODO support URIs pointing to the root directory of a Terrarium XYZ or SRTM HGT tileset
 				return null;
 			}
+
 		}
 
 		if (tileSet != null) {

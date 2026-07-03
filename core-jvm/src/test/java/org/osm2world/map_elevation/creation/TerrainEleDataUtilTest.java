@@ -43,11 +43,13 @@ public class TerrainEleDataUtilTest {
 	public void testEleDataSourceFromConfig_MultipleValues() {
 
 		File terrariumDir = getTestFile("terrarium-xyz");
+		File srtmDir = getTestFile("srtm");
 
 		var config = new O2WConfig(Map.of("eleDataUrl",
 				"file://" + terrariumDir.getAbsolutePath() + "{z}/{x}/{y}.webp;"
 						+ terrariumDir.getAbsolutePath() + "/terrarium_12_2145_1434.pmtiles;   "
-						+ "https://tiles.mapterhorn.com/{z}/{x}/{y}.webp"));
+						+ "https://tiles.mapterhorn.com/{z}/{x}/{y}.webp;"
+						+ srtmDir.getAbsolutePath()));
 		var data = eleDataSourceFromConfig(config);
 
 		if (!(data instanceof TerrainEleDataSourceWithFallback fallback1)) throw new AssertionError();
@@ -57,7 +59,11 @@ public class TerrainEleDataUtilTest {
 		if (!(fallback1.secondaryDataSource instanceof TerrainEleDataSourceWithFallback fallback2)) throw new AssertionError();
 
 		assertTrue(fallback2.primaryDataSource instanceof TerrariumXYZDataSource);
-		assertTrue(fallback2.secondaryDataSource instanceof TerrariumXYZDataSource);
+
+		if (!(fallback2.secondaryDataSource instanceof TerrainEleDataSourceWithFallback fallback3)) throw new AssertionError();
+
+		assertTrue(fallback3.primaryDataSource instanceof TerrariumXYZDataSource);
+		assertTrue(fallback3.secondaryDataSource instanceof SRTMDataSource);
 
 	}
 

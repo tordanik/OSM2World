@@ -382,8 +382,9 @@ public class O2WConfig {
 
 	/**
 	 * List of URLs pointing to elevation data in any supported format (SRTM .hgt or .hgt.zip, Terrarium XYZ tiles).
-	 * May contain {x}, {y}, {z} placeholders for XYZ tiles, or point to the root directory of a tileset.
-	 * Alternatively, it can point to a PMTiles file containing the tiles.
+	 * May contain {x}, {y}, {z} placeholders for XYZ tiles or for a set of PMTiles.
+	 * Alternatively, it can point to a single PMTiles file containing the tiles,
+	 * or point to the root directory of an SRTM tileset.
 	 *
 	 * @return  a list in which every entry is either an {@link URI} or a {@link TileUriPattern}. May be empty.
 	 */
