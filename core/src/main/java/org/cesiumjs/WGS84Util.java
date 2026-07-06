@@ -21,8 +21,8 @@ public class WGS84Util {
 			new VectorXYZ(WGS84_A * WGS84_A, WGS84_A * WGS84_A, WGS84_B * WGS84_B);
 	
 	public static VectorXYZ cartesianFromLatLon(LatLon origin, double height) {
-		double latitude = Math.toRadians(origin.lat);
-		double longitude = Math.toRadians(origin.lon);
+		double latitude = Math.toRadians(origin.lat());
+		double longitude = Math.toRadians(origin.lon());
 		VectorXYZ radiiSquared = wgs84RadiiSquared;
 
         double cosLatitude = Math.cos(latitude);

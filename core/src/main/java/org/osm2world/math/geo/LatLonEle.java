@@ -1,36 +1,26 @@
 package org.osm2world.math.geo;
 
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+
 /**
  * immutable latitude/longitude/elevation coordinate triple
+ *
+ * @param lat latitude in degrees
+ * @param lon longitude in degrees
+ * @param ele elevation in meters
  */
-public class LatLonEle {
-
-	public final double lat;
-	public final double lon;
-	public final double ele;
+public record LatLonEle(double lat, double lon, double ele) {
 
 	/** pattern for parseable arguments */
 	public static final String PATTERN = LatLon.PATTERN + ",(" + LatLon.DOUBLE_PATTERN + ")";
 
-	/**
-	 * regular constructor
-	 */
-	public LatLonEle(double lat, double lon, double ele) {
-		this.lat = lat;
-		this.lon = lon;
-		this.ele = ele;
-		validateValues();
-	}
-
-	/**
-	 * regular constructor (with default elevation of 0)
-	 */
-	public LatLonEle(double lat, double lon) {
-		this(lat, lon, 0);
+	public LatLonEle {
+		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
+			throw new IllegalArgumentException("not valid: " + lat + ", " + lon);
+		}
 	}
 
 	/**
@@ -38,38 +28,37 @@ public class LatLonEle {
 	 * @param arg  command line argument to be parsed; must match {@link #PATTERN} or {@link LatLon#PATTERN}
 	 */
 	public LatLonEle(String arg) {
+		this(parse(arg)[0], parse(arg)[1], parse(arg)[2]);
+	}
+
+	public static LatLonEle LonLatEle(double lon, double lat, double ele) {
+		return new LatLonEle(lat, lon, ele);
+	}
+
+	private static double[] parse(String arg) {
+
+		double[] result;
 
 		arg = arg.replace('−', '-');
 
 		Matcher mEle = Pattern.compile(PATTERN).matcher(arg);
 		Matcher m = Pattern.compile(LatLon.PATTERN).matcher(arg);
 		if (mEle.matches()) {
-			lat = Double.parseDouble(mEle.group(1));
-			lon = Double.parseDouble(mEle.group(2));
-			ele = Double.parseDouble(mEle.group(3));
-			validateValues();
+			result = new double[] {
+					Double.parseDouble(mEle.group(1)),
+					Double.parseDouble(mEle.group(2)),
+					Double.parseDouble(mEle.group(3))};
 		} else if (m.matches()) {
-			lat = Double.parseDouble(m.group(1));
-			lon = Double.parseDouble(m.group(2));
-			ele = 0;
-			validateValues();
+			result = new double[] {
+					Double.parseDouble(m.group(1)),
+					Double.parseDouble(m.group(2)),
+					0};
 		} else {
 			throw new IllegalArgumentException("argument doesn't match: " + arg);
 		}
-	}
 
+		return result;
 
-	public static LatLonEle LonLatEle(double lon, double lat, double ele) {
-		return new LatLonEle(lat, lon, ele);
-	}
-
-	/**
-	 * @throws IllegalArgumentException  for incorrect field values
-	 */
-	private void validateValues() {
-		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
-			throw new IllegalArgumentException("not valid: " + lat + ", " + lon);
-		}
 	}
 
 	/** returns just the {@link LatLon} components */
@@ -78,19 +67,8 @@ public class LatLonEle {
 	}
 
 	@Override
-	public String toString() {
+	public @Nonnull String toString() {
 		return lat + "," + lon + "," + ele;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof LatLonEle other)) return false;
-		return Double.compare(lat, other.lat) == 0 && Double.compare(lon, other.lon) == 0 && Double.compare(ele, other.ele) == 0;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(lat, lon, ele);
 	}
 
 }

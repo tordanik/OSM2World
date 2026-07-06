@@ -21,8 +21,8 @@ public class OrthographicAzimuthalMapProjection implements MapProjection {
 
 		this.origin = origin;
 
-		this.lat0 = toRadians(getOrigin().lat);
-		this.lon0 = toRadians(getOrigin().lon);
+		this.lat0 = toRadians(getOrigin().lat());
+		this.lon0 = toRadians(getOrigin().lon());
 
 	}
 

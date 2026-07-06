@@ -68,8 +68,8 @@ public class TerrariumXYZDataSourceTest {
 
 			var testTiles = List.of(new TileNumber(13, 4290, 2868), new TileNumber(13, 4290, 2869));
 			var bounds = new LatLonBounds(
-					testTiles.get(1).latLonBounds().getCenter().lat, 8.566,
-					testTiles.get(0).latLonBounds().getCenter().lat, 8.567);
+					testTiles.get(1).latLonBounds().getCenter().lat(), 8.566,
+					testTiles.get(0).latLonBounds().getCenter().lat(), 8.567);
 
 			var sites = eleData.getSites(bounds).sites();
 
@@ -97,7 +97,7 @@ public class TerrariumXYZDataSourceTest {
 			LatLonBounds bounds = tile.latLonBounds().pad(-0.1);
 			Collection<LatLonEle> sites = eleData.getSites(bounds).sites();
 			assertEquals(4, sites.size());
-			sites.forEach(site -> assertEquals(tileColor.getRight(), site.ele, 0.0));
+			sites.forEach(site -> assertEquals(tileColor.getRight(), site.ele(), 0.0));
 
 		}
 

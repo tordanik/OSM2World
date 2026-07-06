@@ -62,10 +62,10 @@ public class TilesetEntry {
         }
 
         public Region(LatLon westSouth, LatLon eastNorth, double minY, double maxY) {
-            this(toRadians(westSouth.lon),
-                    toRadians(westSouth.lat),
-                    toRadians(eastNorth.lon),
-                    toRadians(eastNorth.lat),
+            this(toRadians(westSouth.lon()),
+                    toRadians(westSouth.lat()),
+                    toRadians(eastNorth.lon()),
+                    toRadians(eastNorth.lat()),
                     minY, maxY);
         }
 

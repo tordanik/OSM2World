@@ -90,8 +90,8 @@ final class LegacyCLIOutput {
 				LatLonEle lookAt = args.getPviewLookat();
 
 				camera = new MutableCamera();
-				VectorXYZ posXYZ = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
-				VectorXYZ lookAtXYZ = proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
+				VectorXYZ posXYZ = proj.toXYZ(pos);
+				VectorXYZ lookAtXYZ = proj.toXYZ(lookAt);
 				camera.setCamera(posXYZ, lookAtXYZ);
 
 				projection = new PerspectiveProjection(

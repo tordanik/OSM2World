@@ -120,8 +120,8 @@ public class TileNumber implements TileBounds {
 
 	/** returns the {@link TileNumber} at the given zoom and location */
 	public static TileNumber atLatLon(int zoom, LatLon latLon) {
-		int x = (int)floor((latLon.lon + 180) / 360 * (1<<zoom));
-		int y = (int)floor((1 - log(tan(toRadians(latLon.lat)) + 1 / cos(toRadians(latLon.lat))) / PI) / 2 * (1<<zoom));
+		int x = (int)floor((latLon.lon() + 180) / 360 * (1<<zoom));
+		int y = (int)floor((1 - log(tan(toRadians(latLon.lat())) + 1 / cos(toRadians(latLon.lat()))) / PI) / 2 * (1<<zoom));
 		return new TileNumber(zoom, x, y);
 	}
 

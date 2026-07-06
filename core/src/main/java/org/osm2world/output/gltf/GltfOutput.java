@@ -448,7 +448,7 @@ public class GltfOutput extends AbstractOutput {
 		var sceneMetadata = new HashMap<String, Object>();
 
 		if (origin != null) {
-			sceneMetadata.put("origin", Map.of("lat", origin.lat, "lon", origin.lon, "ele", 0));
+			sceneMetadata.put("origin", Map.of("lat", origin.lat(), "lon", origin.lon(), "ele", 0));
 		}
 
 		/* create the basic structure of the glTF */

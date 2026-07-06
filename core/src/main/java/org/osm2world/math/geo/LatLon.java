@@ -2,46 +2,31 @@ package org.osm2world.math.geo;
 
 import static java.lang.Math.*;
 
-import java.util.Objects;
+import javax.annotation.Nonnull;
 
 /**
- * an immutable coordinate pair with latitude and longitude
+ * immutable coordinate pair with latitude and longitude
+ *
+ * @param lat latitude in degrees
+ * @param lon longitude in degrees
  */
-public class LatLon {
-
-	/** latitude in degrees */
-	public final double lat;
-
-	/** longitude in degrees */
-	public final double lon;
+public record LatLon(double lat, double lon) {
 
 	// typographical minus '−' works around the CLI parser's special handling of '-'
 	public static final String DOUBLE_PATTERN = "[+-−]?\\d+(?:\\.\\d+)?";
 
 	/** pattern for parseable arguments */
-	public static final String PATTERN = "("+DOUBLE_PATTERN+"),("+DOUBLE_PATTERN+")";
+	public static final String PATTERN = "(" + DOUBLE_PATTERN + "),(" + DOUBLE_PATTERN + ")";
 
-	public LatLon(double lat, double lon) {
-		this.lat = lat;
-		this.lon = lon;
-		validateValues();
+	public LatLon {
+		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
+			throw new IllegalArgumentException("Latitude or longitude not valid: " + lat + ", " + lon);
+		}
 	}
 
 	/** parsing constructor for strings matching {@link #PATTERN} */
 	public LatLon(String string) {
-		LatLonEle lle = new LatLonEle(string);
-		this.lat = lle.lat;
-		this.lon = lle.lon;
-		validateValues();
-	}
-
-	/**
-	 * @throws IllegalArgumentException  for incorrect field values
-	 */
-	private void validateValues() {
-		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
-			throw new IllegalArgumentException("Latitude or longitude not valid: " + lat + ", " + lon);
-		}
+		this(new LatLonEle(string).lat(), new LatLonEle(string).lon());
 	}
 
 	public static LatLon LonLat(double lon, double lat) {
@@ -62,20 +47,7 @@ public class LatLon {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		LatLon latLon = (LatLon) o;
-		return Double.compare(latLon.lat, lat) == 0 && Double.compare(latLon.lon, lon) == 0;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(lat, lon);
-	}
-
-	@Override
-	public String toString() {
+	public @Nonnull String toString() {
 		return "(" + lat + ", " + lon + ")";
 	}
 

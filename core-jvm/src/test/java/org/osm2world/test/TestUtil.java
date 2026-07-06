@@ -152,7 +152,7 @@ public final class TestUtil {
 	}
 
 	private static boolean almostEquals(LatLonEle a, LatLonEle b) {
-		return a.latLon().distanceTo(b.latLon()) <= 0.001 && abs(a.ele - b.ele) <= 0.001;
+		return a.latLon().distanceTo(b.latLon()) <= 0.001 && abs(a.ele() - b.ele()) <= 0.001;
 	}
 
 	public static void assertAlmostEquals(LatLon expected, LatLon actual) {

@@ -388,8 +388,8 @@ public class ObjOutput extends FaceOutput {
 		objWriter.println("# Projection information:");
 		if (mapProjection != null) {
 			objWriter.println("# Coordinate origin (0,0,0): "
-					+ "lat " + mapProjection.getOrigin().lat + ", "
-					+ "lon " + mapProjection.getOrigin().lon + ", "
+					+ "lat " + mapProjection.getOrigin().lat() + ", "
+					+ "lon " + mapProjection.getOrigin().lon() + ", "
 					+ "ele 0");
 		}
 		objWriter.println("# North direction: " + new VectorXYZ(0, 0, -1));

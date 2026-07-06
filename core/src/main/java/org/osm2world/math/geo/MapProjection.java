@@ -18,14 +18,14 @@ public interface MapProjection {
 
 	/** performs projection into the internal coordinate system */
 	default public VectorXZ toXZ(LatLon latlon) {
-		return toXZ(latlon.lat, latlon.lon);
+		return toXZ(latlon.lat(), latlon.lon());
 	}
 
 	/** performs projection into the internal coordinate system */
 	public VectorXZ toXZ(double lat, double lon);
 
 	/** performs projection into the internal coordinate system and preserves elevation value */
-	default VectorXYZ toXYZ(LatLonEle latLonEle) { return toXZ(latLonEle.lat, latLonEle.lon).xyz(latLonEle.ele); }
+	default VectorXYZ toXYZ(LatLonEle latLonEle) { return toXZ(latLonEle.lat(), latLonEle.lon()).xyz(latLonEle.ele()); }
 
 	/** inverse for {@link #toXZ(LatLon)} */
 	default public LatLon toLatLon(VectorXZ pos) {

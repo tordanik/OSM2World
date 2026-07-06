@@ -19,4 +19,15 @@ public class LatLonTest {
 
 	}
 
+	@Test
+	public void testConstructorFromString() {
+
+		String s0 = "48.56704,13.44887";
+		assertEquals(new LatLon(48.56704, 13.44887), new LatLon(s0));
+
+		String s1 = "-22.3,-10.9";
+		assertEquals(new LatLon(-22.3, -10.9), new LatLon(s1));
+
+	}
+
 }

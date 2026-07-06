@@ -28,16 +28,16 @@ public abstract class AbstractMapProjectionTest {
 			MapProjection proj = createProjection(origin);
 
 			assertAlmostEquals(0, 0, proj.toXZ(origin));
-			assertEquals(origin.lat, proj.toLat(new VectorXZ(0, 0)), DELTA);
-			assertEquals(origin.lon, proj.toLon(new VectorXZ(0, 0)), DELTA);
+			assertEquals(origin.lat(), proj.toLat(new VectorXZ(0, 0)), DELTA);
+			assertEquals(origin.lon(), proj.toLon(new VectorXZ(0, 0)), DELTA);
 
 			VectorXZ northPoint = proj.toXZ(origin).add(0, 1);
-			assertTrue(origin.lat < proj.toLat(northPoint));
-			assertEquals(origin.lon, proj.toLon(northPoint), DELTA);
+			assertTrue(origin.lat() < proj.toLat(northPoint));
+			assertEquals(origin.lon(), proj.toLon(northPoint), DELTA);
 
 			VectorXZ eastPoint = proj.toXZ(origin).add(1, 0);
-			assertEquals(origin.lat, proj.toLat(eastPoint), DELTA);
-			assertTrue(origin.lon < proj.toLon(eastPoint));
+			assertEquals(origin.lat(), proj.toLat(eastPoint), DELTA);
+			assertTrue(origin.lon() < proj.toLon(eastPoint));
 
 		}
 

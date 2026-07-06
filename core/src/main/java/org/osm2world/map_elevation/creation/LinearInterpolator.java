@@ -122,7 +122,7 @@ public class LinearInterpolator implements TerrainInterpolator {
 				List<LatLonEle> closestSites = eleData.findClosestSites(posLatLon, 3);
 
 				// FIXME implement proper interpolation between closest sites
-				return pos.xyz(closestSites.get(0).ele);
+				return pos.xyz(closestSites.get(0).ele());
 
 			}
 

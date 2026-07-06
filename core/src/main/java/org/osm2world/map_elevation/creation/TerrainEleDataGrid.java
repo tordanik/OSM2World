@@ -44,8 +44,8 @@ public class TerrainEleDataGrid implements TerrainEleDataGridOrGridGroup {
 		LatLonEle firstSite = sites[0][0];
 		LatLonEle lastSite = sites[numX - 1][numZ - 1];
 
-		checkArgument(firstSite.lon <= lastSite.lon);
-		checkArgument(firstSite.lat <= lastSite.lat);
+		checkArgument(firstSite.lon() <= lastSite.lon());
+		checkArgument(firstSite.lat() <= lastSite.lat());
 
 		this.sites = sites;
 
@@ -160,8 +160,8 @@ public class TerrainEleDataGrid implements TerrainEleDataGridOrGridGroup {
 	@Nonnull
 	private CellCoords cellForPos(LatLon pos) {
 
-		int x = (int) floor((pos.lon - bounds.minlon) / lonSize * (numX - 1));
-		int z = (int) floor((pos.lat - bounds.minlat) / latSize * (numZ - 1));
+		int x = (int) floor((pos.lon() - bounds.minlon) / lonSize * (numX - 1));
+		int z = (int) floor((pos.lat() - bounds.minlat) / latSize * (numZ - 1));
 
 		x = max(0, min(x, numX - 2));
 		z = max(0, min(z, numZ - 2));

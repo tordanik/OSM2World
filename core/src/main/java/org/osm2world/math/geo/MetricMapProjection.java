@@ -15,9 +15,9 @@ public class MetricMapProjection implements MapProjection {
 
 		this.origin = origin;
 
-		this.scaleFactor = earthCircumference(origin.lat);
-		this.originY = latToY(origin.lat) * scaleFactor;
-		this.originX = lonToX(origin.lon) * scaleFactor;
+		this.scaleFactor = earthCircumference(origin.lat());
+		this.originY = latToY(origin.lat()) * scaleFactor;
+		this.originX = lonToX(origin.lon()) * scaleFactor;
 
 	}
 

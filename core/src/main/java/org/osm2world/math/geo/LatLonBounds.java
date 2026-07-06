@@ -30,7 +30,7 @@ public class LatLonBounds implements GeoBounds {
 	}
 
 	public LatLonBounds(LatLon min, LatLon max) {
-		this(min.lat, min.lon, max.lat, max.lon);
+		this(min.lat(), min.lon(), max.lat(), max.lon());
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class LatLonBounds implements GeoBounds {
 	}
 
 	public boolean contains(LatLon p) {
-		return p.lat >= minlat && p.lat <= maxlat && p.lon >= minlon && p.lon <= maxlon;
+		return p.lat() >= minlat && p.lat() <= maxlat && p.lon() >= minlon && p.lon() <= maxlon;
 	}
 
 	public boolean contains(LatLonBounds other) {
@@ -88,17 +88,17 @@ public class LatLonBounds implements GeoBounds {
 		double maxLon = NEGATIVE_INFINITY;
 
 		for (LatLon p : points) {
-			if (p.lat < minLat) {
-				minLat = p.lat;
+			if (p.lat() < minLat) {
+				minLat = p.lat();
 			}
-			if (p.lat > maxLat) {
-				maxLat = p.lat;
+			if (p.lat() > maxLat) {
+				maxLat = p.lat();
 			}
-			if (p.lon < minLon) {
-				minLon = p.lon;
+			if (p.lon() < minLon) {
+				minLon = p.lon();
 			}
-			if (p.lon > maxLon) {
-				maxLon = p.lon;
+			if (p.lon() > maxLon) {
+				maxLon = p.lon();
 			}
 		}
 
