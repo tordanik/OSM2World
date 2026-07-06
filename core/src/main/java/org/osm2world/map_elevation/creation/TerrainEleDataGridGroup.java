@@ -5,7 +5,6 @@ import static java.lang.Math.min;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.math.geo.LatLon;
@@ -77,8 +76,7 @@ public class TerrainEleDataGridGroup implements TerrainEleDataGridOrGridGroup {
 			candidates.addAll(g.findClosestSites(pos, min(n, g.size())));
 		}
 
-		candidates.sort(Comparator.comparingDouble(it -> pos.distanceTo(it.latLon())));
-		return candidates.subList(0, n);
+		return new TerrainEleDataCollection(bounds, candidates).findClosestSites(pos, n);
 
 	}
 

@@ -6,7 +6,6 @@ import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -152,8 +151,7 @@ public class TerrainEleDataGrid implements TerrainEleDataGridOrGridGroup {
 			} while (candidates.size() < n && (cellRange < numX || cellRange < numZ));
 			if (candidates.size() < n) { throw new IllegalStateException("n too large for number of sites " + n); }
 
-			candidates.sort(Comparator.comparingDouble(it -> pos.distanceTo(it.latLon())));
-			return candidates.subList(0, n);
+			return new TerrainEleDataCollection(bounds, candidates).findClosestSites(pos, n);
 
 		}
 
