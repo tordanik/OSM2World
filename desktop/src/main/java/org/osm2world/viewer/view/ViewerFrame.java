@@ -170,13 +170,15 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, -1, false,
 					new Map2dTreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
+					new LinearInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new LocalCellInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
 					new NaturalNeighborInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new LeastSquaresInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new InverseDistanceWeightingInterpolatorDebugView(renderOptions));
-			initAndAddDebugView(subMenu, -1, false,
-					new LinearInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new OrthoBoundsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
@@ -221,6 +223,7 @@ public class ViewerFrame extends JFrame {
 			List<Class<? extends TerrainInterpolator>> interpolatorClasses = asList(
 					ZeroInterpolator.class,
 					LinearInterpolator.class,
+					LocalCellInterpolator.class,
 					InverseDistanceWeightingInterpolator.class,
 					LeastSquaresInterpolator.class,
 					NaturalNeighborInterpolator.class);

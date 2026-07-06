@@ -570,6 +570,7 @@ public class O2WConfig {
 	public Supplier<TerrainInterpolator> terrainInterpolator() {
 		return switch (getString("terrainInterpolator", "")) {
 			case "LinearInterpolator" -> LinearInterpolator::new;
+			case "LocalCellInterpolator" -> LocalCellInterpolator::new;
 			case "LeastSquaresInterpolator" -> LeastSquaresInterpolator::new;
 			case "NaturalNeighborInterpolator" -> NaturalNeighborInterpolator::new;
 			case "InverseDistanceWeightingInterpolator" -> InverseDistanceWeightingInterpolator::new;
