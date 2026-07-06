@@ -1,8 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.util.Arrays.asList;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.map_elevation.creation.TerrainEleData;
@@ -13,6 +12,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.VectorGridXZ;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.common.lighting.GlobalLightingParameters;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.output.jogl.JOGLRenderingParameters;
@@ -94,16 +94,17 @@ public abstract class TerrainInterpolatorDebugView extends StaticDebugView {
 
 			/* draw surface from samples */
 
+			List<TriangleXYZ> triangles = new ArrayList<>((samples.length - 1) * (samples[0].length - 1) * 2);
 			for (int x = 0; x+1 < samples.length; x++) {
 				for (int z = 0; z+1 < samples[x].length; z++) {
 
-					output.drawTriangleFan(TERRAIN_MAT,
-							asList(samples[x][z], samples[x+1][z],
-									samples[x+1][z+1], samples[x][z+1]),
-							List.of());
+					triangles.add(new TriangleXYZ(samples[x][z], samples[x+1][z], samples[x+1][z+1]));
+					triangles.add(new TriangleXYZ(samples[x][z], samples[x+1][z+1], samples[x][z+1]));
 
 				}
 			}
+
+			output.drawTriangles(TERRAIN_MAT, triangles, List.of());
 
 		} catch (IOException e) {
 			e.printStackTrace();
