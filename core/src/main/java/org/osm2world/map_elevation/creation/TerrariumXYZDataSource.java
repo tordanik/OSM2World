@@ -2,12 +2,17 @@ package org.osm2world.map_elevation.creation;
 
 import static java.lang.Math.floor;
 import static java.lang.Math.max;
+import static java.util.Objects.requireNonNull;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
@@ -16,6 +21,7 @@ import org.osm2world.math.geo.LatLonBounds;
 import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.TileNumber;
 import org.osm2world.scene.color.Color;
+import org.osm2world.util.IntRange;
 import org.osm2world.util.tiles.TileSet;
 
 /**
@@ -58,17 +64,44 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 	@Override
 	public TerrainEleData getSites(LatLonBounds bounds) {
 
+		/* find all tiles overlapping the bounds */
+
+		List<TileNumber> tileNumbers = TileNumber.tilesForBounds(maxZoom, bounds);
+		List<Tile> tiles = new ArrayList<>();
+
+		for (TileNumber tileNumber : tileNumbers) {
+			tiles.add(getOrLoadTile(tileNumber));
+		}
+
+		/* if possible, merge all tiles to get a single uninterrupted grid (makes later queries easier and faster) */
+
+		if (!tiles.isEmpty() && tiles.size() > 1) {
+			double[][] data0 = tiles.get(0).data;
+ 			if (data0 != null && tiles.stream().allMatch(t -> t.data != null && t.data.length == data0.length
+						&& t.data[0].length == data0[0].length)) {
+				return mergedGridForTiles(tileNumbers, bounds);
+			}
+		}
+
+		return gridGroupFromTiles(bounds, tiles);
+
+	}
+
+	private Tile getOrLoadTile(TileNumber tileNumber) {
+		Tile tile = tileCache.get(tileNumber);
+		if (tile == null) {
+			tile = new Tile(tileNumber);
+			tileCache.put(tileNumber, tile);
+		}
+		return tile;
+	}
+
+	@Nonnull
+	private static TerrainEleData gridGroupFromTiles(LatLonBounds bounds, List<Tile> tiles) {
+
 		List<TerrainEleDataGrid> resultGrids = new ArrayList<>();
 
-		List<TileNumber> tiles = TileNumber.tilesForBounds(maxZoom, bounds);
-
-		for (TileNumber tileNumber : tiles) {
-
-			Tile tile = tileCache.get(tileNumber);
-			if (tile == null) {
-				tile = new Tile(tileNumber);
-				tileCache.put(tileNumber, tile);
-			}
+		for (Tile tile : tiles) {
 
 			TerrainEleDataGrid grid = tile.getSites();
 			if (grid != null) {
@@ -77,23 +110,57 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 		}
 
-		if (resultGrids.isEmpty()) {
-			return new TerrainEleDataCollection(bounds, List.of());
-		} else {
-			return new TerrainEleDataGridGroup(resultGrids);
-		}
+		return switch (resultGrids.size()) {
+			case 0 -> new TerrainEleDataCollection(bounds, List.of());
+			case 1 -> resultGrids.get(0);
+			default -> new TerrainEleDataGridGroup(resultGrids);
+		};
 
 	}
 
+	private TerrainEleData mergedGridForTiles(List<TileNumber> tileNumbers, LatLonBounds bounds) {
+
+		IntRange xRange = IntRange.around(tileNumbers, it -> it.x);
+		IntRange yRange = IntRange.around(tileNumbers, it -> it.y);
+
+		double[][] mergedData = null;
+
+		for (int tileX : xRange) {
+			for (int tileY : yRange) {
+
+				TileNumber tileNumber = new TileNumber(tileNumbers.get(0).zoom, tileX, tileY);
+				Tile tile = getOrLoadTile(tileNumber);
+
+				double[][] tileData = tile.data;
+				if (tileData == null) throw new IllegalStateException("No data for tile " + tileNumber);
+
+				if (mergedData == null) {
+					mergedData = new double[tileData.length * xRange.size()][tileData[0].length * yRange.size()];
+				}
+
+				for (int x = 0; x < tileData.length; x++) {
+					System.arraycopy(tileData[x], 0,
+							mergedData[(tileX - xRange.min()) * tileData.length + x],
+							(tileY - yRange.min()) * tileData[0].length, tileData[x].length);
+				}
+
+			}
+		}
+
+		LatLonBounds mergedBounds = LatLonBounds.union(tileNumbers.stream().map(TileNumber::latLonBounds).toList());
+		Tile tempMergedTile = new Tile(mergedBounds, mergedData);
+		return requireNonNull(tempMergedTile.getSites()).clipped(bounds);
+
+	}
 
 	private class Tile {
 
-		private final TileNumber tileNumber;
+		private final LatLonBounds bounds;
 		private @Nullable double[][] data;
 
 		public Tile(TileNumber tileNumber) {
 
-			this.tileNumber = tileNumber;
+			this.bounds = tileNumber.latLonBounds();
 
 			try {
 
@@ -105,7 +172,7 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 					throw new IOException("Unable to find elevation data for tile or its ancestors: " + tileNumber);
 				}
 
-				var imageStream = new ByteArrayInputStream(Objects.requireNonNull(tileSet.getTileData(t)));
+				var imageStream = new ByteArrayInputStream(requireNonNull(tileSet.getTileData(t)));
 				BufferedImage image = ImageIO.read(imageStream);
 
 				/* determine which part of the image to load
@@ -154,9 +221,13 @@ public class TerrariumXYZDataSource implements TerrainEleDataSource {
 
 		}
 
+		public Tile(LatLonBounds bounds,  @Nullable double[][] data) {
+			this.bounds = bounds;
+			this.data = data;
+		}
+
 		public @Nullable TerrainEleDataGrid getSites() {
 
-			var bounds = tileNumber.latLonBounds();
 			double sizeLat = bounds.sizeLat();
 			double sizeLon = bounds.sizeLon();
 

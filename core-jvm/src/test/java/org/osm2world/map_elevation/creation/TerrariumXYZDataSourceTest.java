@@ -64,14 +64,18 @@ public class TerrariumXYZDataSourceTest {
 
 		for (var tileSet : List.of(uriTileSetFromTestResources("webp"), pmtilesTileSetFromTestResources())) {
 
-			var eleData = new TerrariumXYZDataSource(13, tileSet);
+			var dataSource = new TerrariumXYZDataSource(13, tileSet);
 
 			var testTiles = List.of(new TileNumber(13, 4290, 2868), new TileNumber(13, 4290, 2869));
 			var bounds = new LatLonBounds(
 					testTiles.get(1).latLonBounds().getCenter().lat(), 8.566,
 					testTiles.get(0).latLonBounds().getCenter().lat(), 8.567);
 
-			var sites = eleData.getSites(bounds).sites();
+			TerrainEleData eleData = dataSource.getSites(bounds);
+
+			assertTrue("should be merged into a single grid",eleData instanceof TerrainEleDataGrid);
+
+			var sites = eleData.sites();
 
 			assertFalse(sites.isEmpty());
 			assertTrue(sites.stream().anyMatch(site -> testTiles.get(0).latLonBounds().contains(site.latLon())));
