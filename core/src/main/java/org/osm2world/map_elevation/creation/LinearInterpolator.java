@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.geo.LatLon;
-import org.osm2world.math.geo.LatLonEle;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
@@ -73,58 +71,24 @@ public class LinearInterpolator implements TerrainInterpolator {
 	}
 
 	/** implementation specifically for data with a grid structure */
-	private static class GridImplementation implements TerrainInterpolator {
-
-		private TerrainEleDataGridOrGridGroup eleData;
-		private MapProjection projection;
-
-		public void setKnownSites(TerrainEleData eleData, MapProjection projection) {
-
-			this.projection = projection;
-
-			if (eleData instanceof TerrainEleDataGridOrGridGroup grid) {
-				this.eleData = grid;
-			} else {
-				throw new IllegalArgumentException("Unsupported TerrainEleData type: " + eleData.getClass());
-			}
-
-		}
+	private static class GridImplementation extends AbstractGridLocalInterpolator {
 
 		@Override
-		public VectorXYZ interpolateEle(VectorXZ pos) {
+		protected VectorXYZ interpolateEleFromSurroundingSites(VectorXZ pos, List<VectorXYZ> surroundingSites) {
 
-			LatLon posLatLon = projection.toLatLon(pos);
+			var t = new TriangleXYZ(
+					surroundingSites.get(0),
+					surroundingSites.get(1),
+					surroundingSites.get(2));
 
-			/* find the correct grid */
-
-			TerrainEleDataGrid grid = eleData.gridAt(posLatLon);
-
-			if (grid != null) {
-
-				List<LatLonEle> surroundingSites = grid.findSurroundingSites(posLatLon);
-
-				TriangleXYZ t = new TriangleXYZ(
-						projection.toXYZ(surroundingSites.get(0)),
-						projection.toXYZ(surroundingSites.get(1)),
-						projection.toXYZ(surroundingSites.get(2)));
-
-				if (!t.xz().contains(pos)) {
-					t = new TriangleXYZ(
-							projection.toXYZ(surroundingSites.get(1)),
-							projection.toXYZ(surroundingSites.get(2)),
-							projection.toXYZ(surroundingSites.get(3)));
-				}
-
-				return pos.xyz(t.getYAt(pos));
-
-			} else {
-
-				List<LatLonEle> closestSites = eleData.findClosestSites(posLatLon, 3);
-
-				// FIXME implement proper interpolation between closest sites
-				return pos.xyz(closestSites.get(0).ele());
-
+			if (!t.xz().contains(pos)) {
+				t = new TriangleXYZ(
+						surroundingSites.get(1),
+						surroundingSites.get(2),
+						surroundingSites.get(3));
 			}
+
+			return pos.xyz(t.getYAt(pos));
 
 		}
 
