@@ -35,8 +35,8 @@ public class MetricMapProjection implements MapProjection {
 		double y = latToY(lat) * scaleFactor - originY;
 
 		/* snap to mm precision, seems to reduce geometry exceptions */
-		x = Math.round(x * 1000) / 1000.0d;
-		y = Math.round(y * 1000) / 1000.0d;
+		x = Math.rint(x * 1000) / 1000.0d;
+		y = Math.rint(y * 1000) / 1000.0d;
 
 		return new VectorXZ(x, y); // x and z(!) are 2d here
 

@@ -10,13 +10,13 @@ import org.osm2world.math.VectorXYZ;
 public final class WGS84Util {
 
 	/** semi-major axis (equatorial radius) of the WGS84 ellipsoid in meters */
-	private static final double SEMI_MAJOR_AXIS = 6_378_137.0;
+	static final double SEMI_MAJOR_AXIS = 6_378_137.0;
 
 	/** inverse of the WGS84 ellipsoid's flattening */
 	private static final double INVERSE_FLATTENING = 298.257223563;
 
 	/** square of the ellipsoid's first eccentricity, i.e. 1 - (b/a)² */
-	private static final double ECCENTRICITY_SQ = (2 - 1 / INVERSE_FLATTENING) / INVERSE_FLATTENING;
+	static final double ECCENTRICITY_SQ = (2 - 1 / INVERSE_FLATTENING) / INVERSE_FLATTENING;
 
 	/** semi-minor axis (polar radius) of the WGS84 ellipsoid in meters */
 	private static final double SEMI_MINOR_AXIS = SEMI_MAJOR_AXIS * (1 - 1 / INVERSE_FLATTENING);
@@ -25,6 +25,11 @@ public final class WGS84Util {
 	private static final double SECOND_ECCENTRICITY_SQ = ECCENTRICITY_SQ / (1 - ECCENTRICITY_SQ);
 
 	private WGS84Util() {}
+
+	/** returns the ellipsoid's radius of curvature in the prime vertical, given the sine of a latitude */
+	static double primeVerticalRadius(double sinLat) {
+		return SEMI_MAJOR_AXIS / sqrt(1 - ECCENTRICITY_SQ * sinLat * sinLat);
+	}
 
 	/**
 	 * converts geodetic coordinates to ECEF coordinates.
@@ -41,8 +46,7 @@ public final class WGS84Util {
 		double sinLat = sin(toRadians(pos.lat)), cosLat = cos(toRadians(pos.lat));
 		double sinLon = sin(toRadians(pos.lon)), cosLon = cos(toRadians(pos.lon));
 
-		/* radius of curvature in the prime vertical */
-		double n = SEMI_MAJOR_AXIS / sqrt(1 - ECCENTRICITY_SQ * sinLat * sinLat);
+		double n = primeVerticalRadius(sinLat);
 
 		return new VectorXYZ(
 				(n + ele) * cosLat * cosLon,
@@ -63,9 +67,11 @@ public final class WGS84Util {
 		/* distance from the polar axis */
 		double p = sqrt(pos.x * pos.x + pos.y * pos.y);
 
-		/* parametric latitude of the point's projection onto the ellipsoid */
-		double theta = atan2(pos.z * SEMI_MAJOR_AXIS, p * SEMI_MINOR_AXIS);
-		double sinTheta = sin(theta), cosTheta = cos(theta);
+		/* sine and cosine of the parametric latitude of the point's projection onto the ellipsoid.
+		 * This is atan2(pos.z * a, p * b) resolved without ever forming the angle itself. */
+		double u = pos.z * SEMI_MAJOR_AXIS, v = p * SEMI_MINOR_AXIS;
+		double hypot = sqrt(u * u + v * v);
+		double sinTheta = u / hypot, cosTheta = v / hypot;
 
 		double lat = atan2(
 				pos.z + SECOND_ECCENTRICITY_SQ * SEMI_MINOR_AXIS * sinTheta * sinTheta * sinTheta,
