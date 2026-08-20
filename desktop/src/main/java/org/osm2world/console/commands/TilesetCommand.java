@@ -134,12 +134,15 @@ public class TilesetCommand implements Callable<Integer> {
 
 		if (!noJson) {
 			try {
+				System.out.println("Generating JSON tileset tree...");
 				generateTilesetTree(baseDir, tileNumbers, lod);
 			} catch (IOException e) {
 				System.err.println("Error writing tileset json files: " + e.getMessage());
 				return 1;
 			}
 		}
+
+		System.out.println("Tileset generation complete.");
 
 		return 0;
 
