@@ -11,9 +11,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -81,6 +85,43 @@ public class ImageImplementationJvm extends CachingImageImplementation {
 	}
 
 	@Override
+	public Resolution getNativeResolution(TextureData texture) {
+		if (texture instanceof RasterImageFileTexture rasterTexture) {
+			// read the resolution from the image file's header instead of decoding the entire image
+			Resolution result = readResolutionFromHeader(rasterTexture.getFile());
+			if (result != null) {
+				return result;
+			}
+		}
+		return super.getNativeResolution(texture);
+	}
+
+	/** returns the resolution of a raster image file, or null if it cannot be determined without decoding */
+	private static @Nullable Resolution readResolutionFromHeader(File file) {
+
+		try (ImageInputStream stream = ImageIO.createImageInputStream(file)) {
+
+			if (stream == null) return null;
+
+			Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+			if (!readers.hasNext()) return null;
+
+			ImageReader reader = readers.next();
+
+			try {
+				reader.setInput(stream);
+				return new Resolution(reader.getWidth(0), reader.getHeight(0));
+			} finally {
+				reader.dispose();
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+
+	}
+
+	@Override
 	public Float getAspectRatio(TextureData texture) {
 		if (texture instanceof SvgImageFileTexture svgTexture) {
 			try {
@@ -92,7 +133,7 @@ public class ImageImplementationJvm extends CachingImageImplementation {
 		} else if (texture instanceof RuntimeTexture runtimeTexture) {
 			return runtimeTexture.getAspectRatio();
 		} else {
-			return Resolution.of(loadTextureImage(texture)).getAspectRatio();
+			return getNativeResolution(texture).getAspectRatio();
 		}
 	}
 

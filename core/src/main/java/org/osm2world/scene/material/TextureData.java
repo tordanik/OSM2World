@@ -138,12 +138,20 @@ public abstract class TextureData {
 	public void writeRasterImageToStream(OutputStream stream, float compressionQuality,
 			@Nullable Integer maxResolution) throws IOException {
 
-		BufferedImage bufferedImage = getBufferedImage();
-		Resolution nativeRes = Resolution.of(bufferedImage);
+		/* Obtain the image, at a reduced resolution if necessary.
+		 * The native resolution is determined without creating the image where possible: For a large texture,
+		 * the full-resolution image would merely be an intermediate result on the way to the smaller image
+		 * which is actually written, and keeping it in the image cache would be a waste of memory. */
+
+		Resolution nativeRes = ImageUtil.getNativeResolution(this);
+
+		BufferedImage bufferedImage;
 
 		if (maxResolution != null && (nativeRes.width > maxResolution || nativeRes.height > maxResolution)) {
 			Resolution scaledRes = nativeRes.scale(maxResolution / (double) nativeRes.maxDimension());
 			bufferedImage = getBufferedImage(scaledRes);
+		} else {
+			bufferedImage = getBufferedImage();
 		}
 
 		RasterImageFormat format = getRasterImageFormat();

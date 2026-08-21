@@ -55,6 +55,20 @@ public class ImageUtil {
 	}
 
 	/**
+	 * Returns the resolution the texture's image has if it is created without requesting a particular resolution.
+	 * Where possible, this avoids actually creating the image.
+	 */
+	public static Resolution getNativeResolution(TextureData texture) {
+
+		if (implementation == null) {
+			throw new UnsupportedOperationException("No platform-specific image implementation provided");
+		}
+
+		return implementation.getNativeResolution(texture);
+
+	}
+
+	/**
 	 * Returns this texture's aspect ratio (same definition as {@link Resolution#getAspectRatio()}).
 	 * Where possible and applicable, this will return the aspect ratio of the original underlying image.
 	 *

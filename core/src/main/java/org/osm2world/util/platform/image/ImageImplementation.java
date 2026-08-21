@@ -21,6 +21,14 @@ interface ImageImplementation {
 	BufferedImage loadTextureImage(TextureData texture);
 
 	/**
+	 * Implementation of {@link ImageUtil#getNativeResolution(TextureData)}.
+	 * The default implementation loads the image, implementations should override it if they can do better.
+	 */
+	default Resolution getNativeResolution(TextureData texture) {
+		return Resolution.of(loadTextureImage(texture));
+	}
+
+	/**
 	 * Implementation of {@link ImageUtil#getAspectRatio(TextureData)}
 	 */
 	Float getAspectRatio(TextureData texture);
