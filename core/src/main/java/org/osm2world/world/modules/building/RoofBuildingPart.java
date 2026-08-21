@@ -25,7 +25,12 @@ public class RoofBuildingPart extends BuildingPart {
 
 	@Override
 	protected boolean isBottomless() {
-		return isTransparent();
+		return isTransparent() || isUnwalled();
+	}
+
+	@Override
+	protected boolean isUnwalled() {
+		return getTags().contains("wall", "no");
 	}
 
 	@Override
@@ -40,29 +45,33 @@ public class RoofBuildingPart extends BuildingPart {
 			}
 		}
 
-		return modifyIfTransparent(result);
+		return modifyIfTransparentOrTwoSided(result);
 
 	}
 
 	@Override
 	protected Material createRoofMaterial(TagSet tags, O2WConfig config) {
-		return modifyIfTransparent(super.createRoofMaterial(tags, config));
+		return modifyIfTransparentOrTwoSided(super.createRoofMaterial(tags, config));
 	}
 
-	private Material modifyIfTransparent(MaterialOrRef material) {
+	private Material modifyIfTransparentOrTwoSided(MaterialOrRef material) {
 
-		if (isTransparent()) {
+		Material result = material.get(config);
 
-			Material result = config.mapStyle().getTransparentVariant(material);
-			if (result == null) {
-				result = material.get(config);
+		if (isTransparent() || isUnwalled()) {
+
+			if (isTransparent()) {
+				Material transparentResult = config.mapStyle().getTransparentVariant(material);
+				if (transparentResult != null) {
+					result = transparentResult;
+				}
 			}
 
 			return result.makeDoubleSided();
 
-		} else {
-			return material.get(config);
 		}
+
+		return result;
 
 	}
 

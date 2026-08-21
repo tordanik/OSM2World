@@ -290,11 +290,15 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 		}
 
-		/* remove building bottoms under some conditions */
+		/* remove building walls and bottoms under some conditions */
 
 		if (floorHeight <= 0 // this building doesn't need a bottom because touches the ground
 				|| this.isBottomless()) {
 			bottoms = emptyList();
+		}
+
+		if (this.isUnwalled()) {
+			walls = emptyList();
 		}
 
 	}
@@ -658,7 +662,15 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 	 * not just because it can be hidden for performance reasons.
 	 */
 	protected boolean isBottomless() {
-		return false; // this building doesn't need a bottom because touches the ground
+		return false;
+	}
+
+	/**
+	 * whether this building part has no {@link ExteriorBuildingWall}s.
+	 * This is intended for roofs without walls.
+	 */
+	protected boolean isUnwalled() {
+		return false;
 	}
 
 	@Override
