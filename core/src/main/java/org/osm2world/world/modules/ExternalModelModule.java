@@ -208,7 +208,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 
 			double direction = element instanceof MapNode
 					? WorldModuleParseUtil.parseDirection(element.getTags(), PI)
-					: 0;
+					: PI;
 
 			var i = new ModelInstance(model, new InstanceParameters(pos, direction));
 			return i.getMeshes();
