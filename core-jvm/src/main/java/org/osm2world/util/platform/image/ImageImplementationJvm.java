@@ -1,5 +1,7 @@
 package org.osm2world.util.platform.image;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.osm2world.util.platform.image.ImageUtil.getScaledImage;
@@ -28,6 +30,13 @@ import org.osm2world.util.Resolution;
 public class ImageImplementationJvm extends CachingImageImplementation {
 
 	private static final Resolution DEFAULT_SVG_RESOLUTION = new Resolution(512, 512);
+
+	private static final long MIN_CACHE_SIZE = 128_000_000;
+	private static final long MAX_CACHE_SIZE = 512_000_000;
+
+	public ImageImplementationJvm() {
+		super(min(max(Runtime.getRuntime().maxMemory() / 16, MIN_CACHE_SIZE), MAX_CACHE_SIZE));
+	}
 
 	/** Sets up {@link ImageUtil} to use this implementation. */
 	public static void register() {
