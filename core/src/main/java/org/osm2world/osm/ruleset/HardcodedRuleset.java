@@ -1,15 +1,16 @@
 package org.osm2world.osm.ruleset;
 
-import de.topobyte.osm4j.core.model.iface.OsmTag;
-import org.osm2world.map_data.data.Tag;
-import org.osm2world.map_data.data.TagSet;
-import org.osm2world.world.modules.SurfaceAreaModule;
+import static java.util.Arrays.asList;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import static java.util.Arrays.asList;
+import org.osm2world.map_data.data.Tag;
+import org.osm2world.map_data.data.TagSet;
+import org.osm2world.world.modules.SurfaceAreaModule;
+
+import de.topobyte.osm4j.core.model.iface.OsmTag;
 
 public class HardcodedRuleset implements Ruleset {
 
@@ -34,6 +35,7 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("indoor", "room"));
 		areaTags.add(new Tag("leisure", "pitch"));
 		areaTags.add(new Tag("leisure", "swimming_pool"));
+		areaTags.add(new Tag("man_made", "obelisk"));
 		areaTags.add(new Tag("natural", "beach"));
 		areaTags.add(new Tag("natural", "sand"));
 		areaTags.add(new Tag("natural", "water"));

@@ -34,6 +34,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
+import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.TagSet;
@@ -61,10 +62,7 @@ import org.osm2world.scene.texcoord.MapBasedTexCoordFunction;
 import org.osm2world.util.platform.image.ImageUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
-import org.osm2world.world.data.NoOutlineNodeWorldObject;
-import org.osm2world.world.data.NodeModelInstance;
-import org.osm2world.world.data.NodeWorldObject;
-import org.osm2world.world.data.ProceduralWorldObject;
+import org.osm2world.world.data.*;
 import org.osm2world.world.modules.common.AbstractModule;
 
 /**
@@ -150,6 +148,16 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("tourism", "information")
 				&& node.getTags().contains("information", "board")) {
 			node.addRepresentation(new Board(node));
+		}
+		if (node.getTags().contains("man_made", "obelisk")) {
+			node.addRepresentation(new NodeObelisk(node));
+		}
+	}
+
+	@Override
+	protected void applyToArea(MapArea area) {
+		if (area.getTags().contains("man_made", "obelisk")) {
+			area.addRepresentation(new AreaObelisk(area));
 		}
 	}
 
@@ -1960,6 +1968,149 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.drawColumn(WOOD.get(config), null,
 					supportBase,
 					1.5, 0.05, 0.05, false, true);
+		}
+
+	}
+
+	public interface Obelisk extends ProceduralWorldObject {
+
+		enum ObeliskSizeClass {
+
+			SMALL, MEDIUM, MONUMENTAL;
+
+			public double getDefaultHeight() {
+				return switch (this) {
+					case SMALL -> 0.8;
+					case MEDIUM -> 4.0;
+					case MONUMENTAL -> 8.0;
+				};
+			}
+
+			public static ObeliskSizeClass fromTags(TagSet tags) {
+				return switch (requireNonNullElse(tags.getValue("obelisk:size"), "none")) {
+					case "small" -> ObeliskSizeClass.SMALL;
+					case "medium" -> ObeliskSizeClass.MEDIUM;
+					default -> ObeliskSizeClass.MONUMENTAL;
+				};
+			}
+
+		}
+
+		O2WConfig getConfig();
+		VectorXYZ getBase();
+
+		ShapeXZ obeliskShape(double width, boolean hasBase);
+		ShapeXZ baseShape(double width);
+
+		@Override
+		default void buildMeshesAndModels(ProceduralWorldObject.Target target) {
+
+			TagSet tags = getPrimaryMapElement().getTags();
+
+			target.setCurrentLodRange(LOD2, LOD4);
+
+			String materialValue = requireNonNullElse(tags.getValue("obelisk:material"), tags.getValue("material"));
+			Material material = getConfig().mapStyle().resolveMaterial(materialValue, SANDSTONE);
+
+			ObeliskSizeClass size = ObeliskSizeClass.fromTags(tags);
+			Double totalHeight = parseHeight(tags);
+			Double obeliskHeight = parseMeasure(tags.getValue("obelisk:height"));
+
+			if (obeliskHeight == null) {
+				totalHeight = totalHeight != null ? totalHeight : size.getDefaultHeight();
+				obeliskHeight = totalHeight;
+			} else if (totalHeight == null) {
+				totalHeight = obeliskHeight;
+			}
+
+			double baseHeight = totalHeight - obeliskHeight;
+
+			double width = 0.1 * obeliskHeight;
+			boolean hasBase = (baseHeight > 0);
+
+			/* draw obelisk */
+			ShapeXZ obeliskShape = obeliskShape(width, hasBase);
+			List<VectorXYZ> obeliskPath = List.of(
+					getBase().addY(baseHeight),
+					getBase().addY(baseHeight + Math.max(0.7 * obeliskHeight, obeliskHeight - width)),
+					getBase().addY(totalHeight));
+			List<Double> scaleFactors = asList(1.0, 0.8, 0.0);
+			target.drawExtrudedShape(material, obeliskShape, obeliskPath, null, scaleFactors, null);
+
+			/* draw base */
+			if (hasBase) {
+				ShapeXZ baseShape = baseShape(width);
+				List<VectorXYZ> basePath = List.of(getBase(), getBase().addY(baseHeight));
+				target.drawExtrudedShape(material, baseShape, basePath, null, null, EnumSet.of(END_CAP));
+			}
+
+		}
+
+	}
+
+	public class NodeObelisk extends NoOutlineNodeWorldObject implements Obelisk {
+
+		public NodeObelisk(MapNode node) {
+			super(node);
+		}
+
+		@Override
+		public O2WConfig getConfig() {
+			return config;
+		}
+
+		@Override
+		public VectorXYZ getBase() {
+			return super.getBase();
+		}
+
+		@Override
+		public SimplePolygonShapeXZ obeliskShape(double width, boolean hasBase) {
+			double direction = parseDirection(node.getTags(), 0);
+			var box = new AxisAlignedRectangleXZ(-width / 2, -width / 2, +width / 2, +width / 2);
+			return box.rotatedCW(direction);
+		}
+
+		@Override
+		public SimpleClosedShapeXZ baseShape(double width) {
+			return obeliskShape(width, true).scale(2.0);
+		}
+
+	}
+
+	public class AreaObelisk extends AbstractAreaWorldObject implements Obelisk {
+
+		public AreaObelisk(MapArea area) {
+			super(area);
+		}
+
+		@Override
+		public O2WConfig getConfig() {
+			return config;
+		}
+
+		@Override
+		public VectorXYZ getBase() {
+			AttachmentConnector connector = getConnectorIfAttached();
+			if (connector != null) {
+				return connector.getAttachedPos();
+			} else {
+				double minEle = getEleConnectors().eleConnectors.stream()
+						.mapToDouble(c -> c.getPosXYZ().y)
+						.average().orElse(0.0);
+				return area.getOuterPolygon().getCentroid().xyz(minEle);
+			}
+		}
+
+		@Override
+		public SimpleClosedShapeXZ obeliskShape(double width, boolean hasBase) {
+			SimpleClosedShapeXZ baseShape = baseShape(width);
+			return hasBase ? baseShape.scale(0.5) : baseShape;
+		}
+
+		@Override
+		public SimpleClosedShapeXZ baseShape(double width) {
+			return super.getOutlinePolygonXZ().getOuter().shift(getBase().xz().invert());
 		}
 
 	}
