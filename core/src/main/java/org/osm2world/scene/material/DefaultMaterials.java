@@ -274,6 +274,7 @@ public final class DefaultMaterials {
 		surfaceMaterialMap.put("gravel", GRAVEL);
 		surfaceMaterialMap.put("ground", EARTH);
 		surfaceMaterialMap.put("ice", ICE);
+		surfaceMaterialMap.put("iron", STEEL);
 		surfaceMaterialMap.put("laterite", EARTH);
 		surfaceMaterialMap.put("marble", MARBLE);
 		surfaceMaterialMap.put("metal", STEEL);
