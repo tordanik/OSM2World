@@ -31,6 +31,7 @@ import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 import java.time.LocalTime;
 import java.util.*;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
@@ -138,6 +139,9 @@ public class StreetFurnitureModule extends AbstractModule {
 				&& (node.getTags().contains("recycling_type", "container"))) {
 			node.addRepresentation(new RecyclingContainer(node));
 		}
+		if (node.getTags().contains("man_made", "street_cabinet")) {
+			node.addRepresentation(new NodeStreetCabinet(node));
+		}
 		if (node.getTags().contains("emergency", "fire_hydrant")
 				&& node.getTags().contains("fire_hydrant:type", "pillar")) {
 			node.addRepresentation(new FireHydrant(node));
@@ -158,6 +162,9 @@ public class StreetFurnitureModule extends AbstractModule {
 	protected void applyToArea(MapArea area) {
 		if (area.getTags().contains("man_made", "obelisk")) {
 			area.addRepresentation(new AreaObelisk(area));
+		}
+		if (area.getTags().contains("man_made", "street_cabinet")) {
+			area.addRepresentation(new AreaStreetCabinet(area));
 		}
 	}
 
@@ -1637,6 +1644,83 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.drawBox(machineMaterial, boardBase.add(direction.mult(0.1)), direction.xz(), height - 0.8, 1, 0.2);
 
+		}
+
+	}
+
+	public interface StreetCabinet extends ProceduralWorldObject {
+
+		O2WConfig getConfig();
+		double getMinEle();
+		@Nonnull PolygonShapeXZ getOutlinePolygonXZ();
+
+		@Override
+		default void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD3, LOD4);
+
+			TagSet tags = getPrimaryMapElement().getTags();
+
+			Material material = getSurfaceMaterial(tags.getValue("material"), PLASTIC, getConfig());
+			Color color = parseColor(tags.getValue("colour"), CSS_COLORS, LIGHT_GRAY);
+			material = material.withColor(color);
+
+			double height = parseMeasure(tags.getValue("height"), 1.0);
+
+			SimplePolygonShapeXZ outline = getOutlinePolygonXZ().getOuter();
+			VectorXYZ base = outline.getCentroid().xyz(getMinEle());
+
+			var path = List.of(base, base.addY(0.95 * height), base.addY(0.95 * height), base.addY(height));
+			List<Double> scaleFactors = List.of(1.0, 1.0, 1.05, 1.05);
+
+			target.drawExtrudedShape(material, outline.shift(base.xz().invert()),
+					path, null, scaleFactors, EnumSet.of(END_CAP));
+
+		}
+
+	}
+
+	public final class NodeStreetCabinet extends NoOutlineNodeWorldObject implements StreetCabinet {
+
+		public NodeStreetCabinet(MapNode node) {
+			super(node);
+		}
+
+		@Override
+		public O2WConfig getConfig() {
+			return config;
+		}
+
+		@Override
+		public double getMinEle() {
+			return getBase().y;
+		}
+
+		public @Nonnull PolygonShapeXZ getOutlinePolygonXZ() {
+
+			TagSet tags = node.getTags();
+
+			// for street cabinets, the wiki unexpectedly documents direction as pointing in the length direction!
+			double direction = parseDirection(node.getTags(), 0);
+			double width = parseMeasure(tags.getValue("width"), 1.2);
+			double length = parseMeasure(tags.getValue("length"), 0.3);
+
+			var box = new AxisAlignedRectangleXZ(NULL_VECTOR, length, width);
+			return box.rotatedCW(direction).shift(getBase().xz());
+
+		}
+
+	}
+
+	public final class AreaStreetCabinet extends AbstractAreaWorldObject implements StreetCabinet {
+
+		public AreaStreetCabinet(MapArea area) {
+			super(area);
+		}
+
+		@Override
+		public O2WConfig getConfig() {
+			return config;
 		}
 
 	}

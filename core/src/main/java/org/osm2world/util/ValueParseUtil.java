@@ -411,6 +411,13 @@ public final class ValueParseUtil {
 		}
 	}
 
+	/** variant of {@link #parseColor(String, ColorNameDefinition)} with a default value */
+	public static @Nullable Color parseColor(@Nullable String value, ColorNameDefinition colorNameDefinition,
+			Color defaultValue) {
+		Color result = parseColor(value, colorNameDefinition);
+		return result == null ? defaultValue : result;
+	}
+
 	/**
 	 * parses an hexadecimal color value
 	 *
