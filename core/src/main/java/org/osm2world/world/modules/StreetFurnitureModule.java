@@ -2067,7 +2067,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public SimplePolygonShapeXZ obeliskShape(double width, boolean hasBase) {
 			double direction = parseDirection(node.getTags(), 0);
-			var box = new AxisAlignedRectangleXZ(-width / 2, -width / 2, +width / 2, +width / 2);
+			var box = new AxisAlignedRectangleXZ(NULL_VECTOR, width, width);
 			return box.rotatedCW(direction);
 		}
 
@@ -2091,15 +2091,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public VectorXYZ getBase() {
-			AttachmentConnector connector = getConnectorIfAttached();
-			if (connector != null) {
-				return connector.getAttachedPos();
-			} else {
-				double minEle = getEleConnectors().eleConnectors.stream()
-						.mapToDouble(c -> c.getPosXYZ().y)
-						.average().orElse(0.0);
-				return area.getOuterPolygon().getCentroid().xyz(minEle);
-			}
+			return area.getOuterPolygon().getCentroid().xyz(getMinEle());
 		}
 
 		@Override

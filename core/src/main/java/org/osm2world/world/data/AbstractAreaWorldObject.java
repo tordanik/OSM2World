@@ -128,9 +128,14 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 		return outlinePolygonXZ;
 	}
 
+	/**
+	 * returns the XYZ version of {@link #getOutlinePolygonXZ()}.
+	 * Considers elevation and {@link AttachmentConnector}s.
+	 */
 	public PolygonWithHolesXYZ getOutlinePolygon() {
-		if (getConnectorIfAttached() != null) {
-			return outlinePolygonXZ.xyz(attachmentConnector.getAttachedPos().getY());
+		AttachmentConnector connector = getConnectorIfAttached();
+		if (connector != null) {
+			return outlinePolygonXZ.xyz(connector.getAttachedPos().getY());
 		} else {
 			return connectors.getPosXYZ(outlinePolygonXZ);
 		}
@@ -188,6 +193,20 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 			throw new IllegalArgumentException(pos + " is not within the triangulation of " + this);
 		}
 
+	}
+
+	/**
+	 * returns the minimum elevation of this object after elevation and attachment calculations
+	 */
+	public double getMinEle() {
+		AttachmentConnector connector = getConnectorIfAttached();
+		if (connector != null) {
+			return connector.getAttachedPos().y;
+		} else {
+			return getEleConnectors().eleConnectors.stream()
+					.mapToDouble(c -> c.getPosXYZ().y)
+					.min().orElse(0.0);
+		}
 	}
 
 	@Override
