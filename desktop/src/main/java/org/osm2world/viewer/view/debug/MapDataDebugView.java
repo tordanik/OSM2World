@@ -66,7 +66,8 @@ public class MapDataDebugView extends StaticDebugView {
 		}
 
 		for (MapNode node : mapData.getMapNodes()) {
-			if (node.getId() < 0 && node.getAdjacentAreas().stream().allMatch(isEmptyTerrain)) continue;
+			if (node.getId() < 0 && !node.getAdjacentAreas().isEmpty()
+					&& node.getAdjacentAreas().stream().allMatch(isEmptyTerrain)) continue; // artificial empty terrain
 			drawBoxAround(output, node.getPos(), NODE_COLOR, HALF_NODE_WIDTH);
 		}
 
