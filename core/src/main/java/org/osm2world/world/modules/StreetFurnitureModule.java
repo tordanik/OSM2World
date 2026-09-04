@@ -293,15 +293,16 @@ public class StreetFurnitureModule extends AbstractModule {
 				if (flagMaterial != null) {
 					flag = new TexturedFlag(flagMaterial);
 				}
-			}
-
-			String countryCode = node.getTags().getValue("country");
-			if (flag == null && node.getTags().contains("flag:type", "national") && countryCode != null) {
-				Material countryFlagMaterial = buildTexturedFlagMaterial(countryCode);
-				if (countryFlagMaterial != null) {
-					flag = new TexturedFlag(countryFlagMaterial);
-				} else {
-					flag = NATIONAL_FLAGS.get(countryCode);
+			} else {
+				// resolve country codes (but only if no wikidata value is present, not even an unknown one)
+				String countryCode = node.getTags().getValue("country");
+				if (node.getTags().contains("flag:type", "national") && countryCode != null) {
+					Material countryFlagMaterial = buildTexturedFlagMaterial(countryCode);
+					if (countryFlagMaterial != null) {
+						flag = new TexturedFlag(countryFlagMaterial);
+					} else {
+						flag = NATIONAL_FLAGS.get(countryCode);
+					}
 				}
 			}
 
