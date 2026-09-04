@@ -580,6 +580,7 @@ public class GltfOutput extends AbstractOutput {
 
 		GltfMaterial material = new GltfMaterial();
 		material.pbrMetallicRoughness = new PbrMetallicRoughness();
+		material.pbrMetallicRoughness.roughnessFactor = 1.0f;
 
 		if (color != null) {
 			material.pbrMetallicRoughness.baseColorFactor = color.componentsRGBA();
@@ -627,6 +628,12 @@ public class GltfOutput extends AbstractOutput {
 
 			}
 
+		}
+
+		if (material.pbrMetallicRoughness.metallicRoughnessTexture == null) {
+			material.pbrMetallicRoughness.metallicFactor = 0f;
+		} else {
+			material.pbrMetallicRoughness.metallicFactor = 1.0f;
 		}
 
 		gltf.materials.add(material);
