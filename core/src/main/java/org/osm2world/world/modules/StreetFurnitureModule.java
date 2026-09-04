@@ -346,7 +346,8 @@ public class StreetFurnitureModule extends AbstractModule {
 		private @Nullable Material buildTexturedFlagMaterial(String flagId) {
 			Material material = config.mapStyle().resolveMaterial("FLAG_" + flagId);
 			Material flagcloth = FLAGCLOTH.get(config);
-			if (material != null && material.textureLayers().size() > 0 && flagcloth.textureLayers().size() > 0) {
+			if (material != null && material.textureLayers().size() > 0 && flagcloth.textureLayers().size() > 0
+					&& material.transparency() == Material.Transparency.FALSE) {
 				List<TextureLayer> textureLayers = new ArrayList<>(flagcloth.textureLayers());
 				TextureLayer flag0 = material.textureLayers().get(0);
 				TextureLayer cloth0 = flagcloth.textureLayers().get(0);
