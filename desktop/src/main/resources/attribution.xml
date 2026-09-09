@@ -49,7 +49,7 @@
          <name>Apache Commons IO</name>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
-         <version>2.14.0</version>
+         <version>2.21.0</version>
          <projectUrl>https://commons.apache.org/proper/commons-io/</projectUrl>
          <type>jar</type>
          <licenses>
@@ -59,7 +59,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/commons-io/commons-io/2.14.0/commons-io-2.14.0.jar</string>
+            <string>https://repo.maven.apache.org/maven2/commons-io/commons-io/2.21.0/commons-io-2.21.0.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -134,7 +134,7 @@
          <name>asm</name>
          <groupId>org.ow2.asm</groupId>
          <artifactId>asm</artifactId>
-         <version>9.9</version>
+         <version>9.10.1</version>
          <projectUrl>http://asm.ow2.io/</projectUrl>
          <type>jar</type>
          <licenses>
@@ -144,7 +144,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.9/asm-9.9.jar</string>
+            <string>https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.10.1/asm-9.10.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -238,7 +238,7 @@
          <name>error-prone annotations</name>
          <groupId>com.google.errorprone</groupId>
          <artifactId>error_prone_annotations</artifactId>
-         <version>2.26.1</version>
+         <version>2.27.0</version>
          <projectUrl>https://errorprone.info/error_prone_annotations</projectUrl>
          <type>jar</type>
          <licenses>
@@ -248,7 +248,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.26.1/error_prone_annotations-2.26.1.jar</string>
+            <string>https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.27.0/error_prone_annotations-2.27.0.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -410,6 +410,23 @@
          </licenses>
          <downloadUrls>
             <string>https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>Jackson-annotations</name>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-annotations</artifactId>
+         <version>3.0-rc5</version>
+         <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The Apache Software License, Version 2.0</name>
+               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-annotations/3.0-rc5/jackson-annotations-3.0-rc5.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
@@ -1114,6 +1131,57 @@
          </licenses>
          <downloadUrls>
             <string>https://repo.maven.apache.org/maven2/org/xerial/sqlite-jdbc/3.41.2.2/sqlite-jdbc-3.41.2.2.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>TeaVM Flavour - Json</name>
+         <groupId>com.frequal.flavour</groupId>
+         <artifactId>teavm-flavour-json</artifactId>
+         <version>0.3.2</version>
+         <projectUrl>https://flavour.sourceforge.io/teavm-flavour-json/</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The Apache Software License, Version 2.0</name>
+               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/com/frequal/flavour/teavm-flavour-json/0.3.2/teavm-flavour-json-0.3.2.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>TeaVM JavaScript objects</name>
+         <groupId>org.teavm</groupId>
+         <artifactId>teavm-jso</artifactId>
+         <version>0.6.1</version>
+         <projectUrl>http://teavm.org/teavm-jso</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The Apache Software License, Version 2.0</name>
+               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/org/teavm/teavm-jso/0.6.1/teavm-jso-0.6.1.jar</string>
+         </downloadUrls>
+      </dependency>
+      <dependency>
+         <name>TeaVM metaprogramming API</name>
+         <groupId>org.teavm</groupId>
+         <artifactId>teavm-metaprogramming-api</artifactId>
+         <version>0.6.1</version>
+         <projectUrl>http://teavm.org/teavm-metaprogramming-api</projectUrl>
+         <type>jar</type>
+         <licenses>
+            <license>
+               <name>The Apache Software License, Version 2.0</name>
+               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+         <downloadUrls>
+            <string>https://repo.maven.apache.org/maven2/org/teavm/teavm-metaprogramming-api/0.6.1/teavm-metaprogramming-api-0.6.1.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>
