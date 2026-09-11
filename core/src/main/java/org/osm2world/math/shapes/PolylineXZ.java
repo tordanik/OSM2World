@@ -86,4 +86,30 @@ public class PolylineXZ implements PolylineShapeXZ {
 		return vertices.toString();
 	}
 
+	/**
+	 * constructs a polyline from a list of line segments or polylines
+	 * in which each segment/polyline starts with the end position of the previous one
+	 */
+	public static PolylineXZ join(List<? extends PolylineShapeXZ> polylines) {
+
+		if (polylines.isEmpty()) {
+			throw new IllegalArgumentException("list of joined polylines must not be empty");
+		}
+
+		List<VectorXZ> vertices = new ArrayList<>();
+
+		vertices.add(polylines.get(0).vertices().get(0));
+
+		for (PolylineShapeXZ segment : polylines) {
+			List<VectorXZ> newVertices = segment.vertices();
+			if (!vertices.isEmpty() && !newVertices.get(0).equals(vertices.get(vertices.size() - 1))) {
+				throw new IllegalArgumentException("segment does not start with the previous segment's end point");
+			}
+			vertices.addAll(newVertices.subList(1, newVertices.size()));
+		}
+
+		return new PolylineXZ(vertices);
+
+	}
+
 }

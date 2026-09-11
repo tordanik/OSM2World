@@ -33,6 +33,7 @@ public class MapArea extends MapRelationElement implements MapElement {
 
 	private final PolygonWithHolesXZ polygon;
 
+	private List<MapAreaSegment> areaSegmentsOuter;
 	private Collection<MapAreaSegment> areaSegments;
 
 	@SuppressWarnings("unchecked") //is later checked for EMPTY_LIST using ==
@@ -97,7 +98,8 @@ public class MapArea extends MapRelationElement implements MapElement {
 	/** shared functionality used by multiple constructors */
 	private void finishConstruction() {
 
-		areaSegments = new ArrayList<MapAreaSegment>();
+		areaSegments = new ArrayList<>();
+		areaSegmentsOuter = new ArrayList<>();
 
 		for (List<MapNode> ring : getRings()) {
 
@@ -119,8 +121,17 @@ public class MapArea extends MapRelationElement implements MapElement {
 
 				areaSegments.add(segment);
 
+				if (isOuter) {
+					areaSegmentsOuter.add(segment);
+				}
+
 			}
 
+		}
+
+		if (getHoles().isEmpty()) {
+			// avoid needlessly storing a duplicate list
+			areaSegments = areaSegmentsOuter;
 		}
 
 	}
@@ -182,6 +193,13 @@ public class MapArea extends MapRelationElement implements MapElement {
 
 	public SimplePolygonXZ getOuterPolygon() {
 		return getPolygon().getOuter();
+	}
+
+	/**
+	 * returns the segments making up this area's outer ring
+	 */
+	public List<MapAreaSegment> getAreaSegmentsOuter() {
+		return areaSegmentsOuter;
 	}
 
 	/**

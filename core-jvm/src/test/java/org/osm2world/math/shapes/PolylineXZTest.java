@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.osm2world.math.VectorXZ.Z_UNIT;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.osm2world.math.VectorXZ;
 
@@ -127,6 +129,32 @@ public class PolylineXZTest {
 
 		assertEquals(polyline1.shift(Z_UNIT), polyline1.shift(Z_UNIT));
 		assertEquals(polyline2, polyline1.shift(Z_UNIT));
+
+	}
+
+	@Test
+	public void testJoin() {
+
+		List<LineSegmentXZ> segments = List.of(
+			new LineSegmentXZ(new VectorXZ(0, 0), new VectorXZ(1, 0)),
+			new LineSegmentXZ(new VectorXZ(1, 0), new VectorXZ(2, 0)),
+			new LineSegmentXZ(new VectorXZ(2, 0), new VectorXZ(2, 5))
+		);
+
+		assertEquals(new PolylineXZ(segments.get(0).p1, segments.get(0).p2),
+				PolylineXZ.join(segments.subList(0, 1)));
+
+		var polyline = PolylineXZ.join(segments);
+		assertEquals(4, polyline.vertices().size());
+		assertEquals(polyline, PolylineXZ.join(List.of(polyline)));
+
+		var polyline2 = new PolylineXZ(new VectorXZ(2, 5), new VectorXZ(0, 0));
+
+		assertEquals(5, PolylineXZ.join(List.of(polyline, polyline2)).vertices().size());
+		assertEquals(5, PolylineXZ.join(List.of(polyline2, polyline)).vertices().size());
+
+		assertEquals(PolylineXZ.join(List.of(polyline, polyline2)).getLength(),
+				PolylineXZ.join(List.of(polyline2, polyline)).getLength(), 0.01);
 
 	}
 
