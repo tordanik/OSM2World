@@ -2,6 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import static java.util.Collections.emptyList;
 import static org.osm2world.scene.color.Color.ORANGE;
+import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,6 @@ import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.world.attachment.AttachmentSurface;
-import org.osm2world.world.data.WorldObject;
 
 public class AttachmentSurfaceDebugView extends StaticDebugView {
 
@@ -34,7 +34,7 @@ public class AttachmentSurfaceDebugView extends StaticDebugView {
 	@Override
 	protected void fillOutput(JOGLOutput output) {
 
-		for (WorldObject object : scene.getWorldObjects()) {
+		forEach(scene.getWorldObjects(), object -> {
 			for (AttachmentSurface surface : object.getAttachmentSurfaces()) {
 
 				String type = surface.getTypes().iterator().next();
@@ -57,7 +57,7 @@ public class AttachmentSurfaceDebugView extends StaticDebugView {
 				}
 
 			}
-		}
+		});
 
 	}
 

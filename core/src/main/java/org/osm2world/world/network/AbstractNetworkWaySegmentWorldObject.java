@@ -41,6 +41,7 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.util.enums.UpDown;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.attachment.AttachmentUtil;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.BridgeModule;
@@ -606,7 +607,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		return attachmentConnectorList;
 	}
 
-	/** to be used in the constructors of subclasses that wish to be attachable to indoor surfaces */
+	/** to be used in the constructors of subclasses that wish to be attachable */
 	protected void createAttachmentConnectors() {
 
 		MapNode wayStartNode = segment.getWay().getNodes().get(0);
@@ -619,8 +620,6 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		firstNodeLevel = determineLevelOfNode(wayStartNode);
 		lastNodeLevel = determineLevelOfNode(wayEndNode);
-
-		/* use segment tags */
 
 		if (segment.getTags().containsKey("level")) {
 
@@ -657,10 +656,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 			lastNodeTypes.add("floor" + lastNodeLevel);
 		}
 
-		if (segment.getTags().contains("location", "roof")) {
-			firstNodeTypes.add("roof");
-			lastNodeTypes.add("roof");
-		}
+		List<String> otherAttachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(segment);
+		otherAttachmentTypes.removeIf(it -> it.startsWith("floor")); // we use custom logic for levels here
+		firstNodeTypes.addAll(otherAttachmentTypes);
+		lastNodeTypes.addAll(otherAttachmentTypes);
 
 		/* instantiate attachment connectors */
 

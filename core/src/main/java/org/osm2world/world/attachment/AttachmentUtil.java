@@ -40,6 +40,16 @@ public final class AttachmentUtil {
 			types.add(support);
 		}
 
+		/* handle features on bridges */
+
+		if (tags.contains("location", "bridge") || tags.contains("bridge", "yes")) {
+			types.add("bridge");
+			Integer layer = ValueParseUtil.parseInt(tags.getValue("layer"));
+			if (layer != null) {
+				types.add("bridge-layer" + layer);
+			}
+		}
+
 		/* handle rooftop features */
 
 		if (tags.contains("location", "roof") || tags.contains("location", "rooftop") || tags.contains("parking", "rooftop")) {
@@ -49,7 +59,7 @@ public final class AttachmentUtil {
 			types.add("roof");
 		}
 
-		/* handle generic indoor indoor features */
+		/* handle generic indoor features */
 
 		if (types.isEmpty() && level != null) {
 			types.add("floor" + level);
