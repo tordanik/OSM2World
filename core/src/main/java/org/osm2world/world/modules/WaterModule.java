@@ -55,6 +55,16 @@ public class WaterModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 
+		for (MapArea area : mapData.getMapAreas()) {
+			if (area.getTags().contains(WATER_TAG)
+					|| area.getTags().contains(RIVERBANK_TAG)) {
+				area.addRepresentation(new Water(area));
+			}
+			if (area.getTags().contains("amenity", "fountain")) {
+				area.addRepresentation(new AreaFountain(area));
+			}
+		}
+
 		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			for (String value : WATERWAY_WIDTHS.keySet()) {
 				if (line.getTags().contains("waterway", value)) {
@@ -65,12 +75,13 @@ public class WaterModule extends ConfigurableWorldModule {
 
 					for (MapOverlap<?, ?> overlap : line.getOverlaps()) {
 						MapElement other = overlap.getOther(line);
-						if (other instanceof MapArea) {
+						if (other instanceof MapArea area
+								&& area.getRepresentations().stream().anyMatch(r -> r instanceof Water)) {
 							if (overlap.type == MapOverlapType.CONTAIN) {
 								lineInsideWaterArea = true;
 							} else if (overlap.type == MapOverlapType.INTERSECT) {
-								lineStartInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getStartNode().getPos());
-								lineEndInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getEndNode().getPos());
+								lineStartInsideWaterArea |= area.getPolygon().contains(line.getStartNode().getPos());
+								lineEndInsideWaterArea |= area.getPolygon().contains(line.getEndNode().getPos());
 							}
 						}
 					}
@@ -85,16 +96,6 @@ public class WaterModule extends ConfigurableWorldModule {
 		for (MapNode node : mapData.getMapNodes()) {
 			if (getConnectedNetworkSegments(node, Waterway.class, null).size() > 2) {
 				node.addRepresentation(new RiverJunction(node));
-			}
-		}
-
-		for (MapArea area : mapData.getMapAreas()) {
-			if (area.getTags().contains(WATER_TAG)
-					|| area.getTags().contains(RIVERBANK_TAG)) {
-				area.addRepresentation(new Water(area));
-			}
-			if (area.getTags().contains("amenity", "fountain")) {
-				area.addRepresentation(new AreaFountain(area));
 			}
 		}
 
@@ -211,8 +212,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			boolean containedWithinRiverbank = false;
 
 			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
-				if (overlap.getOther(segment) instanceof MapArea) {
-					MapArea area = (MapArea)overlap.getOther(segment);
+				if (overlap.getOther(segment) instanceof MapArea area) {
 					if (area.getPrimaryRepresentation() instanceof Water &&
 							area.getPolygon().contains(segment.getLineSegment())) {
 						containedWithinRiverbank = true;
