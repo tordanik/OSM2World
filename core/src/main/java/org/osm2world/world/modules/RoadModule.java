@@ -27,6 +27,7 @@ import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -46,6 +47,7 @@ import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
+import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -701,15 +703,20 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			VectorXYZ startLeft = getEleConnectors().getPosXYZ(
-					startPos.subtract(cutVector.mult(0.5 * startWidth)));
-			VectorXYZ startRight = getEleConnectors().getPosXYZ(
-					startPos.add(cutVector.mult(0.5 * startWidth)));
+			Function<VectorXZ, VectorXYZ> eleFunction;
 
-			VectorXYZ endLeft = getEleConnectors().getPosXYZ(
-					endPos.subtract(cutVector.mult(0.5 * endWidth)));
-			VectorXYZ endRight = getEleConnectors().getPosXYZ(
-					endPos.add(cutVector.mult(0.5 * endWidth)));
+			AttachmentConnector attachmentConnector = getConnectorIfAttached();
+			if (attachmentConnector != null) {
+				eleFunction = v -> v.xyz(attachmentConnector.getAttachedPos().y);
+			} else {
+				eleFunction = getEleConnectors()::getPosXYZ;
+			}
+
+			VectorXYZ startLeft = eleFunction.apply(startPos.subtract(cutVector.mult(0.5 * startWidth)));
+			VectorXYZ startRight = eleFunction.apply(startPos.add(cutVector.mult(0.5 * startWidth)));
+
+			VectorXYZ endLeft = eleFunction.apply(endPos.subtract(cutVector.mult(0.5 * endWidth)));
+			VectorXYZ endRight = eleFunction.apply(endPos.add(cutVector.mult(0.5 * endWidth)));
 
 			/* determine surface material */
 
@@ -763,6 +770,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			return super.getAttachmentConnectors();
+		}
 	}
 
 	/** representation of a road */

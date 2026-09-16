@@ -2,14 +2,13 @@ package org.osm2world.world.network;
 
 import static java.util.stream.Collectors.toSet;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.shapes.PolygonShapeXZ;
+import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.OutlineNodeWorldObject;
 import org.osm2world.world.data.WorldObject;
 
@@ -62,4 +61,34 @@ public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObj
 		}
 	}
 
+	@Override
+	protected List<String> getAttachmentTypes() {
+
+		List<String> types = new ArrayList<>(super.getAttachmentTypes());
+
+		for (S segment : getConnectedNetworkSegments()) {
+
+			Set<String> segmentTypes = null;
+
+			for (AttachmentConnector connector : segment.getAttachmentConnectors()) {
+				List<String> segmentConnectorTypes = connector.compatibleSurfaceTypes;
+				if (connector.originalPos.distanceToXZ(node.getPos()) < 0.5) {
+					types.addAll(segmentConnectorTypes);
+				}
+				if (segmentTypes == null) {
+					segmentTypes = new HashSet<>(segmentConnectorTypes);
+				} else {
+					segmentTypes.retainAll(segmentConnectorTypes);
+				}
+			}
+
+			if (segmentTypes != null) {
+				types.addAll(segmentTypes);
+			}
+
+		}
+
+		return types;
+
+	}
 }

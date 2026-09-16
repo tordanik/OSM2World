@@ -3,16 +3,18 @@ package org.osm2world.world.data;
 import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.math.BoundedObject;
-import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
+import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.attachment.AttachmentUtil;
 
 /**
  * superclass for {@link NodeWorldObject}s that do have an outline
@@ -25,6 +27,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 	protected final MapNode node;
 
 	private EleConnectorGroup connectors = null;
+	protected List<AttachmentConnector> attachmentConnectors;
 
 	protected OutlineNodeWorldObject(MapNode node) {
 		this.node = node;
@@ -64,7 +67,46 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 	}
 
 	@Override
-	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+	public Iterable<AttachmentConnector> getAttachmentConnectors() {
+
+		if (attachmentConnectors == null) {
+
+			List<String> attachmentTypes = getAttachmentTypes();
+
+			if (attachmentTypes.isEmpty()) {
+				this.attachmentConnectors = List.of();
+			} else {
+				this.attachmentConnectors = List.of(new AttachmentConnector(attachmentTypes,
+						node.getPos().xyz(0), this, 0, false));
+			}
+
+		}
+
+		return attachmentConnectors;
+
+	}
+
+	/**
+	 * Returns the possible attachment types for this object.
+	 * Can be empty if this object should not attach to anything.
+	 * Subclasses can override this to implement their own logic.
+	 */
+	protected List<String> getAttachmentTypes() {
+		return AttachmentUtil.getCompatibleSurfaceTypes(node);
+	}
+
+	/**
+	 * returns the {@link AttachmentConnector} for this area if it exists and
+	 * has successfully attached to an {@link AttachmentSurface}, null otherwise.
+	 */
+	protected @Nullable AttachmentConnector getConnectorIfAttached() {
+		if (attachmentConnectors != null && !attachmentConnectors.isEmpty()
+				&& attachmentConnectors.get(0).isAttached()) {
+			return attachmentConnectors.get(0);
+		} else {
+			return null;
+		}
+	}
 
 	@Override
 	public AxisAlignedRectangleXZ boundingBox() {
@@ -76,7 +118,15 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 	}
 
 	public PolygonXYZ getOutlinePolygon() {
-		return connectors.getPosXYZ(getOutlinePolygonXZ());
+		SimplePolygonXZ outlinePolygonXZ = getOutlinePolygonXZ();
+		AttachmentConnector attachmentConnector = getConnectorIfAttached();
+		if (outlinePolygonXZ == null) {
+			return null;
+		} else if (attachmentConnector != null) {
+			return outlinePolygonXZ.xyz(attachmentConnector.getAttachedPos().y);
+		} else {
+			return connectors.getPosXYZ(outlinePolygonXZ);
+		}
 	}
 
 	@Override
@@ -91,22 +141,16 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 
 		if (getOutlinePolygonXZ() == null) return emptyList();
 
-		Collection<TriangleXZ> trianglesXZ = TriangulationUtil.triangulate(getOutlinePolygonXZ());
+		List<TriangleXZ> trianglesXZ = new ArrayList<>(TriangulationUtil.triangulate(getOutlinePolygonXZ()));
+		trianglesXZ.replaceAll(TriangleXZ::makeCounterclockwise);
 
-		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(trianglesXZ.size());
-
-		for (TriangleXZ triangleXZ : trianglesXZ) {
-			VectorXYZ v1 = connectors.getPosXYZ(triangleXZ.v1);
-			VectorXYZ v2 = connectors.getPosXYZ(triangleXZ.v2);
-			VectorXYZ v3 = connectors.getPosXYZ(triangleXZ.v3);
-			if (triangleXZ.isClockwise()) {
-				trianglesXYZ.add(new TriangleXYZ(v3, v2, v1));
-			} else  {
-				trianglesXYZ.add(new TriangleXYZ(v1, v2, v3));
-			}
+		AttachmentConnector attachmentConnector = getConnectorIfAttached();
+		if (attachmentConnector != null) {
+			double ele = attachmentConnector.getAttachedPos().y;
+			return TriangulationUtil.triangulationXZtoXYZ(trianglesXZ, t -> t.xyz(ele));
+		} else {
+			return TriangulationUtil.triangulationXZtoXYZ(trianglesXZ, connectors::getPosXYZ);
 		}
-
-		return trianglesXYZ;
 
 	}
 
