@@ -813,6 +813,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				this.laneLayout = buildBasicLaneLayout();
 				this.width = calculateWidth();
 				laneLayout.setCalculatedValues(width);
+				createAttachmentConnectors();
 			}
 
 		}

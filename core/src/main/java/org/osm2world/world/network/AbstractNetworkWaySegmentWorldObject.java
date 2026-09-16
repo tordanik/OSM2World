@@ -11,8 +11,7 @@ import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.Constra
 import static org.osm2world.map_elevation.data.GroundState.*;
 import static org.osm2world.math.VectorXZ.distance;
 import static org.osm2world.math.VectorXZ.distanceSquared;
-import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
-import static org.osm2world.math.algorithms.GeometryUtil.interpolateEleOfSegment;
+import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.util.ValueParseUtil.parseIncline;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseInclineDirection;
@@ -525,7 +524,25 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 * have been calculated.
 	 */
 	public List<VectorXYZ> getOutline(boolean right) {
-		return connectors.getPosXYZ(getOutlineXZ(right));
+		if (attachmentConnectorList.size() == 2 && attachmentConnectorList.stream().allMatch(c -> c.isAttached())) {
+
+			List<VectorXYZ> centerline = getCenterline();
+			List<VectorXZ> outlineXZ = getOutlineXZ(right);
+			var outlineXZPolyline = new PolylineXZ(outlineXZ);
+
+			List<VectorXYZ> result = new ArrayList<>();
+
+			for (VectorXZ pos : outlineXZ) {
+				double ratio = outlineXZPolyline.offsetOf(pos) / outlineXZPolyline.getLength();
+				double ele = interpolateOn(centerline, ratio).y;
+				result.add(pos.xyz(ele));
+			}
+
+			return result;
+
+		} else {
+			return connectors.getPosXYZ(getOutlineXZ(right));
+		}
 	}
 
 	@Override
@@ -548,7 +565,19 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		if (isBroken()) {
 			return null;
 		} else {
-			return connectors.getPosXYZ(outlinePolygonXZ);
+
+			List<VectorXYZ> outlineLoopXYZ = new ArrayList<>(centerlineXZ.size() * 2 + 1);
+
+			outlineLoopXYZ.addAll(getOutline(true));
+
+			List<VectorXYZ> left = new ArrayList<>(getOutline(false));
+			Collections.reverse(left);
+			outlineLoopXYZ.addAll(left);
+
+			outlineLoopXYZ.add(outlineLoopXYZ.get(0));
+
+			return new PolygonXYZ(outlineLoopXYZ);
+
 		}
 
 	}

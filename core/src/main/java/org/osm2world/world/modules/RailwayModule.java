@@ -160,6 +160,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 			// tram is often part of a street, omit ground mesh
 			ownGround = !segment.getTags().contains("railway", "tram");
 
+			createAttachmentConnectors();
+
 		}
 
 		@Override

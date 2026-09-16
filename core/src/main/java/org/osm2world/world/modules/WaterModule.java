@@ -25,6 +25,7 @@ import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
+import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
@@ -106,6 +107,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		public Waterway(MapWaySegment line) {
 			super(line);
+			createAttachmentConnectors();
 		}
 
 		@Override
@@ -155,6 +157,13 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			//TODO: handle case where a river is completely within riverbanks, but not a *single* riverbank
 
+			double depth = 1.0;
+
+			if (getGroundState() == GroundState.ABOVE
+					|| attachmentConnectorList.stream().anyMatch(AttachmentConnector::isAttached)) {
+				depth = Math.min(depth, 0.95 * BridgeModule.BRIDGE_UNDERSIDE_HEIGHT);
+			}
+
 			if (! isContainedWithinRiverbank()) {
 
 				List<VectorXYZ> leftOutline = getOutline(false);
@@ -165,16 +174,16 @@ public class WaterModule extends ConfigurableWorldModule {
 				List<VectorXYZ> rightWaterBorder = createLineBetween(
 						leftOutline, rightOutline, 0.95f);
 
-				modifyLineHeight(leftWaterBorder, -0.2f);
-				modifyLineHeight(rightWaterBorder, -0.2f);
+				modifyLineHeight(leftWaterBorder, -0.2 * depth);
+				modifyLineHeight(rightWaterBorder, -0.2 * depth);
 
 				List<VectorXYZ> leftGround = createLineBetween(
 						leftOutline, rightOutline, 0.35f);
 				List<VectorXYZ> rightGround = createLineBetween(
 						leftOutline, rightOutline, 0.65f);
 
-				modifyLineHeight(leftGround, -1);
-				modifyLineHeight(rightGround, -1);
+				modifyLineHeight(leftGround, -depth);
+				modifyLineHeight(rightGround, -depth);
 
 				/* render ground */
 
@@ -223,11 +232,8 @@ public class WaterModule extends ConfigurableWorldModule {
 			return containedWithinRiverbank;
 		}
 
-		private static void modifyLineHeight(List<VectorXYZ> leftWaterBorder, float yMod) {
-			for (int i = 0; i < leftWaterBorder.size(); i++) {
-				VectorXYZ v = leftWaterBorder.get(i);
-				leftWaterBorder.set(i, v.y(v.y+yMod));
-			}
+		private static void modifyLineHeight(List<VectorXYZ> leftWaterBorder, double yMod) {
+			leftWaterBorder.replaceAll(vectorXYZ -> vectorXYZ.addY(yMod));
 		}
 
 	}
@@ -269,7 +275,15 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			if (super.getConnectorIfAttached() != null) {
+				return GroundState.ATTACHED;
+			} else if (BridgeModule.isBridge(area.getTags())) {
+				return GroundState.ABOVE;
+			} else if (TunnelModule.isTunnel(area.getTags())) {
+				return GroundState.BELOW;
+			} else {
+				return GroundState.ON;
+			}
 		}
 
 		@Override
