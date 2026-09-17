@@ -282,14 +282,20 @@ public class OSMToMapDataConverter {
 		/* create ways from remaining OSM ways */
 
 		for (OsmWay osmWay : osmData.getWays()) {
-			boolean hasTags = osmWay.getNumberOfTags() != 0;
-			if (hasTags && !wayAreaMap.containsKey(osmWay.getId())) {
-				try {
-					List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
-					var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
-					mapWays.add(way);
-				} catch (EntityNotFoundException | IllegalArgumentException e) {
-					ConversionLog.error(e.getMessage());
+			if (!wayAreaMap.containsKey(osmWay.getId())) {
+				boolean hasTags = osmWay.getNumberOfTags() != 0;
+				// only keep ways with tags or memberships in non-multipolygon relations
+				if (hasTags || osmData.getRelations().stream()
+						.filter(r -> !tagsOfEntity(r).contains("type", "multipolygon"))
+						.flatMap(r -> membersAsList(r).stream())
+						.anyMatch(m -> m.getType() == EntityType.Way && m.getId() == osmWay.getId())) {
+					try {
+						List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
+						var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
+						mapWays.add(way);
+					} catch (EntityNotFoundException | IllegalArgumentException e) {
+						ConversionLog.error(e.getMessage());
+					}
 				}
 			}
 		}
