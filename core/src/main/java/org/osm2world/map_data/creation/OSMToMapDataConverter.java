@@ -180,8 +180,6 @@ public class OSMToMapDataConverter {
 
 		/* create areas ... */
 
-		final Map<Long, MapArea> areaMap = new HashMap<>();
-
 		/* ... based on multipolygons */
 
 		forEach(osmData.getRelations(), (OsmRelation relation) -> {
@@ -202,15 +200,7 @@ public class OSMToMapDataConverter {
 					mapRelations.add(new MapMultipolygonRelation(relation.getId(), tags, areas));
 				}
 
-				for (MapArea area : areas) {
-
-					mapAreas.add(area);
-
-					if (!area.isBasedOnRelation()) {
-						areaMap.put(area.getId(), area);
-					}
-
-				}
+				mapAreas.addAll(areas);
 
 			} catch (EntityNotFoundException e) {
 				// skip this area
@@ -237,8 +227,10 @@ public class OSMToMapDataConverter {
 
 		/* ... based on closed ways with certain tags */
 
+		final Map<Long, MapArea> wayAreaMap = new HashMap<>();
+
 		for (OsmWay way : osmData.getWays()) {
-			if (isClosed(way) && !areaMap.containsKey(way.getId())) {
+			if (isClosed(way)) {
 				TagSet tags = tagsOfEntity(way);
 				if (!tags.contains("area", "no")
 						&& tags.stream().anyMatch(ruleset::isAreaTag)) {
@@ -250,7 +242,7 @@ public class OSMToMapDataConverter {
 						MapArea mapArea = new MapArea(way.getId(), false, tags, nodes);
 
 						mapAreas.add(mapArea);
-						areaMap.put(way.getId(), mapArea);
+						wayAreaMap.put(way.getId(), mapArea);
 
 					} catch (EntityNotFoundException | InvalidGeometryException e) {
 						ConversionLog.error(e.getMessage());
@@ -291,7 +283,7 @@ public class OSMToMapDataConverter {
 
 		for (OsmWay osmWay : osmData.getWays()) {
 			boolean hasTags = osmWay.getNumberOfTags() != 0;
-			if (hasTags && !areaMap.containsKey(osmWay.getId())) {
+			if (hasTags && !wayAreaMap.containsKey(osmWay.getId())) {
 				try {
 					List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
 					var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);

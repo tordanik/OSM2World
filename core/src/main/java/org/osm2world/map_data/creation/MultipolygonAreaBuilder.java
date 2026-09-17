@@ -123,9 +123,8 @@ final class MultipolygonAreaBuilder {
 		try {
 			assert isSimpleMultipolygon(relation, db);
 
-			OsmEntity tagSource = null;
 			List<MapNode> outerNodes = null;
-			List<List<MapNode>> holes = new ArrayList<List<MapNode>>();
+			List<List<MapNode>> holes = new ArrayList<>();
 
 			for (OsmRelationMember member : membersAsList(relation)) {
 				if (member.getType() == EntityType.Way) {
@@ -135,15 +134,14 @@ final class MultipolygonAreaBuilder {
 					if ("inner".equals(member.getRole())) {
 						holes.add(wayNodes(way, nodeIdMap));
 					} else if ("outer".equals(member.getRole())) {
-						tagSource = relation.getNumberOfTags() > 1 ? relation : way;
 						outerNodes = wayNodes(way, nodeIdMap);
 					}
 
 				}
 			}
 
-			return singleton(new MapArea(tagSource.getId(), tagSource instanceof OsmRelation,
-					tagsOfEntity(tagSource), outerNodes, holes));
+			return singleton(new MapArea(relation.getId(), true,
+					tagsOfEntity(relation), outerNodes, holes));
 
 		} catch (EntityNotFoundException e) {
 			throw new EntityNotFoundException(e);

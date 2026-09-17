@@ -69,11 +69,6 @@ public class OSMToMapDataConverterTest {
 	}
 
 	@Test
-	public void testMultipolygonOuterTagged() throws IOException, EntityNotFoundException {
-		genericMultipolygonTest("mp_two_holes_outer_tagged.osm");
-	}
-
-	@Test
 	public void testMultipolygonAdvanced() throws IOException, EntityNotFoundException {
 		genericMultipolygonTest("mp_two_holes_advanced.osm");
 	}
