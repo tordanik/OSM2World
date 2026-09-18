@@ -95,6 +95,13 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 		return 0.5 * (w1.cross(w2)).length();
 
 	}
+	/**
+	 * Returns an inversed version of this triangle.
+	 * It consists of the same vertices, but has the other direction.
+	 */
+	public TriangleXYZ reverse() {
+		return new TriangleXYZ(v3, v2, v1);
+	}
 
 	/** creates a new triangle by adding a shift vector to each vertex of this triangle */
 	public TriangleXYZ shift(VectorXYZ v) {

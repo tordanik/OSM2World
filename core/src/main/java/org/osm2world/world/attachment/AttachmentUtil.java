@@ -1,11 +1,13 @@
 package org.osm2world.world.attachment;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.MapElement;
+import org.osm2world.map_data.data.MapRelation;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.util.ValueParseUtil;
 
@@ -23,6 +25,8 @@ public final class AttachmentUtil {
 	public static List<String> getCompatibleSurfaceTypes(MapElement element) {
 
 		List<String> types = new ArrayList<>();
+		Collection<MapRelation.Membership> memberships = element.getElementWithId().getMemberships();
+
 		TagSet tags = element.getTags();
 
 		List<Integer> levels = ValueParseUtil.parseLevels(tags.getValue("level"));
@@ -42,7 +46,10 @@ public final class AttachmentUtil {
 
 		/* handle features on bridges */
 
-		if (tags.contains("location", "bridge") || tags.contains("bridge", "yes")) {
+		if (tags.contains("location", "bridge")
+				|| (tags.containsKey("bridge") && !"no".equals(tags.getValue("bridge")))
+				|| memberships.stream().anyMatch(m ->"on_bridge".equals(m.getRole())
+						&& m.getRelation().getTags().contains("type", "bridge"))) {
 			types.add("bridge");
 			Integer layer = ValueParseUtil.parseInt(tags.getValue("layer"));
 			if (layer != null) {

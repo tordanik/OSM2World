@@ -1,54 +1,64 @@
 package org.osm2world.world.modules;
 
-
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
+import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_DEFAULT;
 import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_PILLAR_DEFAULT;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.util.ListUtil.getFirst;
+import static org.osm2world.util.ListUtil.getLast;
 import static org.osm2world.util.ValueParseUtil.parseColor;
+import static org.osm2world.util.ValueParseUtil.parseInt;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.math.shapes.ClosedShapeXZ;
-import org.osm2world.math.shapes.PolylineXZ;
-import org.osm2world.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.math.algorithms.FaceDecompositionUtil;
+import org.osm2world.math.algorithms.TriangulationUtil;
+import org.osm2world.math.shapes.*;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
-import org.osm2world.scene.texcoord.NamedTexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordUtil;
+import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.data.AreaWorldObject;
+import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.world.modules.WaterModule.Water;
 import org.osm2world.world.modules.WaterModule.Waterway;
-import org.osm2world.world.modules.common.AbstractModule;
 import org.osm2world.world.modules.common.BridgeOrTunnel;
+import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
 
 /**
- * adds bridges to the world.
+ * Adds bridges to the world.
  *
- * Needs to be applied <em>after</em> all the modules that generate
+ * <p>Needs to be applied <em>after</em> all the modules that generate
  * whatever runs over the bridge.
  */
-public class BridgeModule extends AbstractModule {
+public class BridgeModule extends ConfigurableWorldModule {
 
 	public static final boolean isBridge(TagSet tags) {
 		return tags.containsKey("bridge")
@@ -59,7 +69,28 @@ public class BridgeModule extends AbstractModule {
 		return isBridge(segment.getTags());
 	}
 
+
 	@Override
+	public final void applyTo(MapData mapData) {
+
+		for (MapNode node : mapData.getMapNodes()) {
+			// TODO: create piers
+		}
+
+		for (MapWaySegment waySegment : mapData.getMapWaySegments()) {
+			if (waySegment.getRepresentations().isEmpty()) {
+				applyToWaySegment(waySegment);
+			}
+		}
+
+		for (MapArea area : mapData.getMapAreas()) {
+			if (area.getTags().contains("man_made", "bridge")) {
+				area.addRepresentation(new BridgeArea(area));
+			}
+		}
+
+	}
+
 	protected void applyToWaySegment(MapWaySegment segment) {
 
 		WaySegmentWorldObject primaryRepresentation =
@@ -120,11 +151,11 @@ public class BridgeModule extends AbstractModule {
 					rightOutline, belowRightOutline);
 
 			target.drawTriangleStrip(BRIDGE_DEFAULT.get(config), strip1,
-					texCoordLists(strip1, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
+					texCoordLists(strip1, BRIDGE_DEFAULT.get(config), STRIP_WALL));
 			target.drawTriangleStrip(BRIDGE_DEFAULT.get(config), strip2,
-					texCoordLists(strip2, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
+					texCoordLists(strip2, BRIDGE_DEFAULT.get(config), STRIP_WALL));
 			target.drawTriangleStrip(BRIDGE_DEFAULT.get(config), strip3,
-					texCoordLists(strip3, BRIDGE_DEFAULT.get(config), NamedTexCoordFunction.STRIP_WALL));
+					texCoordLists(strip3, BRIDGE_DEFAULT.get(config), STRIP_WALL));
 
 		}
 
@@ -251,6 +282,286 @@ public class BridgeModule extends AbstractModule {
 			target.drawExtrudedShape(material, crossSection,
 					asList(base, top), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
+		}
+
+	}
+
+	private class BridgeArea implements AreaWorldObject, ProceduralWorldObject {
+
+		private final MapArea area;
+		private final @Nullable MapRelation relation;
+		private final int layer;
+
+		private EleConnectorGroup connectors = null;
+		private AttachmentSurface attachmentSurface = null;
+
+		private final List<PolylineXZ> edges;
+		private final List<PolylineXZ> caps;
+
+		public BridgeArea(MapArea area) {
+
+			this.area = area;
+
+			this.layer = parseInt(area.getTags().getValue("layer"),0);
+
+			/* find the bridge relation associated with this bridge (if any) */
+
+			MapRelation relation = null;
+
+			for (MapRelation.Membership membership : area.getMemberships()) {
+				if (membership.getRelation().getTags().contains("type", "bridge")
+						&& "outline".equals(membership.getRole())) {
+					if (relation == null) {
+						relation = membership.getRelation();
+					} else {
+						ConversionLog.warn("More than one bridge relation for bridge outline", area);
+					}
+				}
+			}
+
+			this.relation = relation;
+
+			Set<MapWaySegment> edgeMemberSegments = Set.of();
+
+			if (relation != null) {
+				edgeMemberSegments = relation.getMembers().stream()
+						.filter(m -> "edge".equals(m.getRole()))
+						.filter(m -> m.getElement() instanceof MapWay)
+						.map(m -> (MapWay) m.getElement())
+						.flatMap(m -> m.getWaySegments().stream())
+						.collect(Collectors.toSet());
+			}
+
+			/* split the bridge outline into:
+			 * - edges (sides which are in the air)
+			 * - caps (sides where the bridge ends at the ground) */
+
+			List<PolylineXZ> edges = new ArrayList<>(3);
+			List<PolylineXZ> caps = new ArrayList<>(3);
+
+			SimplePolygonXZ outline = area.getOuterPolygon();
+
+			List<LineSegmentXZ> currentPolyline = new ArrayList<>();
+			boolean currentIsCap = false;
+
+			for (MapAreaSegment segment : area.getAreaSegmentsOuter()) {
+
+				boolean isCap;
+
+				if (!edgeMemberSegments.isEmpty()) {
+					// rely on explicit edge member mapping
+					isCap = edgeMemberSegments.stream().noneMatch(s ->
+							(s.getStartNode().equals(segment.getStartNode())
+									&& s.getEndNode().equals(segment.getEndNode()))
+							|| (s.getEndNode().equals(segment.getStartNode()) &&
+									s.getStartNode().equals(segment.getEndNode())));
+				} else {
+					isCap = isConnectedToGround(segment.getStartNode(), outline)
+						|| isConnectedToGround(segment.getEndNode(), outline);
+				}
+
+				if (isCap ^ currentIsCap) {
+					if (!currentPolyline.isEmpty()) {
+						if (currentIsCap) {
+							caps.add(PolylineXZ.join(currentPolyline));
+						} else {
+							edges.add(PolylineXZ.join(currentPolyline));
+						}
+					}
+					currentPolyline.clear();
+					currentIsCap = isCap;
+				}
+
+				currentPolyline.add(segment.getLineSegment());
+
+			}
+
+			PolylineXZ finalPolyline = PolylineXZ.join(currentPolyline);
+
+			if (currentIsCap) {
+				if (!caps.isEmpty() && getFirst(caps.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
+					caps.set(0, PolylineXZ.join(List.of(finalPolyline, caps.get(0))));
+				} else {
+					caps.add(finalPolyline);
+				}
+			} else {
+				if (!edges.isEmpty() && getFirst(edges.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
+					edges.set(0, PolylineXZ.join(List.of(finalPolyline, edges.get(0))));
+				} else {
+					edges.add(finalPolyline);
+				}
+			}
+
+			this.edges = edges;
+			this.caps = caps;
+
+		}
+
+		/**
+		 * Applies several heuristics to find out if a point of the bridge outline is likely connected to the ground
+		 * (or some other solid end of the bridge, such as a building).
+		 */
+		private boolean isConnectedToGround(MapNode node, SimplePolygonShapeXZ outline) {
+
+			/* building entrances */
+
+			if (node.getTags().containsKey("entrance")
+			 	&& node.getAdjacentAreas().stream().anyMatch(a -> a.getTags().containsKey("building"))) {
+				return true;
+			}
+
+			/* nodes connected to (non-bridge) highways, railways or waterways entering the outline */
+
+			boolean hasGroundWaysOutside = false;
+			boolean hasBridgeWayInside = false;
+
+			for (MapWaySegment segment : node.getConnectedWaySegments()) {
+				WaySegmentWorldObject rep = segment.getPrimaryRepresentation();
+				if (rep instanceof RoadModule.Road || rep instanceof RailwayModule.Rail
+						|| rep instanceof Waterway) {
+					boolean isInside = outline.contains(segment.getCenter());
+					boolean isBridgeWay = segment.getTags().containsKey("bridge")
+							&& !"no".equals(segment.getTags().getValue("bridge"));
+					if (isInside && isBridgeWay) {
+							hasBridgeWayInside = true;
+					} else if (!isInside && !isBridgeWay) {
+						hasGroundWaysOutside = true;
+					}
+				}
+			}
+
+			return hasBridgeWayInside && hasGroundWaysOutside;
+
+		}
+
+		@Override
+		public MapArea getPrimaryMapElement() {
+			return area;
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ABOVE;
+		}
+
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+
+			if (connectors == null) {
+
+				connectors = new EleConnectorGroup();
+
+				for (PolylineXZ cap : caps) {
+					for (VectorXZ v : cap.vertices()) {
+						connectors.add(new EleConnector(v, null, GroundState.ON));
+					}
+				}
+
+			}
+
+			return connectors;
+
+		}
+
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+
+			if (attachmentSurface == null) {
+				attachmentSurface = new AttachmentSurface(List.of("bridge-layer" + layer, "bridge"), this,
+						getDeckTriangles(false));
+			}
+
+			return List.of(attachmentSurface);
+
+		}
+
+		@Override
+		public void buildMeshesAndModels(Target target) {
+
+			/* draw deck */
+
+			List<TriangleXYZ> trianglesXYZ = getDeckTriangles(true);
+
+			Material deckMaterial = BRIDGE_DEFAULT.get(config);
+
+			target.drawTriangles(deckMaterial, trianglesXYZ,
+					TexCoordUtil.triangleTexCoordLists(trianglesXYZ, deckMaterial, GLOBAL_X_Z));
+
+			{ /* draw underside and edges */
+
+				Material undersideMaterial = BRIDGE_DEFAULT.get(config);
+
+				List<TriangleXYZ> undersideTrianglesXYZ = getDeckTriangles(false).stream()
+						.map(t -> t.shift(new VectorXYZ(0, -BRIDGE_UNDERSIDE_HEIGHT, 0)).reverse())
+						.toList();
+
+				target.drawTriangles(undersideMaterial, undersideTrianglesXYZ,
+						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, undersideMaterial, GLOBAL_X_Z));
+
+				for (PolylineXZ edge : edges) {
+
+					// TODO: determine which should be "left"
+
+					boolean bridgeIsRight = isRightOf(area.getOuterPolygon().getCentroid(),
+							getFirst(edge.vertices()), getLast(edge.vertices()));
+
+					List<VectorXYZ> triangleStrip = createTriangleStripBetween(
+							edge.xyz(getBridgeEle() - (bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0)).getVertices(),
+							edge.xyz(getBridgeEle() - (bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT)).getVertices());
+					target.drawTriangleStrip(undersideMaterial, triangleStrip,
+							TexCoordUtil.texCoordLists(triangleStrip, undersideMaterial, STRIP_WALL));
+
+				}
+
+			}
+
+		}
+
+
+		private List<TriangleXYZ> getDeckTriangles(boolean subtractAttachedObjects) {
+
+			PolygonShapeXZ polygon = getOutlinePolygonXZ();
+
+			/* subtract attached features from the deck surface */
+
+			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
+
+			if (subtractAttachedObjects && attachmentSurface != null) {
+				for (AttachmentConnector connector : attachmentSurface.getAttachedConnectors()) {
+					if (connector.object != null) {
+						subtractPolys.addAll(connector.object.getRawGroundFootprint());
+					}
+				}
+			}
+
+			subtractPolys.addAll(polygon.getHoles());
+
+			/* triangulate the (remaining) polygon */
+
+			List<SimplePolygonXZ> holes = subtractPolys.stream().map(p -> asSimplePolygon(p.getOuter())).toList();
+
+			Collection<PolygonWithHolesXZ> faces = FaceDecompositionUtil.splitPolygonIntoFaces(
+					polygon.getOuter(),
+					holes,
+					List.of() // TODO: in the future, inner segments may be useful to achieve a curved shape
+			);
+
+			List<TriangleXZ> trianglesXZ = new ArrayList<>();
+			faces.forEach(f -> trianglesXZ.addAll(f.getTriangulation()));
+
+			/* assign elevations to the triangulation */
+
+			double bridgeEle = getBridgeEle();
+			return TriangulationUtil.triangulationXZtoXYZ(trianglesXZ,
+					t -> t.xyz(bridgeEle));
+
+		}
+
+		private double getBridgeEle() {
+			// TODO replace with proper ele calculation and support non-flat bridges
+			if (connectors == null) throw new IllegalStateException("connectors not initialized");
+			OptionalDouble maxEle = connectors.eleConnectors.stream().mapToDouble(c -> c.getPosXYZ().y).max();
+			return maxEle.orElse(0) + 0.1;
 		}
 
 	}
