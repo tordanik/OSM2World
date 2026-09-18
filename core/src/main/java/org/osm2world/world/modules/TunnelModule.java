@@ -124,11 +124,30 @@ public class TunnelModule extends AbstractModule {
 
 	}
 
-	public class Tunnel extends BridgeOrTunnel {
+	public class Tunnel implements BridgeOrTunnel {
+
+		private final MapWaySegment segment;
+		private final AbstractNetworkWaySegmentWorldObject primaryRep;
 
 		public Tunnel(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
-			super(segment, primaryWO);
+			this.segment = segment;
+			this.primaryRep = primaryWO;
+		}
+
+		@Override
+		public String toString() {
+			return this.getClass().getSimpleName() + "(" + segment + ")";
+		}
+
+		@Override
+		public MapWaySegment getPrimaryMapElement() {
+			return segment;
+		}
+
+		@Override
+		public AbstractNetworkWaySegmentWorldObject getPrimaryRep() {
+			return primaryRep;
 		}
 
 		@Override

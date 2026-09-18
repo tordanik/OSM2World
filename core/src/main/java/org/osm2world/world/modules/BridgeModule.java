@@ -99,7 +99,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 		if (primaryRepresentation instanceof AbstractNetworkWaySegmentWorldObject
 				&& isBridge(segment)) {
 
-			segment.addRepresentation(new Bridge(segment,
+			segment.addRepresentation(new BridgeWay(segment,
 					(AbstractNetworkWaySegmentWorldObject) primaryRepresentation));
 
 		}
@@ -108,22 +108,35 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
-	private class Bridge extends BridgeOrTunnel {
+	private class BridgeWay implements BridgeOrTunnel {
 
-		public Bridge(MapWaySegment segment,
+		protected final MapWaySegment segment;
+		protected final AbstractNetworkWaySegmentWorldObject primaryRep;
+
+		public BridgeWay(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
-			super(segment, primaryWO);
+			this.segment = segment;
+			this.primaryRep = primaryWO;
+		}
+
+		@Override
+		public String toString() {
+			return this.getClass().getSimpleName() + "(" + segment + ")";
+		}
+
+		@Override
+		public MapWaySegment getPrimaryMapElement() {
+			return segment;
+		}
+
+		@Override
+		public AbstractNetworkWaySegmentWorldObject getPrimaryRep() {
+			return primaryRep;
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
-		}
-
-		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			// TODO EleConnectors for pillars
-			return super.getEleConnectors();
 		}
 
 		@Override

@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.osm2world.map_data.data.MapAreaSegment;
 import org.osm2world.map_data.data.MapElement;
-import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapType;
@@ -30,53 +29,41 @@ import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
 /**
  * common superclass for bridges and tunnels
  */
-public abstract class BridgeOrTunnel implements WaySegmentWorldObject, ProceduralWorldObject {
+public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldObject {
 
-	protected final MapWaySegment segment;
-	protected final AbstractNetworkWaySegmentWorldObject primaryRep;
+	AbstractNetworkWaySegmentWorldObject getPrimaryRep();
 
-	public BridgeOrTunnel(MapWaySegment segment,
-			AbstractNetworkWaySegmentWorldObject primaryRepresentation) {
-		this.segment = segment;
-		this.primaryRep = primaryRepresentation;
+	@Override
+	default VectorXZ getEndPosition() {
+		return getPrimaryRep().getEndPosition();
 	}
 
 	@Override
-	public MapWaySegment getPrimaryMapElement() {
-		return segment;
+	default VectorXZ getStartPosition() {
+		return getPrimaryRep().getStartPosition();
 	}
 
 	@Override
-	public VectorXZ getEndPosition() {
-		return primaryRep.getEndPosition();
-	}
-
-	@Override
-	public VectorXZ getStartPosition() {
-		return primaryRep.getStartPosition();
-	}
-
-	@Override
-	public Iterable<EleConnector> getEleConnectors() {
+	default Iterable<EleConnector> getEleConnectors() {
 		return emptyList();
 	}
 
 	@Override
-	public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+	default void defineEleConstraints(EleConstraintEnforcer enforcer) {
 
 		List<List<VectorXZ>> lines = List.of(
-				primaryRep.getCenterlineXZ().vertices(),
-				primaryRep.getOutlineXZ(true),
-				primaryRep.getOutlineXZ(false));
+				getPrimaryRep().getCenterlineXZ().vertices(),
+				getPrimaryRep().getOutlineXZ(true),
+				getPrimaryRep().getOutlineXZ(false));
 
-		SimplePolygonXZ outlinePolygonXZ = primaryRep.getOutlinePolygonXZ();
+		SimplePolygonXZ outlinePolygonXZ = getPrimaryRep().getOutlinePolygonXZ();
 
 		/* ensure a minimum vertical distance to ways and areas below,
 		 * at intersections */
 
-		for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
+		for (MapOverlap<?,?> overlap : getPrimaryRep().segment.getOverlaps()) {
 
-			MapElement other = overlap.getOther(segment);
+			MapElement other = overlap.getOther(getPrimaryRep().segment);
 			WorldObject otherWO = other.getPrimaryRepresentation();
 
 			if (otherWO == null
@@ -87,16 +74,11 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 
 			double distance = 10.0; //TODO base on clearing
 
-			if (overlap instanceof MapIntersectionWW) {
+			if (overlap instanceof MapIntersectionWW intersection) {
 
-				MapIntersectionWW intersection = (MapIntersectionWW) overlap;
+				if (otherWO instanceof AbstractNetworkWaySegmentWorldObject otherANWSWO) {
 
-				if (otherWO instanceof AbstractNetworkWaySegmentWorldObject) {
-
-					AbstractNetworkWaySegmentWorldObject otherANWSWO =
-							((AbstractNetworkWaySegmentWorldObject)otherWO);
-
-					EleConnector thisConn = primaryRep.getEleConnectors()
+					EleConnector thisConn = getPrimaryRep().getEleConnectors()
 							.getConnector(intersection.pos);
 					EleConnector otherConn = otherANWSWO.getEleConnectors()
 							.getConnector(intersection.pos);
@@ -111,7 +93,7 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 
 				}
 
-			} else if (overlap instanceof MapOverlapWA) {
+			} else if (overlap instanceof MapOverlapWA overlapWA) {
 
 				/*
 				 * require minimum distance at intersection points
@@ -119,13 +101,8 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 				 * but not into the area)
 				 */
 
-				MapOverlapWA overlapWA = (MapOverlapWA) overlap;
-
 				if (overlap.type == MapOverlapType.INTERSECT
-						&& otherWO instanceof AbstractAreaWorldObject) {
-
-					AbstractAreaWorldObject otherAAWO =
-							((AbstractAreaWorldObject)otherWO);
+						&& otherWO instanceof AbstractAreaWorldObject otherAAWO) {
 
 					for (int i = 0; i < overlapWA.getIntersectionPositions().size(); i++) {
 
@@ -134,7 +111,7 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 						MapAreaSegment areaSegment =
 								overlapWA.getIntersectingAreaSegments().get(i);
 
-						EleConnector thisConn = primaryRep.getEleConnectors()
+						EleConnector thisConn = getPrimaryRep().getEleConnectors()
 								.getConnector(pos);
 
 						EleConnector base1 = otherAAWO.getEleConnectors()
@@ -181,8 +158,8 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 
 							if (isBetween(c.pos, v1, v2)) {
 
-								EleConnector base1 = primaryRep.getEleConnectors().getConnector(v1);
-								EleConnector base2 = primaryRep.getEleConnectors().getConnector(v2);
+								EleConnector base1 = getPrimaryRep().getEleConnectors().getConnector(v1);
+								EleConnector base2 = getPrimaryRep().getEleConnectors().getConnector(v2);
 
 								if (base1 != null && base2 != null) {
 
@@ -210,11 +187,6 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject, Procedura
 			}
 
 		}
-	}
-
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + "(" + segment + ")";
 	}
 
 }
