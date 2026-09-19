@@ -99,7 +99,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 		if (primaryRepresentation instanceof AbstractNetworkWaySegmentWorldObject
 				&& isBridge(segment)) {
 
-			segment.addRepresentation(new BridgeWay(segment,
+			segment.addRepresentation(new OldBridgeWay(segment,
 					(AbstractNetworkWaySegmentWorldObject) primaryRepresentation));
 
 		}
@@ -108,12 +108,12 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
-	private class BridgeWay implements BridgeOrTunnel {
+	private class OldBridgeWay implements BridgeOrTunnel {
 
 		protected final MapWaySegment segment;
 		protected final AbstractNetworkWaySegmentWorldObject primaryRep;
 
-		public BridgeWay(MapWaySegment segment,
+		public OldBridgeWay(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
 			this.segment = segment;
 			this.primaryRep = primaryWO;
@@ -298,36 +298,39 @@ public class BridgeModule extends ConfigurableWorldModule {
 		}
 
 	}
+	private abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
 
-	private class BridgeArea implements AreaWorldObject, ProceduralWorldObject {
-
-		private final MapArea area;
+		private final E element;
 		private final @Nullable MapRelation relation;
 		private final int layer;
 
 		private EleConnectorGroup connectors = null;
 		private AttachmentSurface attachmentSurface = null;
 
+		private final PolygonShapeXZ polygon;
 		private final List<PolylineXZ> edges;
 		private final List<PolylineXZ> caps;
 
-		public BridgeArea(MapArea area) {
+		/**
+		 * @param element  a {@link MapArea} (for man_made=bridge polygons) or a {@link MapWay} for bridge=yes ways
+		 */
+		public Bridge(E element) {
 
-			this.area = area;
+			this.element = element;
 
-			this.layer = parseInt(area.getTags().getValue("layer"),0);
+			this.layer = parseInt(element.getTags().getValue("layer"),0);
 
 			/* find the bridge relation associated with this bridge (if any) */
 
 			MapRelation relation = null;
 
-			for (MapRelation.Membership membership : area.getMemberships()) {
+			for (MapRelation.Membership membership : element.getElementWithId().getMemberships()) {
 				if (membership.getRelation().getTags().contains("type", "bridge")
 						&& "outline".equals(membership.getRole())) {
 					if (relation == null) {
 						relation = membership.getRelation();
 					} else {
-						ConversionLog.warn("More than one bridge relation for bridge outline", area);
+						ConversionLog.warn("More than one bridge relation for bridge outline", element.getElementWithId());
 					}
 				}
 			}
@@ -345,68 +348,76 @@ public class BridgeModule extends ConfigurableWorldModule {
 						.collect(Collectors.toSet());
 			}
 
-			/* split the bridge outline into:
-			 * - edges (sides which are in the air)
-			 * - caps (sides where the bridge ends at the ground) */
+			if (element instanceof MapArea area) {
 
-			List<PolylineXZ> edges = new ArrayList<>(3);
-			List<PolylineXZ> caps = new ArrayList<>(3);
+				this.polygon = area.getPolygon();
 
-			SimplePolygonXZ outline = area.getOuterPolygon();
+				/* split the bridge outline polygon into:
+				 * - edges (sides which are in the air)
+				 * - caps (sides where the bridge ends at the ground) */
 
-			List<LineSegmentXZ> currentPolyline = new ArrayList<>();
-			boolean currentIsCap = false;
+				List<PolylineXZ> edges = new ArrayList<>(3);
+				List<PolylineXZ> caps = new ArrayList<>(3);
 
-			for (MapAreaSegment segment : area.getAreaSegmentsOuter()) {
+				SimplePolygonShapeXZ outline = polygon.getOuter();
 
-				boolean isCap;
+				List<LineSegmentXZ> currentPolyline = new ArrayList<>();
+				boolean currentIsCap = false;
 
-				if (!edgeMemberSegments.isEmpty()) {
-					// rely on explicit edge member mapping
-					isCap = edgeMemberSegments.stream().noneMatch(s ->
-							(s.getStartNode().equals(segment.getStartNode())
-									&& s.getEndNode().equals(segment.getEndNode()))
-							|| (s.getEndNode().equals(segment.getStartNode()) &&
-									s.getStartNode().equals(segment.getEndNode())));
-				} else {
-					isCap = isConnectedToGround(segment.getStartNode(), outline)
-						|| isConnectedToGround(segment.getEndNode(), outline);
-				}
+				for (MapAreaSegment segment : area.getAreaSegmentsOuter()) {
 
-				if (isCap ^ currentIsCap) {
-					if (!currentPolyline.isEmpty()) {
-						if (currentIsCap) {
-							caps.add(PolylineXZ.join(currentPolyline));
-						} else {
-							edges.add(PolylineXZ.join(currentPolyline));
-						}
+					boolean isCap;
+
+					if (!edgeMemberSegments.isEmpty()) {
+						// rely on explicit edge member mapping
+						isCap = edgeMemberSegments.stream().noneMatch(s ->
+								(s.getStartNode().equals(segment.getStartNode())
+										&& s.getEndNode().equals(segment.getEndNode()))
+										|| (s.getEndNode().equals(segment.getStartNode()) &&
+										s.getStartNode().equals(segment.getEndNode())));
+					} else {
+						isCap = isConnectedToGround(segment.getStartNode(), outline)
+								|| isConnectedToGround(segment.getEndNode(), outline);
 					}
-					currentPolyline.clear();
-					currentIsCap = isCap;
+
+					if (isCap ^ currentIsCap) {
+						if (!currentPolyline.isEmpty()) {
+							if (currentIsCap) {
+								caps.add(PolylineXZ.join(currentPolyline));
+							} else {
+								edges.add(PolylineXZ.join(currentPolyline));
+							}
+						}
+						currentPolyline.clear();
+						currentIsCap = isCap;
+					}
+
+					currentPolyline.add(segment.getLineSegment());
+
 				}
 
-				currentPolyline.add(segment.getLineSegment());
+				PolylineXZ finalPolyline = PolylineXZ.join(currentPolyline);
 
-			}
-
-			PolylineXZ finalPolyline = PolylineXZ.join(currentPolyline);
-
-			if (currentIsCap) {
-				if (!caps.isEmpty() && getFirst(caps.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
-					caps.set(0, PolylineXZ.join(List.of(finalPolyline, caps.get(0))));
+				if (currentIsCap) {
+					if (!caps.isEmpty() && getFirst(caps.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
+						caps.set(0, PolylineXZ.join(List.of(finalPolyline, caps.get(0))));
+					} else {
+						caps.add(finalPolyline);
+					}
 				} else {
-					caps.add(finalPolyline);
+					if (!edges.isEmpty() && getFirst(edges.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
+						edges.set(0, PolylineXZ.join(List.of(finalPolyline, edges.get(0))));
+					} else {
+						edges.add(finalPolyline);
+					}
 				}
+
+				this.edges = edges;
+				this.caps = caps;
+
 			} else {
-				if (!edges.isEmpty() && getFirst(edges.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
-					edges.set(0, PolylineXZ.join(List.of(finalPolyline, edges.get(0))));
-				} else {
-					edges.add(finalPolyline);
-				}
+				throw new IllegalArgumentException("Unsupported element type for bridge: " + element);
 			}
-
-			this.edges = edges;
-			this.caps = caps;
 
 		}
 
@@ -448,8 +459,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public MapArea getPrimaryMapElement() {
-			return area;
+		public E getPrimaryMapElement() {
+			return element;
 		}
 
 		@Override
@@ -511,11 +522,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 				target.drawTriangles(undersideMaterial, undersideTrianglesXYZ,
 						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, undersideMaterial, GLOBAL_X_Z));
 
+				VectorXZ outlineCenter = polygon.getOuter().getCentroid();
+
 				for (PolylineXZ edge : edges) {
 
 					// TODO: determine which should be "left"
 
-					boolean bridgeIsRight = isRightOf(area.getOuterPolygon().getCentroid(),
+					boolean bridgeIsRight = isRightOf(outlineCenter,
 							getFirst(edge.vertices()), getLast(edge.vertices()));
 
 					List<VectorXYZ> triangleStrip = createTriangleStripBetween(
@@ -575,6 +588,14 @@ public class BridgeModule extends ConfigurableWorldModule {
 			if (connectors == null) throw new IllegalStateException("connectors not initialized");
 			OptionalDouble maxEle = connectors.eleConnectors.stream().mapToDouble(c -> c.getPosXYZ().y).max();
 			return maxEle.orElse(0) + 0.1;
+		}
+
+	}
+
+	private class BridgeArea extends Bridge<MapArea> implements AreaWorldObject {
+
+		public BridgeArea(MapArea area) {
+			super(area);
 		}
 
 	}
