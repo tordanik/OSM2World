@@ -1,8 +1,6 @@
 package org.osm2world.world.modules;
 
-import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Arrays.asList;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
@@ -15,10 +13,12 @@ import static org.osm2world.util.ListUtil.getFirst;
 import static org.osm2world.util.ListUtil.getLast;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.util.ValueParseUtil.parseInt;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -49,7 +49,9 @@ import org.osm2world.world.modules.WaterModule.Waterway;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  * Adds bridges to the world.
@@ -115,7 +117,12 @@ public class BridgeModule extends ConfigurableWorldModule {
 		/** centerline between two edges; only exists for bridges with exactly 2 edges and a simple shape */
 		protected PolylineXZ centerline;
 
+		protected List<BridgeSupportData> supports;
+
 		private EleConnectorGroup connectors = null;
+		private Multimap<PolylineXZ, EleConnector> capConnectors;
+		private Map<BridgeSupportData, EleConnector> supportConnectors;
+
 		private AttachmentSurface attachmentSurface = null;
 
 		/**
@@ -153,10 +160,20 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				connectors = new EleConnectorGroup();
 
+				capConnectors = HashMultimap.create();
 				for (PolylineXZ cap : caps) {
 					for (VectorXZ v : cap.vertices()) {
-						connectors.add(new EleConnector(v, null, GroundState.ON));
+						var connector = new EleConnector(v, null, GroundState.ON);
+						connectors.add(connector);
+						capConnectors.put(cap, connector);
 					}
+				}
+
+				supportConnectors = new HashMap<>();
+				for (BridgeSupportData support : supports) {
+					var connector = new EleConnector(support.pos(), null, GroundState.ON);
+					connectors.add(connector);
+					supportConnectors.put(support, connector);
 				}
 
 			}
@@ -233,9 +250,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			}
 
-			/* draw supports */
+			/* draw the supports */
 
-			drawBridgePiers(target);
+			for (BridgeSupportData support : supports) {
+				support.renderTo(target, supportConnectors.get(support).getPosXYZ().y, this::getBridgeEleAt);
+			}
 
 		}
 
@@ -386,6 +405,9 @@ public class BridgeModule extends ConfigurableWorldModule {
 				throw new IllegalArgumentException("Unsupported element type for bridge: " + element);
 			}
 
+			/* initialize supports */
+
+			initializeSupports();
 
 		}
 
@@ -467,10 +489,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 
 		/**
-		 * Draws supports for the bridge. These can be explicitly mapped with <code>bridge:support=*</code>.
-		 * If no explicitly mapped supports are found, this method places some at equal distances.
+		 * Places supports for the bridge. These can be explicitly mapped with <code>bridge:support=*</code>.
+		 * If no explicitly mapped supports are found, this method may place some at equal distances
+		 * depending on the bridge's tags.
 		 */
-		private void drawBridgePiers(Target target) {
+		private void initializeSupports() {
+
+			supports = new ArrayList<>();
 
 			/* determine defaults */
 
@@ -511,7 +536,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			if (!explicitlyMappedSupports.isEmpty()) {
 
-				/* draw the piers */
+				/* create the piers */
 
 				for (MapElement element : explicitlyMappedSupports) {
 
@@ -535,7 +560,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 						}
 						material = material.withColor(parseColor(element.getTags().getValue("colour"), CSS_COLORS));
 
-						drawBridgePierAt(target, pos, shape, material);
+						supports.add(new BridgeSupportData(pos, shape, material, element.getTags()));
 
 					}
 
@@ -570,28 +595,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				filterWorldObjectCollisions(pierPositions, avoidedObjects);
 
-				/* draw the piers */
+				/* create the piers */
 
 				for (VectorXZ pos : pierPositions) {
-					drawBridgePierAt(target, pos, defaultShape, defaultMaterial);
+					supports.add(new BridgeSupportData(pos, defaultShape, defaultMaterial, TagSet.of()));
 				}
 
 			}
-
-		}
-
-		private void drawBridgePierAt(Target target, VectorXZ pos, ClosedShapeXZ crossSection, Material material) {
-
-			/* determine the bridge elevation at that point */
-
-			VectorXYZ top = pos.xyz(getBridgeEleAt(pos) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
-
-			/* draw the pillar */
-
-			// TODO: start pillar at ground instead of just x meters below the bridge
-			VectorXYZ base = top.y(max(top.y-20, -3));
-			target.drawExtrudedShape(material, crossSection,
-					asList(base, top), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
 		}
 
@@ -602,8 +612,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		private double getBridgeEle() {
 			// TODO replace with proper ele calculation and support non-flat bridges
-			if (connectors == null) throw new IllegalStateException("connectors not initialized");
-			OptionalDouble maxEle = connectors.eleConnectors.stream().mapToDouble(c -> c.getPosXYZ().y).max();
+			if (capConnectors == null) throw new IllegalStateException("connectors not initialized");
+			OptionalDouble maxEle = capConnectors.values().stream().mapToDouble(c -> c.getPosXYZ().y).max();
 			return maxEle.orElse(0) + 0.1;
 		}
 
@@ -641,6 +651,24 @@ public class BridgeModule extends ConfigurableWorldModule {
 			} else {
 				return element.getEndNode().getPos();
 			}
+		}
+
+	}
+
+	/** Data describing a bridge pier or other support element */
+	record BridgeSupportData(VectorXZ pos, SimplePolygonShapeXZ shape, Material material, TagSet tags) {
+
+		private void renderTo(Target target, double baseEle, Function<VectorXZ, Double> bridgeEleAt) {
+
+			VectorXYZ top = pos.xyz(bridgeEleAt.apply(pos) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
+
+			baseEle -= 2.0; // sink into ground a bit
+
+			if (top.y > baseEle) {
+				target.drawExtrudedShape(material, shape, List.of(top.y(baseEle), top),
+						null, null, EnumSet.of(ExtrudeOption.END_CAP));
+			}
+
 		}
 
 	}
