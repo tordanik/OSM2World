@@ -2,6 +2,7 @@ package org.osm2world.math.shapes;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -164,6 +165,17 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 	@Override
 	default PolygonShapeXZ rotatedCW(double angleRad) {
 		return transform(v -> v.rotate(angleRad));
+	}
+
+	default PolygonShapeXZ makeCounterclockwise() {
+		if (!getOuter().isClockwise() && getHoles().stream().allMatch(SimpleClosedShapeXZ::isClockwise)) {
+			return this;
+		} else {
+			return new PolygonWithHolesXZ(
+					asSimplePolygon(getOuter()).makeCounterclockwise(),
+					getHoles().stream().map(it -> asSimplePolygon(it).makeClockwise()).toList());
+		}
+
 	}
 
 }

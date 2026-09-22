@@ -91,6 +91,10 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 		return new LineSegmentXZ(p1.add(moveVector), p2.add(moveVector));
 	}
 
+	public LineSegmentXYZ xyz(double y) {
+		return new LineSegmentXYZ(p1.xyz(y), p2.xyz(y));
+	}
+
 	/** returns the point on this segment that is closest to the parameter */
 	@Override
 	public VectorXZ closestPoint(VectorXZ p) {

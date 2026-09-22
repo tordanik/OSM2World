@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.VectorXZ.distance;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -54,6 +55,13 @@ public class PolylineXZ implements PolylineShapeXZ {
 
 		return length;
 
+	}
+
+	@Override
+	public PolylineXZ reverse() {
+		List<VectorXZ> vertices = new ArrayList<>(this.vertices());
+		Collections.reverse(vertices);
+		return new PolylineXZ(vertices);
 	}
 
 	@Override

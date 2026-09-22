@@ -17,14 +17,7 @@ public interface AreaWorldObject extends WorldObject {
 	 */
 	@Override
 	default	@Nonnull PolygonShapeXZ getOutlinePolygonXZ() {
-		MapArea area = getPrimaryMapElement();
-		if (!area.getPolygon().getOuter().isClockwise()) {
-			return area.getPolygon();
-		} else {
-			return new PolygonWithHolesXZ(
-					area.getPolygon().getOuter().makeCounterclockwise(),
-					area.getPolygon().getHoles());
-		}
+		return getPrimaryMapElement().getPolygon().makeCounterclockwise();
 	}
 
 }

@@ -5,8 +5,6 @@ import static org.osm2world.math.VectorXZ.distance;
 import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLine;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
@@ -132,11 +130,7 @@ public interface PolylineShapeXZ extends ShapeXZ {
 	}
 
 	/** returns the flipped version of this polyline */
-	public default PolylineShapeXZ reverse() {
-		List<VectorXZ> vertices = new ArrayList<>(this.vertices());
-		Collections.reverse(vertices);
-		return new PolylineXZ(vertices);
-	}
+	public PolylineShapeXZ reverse();
 
 	@Override
 	public PolylineShapeXZ transform(Function<VectorXZ, VectorXZ> operation);
