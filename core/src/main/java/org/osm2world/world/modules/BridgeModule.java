@@ -1,6 +1,6 @@
 package org.osm2world.world.modules;
 
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
@@ -36,6 +36,8 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
+import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -233,16 +235,20 @@ public class BridgeModule extends ConfigurableWorldModule {
 				target.drawTriangles(undersideMaterial, undersideTrianglesXYZ,
 						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, undersideMaterial, GLOBAL_X_Z));
 
+				// don't use the original edges, those don't have the extra intersection points for curved bridges
+				Set<LineSegmentXYZ> triangulationEdges = new TriangleGeometry(undersideTrianglesXYZ,
+						Interpolation.FLAT, List.of(), null)
+						.edges();
+
 				VectorXZ outlineCenter = polygon.getOuter().getCentroid();
 
-				for (PolylineXZ edge : edges) {
+				for (LineSegmentXYZ edge : triangulationEdges) {
 
-					boolean bridgeIsRight = isRightOf(outlineCenter,
-							getFirst(edge.vertices()), getLast(edge.vertices()));
+					boolean bridgeIsRight = isRightOf(outlineCenter, edge.p1.xz(), edge.p2.xz());
 
 					List<VectorXYZ> triangleStrip = createTriangleStripBetween(
-							edge.xyz(p -> getBridgeEleAt(p) - (bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0)).getVertices(),
-							edge.xyz(p -> getBridgeEleAt(p) - (bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT)).getVertices());
+							edge.shift(new VectorXYZ(0, bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT, 0)).vertices(),
+							edge.shift(new VectorXYZ(0, bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0, 0)).vertices());
 					target.drawTriangleStrip(undersideMaterial, triangleStrip,
 							TexCoordUtil.texCoordLists(triangleStrip, undersideMaterial, STRIP_WALL));
 
@@ -457,7 +463,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			PolygonShapeXZ polygon = getOutlinePolygonXZ();
 
-			/* subtract attached features from the deck surface */
+			/* find attached features to subtract from the deck surface */
 
 			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
@@ -471,6 +477,26 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			subtractPolys.addAll(polygon.getHoles());
 
+			/* define some lines at regular distances to allow the bridge to be (vertically) curved */
+
+			List<ShapeXZ> extraLines = List.of();
+
+			if (centerline != null && getCurvatureHeightPerLength() != 0) {
+
+				double dist = min(5, centerline.getLength() / 4);
+				List<VectorXZ> splitPoints = equallyDistributePointsAlong(dist, true, centerline);
+
+				extraLines = new ArrayList<>(splitPoints.size());
+
+				for (int i = 1; i < splitPoints.size() - 1; i++) { // skip start and end point
+					VectorXZ p = splitPoints.get(i);
+					double halfWidth = 100.0; // TODO use the actual bridge width
+					VectorXZ normal = centerline.closestSegment(p).getDirection().rightNormal();
+					extraLines.add(new LineSegmentXZ(p.add(normal.mult(-halfWidth)), p.add(normal.mult(halfWidth))));
+				}
+
+			}
+
 			/* triangulate the (remaining) polygon */
 
 			List<SimplePolygonXZ> holes = subtractPolys.stream().map(p -> asSimplePolygon(p.getOuter())).toList();
@@ -478,7 +504,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			Collection<PolygonWithHolesXZ> faces = FaceDecompositionUtil.splitPolygonIntoFaces(
 					polygon.getOuter(),
 					holes,
-					List.of() // TODO: in the future, inner segments may be useful to achieve a curved shape
+					extraLines
 			);
 
 			List<TriangleXZ> trianglesXZ = new ArrayList<>();
@@ -609,6 +635,21 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		}
 
+		/**
+		 * Returns the height-per-length ratio of the bridge's vertical curvature.
+		 * 0 if the bridge has no vertical curvature (may still have an incline if the ends are at different ele).
+		 * Negative values can be used for suspension-type bridges which are lower in the center than at the ends.
+		 */
+		private double getCurvatureHeightPerLength() {
+			if (element.getTags().contains("bridge:structure", "humpback")) {
+				return 0.2;
+			} else if (element.getTags().contains("bridge:structure", "simple-suspension")) {
+				return -0.25;
+			} else {
+				return 0;
+			}
+		}
+
 		private double getBridgeEleAt(VectorXZ pos) {
 
 			if (capConnectors == null) throw new IllegalStateException("connectors not initialized");
@@ -616,10 +657,17 @@ public class BridgeModule extends ConfigurableWorldModule {
 			double ele;
 
 			if (centerline != null) {
+
 				double startEle = maxEle(capConnectors.get(caps.get(0)));
 				double endEle = maxEle(capConnectors.get(caps.get(1)));
 				double offset = centerline.offsetOf(centerline.closestPoint(pos)) / centerline.getLength();
 				ele = offset * endEle + (1 - offset) * startEle;
+
+				if (getCurvatureHeightPerLength() != 0) {
+					double extraHeight = centerline.getLength() * getCurvatureHeightPerLength();
+					ele += circularArcHeightAt(extraHeight, offset, 0.6);
+				}
+
 			} else {
 				// complex bridge, assume it's totally flat
 				ele = maxEle(capConnectors.values()) + 0.1;
@@ -631,6 +679,18 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		private static double maxEle(Collection<EleConnector> connectors) {
 			return connectors.stream().mapToDouble(c -> c.getPosXYZ().y).max().orElse(0);
+		}
+
+		/**
+		 * Calculates the height of a bridge's arc at a given relative position along its length.
+		 *
+		 * @param height   height difference between the top of the arc and the ends of the arc
+		 * @param offset   between 0 (inclusive, beginning of the arc) and 1 (inclusive, end of the arc)
+		 * @param section  between 0 (exclusive) and 1 (inclusive). 1 produces a full half circle.
+		 */
+		private static double circularArcHeightAt(double height, double offset, double section) {
+			double dist = abs(offset - 0.5) * section;
+			return height * (sqrt(0.25 - dist * dist) - sqrt(0.25 - (0.5 * section) * (0.5 * section)));
 		}
 
 	}

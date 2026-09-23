@@ -32,6 +32,11 @@ public class LineSegmentXYZ {
 		return p2.subtract(p1).normalize();
 	}
 
+	/** returns a moved version of this segment */
+	public LineSegmentXYZ shift(VectorXYZ v) {
+		return new LineSegmentXYZ(p1.add(v), p2.add(v));
+	}
+
 	/** returns the flipped version of this segment */
 	public LineSegmentXYZ reverse() {
 		return new LineSegmentXYZ(p2, p1);
