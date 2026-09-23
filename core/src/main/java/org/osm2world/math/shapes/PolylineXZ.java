@@ -79,6 +79,10 @@ public class PolylineXZ implements PolylineShapeXZ {
 		return new PolylineXYZ(vertices.stream().map(v -> v.xyz(y)).toList());
 	}
 
+	public PolylineXYZ xyz(Function<VectorXZ, Double> toY) {
+		return new PolylineXYZ(vertices.stream().map(v -> v.xyz(toY.apply(v))).toList());
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof PolylineXZ) {

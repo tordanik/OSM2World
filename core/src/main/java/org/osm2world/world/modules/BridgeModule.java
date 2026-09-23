@@ -241,8 +241,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 							getFirst(edge.vertices()), getLast(edge.vertices()));
 
 					List<VectorXYZ> triangleStrip = createTriangleStripBetween(
-							edge.xyz(getBridgeEle() - (bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0)).getVertices(),
-							edge.xyz(getBridgeEle() - (bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT)).getVertices());
+							edge.xyz(p -> getBridgeEleAt(p) - (bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0)).getVertices(),
+							edge.xyz(p -> getBridgeEleAt(p) - (bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT)).getVertices());
 					target.drawTriangleStrip(undersideMaterial, triangleStrip,
 							TexCoordUtil.texCoordLists(triangleStrip, undersideMaterial, STRIP_WALL));
 
@@ -361,13 +361,18 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				/* calculate the centerline */
 
-				if (this.edges.size() == 2) {
+				if (this.edges.size() == 2 && this.caps.size() == 2) {
 
 					// flip the second edge to make both point in the same direction
 					edges.set(1, edges.get(1).reverse());
 
 					VectorXZ start = getFirst(edges.get(0).vertices()).add(getFirst(edges.get(1).vertices())).mult(0.5);
 					VectorXZ end = getLast(edges.get(0).vertices()).add(getLast(edges.get(1).vertices())).mult(0.5);
+
+					if (caps.get(0).distanceTo(start) > caps.get(1).distanceTo(start)) {
+						// swap the caps so that the "start" cap is at index 0
+						Collections.swap(caps, 0, 1);
+					}
 
 					LineSegmentXZ centerlineCandidate = new LineSegmentXZ(start, end);
 
@@ -481,9 +486,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			/* assign elevations to the triangulation */
 
-			double bridgeEle = getBridgeEle();
 			return TriangulationUtil.triangulationXZtoXYZ(trianglesXZ,
-					t -> t.xyz(bridgeEle));
+					t -> t.xyz(getBridgeEleAt(t)));
 
 		}
 
@@ -606,15 +610,27 @@ public class BridgeModule extends ConfigurableWorldModule {
 		}
 
 		private double getBridgeEleAt(VectorXZ pos) {
-			// TODO support non-flat bridges
-			return getBridgeEle();
+
+			if (capConnectors == null) throw new IllegalStateException("connectors not initialized");
+
+			double ele;
+
+			if (centerline != null) {
+				double startEle = maxEle(capConnectors.get(caps.get(0)));
+				double endEle = maxEle(capConnectors.get(caps.get(1)));
+				double offset = centerline.offsetOf(centerline.closestPoint(pos)) / centerline.getLength();
+				ele = offset * endEle + (1 - offset) * startEle;
+			} else {
+				// complex bridge, assume it's totally flat
+				ele = maxEle(capConnectors.values()) + 0.1;
+			}
+
+			return ele + 0.1;
+
 		}
 
-		private double getBridgeEle() {
-			// TODO replace with proper ele calculation and support non-flat bridges
-			if (capConnectors == null) throw new IllegalStateException("connectors not initialized");
-			OptionalDouble maxEle = capConnectors.values().stream().mapToDouble(c -> c.getPosXYZ().y).max();
-			return maxEle.orElse(0) + 0.1;
+		private static double maxEle(Collection<EleConnector> connectors) {
+			return connectors.stream().mapToDouble(c -> c.getPosXYZ().y).max().orElse(0);
 		}
 
 	}

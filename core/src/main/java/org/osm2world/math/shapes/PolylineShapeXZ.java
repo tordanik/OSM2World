@@ -129,6 +129,11 @@ public interface PolylineShapeXZ extends ShapeXZ {
 				.get();
 	}
 
+	/** returns the closest distance betewen this shape and the given point */
+	default double distanceTo(VectorXZ p) {
+		return closestPoint(p).distanceTo(p);
+	}
+
 	/** returns the flipped version of this polyline */
 	public PolylineShapeXZ reverse();
 

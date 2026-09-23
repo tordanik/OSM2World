@@ -86,10 +86,14 @@ public class PolylineXZTest {
 
 		for (VectorXZ v : polyline.vertices()) {
 			assertAlmostEquals(v, polyline.closestPoint(v));
+			assertAlmostEquals(0, polyline.distanceTo(v));
 		}
 
 		assertAlmostEquals(5, 2, polyline.closestPoint(new VectorXZ(5, 5)));
+		assertAlmostEquals(3, polyline.distanceTo(new VectorXZ(5, 5)));
+
 		assertAlmostEquals(-3, 2, polyline.closestPoint(new VectorXZ(-3, 2)));
+		assertAlmostEquals(0, polyline.distanceTo(new VectorXZ(-3, 2)));
 
 		assertAlmostEquals(v2, polyline.closestPoint(new VectorXZ(15, 0)));
 
