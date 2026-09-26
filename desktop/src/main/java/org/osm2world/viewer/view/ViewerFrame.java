@@ -152,6 +152,8 @@ public class ViewerFrame extends JFrame {
 					new MapDataDebugView());
 			initAndAddDebugView(subMenu, VK_R, false,
 					new RoofDataDebugView());
+			initAndAddDebugView(subMenu, VK_R, false,
+					new BridgeDataDebugView());
 			initAndAddDebugView(subMenu, VK_B, false,
 					new GroundFootprintDebugView());
 

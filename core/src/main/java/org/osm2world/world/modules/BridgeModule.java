@@ -108,7 +108,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
-	abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
+	public abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
 
 		protected final E element;
 		protected final int layer;
@@ -201,6 +201,21 @@ public class BridgeModule extends ConfigurableWorldModule {
 		@Override
 		public @Nonnull PolygonShapeXZ getOutlinePolygonXZ() {
 			return polygon.makeCounterclockwise();
+		}
+
+		public List<PolylineXZ> getEdges() {
+			initializeBridgeGeometry();
+			return edges;
+		}
+
+		public List<PolylineXZ> getCaps() {
+			initializeBridgeGeometry();
+			return caps;
+		}
+
+		public @Nullable PolylineShapeXZ getCenterline() {
+			initializeBridgeGeometry();
+			return centerline;
 		}
 
 		@Override
@@ -707,7 +722,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			}
 		}
 
-		private double getBridgeEleAt(VectorXZ pos) {
+		public double getBridgeEleAt(VectorXZ pos) {
 
 			if (capConnectors == null) throw new IllegalStateException("connectors not initialized");
 
@@ -789,7 +804,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 	}
 
 	/** Data describing a bridge pier or other support element */
-	record BridgeSupportData(VectorXZ pos, SimplePolygonShapeXZ shape, Material material, TagSet tags) {
+	protected record BridgeSupportData(VectorXZ pos, SimplePolygonShapeXZ shape, Material material, TagSet tags) {
 
 		private void renderTo(Target target, double baseEle, Function<VectorXZ, Double> bridgeEleAt) {
 
