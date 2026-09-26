@@ -3,6 +3,7 @@ package org.osm2world.world.modules;
 import static java.lang.Math.*;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
+import static org.osm2world.math.algorithms.TriangulationUtil.triangulateXYZ;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_DEFAULT;
@@ -11,8 +12,7 @@ import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.util.ListUtil.getFirst;
 import static org.osm2world.util.ListUtil.getLast;
-import static org.osm2world.util.ValueParseUtil.parseColor;
-import static org.osm2world.util.ValueParseUtil.parseInt;
+import static org.osm2world.util.ValueParseUtil.*;
 import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
@@ -35,7 +35,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.mesh.TriangleGeometry;
@@ -599,23 +598,6 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			supports = new ArrayList<>();
 
-			/* determine defaults */
-
-			Material defaultMaterial = BRIDGE_PILLAR_DEFAULT.get(config);
-
-			SimplePolygonShapeXZ defaultShape;
-
-			if (centerline != null) {
-				double defaultWidth = 10 * 0.7; // TODO getBridgeWidthAt (ideally with left/right separation)
-				double defaultLength = defaultWidth * 0.5;
-				double angle = getLast(centerline.vertices()).subtract(getFirst(centerline.vertices())).angle();
-				defaultShape = new AxisAlignedRectangleXZ(NULL_VECTOR, defaultWidth, defaultLength);
-				defaultShape = defaultShape.rotatedCW(angle);
-			} else {
-				double defaultRadius = min(2.0, polygon.getDiameter() / 2);
-				defaultShape = asSimplePolygon(new CircleXZ(NULL_VECTOR, defaultRadius));
-			}
-
 			/* look for explicitly mapped supports among the way's nodes and overlapping features */
 
 			Collection<MapElement> explicitlyMappedSupports = new ArrayList<>();
@@ -651,18 +633,9 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 						SimplePolygonShapeXZ shape = (element instanceof MapArea area)
 								? asSimplePolygon(area.getOuterPolygon().shift(pos.invert())).makeCounterclockwise()
-								: defaultShape;
+								: null;
 
-						Material material = null;
-						if (element.getTags().containsKey("material")) {
-							material = config.mapStyle().resolveMaterial(element.getTags().getValue("material"));
-						}
-						if (material == null) {
-							material = BRIDGE_PILLAR_DEFAULT.get(config);
-						}
-						material = material.withColor(parseColor(element.getTags().getValue("colour"), CSS_COLORS));
-
-						supports.add(new BridgeSupportData(pos, shape, material, element.getTags()));
+						supports.add(createPier(pos, shape, element.getTags()));
 
 					}
 
@@ -700,10 +673,44 @@ public class BridgeModule extends ConfigurableWorldModule {
 				/* create the piers */
 
 				for (VectorXZ pos : pierPositions) {
-					supports.add(new BridgeSupportData(pos, defaultShape, defaultMaterial, TagSet.of()));
+					supports.add(createPier(pos, null, TagSet.of()));
 				}
 
 			}
+
+		}
+
+		private BridgeSupportData createPier(VectorXZ pos, @Nullable SimplePolygonShapeXZ shape, TagSet tags) {
+
+			/* build shape */
+
+			if (shape == null) {
+				if (centerline != null) {
+					double width = parseMeasure(tags.getValue("width"), getBridgeWidthAt(pos) * 0.7);
+					double length = parseMeasure(tags.getValue("length"), width * 0.5);
+					double angle = centerline.closestSegment(pos).getDirection().angle();
+					shape = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
+					shape = shape.rotatedCW(angle);
+				} else {
+					double defaultDiameter = parseMeasure(tags.getValue("width"), min(4.0, polygon.getDiameter()));
+					shape = asSimplePolygon(new CircleXZ(NULL_VECTOR, defaultDiameter / 2));
+				}
+			}
+
+			/* build material */
+
+			Material material = null;
+			if (tags.containsKey("material")) {
+				material = config.mapStyle().resolveMaterial(element.getTags().getValue("material"));
+			}
+			if (material == null) {
+				material = BRIDGE_PILLAR_DEFAULT.get(config);
+			}
+			material = material.withColor(parseColor(tags.getValue("colour"), CSS_COLORS));
+
+			/* build the result */
+
+			return new BridgeSupportData(pos, shape, material, element.getTags());
 
 		}
 
@@ -747,6 +754,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			return ele + 0.1;
 
+		}
+
+		public double getBridgeWidthAt(VectorXZ pos) {
+			initializeBridgeGeometry();
+			return edges.stream().mapToDouble(edge -> edge.distanceTo(pos)).min().orElse(0) * 2;
 		}
 
 		private static double maxEle(Collection<EleConnector> connectors) {
@@ -808,13 +820,20 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		private void renderTo(Target target, double baseEle, Function<VectorXZ, Double> bridgeEleAt) {
 
-			VectorXYZ top = pos.xyz(bridgeEleAt.apply(pos) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
+			double finalBaseEle = baseEle - 2.0; // sink into ground a bit
 
-			baseEle -= 2.0; // sink into ground a bit
+			var outlineXZ = new PolylineXZ(shape.shift(pos).makeCounterclockwise().vertices());
+			PolylineXYZ lowerOutline = outlineXZ.xyz(finalBaseEle);
+			PolylineXYZ upperOutline = outlineXZ.xyz(p -> bridgeEleAt.apply(p) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
 
-			if (top.y > baseEle) {
-				target.drawExtrudedShape(material, shape, List.of(top.y(baseEle), top),
-						null, null, EnumSet.of(ExtrudeOption.END_CAP));
+			if (upperOutline.getVertices().stream().allMatch(v -> v.y >= finalBaseEle)) {
+
+				List<VectorXYZ> stripVs = createTriangleStripBetween(upperOutline.getVertices(), lowerOutline.getVertices());
+				target.drawTriangleStrip(material, stripVs, TexCoordUtil.texCoordLists(stripVs, material, STRIP_WALL));
+
+				var triangles = triangulateXYZ(new PolygonXYZ(upperOutline.getVertices()));
+				target.drawTriangles(material, triangles, TexCoordUtil.triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+
 			}
 
 		}
