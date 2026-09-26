@@ -22,6 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.*;
@@ -107,7 +108,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
-	private abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
+	abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
 
 		protected final E element;
 		protected final int layer;
@@ -373,23 +374,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 					edges.set(1, edges.get(1).reverse());
 
 					VectorXZ start = getFirst(edges.get(0).vertices()).add(getFirst(edges.get(1).vertices())).mult(0.5);
-					VectorXZ end = getLast(edges.get(0).vertices()).add(getLast(edges.get(1).vertices())).mult(0.5);
 
 					if (caps.get(0).distanceTo(start) > caps.get(1).distanceTo(start)) {
 						// swap the caps so that the "start" cap is at index 0
 						Collections.swap(caps, 0, 1);
 					}
 
-					LineSegmentXZ centerlineCandidate = new LineSegmentXZ(start, end);
-
-					if (edges.get(0).intersections(centerlineCandidate).isEmpty()
-							&& edges.get(1).intersections(centerlineCandidate).isEmpty()) {
-
-						this.centerline = new PolylineXZ(centerlineCandidate.vertices());
-
-						// TODO: check that it's mostly in the center (distance to the edges not too different)
-
-					}
+					this.centerline = calculateCenterlineBetween(edges.get(0), edges.get(1));
 
 				}
 
@@ -419,6 +410,72 @@ public class BridgeModule extends ConfigurableWorldModule {
 			/* initialize supports */
 
 			initializeSupports();
+
+		}
+
+		static @Nullable PolylineXZ calculateCenterlineBetween(PolylineShapeXZ edge0, PolylineShapeXZ edge1) {
+
+			record Cut(VectorXZ p0, VectorXZ p1) {
+				public VectorXZ center() {
+					return p0.add(p1).mult(0.5);
+				}
+			}
+
+			List<Cut> cuts = new ArrayList<>();
+
+			Cut firstCut = new Cut(getFirst(edge0.vertices()), getFirst(edge1.vertices()));
+			cuts.add(firstCut);
+
+			for (VectorXZ p0 : edge0.vertices().subList(1, edge0.vertices().size() - 1)) {
+				VectorXZ p1 = edge1.closestPoint(p0);
+				cuts.add(new Cut(p0, p1));
+			}
+
+			for (VectorXZ p1 : edge1.vertices().subList(1, edge1.vertices().size() - 1)) {
+				VectorXZ p0 = edge0.closestPoint(p1);
+				cuts.add(new Cut(p0, p1));
+			}
+
+			Cut lastCut = new Cut(getLast(edge0.vertices()), getLast(edge1.vertices()));
+			cuts.add(lastCut);
+
+			cuts.sort(Comparator.comparingDouble((Cut c) -> edge0.offsetOf(c.p0))
+					.thenComparingDouble(c -> edge1.offsetOf(c.p1)));
+
+			// remove cuts where the order along the two edges is contradictory
+			double previousOffset = 0;
+			Iterator<Cut> iter = cuts.iterator();
+			while (iter.hasNext()) {
+				double offset = edge1.offsetOf(iter.next().p1);
+				if (offset < previousOffset) {
+					iter.remove();
+				} else {
+					previousOffset = offset;
+				}
+			}
+
+			List<VectorXZ> centerlinePoints = new ArrayList<>();
+			for (Cut cut : cuts) {
+				VectorXZ p = cut.center();
+				if (centerlinePoints.isEmpty() || getLast(centerlinePoints).distanceTo(p) > 0.01) {
+					centerlinePoints.add(p);
+				}
+			}
+
+			if (centerlinePoints.size() < 2) {
+				return null;
+			}
+
+			PolylineXZ centerline = new PolylineXZ(centerlinePoints);
+
+			if (getFirst(cuts) != firstCut || getLast(cuts) != lastCut) {
+				return null;
+			} else if (!centerline.getSegments().stream().allMatch(s ->
+					edge0.intersections(s).isEmpty() && edge1.intersections(s).isEmpty())) {
+				return null;
+			} else {
+				return centerline;
+			}
 
 		}
 
