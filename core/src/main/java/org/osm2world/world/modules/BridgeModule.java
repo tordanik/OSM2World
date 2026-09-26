@@ -30,6 +30,7 @@ import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.map_elevation.data.GroundState;
+import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
@@ -38,6 +39,7 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
@@ -222,6 +224,12 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			initializeBridgeGeometry();
 
+			Material material = config.mapStyle().resolveMaterial(
+					element.getTags().getValue("material"), BRIDGE_DEFAULT);
+
+			Angle textureAngle = centerline == null ? null :
+					Angle.ofRadians(centerline.getSegments().get(0).getDirection().angle());
+
 			/* draw deck */
 
 			if (element instanceof MapArea) { // bridges based on network segments should be completely covered
@@ -230,10 +238,9 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				if (!trianglesXYZ.isEmpty()) {
 
-					Material deckMaterial = BRIDGE_DEFAULT.get(config);
-
-					target.drawTriangles(deckMaterial, trianglesXYZ,
-							TexCoordUtil.triangleTexCoordLists(trianglesXYZ, deckMaterial, GLOBAL_X_Z));
+					target.drawTriangles(material, trianglesXYZ,
+							TexCoordUtil.triangleTexCoordLists(trianglesXYZ, material,
+									td -> new GlobalXZTexCoordFunction(td, textureAngle)));
 
 				}
 
@@ -241,14 +248,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			{ /* draw underside and edges */
 
-				Material undersideMaterial = BRIDGE_DEFAULT.get(config);
-
 				List<TriangleXYZ> undersideTrianglesXYZ = getDeckTriangles(false).stream()
 						.map(t -> t.shift(new VectorXYZ(0, -BRIDGE_UNDERSIDE_HEIGHT, 0)).reverse())
 						.toList();
 
-				target.drawTriangles(undersideMaterial, undersideTrianglesXYZ,
-						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, undersideMaterial, GLOBAL_X_Z));
+				target.drawTriangles(material, undersideTrianglesXYZ,
+						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, material,
+								td -> new GlobalXZTexCoordFunction(td, textureAngle)));
 
 				// don't use the original edges, those don't have the extra intersection points for curved bridges
 				Set<LineSegmentXYZ> triangulationEdges = new TriangleGeometry(undersideTrianglesXYZ,
@@ -264,8 +270,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 					List<VectorXYZ> triangleStrip = createTriangleStripBetween(
 							edge.shift(new VectorXYZ(0, bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT, 0)).vertices(),
 							edge.shift(new VectorXYZ(0, bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0, 0)).vertices());
-					target.drawTriangleStrip(undersideMaterial, triangleStrip,
-							TexCoordUtil.texCoordLists(triangleStrip, undersideMaterial, STRIP_WALL));
+					target.drawTriangleStrip(material, triangleStrip,
+							TexCoordUtil.texCoordLists(triangleStrip, material, STRIP_WALL));
 
 				}
 
@@ -699,13 +705,10 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			/* build material */
 
-			Material material = null;
-			if (tags.containsKey("material")) {
-				material = config.mapStyle().resolveMaterial(element.getTags().getValue("material"));
-			}
-			if (material == null) {
-				material = BRIDGE_PILLAR_DEFAULT.get(config);
-			}
+			Material material = config.mapStyle().resolveMaterial(tags.getValue("material"),
+					config.mapStyle().resolveMaterial(element.getTags().getValue("material"),
+					BRIDGE_PILLAR_DEFAULT));
+
 			material = material.withColor(parseColor(tags.getValue("colour"), CSS_COLORS));
 
 			/* build the result */
