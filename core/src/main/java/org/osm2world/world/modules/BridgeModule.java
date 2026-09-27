@@ -775,9 +775,10 @@ public class BridgeModule extends ConfigurableWorldModule {
 		 * @param offset   between 0 (inclusive, beginning of the arc) and 1 (inclusive, end of the arc)
 		 * @param section  between 0 (exclusive) and 1 (inclusive). 1 produces a full half circle.
 		 */
-		private static double circularArcHeightAt(double height, double offset, double section) {
+		static double circularArcHeightAt(double height, double offset, double section) {
 			double dist = abs(offset - 0.5) * section;
-			return height * (sqrt(0.25 - dist * dist) - sqrt(0.25 - (0.5 * section) * (0.5 * section)));
+			double endHeight = sqrt(0.25 - (0.5 * section) * (0.5 * section));
+			return height * (sqrt(0.25 - dist * dist) - endHeight) / (0.5 - endHeight);
 		}
 
 	}
