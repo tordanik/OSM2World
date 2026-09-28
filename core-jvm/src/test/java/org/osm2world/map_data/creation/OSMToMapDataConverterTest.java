@@ -7,6 +7,7 @@ import static org.osm2world.util.test.TestFileUtil.getTestFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
+import org.osm2world.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.geo.LatLon;
 import org.osm2world.math.geo.MapProjection;
@@ -236,6 +238,22 @@ public class OSMToMapDataConverterTest {
 		assertTrue(a2.getBoundaryNodes().stream().anyMatch(it -> it.getTags().contains("note", "existing2")));
 
 		assertFalse(a1.getPolygon().getTriangulation().isEmpty());
+
+	}
+
+	@Test
+	public void testOverlapsBetweenAreas() throws IOException, EntityNotFoundException {
+
+		MapData mapData = loadMapData("overlap_test_areas.osm");
+
+		assertSame(3, mapData.getMapAreas().size());
+
+		List<MapArea> areas = new ArrayList<>(mapData.getMapAreas());
+		areas.sort(Comparator.comparingLong(MapArea::getId));
+
+		assertEquals(2, areas.get(0).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
+		assertEquals(1, areas.get(1).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
+		assertEquals(1, areas.get(2).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
 
 	}
 
