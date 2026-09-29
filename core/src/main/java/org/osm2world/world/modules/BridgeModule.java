@@ -1,6 +1,7 @@
 package org.osm2world.world.modules;
 
 import static java.lang.Math.*;
+import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulateXYZ;
@@ -41,6 +42,7 @@ import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
+import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.AreaWorldObject;
@@ -283,6 +285,130 @@ public class BridgeModule extends ConfigurableWorldModule {
 				support.renderTo(target, supportConnectors.get(support).getPosXYZ().y, this::getBridgeEleAt);
 			}
 
+			/* draw arches between supports */
+
+			if (element.getTags().containsAny(
+					List.of("bridge:structure"), List.of("arch", "humpback"))) {
+				renderArches(target, material, textureAngle);
+			}
+
+		}
+
+		/**
+		 * renders an arch between each pair of successive supports
+		 */
+		private void renderArches(Target target, Material material, Angle textureAngle) {
+
+			if (centerline == null || edges.size() != 2) {
+				return;
+			}
+
+			/* collect the necessary data about support */
+
+			List<VectorXZ> supportPositions = new ArrayList<>(supports.size());
+			List<Double> supportBaseElevations = new ArrayList<>(supports.size());
+			List<Double> supportWidths = new ArrayList<>(supports.size());
+
+			for (BridgeSupportData support : supports) {
+				supportPositions.add(support.pos);
+				supportBaseElevations.add(supportConnectors.get(support).getPosXYZ().y);
+				// TODO: improve angle calculation for curved centerlines
+				double centerlineAngle = getLast(centerline.vertices()).subtract(centerline.vertices().get(0)).angle();
+				supportWidths.add(support.getWidth(Angle.ofRadians(centerlineAngle)));
+			}
+
+			for (int support = 0; support + 1 < supportPositions.size(); support++) {
+
+				/* render arch between this support and the next */
+
+				VectorXZ supportAPos = supportPositions.get(support);
+				VectorXZ supportBPos = supportPositions.get(support + 1);
+				double supportAEle = supportBaseElevations.get(support);
+				double supportBEle = supportBaseElevations.get(support + 1);
+				double supportAHeight = getBridgeEleAt(supportAPos) - supportAEle;
+				double supportBHeight = getBridgeEleAt(supportBPos) - supportBEle;
+				double supportAWidth = supportWidths.get(support);
+				double supportBWidth = supportWidths.get(support + 1);
+
+				int archPoints = 11;
+
+				List<VectorXZ> leftArchEdge = new ArrayList<>(archPoints);
+				List<VectorXZ> rightArchEdge = new ArrayList<>(archPoints);
+
+				double relativeStartWidth = (0.95 * min(1, supportAWidth / getBridgeWidthAt(supportAPos)));
+				double relativeEndWidth = (0.95 * min(1, supportBWidth / getBridgeWidthAt(supportBPos)));
+
+				double startOffset = centerline.offsetOf(centerline.closestPoint(supportAPos));
+				double endOffset = centerline.offsetOf(centerline.closestPoint(supportBPos));
+				double offsetStep = (endOffset - startOffset) / (archPoints - 1);
+
+				for (int i = 0; i < archPoints; i++) {
+					VectorXZ center = centerline.pointAtOffset(startOffset + i * offsetStep);
+					double relativeWidth = interpolateValue(i / (archPoints - 1.0), relativeStartWidth, relativeEndWidth);
+					leftArchEdge.add(center.add(edges.get(0).closestPoint(center).subtract(center).mult(relativeWidth)));
+					rightArchEdge.add(center.add(edges.get(1).closestPoint(center).subtract(center).mult(relativeWidth)));
+				}
+
+				PolylineXZ leftXZ = new PolylineXZ(leftArchEdge);
+				PolylineXZ rightXZ = new PolylineXZ(rightArchEdge);
+
+				PolylineXYZ leftTop = leftXZ.xyz(p -> getBridgeEleAt(p) - BRIDGE_UNDERSIDE_HEIGHT);
+				PolylineXYZ rightTop = rightXZ.xyz(p -> getBridgeEleAt(p) - BRIDGE_UNDERSIDE_HEIGHT);
+
+				double spanLength = supportAPos.distanceTo(supportBPos);
+				double bridgeEleAtArcPeak = getBridgeEleAt(supportAPos.add(supportBPos).mult(0.5));
+				double extraHeight = bridgeEleAtArcPeak - min(supportAEle + supportAHeight, supportBEle + supportBHeight);
+
+				Function<PolylineXZ, PolylineXYZ> calculateBottom = lineXZ -> {
+					var firstPassResult = lineXZ.xyz(p -> {
+						double offset = min(lineXZ.offsetOf(p) / lineXZ.getLength(), 1);
+						double archHeight = min(min(supportAHeight, supportBHeight) + extraHeight, spanLength / 2);
+						return bridgeEleAtArcPeak - BRIDGE_UNDERSIDE_HEIGHT - archHeight
+								+ circularArcHeightAt(archHeight * 0.95, offset, 0.9);
+					});
+					double maxExcessHeight = firstPassResult.getVertices().stream()
+							.mapToDouble(p -> p.y - (getBridgeEleAt(p.xz()) - BRIDGE_UNDERSIDE_HEIGHT))
+							.max().orElse(0);
+					if (maxExcessHeight <= 0) {
+						return firstPassResult;
+					} else {
+						// scale the arc down (flattening it) to be below the deck
+						double arcBottomY = firstPassResult.getVertices().get(0).y;
+						double scale = 1 - (maxExcessHeight / (firstPassResult.getVertices().get(archPoints / 2).y - arcBottomY));
+						return new PolylineXYZ(firstPassResult.getVertices().stream()
+								.map(v -> v.xz().xyz(arcBottomY + (v.y - arcBottomY) * scale))
+								.toList());
+					}
+				};
+
+				PolylineXYZ leftBottom = calculateBottom.apply(leftXZ);
+				PolylineXYZ rightBottom = calculateBottom.apply(rightXZ);
+
+				List<TriangleXYZ> undersideTrianglesXYZ = getDeckTriangles(false).stream()
+						.map(t -> t.shift(new VectorXYZ(0, -BRIDGE_UNDERSIDE_HEIGHT, 0)).reverse())
+						.toList();
+
+				target.drawTriangles(material, undersideTrianglesXYZ,
+						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, material,
+								td -> new GlobalXZTexCoordFunction(td, textureAngle)));
+
+				List<List<VectorXYZ>> triangleStrips = List.of(
+						createTriangleStripBetween(leftBottom.getVertices(), leftTop.getVertices()),
+						createTriangleStripBetween(rightBottom.getVertices(), leftBottom.getVertices()),
+						createTriangleStripBetween(rightTop.getVertices(), rightBottom.getVertices())
+				);
+
+				for (var triangleStrip : triangleStrips) {
+					try {
+						target.drawTriangleStrip(material, triangleStrip,
+								TexCoordUtil.texCoordLists(triangleStrip, material, STRIP_WALL));
+					} catch (InvalidGeometryException e) {
+						ConversionLog.warn("Broken geometry in bridge arches", e, element.getElementWithId());
+					}
+				}
+
+			}
+
 		}
 
 		/** makes sure the {@link #polygon}, {@link #edges} and {@link #caps} fields are populated */
@@ -393,6 +519,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 					// flip the second edge to make both point in the same direction
 					edges.set(1, edges.get(1).reverse());
 
+					// make sure that the left edge is at index 0.
+					// The first edge follows the direction of the outline, so the other edge is on its right
+					// if the bridge area is on the right of the outline.
+					if (!area.getAreaSegmentsOuter().get(0).isAreaRight()) {
+						Collections.swap(edges, 0, 1);
+					}
+
 					VectorXZ start = getFirst(edges.get(0).vertices()).add(getFirst(edges.get(1).vertices())).mult(0.5);
 
 					if (caps.get(0).distanceTo(start) > caps.get(1).distanceTo(start)) {
@@ -459,7 +592,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			Cut lastCut = new Cut(getLast(edge0.vertices()), getLast(edge1.vertices()));
 			cuts.add(lastCut);
 
-			cuts.sort(Comparator.comparingDouble((Cut c) -> edge0.offsetOf(c.p0))
+			cuts.sort(comparingDouble((Cut c) -> edge0.offsetOf(c.p0))
 					.thenComparingDouble(c -> edge1.offsetOf(c.p1)));
 
 			// remove cuts where the order along the two edges is contradictory
@@ -647,6 +780,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				}
 
+				if (centerline != null) {
+					// sort along the centerline
+					supports.sort(comparingDouble(it -> centerline.offsetOf(centerline.closestPoint(it.pos))));
+				}
+
 			} else if (centerline != null) {
 
 				/* no explicitly mapped supports found, distribute some equally along the bridge's length */
@@ -743,7 +881,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 				double startEle = maxEle(capConnectors.get(caps.get(0)));
 				double endEle = maxEle(capConnectors.get(caps.get(1)));
 				double offset = centerline.offsetOf(centerline.closestPoint(pos)) / centerline.getLength();
-				ele = offset * endEle + (1 - offset) * startEle;
+				ele = interpolateValue(offset, startEle, endEle);
 
 				if (getCurvatureHeightPerLength() != 0) {
 					double extraHeight = centerline.getLength() * getCurvatureHeightPerLength();
@@ -838,6 +976,17 @@ public class BridgeModule extends ConfigurableWorldModule {
 				var triangles = triangulateXYZ(new PolygonXYZ(upperOutline.getVertices()));
 				target.drawTriangles(material, triangles, TexCoordUtil.triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 
+			}
+
+		}
+
+		public double getWidth(Angle centerlineDirection) {
+
+			if (shape instanceof AxisAlignedRectangleXZ rect) {
+				return rect.sizeX();
+			} else {
+				var rotatedShape = shape.rotatedCW(-centerlineDirection.radians);
+				return rotatedShape.boundingBox().sizeX();
 			}
 
 		}

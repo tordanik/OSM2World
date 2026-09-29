@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.PolylineShapeXZ;
 import org.osm2world.math.shapes.PolylineXYZ;
 import org.osm2world.math.shapes.PolylineXZ;
@@ -33,11 +34,14 @@ public class BridgeDataDebugView extends StaticDebugView {
 
 			var centerline = bridge.getCenterline();
 			if (centerline != null) {
-				lines.put(centerline, new LineStyle(new Color(1f, 0f, 0f), 2));
+				var centerlineColor = new Color(1f, 0f, 0f);
+				lines.put(centerline, new LineStyle(centerlineColor, 2));
 			}
 
 			for (PolylineXZ edge : bridge.getEdges()) {
-				lines.put(edge, new LineStyle(new Color(1f, 1f, 0f), 2));
+				boolean leftEdge = bridge.getEdges().size() == 2 && bridge.getEdges().get(0) == edge;
+				Color color = leftEdge ? new Color(1f, 1f, 0.8f) : new Color(0.8f, 0.8f, 0f);
+				lines.put(edge, new LineStyle(color, 2));
 			}
 
 			for (PolylineXZ cap : bridge.getCaps()) {
@@ -58,6 +62,10 @@ public class BridgeDataDebugView extends StaticDebugView {
 							addYList(lineXYZ.getVertices(), height)), List.of());
 				} else {
 					output.drawLineStrip(entry.getValue().color(), 1, lineXYZ.getVertices());
+				}
+
+				if (entry.getKey() == centerline) {
+					drawArrow(output, color, 2.0f, lineXYZ.getVertices().toArray(new VectorXYZ[0]));
 				}
 
 			}

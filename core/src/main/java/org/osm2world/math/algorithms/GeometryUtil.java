@@ -417,6 +417,15 @@ public final class GeometryUtil {
 	}
 
 	/**
+	 * performs linear interpolation between two values
+	 *
+	 * @param ratio  value between 0 and 1 (both inclusive). Gives fraction of valueB's influence.
+	 */
+	public static double interpolateValue(double ratio, double valueA, double valueB) {
+		return valueA * (1 - ratio) + valueB * ratio;
+	}
+
+	/**
 	 * performs linear interpolation of any value for a position on a line segment
 	 */
 	public static double interpolateValue(VectorXZ posForValue,
