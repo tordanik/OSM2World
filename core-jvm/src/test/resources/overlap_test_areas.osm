@@ -1,22 +1,30 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <osm version='0.6' upload='never' generator='JOSM'>
-  <node id='13' lat='49.02057967156' lon='2.09260697486' version='1' />
-  <node id='14' lat='49.01866382862' lon='2.09215902984' version='1' />
-  <node id='15' lat='49.0206564496' lon='2.091843425' version='1' />
-  <node id='16' lat='49.01874060962' lon='2.09139547997' version='1' />
-  <node id='17' lat='49.02022204676' lon='2.09278226743' version='1' />
-  <node id='18' lat='49.02024120495' lon='2.09219799131' version='1' />
-  <node id='19' lat='49.01987073225' lon='2.09275548204' version='1' />
-  <node id='20' lat='49.01988989058' lon='2.09217120592' version='1' />
-  <node id='21' lat='49.01923814274' lon='2.09212974772' version='1' />
-  <node id='22' lat='49.01936627282' lon='2.09199840327' version='1' />
-  <node id='23' lat='49.01935574165' lon='2.09176352838' version='1' />
-  <node id='25' lat='49.01921708032' lon='2.09165999794' version='1' />
-  <node id='26' lat='49.01908894985' lon='2.09179134239' version='1' />
-  <node id='27' lat='49.01909948109' lon='2.09202621728' version='1' />
+  <node id='7' version='1' lat='49.01958964521' lon='2.09188217516' />
+  <node id='8' version='1' lat='49.01986673732' lon='2.09185110708' />
+  <node id='9' version='1' lat='49.0198957982' lon='2.09166557405' />
+  <node id='10' version='1' lat='49.01995282054' lon='2.09130152677' />
+  <node id='11' version='1' lat='49.01967521794' lon='2.09133537695' />
+  <node id='12' version='1' lat='49.01963326344' lon='2.09160346069' />
+  <node id='13' version='1' lat='49.02057967156' lon='2.09260697486' />
+  <node id='14' version='1' lat='49.01866382862' lon='2.09215902984' />
+  <node id='15' version='1' lat='49.0206564496' lon='2.091843425' />
+  <node id='16' version='1' lat='49.01874060962' lon='2.09139547997' />
+  <node id='17' version='1' lat='49.02022204676' lon='2.09278226743' />
+  <node id='18' version='1' lat='49.02024120495' lon='2.09219799131' />
+  <node id='19' version='1' lat='49.01987073225' lon='2.09275548204' />
+  <node id='20' version='1' lat='49.01988989058' lon='2.09217120592' />
+  <node id='21' version='1' lat='49.01923814274' lon='2.09212974772' />
+  <node id='22' version='1' lat='49.01936627282' lon='2.09199840327' />
+  <node id='23' version='1' lat='49.01935574165' lon='2.09176352838' />
+  <node id='25' version='1' lat='49.01921708032' lon='2.09165999794' />
+  <node id='26' version='1' lat='49.01908894985' lon='2.09179134239' />
+  <node id='27' version='1' lat='49.01909948109' lon='2.09202621728' />
   <way id='1' version='1'>
     <nd ref='13' />
     <nd ref='15' />
+    <nd ref='9' />
+    <nd ref='12' />
     <nd ref='16' />
     <nd ref='14' />
     <nd ref='13' />
@@ -42,5 +50,16 @@
     <nd ref='21' />
     <tag k='area' v='yes' />
     <tag k='name' v='3' />
+  </way>
+  <way id='4' version='1'>
+    <nd ref='7' />
+    <nd ref='8' />
+    <nd ref='9' />
+    <nd ref='10' />
+    <nd ref='11' />
+    <nd ref='12' />
+    <nd ref='7' />
+    <tag k='area' v='yes' />
+    <tag k='name' v='4' />
   </way>
 </osm>

@@ -246,14 +246,15 @@ public class OSMToMapDataConverterTest {
 
 		MapData mapData = loadMapData("overlap_test_areas.osm");
 
-		assertSame(3, mapData.getMapAreas().size());
+		assertSame(4, mapData.getMapAreas().size());
 
 		List<MapArea> areas = new ArrayList<>(mapData.getMapAreas());
 		areas.sort(Comparator.comparingLong(MapArea::getId));
 
-		assertEquals(2, areas.get(0).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
+		assertEquals(3, areas.get(0).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
 		assertEquals(1, areas.get(1).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
 		assertEquals(1, areas.get(2).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
+		assertEquals(1, areas.get(3).getOverlaps().stream().filter(o -> o instanceof MapOverlapAA).count());
 
 	}
 

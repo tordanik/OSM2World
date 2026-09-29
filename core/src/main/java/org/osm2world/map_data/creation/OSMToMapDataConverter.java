@@ -682,6 +682,16 @@ public class OSMToMapDataConverter {
 				}
 			}
 
+			/* even if the outlines only meet at common nodes, the areas can still overlap
+			 * (e.g. if one outline enters the other area at one common node and leaves at another).
+			 * Detect this by checking whether a segment's center is inside the other area.
+			 */
+
+			if (!intersects && !commonNodes.isEmpty()) {
+				intersects = hasSegmentCenterInside(polygon1, polygon2)
+						|| hasSegmentCenterInside(polygon2, polygon1);
+			}
+
 			/* check whether one area contains the other */
 
 			if (polygon1.contains(polygon2.getOuter())) {
@@ -728,6 +738,25 @@ public class OSMToMapDataConverter {
 
 		}
 
+	}
+
+	/**
+	 * checks whether the center of any of p's segments is inside the container,
+	 * not counting centers which are (almost) on the container's outline
+	 */
+	private static boolean hasSegmentCenterInside(PolygonShapeXZ p, PolygonShapeXZ container) {
+		for (SimplePolygonShapeXZ ring : p.getRings()) {
+			for (LineSegmentXZ segment : ring.getSegments()) {
+				VectorXZ center = segment.getCenter();
+				if (container.contains(center)
+						&& container.getRings().stream()
+						.flatMap(r -> r.getSegments().stream())
+						.allMatch(s -> s.distanceTo(center) >= 0.01)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/** @param b  union of all explicit bounding boxes in the OSM dataset */
