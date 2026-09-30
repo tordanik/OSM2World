@@ -416,7 +416,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		}
 
-		/** makes sure the {@link #polygon}, {@link #edges} and {@link #caps} fields are populated */
+		/** makes sure the {@link #polygon}, {@link #edges}, {@link #caps} and {@link #supports} fields are populated */
 		protected void initializeBridgeGeometry() {
 
 			if (polygon != null) {
@@ -424,151 +424,34 @@ public class BridgeModule extends ConfigurableWorldModule {
 				return;
 			}
 
-			/* find the bridge relation associated with this bridge (if any) */
-
-			MapRelation relation = null;
-
-			for (MapRelation.Membership membership : element.getElementWithId().getMemberships()) {
-				if (membership.getRelation().getTags().contains("type", "bridge")
-						&& "outline".equals(membership.getRole())) {
-					if (relation == null) {
-						relation = membership.getRelation();
-					} else {
-						ConversionLog.warn("More than one bridge relation for bridge outline", element.getElementWithId());
-					}
-				}
-			}
-
-			Set<MapWaySegment> edgeMemberSegments = Set.of();
-
-			if (relation != null) {
-				edgeMemberSegments = relation.getMembers().stream()
-						.filter(m -> "edge".equals(m.getRole()))
-						.filter(m -> m.getElement() instanceof MapWay)
-						.map(m -> (MapWay) m.getElement())
-						.flatMap(m -> m.getWaySegments().stream())
-						.collect(Collectors.toSet());
-			}
-
-			if (element instanceof MapArea area) {
-
-				this.polygon = area.getPolygon();
-
-				/* split the bridge outline polygon into:
-				 * - edges (sides which are in the air)
-				 * - caps (sides where the bridge ends at the ground) */
-
-				List<PolylineXZ> edges = new ArrayList<>(3);
-				List<PolylineXZ> caps = new ArrayList<>(3);
-
-				SimplePolygonShapeXZ outline = polygon.getOuter();
-
-				List<LineSegmentXZ> currentPolyline = new ArrayList<>();
-				boolean currentIsCap = false;
-
-				for (MapAreaSegment segment : area.getAreaSegmentsOuter()) {
-
-					boolean isCap;
-
-					if (!edgeMemberSegments.isEmpty()) {
-						// rely on explicit edge member mapping
-						isCap = edgeMemberSegments.stream().noneMatch(s ->
-								(s.getStartNode().equals(segment.getStartNode())
-										&& s.getEndNode().equals(segment.getEndNode()))
-										|| (s.getEndNode().equals(segment.getStartNode()) &&
-										s.getStartNode().equals(segment.getEndNode())));
-					} else {
-						isCap = isConnectedToGround(segment.getStartNode(), outline)
-								|| isConnectedToGround(segment.getEndNode(), outline);
-					}
-
-					if (isCap ^ currentIsCap) {
-						if (!currentPolyline.isEmpty()) {
-							if (currentIsCap) {
-								caps.add(PolylineXZ.join(currentPolyline));
-							} else {
-								edges.add(PolylineXZ.join(currentPolyline));
-							}
-						}
-						currentPolyline.clear();
-						currentIsCap = isCap;
-					}
-
-					currentPolyline.add(segment.getLineSegment());
-
-				}
-
-				PolylineXZ finalPolyline = PolylineXZ.join(currentPolyline);
-
-				if (currentIsCap) {
-					if (!caps.isEmpty() && getFirst(caps.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
-						caps.set(0, PolylineXZ.join(List.of(finalPolyline, caps.get(0))));
-					} else {
-						caps.add(finalPolyline);
-					}
-				} else {
-					if (!edges.isEmpty() && getFirst(edges.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
-						edges.set(0, PolylineXZ.join(List.of(finalPolyline, edges.get(0))));
-					} else {
-						edges.add(finalPolyline);
-					}
-				}
-
-				this.edges = edges;
-				this.caps = caps;
-
-				/* calculate the centerline */
-
-				if (this.edges.size() == 2 && this.caps.size() == 2) {
-
-					// flip the second edge to make both point in the same direction
-					edges.set(1, edges.get(1).reverse());
-
-					// make sure that the left edge is at index 0.
-					// The first edge follows the direction of the outline, so the other edge is on its right
-					// if the bridge area is on the right of the outline.
-					if (!area.getAreaSegmentsOuter().get(0).isAreaRight()) {
-						Collections.swap(edges, 0, 1);
-					}
-
-					VectorXZ start = getFirst(edges.get(0).vertices()).add(getFirst(edges.get(1).vertices())).mult(0.5);
-
-					if (caps.get(0).distanceTo(start) > caps.get(1).distanceTo(start)) {
-						// swap the caps so that the "start" cap is at index 0
-						Collections.swap(caps, 0, 1);
-					}
-
-					this.centerline = calculateCenterlineBetween(edges.get(0), edges.get(1));
-
-				}
-
-			} else if (element instanceof MapWaySegment segment) {
-
-				AbstractNetworkWaySegmentWorldObject primaryRep =
-						(AbstractNetworkWaySegmentWorldObject) segment.getPrimaryRepresentation();
-
-				List<VectorXZ> leftOutline = primaryRep.getOutlineXZ(false);
-				List<VectorXZ> rightOutline = primaryRep.getOutlineXZ(true);
-
-				this.edges = List.of(new PolylineXZ(leftOutline), new PolylineXZ(rightOutline));
-				this.caps = List.of(
-						new PolylineXZ(getFirst(leftOutline), getFirst(rightOutline)),
-						new PolylineXZ(getLast(leftOutline), getLast(rightOutline)));
-
-				List<VectorXZ> outline = new ArrayList<>(leftOutline);
-				outline.addAll(Lists.reverse(rightOutline));
-				this.polygon = new SimplePolygonXZ(closeLoop(outline));
-
-				this.centerline = primaryRep.getCenterlineXZ();
-
-			} else {
-				throw new IllegalArgumentException("Unsupported element type for bridge: " + element);
-			}
-
-			/* initialize supports */
+			initializeOutlineGeometry();
 
 			initializeSupports();
 
+		}
+
+		/** populates the {@link #polygon}, {@link #edges} and {@link #caps} fields, and {@link #centerline} if possible */
+		protected abstract void initializeOutlineGeometry();
+
+		/** returns all {@link MapElement}s which are represented by this bridge */
+		protected abstract Collection<? extends MapElement> getMapElements();
+
+		/** returns nodes which are part of this bridge's {@link #getMapElements()} and may be explicitly mapped supports */
+		protected abstract Collection<MapNode> getSupportCandidateNodes();
+
+		/** returns all elements overlapping any of this bridge's {@link #getMapElements()}, without duplicates */
+		protected Collection<MapElement> getOverlappingElements() {
+			Collection<? extends MapElement> ownElements = getMapElements();
+			Set<MapElement> result = new LinkedHashSet<>();
+			for (MapElement e : ownElements) {
+				for (MapOverlap<?, ?> overlap : e.getOverlaps()) {
+					MapElement other = overlap.getOther(e);
+					if (!ownElements.contains(other)) {
+						result.add(other);
+					}
+				}
+			}
+			return result;
 		}
 
 		static @Nullable PolylineXZ calculateCenterlineBetween(PolylineShapeXZ edge0, PolylineShapeXZ edge1) {
@@ -634,43 +517,6 @@ public class BridgeModule extends ConfigurableWorldModule {
 			} else {
 				return centerline;
 			}
-
-		}
-
-		/**
-		 * Applies several heuristics to find out if a point of the bridge outline is likely connected to the ground
-		 * (or some other solid end of the bridge, such as a building).
-		 */
-		private boolean isConnectedToGround(MapNode node, SimplePolygonShapeXZ outline) {
-
-			/* building entrances */
-
-			if (node.getTags().containsKey("entrance")
-					&& node.getAdjacentAreas().stream().anyMatch(a -> a.getTags().containsKey("building"))) {
-				return true;
-			}
-
-			/* nodes connected to (non-bridge) highways, railways or waterways entering the outline */
-
-			boolean hasGroundWaysOutside = false;
-			boolean hasBridgeWayInside = false;
-
-			for (MapWaySegment segment : node.getConnectedWaySegments()) {
-				WaySegmentWorldObject rep = segment.getPrimaryRepresentation();
-				if (rep instanceof RoadModule.Road || rep instanceof RailwayModule.Rail
-						|| rep instanceof Waterway) {
-					boolean isInside = outline.contains(segment.getCenter());
-					boolean isBridgeWay = segment.getTags().containsKey("bridge")
-							&& !"no".equals(segment.getTags().getValue("bridge"));
-					if (isInside && isBridgeWay) {
-						hasBridgeWayInside = true;
-					} else if (!isInside && !isBridgeWay) {
-						hasGroundWaysOutside = true;
-					}
-				}
-			}
-
-			return hasBridgeWayInside && hasGroundWaysOutside;
 
 		}
 
@@ -744,20 +590,15 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			/* look for explicitly mapped supports among the way's nodes and overlapping features */
 
-			Collection<MapElement> explicitlyMappedSupports = new ArrayList<>();
+			Collection<MapElement> explicitlyMappedSupports = new LinkedHashSet<>();
 
-			//note: there is currently no de-duplication of bridge support nodes shared by two bridge segments
-
-			if (element instanceof MapWaySegment segment) {
-				for (MapNode node : segment.getStartEndNodes()) {
-					if (node.getTags().containsKey("bridge:support")) {
-						explicitlyMappedSupports.add(node);
-					}
+			for (MapNode node : getSupportCandidateNodes()) {
+				if (node.getTags().containsKey("bridge:support")) {
+					explicitlyMappedSupports.add(node);
 				}
 			}
 
-			element.getOverlaps().stream()
-					.map(it -> it.getOther(element))
+			getOverlappingElements().stream()
 					.filter(it -> it.getTags().containsKey("bridge:support"))
 					.filter(it -> it instanceof MapNode || it instanceof MapArea)
 					.forEach(explicitlyMappedSupports::add);
@@ -803,8 +644,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				Collection<WorldObject> avoidedObjects = new ArrayList<>();
 
-				for (MapOverlap<?, ?> i : element.getOverlaps()) {
-					for (WorldObject otherRep : i.getOther(element).getRepresentations()) {
+				for (MapElement overlappingElement : getOverlappingElements()) {
+					for (WorldObject otherRep : overlappingElement.getRepresentations()) {
 
 						if (otherRep.getGroundState() == GroundState.ON
 								&& !(otherRep instanceof Water
@@ -917,6 +758,176 @@ public class BridgeModule extends ConfigurableWorldModule {
 			super(area);
 		}
 
+		@Override
+		protected Collection<MapArea> getMapElements() {
+			return List.of(element);
+		}
+
+		@Override
+		protected Collection<MapNode> getSupportCandidateNodes() {
+			return List.of();
+		}
+
+		@Override
+		protected void initializeOutlineGeometry() {
+
+			/* find the bridge relation associated with this bridge (if any) */
+
+			MapRelation relation = null;
+
+			for (MapRelation.Membership membership : element.getElementWithId().getMemberships()) {
+				if (membership.getRelation().getTags().contains("type", "bridge")
+						&& "outline".equals(membership.getRole())) {
+					if (relation == null) {
+						relation = membership.getRelation();
+					} else {
+						ConversionLog.warn("More than one bridge relation for bridge outline", element.getElementWithId());
+					}
+				}
+			}
+
+			Set<MapWaySegment> edgeMemberSegments = Set.of();
+
+			if (relation != null) {
+				edgeMemberSegments = relation.getMembers().stream()
+						.filter(m -> "edge".equals(m.getRole()))
+						.filter(m -> m.getElement() instanceof MapWay)
+						.map(m -> (MapWay) m.getElement())
+						.flatMap(m -> m.getWaySegments().stream())
+						.collect(Collectors.toSet());
+			}
+
+			MapArea area = element;
+
+			this.polygon = area.getPolygon();
+
+			/* split the bridge outline polygon into:
+			 * - edges (sides which are in the air)
+			 * - caps (sides where the bridge ends at the ground) */
+
+			List<PolylineXZ> edges = new ArrayList<>(3);
+			List<PolylineXZ> caps = new ArrayList<>(3);
+
+			SimplePolygonShapeXZ outline = polygon.getOuter();
+
+			List<LineSegmentXZ> currentPolyline = new ArrayList<>();
+			boolean currentIsCap = false;
+
+			for (MapAreaSegment segment : area.getAreaSegmentsOuter()) {
+
+				boolean isCap;
+
+				if (!edgeMemberSegments.isEmpty()) {
+					// rely on explicit edge member mapping
+					isCap = edgeMemberSegments.stream().noneMatch(s ->
+							(s.getStartNode().equals(segment.getStartNode())
+									&& s.getEndNode().equals(segment.getEndNode()))
+									|| (s.getEndNode().equals(segment.getStartNode()) &&
+									s.getStartNode().equals(segment.getEndNode())));
+				} else {
+					isCap = isConnectedToGround(segment.getStartNode(), outline)
+							|| isConnectedToGround(segment.getEndNode(), outline);
+				}
+
+				if (isCap ^ currentIsCap) {
+					if (!currentPolyline.isEmpty()) {
+						if (currentIsCap) {
+							caps.add(PolylineXZ.join(currentPolyline));
+						} else {
+							edges.add(PolylineXZ.join(currentPolyline));
+						}
+					}
+					currentPolyline.clear();
+					currentIsCap = isCap;
+				}
+
+				currentPolyline.add(segment.getLineSegment());
+
+			}
+
+			PolylineXZ finalPolyline = PolylineXZ.join(currentPolyline);
+
+			if (currentIsCap) {
+				if (!caps.isEmpty() && getFirst(caps.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
+					caps.set(0, PolylineXZ.join(List.of(finalPolyline, caps.get(0))));
+				} else {
+					caps.add(finalPolyline);
+				}
+			} else {
+				if (!edges.isEmpty() && getFirst(edges.get(0).vertices()).equals(getLast(finalPolyline.vertices()))) {
+					edges.set(0, PolylineXZ.join(List.of(finalPolyline, edges.get(0))));
+				} else {
+					edges.add(finalPolyline);
+				}
+			}
+
+			this.edges = edges;
+			this.caps = caps;
+
+			/* calculate the centerline */
+
+			if (this.edges.size() == 2 && this.caps.size() == 2) {
+
+				// flip the second edge to make both point in the same direction
+				edges.set(1, edges.get(1).reverse());
+
+				// make sure that the left edge is at index 0.
+				// The first edge follows the direction of the outline, so the other edge is on its right
+				// if the bridge area is on the right of the outline.
+				if (!area.getAreaSegmentsOuter().get(0).isAreaRight()) {
+					Collections.swap(edges, 0, 1);
+				}
+
+				VectorXZ start = getFirst(edges.get(0).vertices()).add(getFirst(edges.get(1).vertices())).mult(0.5);
+
+				if (caps.get(0).distanceTo(start) > caps.get(1).distanceTo(start)) {
+					// swap the caps so that the "start" cap is at index 0
+					Collections.swap(caps, 0, 1);
+				}
+
+				this.centerline = calculateCenterlineBetween(edges.get(0), edges.get(1));
+
+			}
+
+		}
+
+		/**
+		 * Applies several heuristics to find out if a point of the bridge outline is likely connected to the ground
+		 * (or some other solid end of the bridge, such as a building).
+		 */
+		private boolean isConnectedToGround(MapNode node, SimplePolygonShapeXZ outline) {
+
+			/* building entrances */
+
+			if (node.getTags().containsKey("entrance")
+					&& node.getAdjacentAreas().stream().anyMatch(a -> a.getTags().containsKey("building"))) {
+				return true;
+			}
+
+			/* nodes connected to (non-bridge) highways, railways or waterways entering the outline */
+
+			boolean hasGroundWaysOutside = false;
+			boolean hasBridgeWayInside = false;
+
+			for (MapWaySegment segment : node.getConnectedWaySegments()) {
+				WaySegmentWorldObject rep = segment.getPrimaryRepresentation();
+				if (rep instanceof RoadModule.Road || rep instanceof RailwayModule.Rail
+						|| rep instanceof Waterway) {
+					boolean isInside = outline.contains(segment.getCenter());
+					boolean isBridgeWay = segment.getTags().containsKey("bridge")
+							&& !"no".equals(segment.getTags().getValue("bridge"));
+					if (isInside && isBridgeWay) {
+						hasBridgeWayInside = true;
+					} else if (!isInside && !isBridgeWay) {
+						hasGroundWaysOutside = true;
+					}
+				}
+			}
+
+			return hasBridgeWayInside && hasGroundWaysOutside;
+
+		}
+
 	}
 
 	private class BridgeWaySegment extends Bridge<MapWaySegment> implements WaySegmentWorldObject {
@@ -924,6 +935,41 @@ public class BridgeModule extends ConfigurableWorldModule {
 		public BridgeWaySegment(MapWaySegment waySegment) {
 			super(waySegment);
 		}
+
+		@Override
+		protected Collection<MapWaySegment> getMapElements() {
+			return List.of(element);
+		}
+
+		@Override
+		protected Collection<MapNode> getSupportCandidateNodes() {
+			return element.getStartEndNodes();
+		}
+
+		@Override
+		protected void initializeOutlineGeometry() {
+
+			MapWaySegment segment = element;
+
+			AbstractNetworkWaySegmentWorldObject primaryRep =
+					(AbstractNetworkWaySegmentWorldObject) segment.getPrimaryRepresentation();
+
+			List<VectorXZ> leftOutline = primaryRep.getOutlineXZ(false);
+			List<VectorXZ> rightOutline = primaryRep.getOutlineXZ(true);
+
+			this.edges = List.of(new PolylineXZ(leftOutline), new PolylineXZ(rightOutline));
+			this.caps = List.of(
+					new PolylineXZ(getFirst(leftOutline), getFirst(rightOutline)),
+					new PolylineXZ(getLast(leftOutline), getLast(rightOutline)));
+
+			List<VectorXZ> outline = new ArrayList<>(leftOutline);
+			outline.addAll(Lists.reverse(rightOutline));
+			this.polygon = new SimplePolygonXZ(closeLoop(outline));
+
+			this.centerline = primaryRep.getCenterlineXZ();
+
+		}
+
 
 		@Override
 		public VectorXZ getStartPosition() {
