@@ -2,13 +2,13 @@ package org.osm2world.world.modules;
 
 import static java.lang.Math.*;
 import static java.util.Comparator.comparingDouble;
+import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.math.algorithms.TriangulationUtil.triangulateXYZ;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_DEFAULT;
-import static org.osm2world.scene.material.DefaultMaterials.BRIDGE_PILLAR_DEFAULT;
+import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.util.ListUtil.getFirst;
@@ -39,6 +39,7 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
@@ -116,6 +117,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 		protected final E element;
 		protected final int layer;
 
+		protected final BridgeDefaults defaults;
+
 		protected PolygonShapeXZ polygon;
 		protected List<PolylineXZ> edges;
 		protected List<PolylineXZ> caps;
@@ -139,6 +142,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 			this.element = element;
 
 			this.layer = parseInt(element.getTags().getValue("layer"),0);
+
+			this.defaults = BridgeDefaults.forTags(element.getTags());
 
 		}
 
@@ -227,7 +232,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			initializeBridgeGeometry();
 
 			Material material = config.mapStyle().resolveMaterial(
-					element.getTags().getValue("material"), BRIDGE_DEFAULT);
+					element.getTags().getValue("material"), requireNonNullElse(defaults.material, BRIDGE_DEFAULT));
 
 			Angle textureAngle = centerline == null ? null :
 					Angle.ofRadians(centerline.getSegments().get(0).getDirection().angle());
@@ -287,8 +292,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			/* draw arches between supports */
 
-			if (element.getTags().containsAny(
-					List.of("bridge:structure"), List.of("arch", "humpback"))) {
+			if (defaults.hasArches) {
 				renderArches(target, material, textureAngle);
 			}
 
@@ -691,7 +695,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			List<ShapeXZ> extraLines = List.of();
 
-			if (centerline != null && getCurvatureHeightPerLength() != 0) {
+			if (centerline != null && defaults.curvatureHeightPerLength != 0) {
 
 				double dist = min(5, centerline.getLength() / 4);
 				List<VectorXZ> splitPoints = equallyDistributePointsAlong(dist, true, centerline);
@@ -785,11 +789,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 					supports.sort(comparingDouble(it -> centerline.offsetOf(centerline.closestPoint(it.pos))));
 				}
 
-			} else if (centerline != null) {
+			} else if (centerline != null && Double.isFinite(defaults.pierDistance)) {
 
 				/* no explicitly mapped supports found, distribute some equally along the bridge's length */
 
-				double distance = min(50.0, centerline.getLength());
+				double distance = min(defaults.pierDistance, centerline.getLength());
 
 				List<VectorXZ> pierPositions = new ArrayList<>(equallyDistributePointsAlong(
 						distance, false, centerline));
@@ -831,7 +835,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			if (shape == null) {
 				if (centerline != null) {
 					double width = parseMeasure(tags.getValue("width"), getBridgeWidthAt(pos) * 0.7);
-					double length = parseMeasure(tags.getValue("length"), width * 0.5);
+					double length = parseMeasure(tags.getValue("length"), min(width / 2, defaults.pierDistance / 4));
 					double angle = centerline.closestSegment(pos).getDirection().angle();
 					shape = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
 					shape = shape.rotatedCW(angle);
@@ -845,7 +849,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			Material material = config.mapStyle().resolveMaterial(tags.getValue("material"),
 					config.mapStyle().resolveMaterial(element.getTags().getValue("material"),
-					BRIDGE_PILLAR_DEFAULT));
+					Objects.requireNonNullElse(defaults.material, BRIDGE_PILLAR_DEFAULT)));
 
 			material = material.withColor(parseColor(tags.getValue("colour"), CSS_COLORS));
 
@@ -853,21 +857,6 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			return new BridgeSupportData(pos, shape, material, element.getTags());
 
-		}
-
-		/**
-		 * Returns the height-per-length ratio of the bridge's vertical curvature.
-		 * 0 if the bridge has no vertical curvature (may still have an incline if the ends are at different ele).
-		 * Negative values can be used for suspension-type bridges which are lower in the center than at the ends.
-		 */
-		private double getCurvatureHeightPerLength() {
-			if (element.getTags().contains("bridge:structure", "humpback")) {
-				return 0.2;
-			} else if (element.getTags().contains("bridge:structure", "simple-suspension")) {
-				return -0.25;
-			} else {
-				return 0;
-			}
 		}
 
 		public double getBridgeEleAt(VectorXZ pos) {
@@ -883,8 +872,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 				double offset = centerline.offsetOf(centerline.closestPoint(pos)) / centerline.getLength();
 				ele = interpolateValue(offset, startEle, endEle);
 
-				if (getCurvatureHeightPerLength() != 0) {
-					double extraHeight = centerline.getLength() * getCurvatureHeightPerLength();
+				if (defaults.curvatureHeightPerLength != 0) {
+					double extraHeight = centerline.getLength() * defaults.curvatureHeightPerLength;
 					ele += circularArcHeightAt(extraHeight, offset, 0.6);
 				}
 
@@ -953,6 +942,55 @@ public class BridgeModule extends ConfigurableWorldModule {
 			} else {
 				return element.getEndNode().getPos();
 			}
+		}
+
+	}
+
+
+
+	/**
+	 * Default values for various bridge dimensions and properties.
+	 *
+	 * @param material  default material for if different from the overall defaults for bridges
+	 * @param pierDistance  distance between the centers of piers (if not explicitly mapped), non-finite for no piers
+	 * @param curvatureHeightPerLength  height-per-length ratio of the bridge's vertical curvature.
+	 * 0 if the bridge has no vertical curvature (may still have an incline if the ends are at different ele).
+	 * Negative values can be used for suspension-type bridges which are lower in the center than at the ends.
+	 */
+	protected record BridgeDefaults (
+			@Nullable MaterialOrRef material,
+			boolean hasArches,
+			double pierDistance,
+			double curvatureHeightPerLength
+		) {
+
+		public static BridgeDefaults forTags(TagSet tags) {
+
+			String type = requireNonNullElse(tags.getValue("bridge"), "");
+			String structure = requireNonNullElse(tags.getValue("bridge:structure"), "beam");
+
+			@Nullable MaterialOrRef material = switch (structure) {
+				case "clapper" -> ROCK;
+				case "simple-suspension" -> WOOD;
+				default -> ("boardwalk".equals(type)) ? WOOD : null;
+			};
+
+			boolean hasArches = List.of("arch", "humpback").contains(structure);
+
+			double pierDistance = switch (structure) {
+				case "simple-suspension", "floating" -> Double.POSITIVE_INFINITY;
+				case "clapper" -> 3.0;
+				default -> "viaduct".equals(type) ? 20.0 : 50.0;
+			};
+
+			double curvatureHeightPerLength = switch (structure) {
+				case "humpback" -> 0.2;
+				case "simple-suspension" -> -0.25;
+				default -> 0;
+			};
+
+			return new BridgeDefaults(material, hasArches, pierDistance, curvatureHeightPerLength);
+
 		}
 
 	}
