@@ -3,8 +3,7 @@ package org.osm2world.map_data.data;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.map_data.data.overlaps.MapElementId.TYPED_ID_PATTERN;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +13,7 @@ import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.world.data.WorldObject;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 
 /**
  * OSM2World's abstraction of OSM data, consists of {@link MapElement}s.
@@ -185,10 +185,17 @@ public class MapData {
 
 	/**
 	 * returns all {@link WorldObject}s from elements in this data set.
+	 * World objects representing multiple elements are only included once.
 	 */
 	public Iterable<WorldObject> getWorldObjects() {
 
-		return Iterables.concat(Iterables.transform(getMapElements(), MapElement::getRepresentations));
+		Iterable<WorldObject> allRepresentations =
+				Iterables.concat(Iterables.transform(getMapElements(), MapElement::getRepresentations));
+
+		return () -> {
+			Set<WorldObject> encounteredObjects = Collections.newSetFromMap(new IdentityHashMap<>());
+			return Iterators.filter(allRepresentations.iterator(), encounteredObjects::add);
+		};
 
 	}
 

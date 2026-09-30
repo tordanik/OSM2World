@@ -17,6 +17,7 @@ import static org.osm2world.util.ValueParseUtil.*;
 import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
+import static org.osm2world.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.*;
 import java.util.function.Function;
@@ -55,6 +56,7 @@ import org.osm2world.world.modules.WaterModule.Water;
 import org.osm2world.world.modules.WaterModule.Waterway;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
+import org.osm2world.world.network.NetworkWaySegmentWorldObject;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -84,6 +86,10 @@ public class BridgeModule extends ConfigurableWorldModule {
 			// TODO: create piers, including ones which don't have a bridge on them (anymore)
 		}
 
+		/* find bridge way segments, excluding those which are covered by a man_made=bridge area */
+
+		Set<MapWaySegment> bridgeSegments = new LinkedHashSet<>();
+
 		for (MapWaySegment waySegment : mapData.getMapWaySegments()) {
 			if (isBridge(waySegment)
 					&& waySegment.getPrimaryRepresentation() instanceof AbstractNetworkWaySegmentWorldObject) {
@@ -96,10 +102,34 @@ public class BridgeModule extends ConfigurableWorldModule {
 								&& (!segmentTags.containsKey("layer")
 								|| Objects.equals(otherTags.getValue("layer"), segmentTags.getValue("layer")));
 				})) {
-					waySegment.addRepresentation(new BridgeWaySegment(waySegment));
+					bridgeSegments.add(waySegment);
 				}
 
 			}
+		}
+
+		/* combine chains of connected segments into a single bridge each */
+
+		Set<MapWaySegment> handledSegments = new HashSet<>();
+
+		for (MapWaySegment waySegment : bridgeSegments) {
+
+			if (!handledSegments.add(waySegment)) continue;
+
+			List<MapWaySegment> segments = new ArrayList<>(List.of(waySegment));
+			List<MapNode> nodes = new ArrayList<>(waySegment.getStartEndNodes());
+
+			// extend the chain in both directions, keeping the direction of the initial segment
+			extendChain(segments, nodes, bridgeSegments, handledSegments);
+			Collections.reverse(segments);
+			Collections.reverse(nodes);
+			extendChain(segments, nodes, bridgeSegments, handledSegments);
+			Collections.reverse(segments);
+			Collections.reverse(nodes);
+
+			BridgeWay bridge = new BridgeWay(segments, nodes);
+			segments.forEach(s -> s.addRepresentation(bridge));
+
 		}
 
 		for (MapArea area : mapData.getMapAreas()) {
@@ -108,6 +138,76 @@ public class BridgeModule extends ConfigurableWorldModule {
 			}
 		}
 
+	}
+
+	/**
+	 * extends a chain of bridge segments beyond its last node for as long as there is exactly one
+	 * suitable continuation
+	 *
+	 * @param segments  the segments of the chain, will be modified
+	 * @param nodes  the nodes of the chain, will be modified
+	 * @param bridgeSegments  all segments which may become part of a chain
+	 * @param handledSegments  segments which are already part of a chain, will be modified
+	 */
+	private static void extendChain(List<MapWaySegment> segments, List<MapNode> nodes,
+			Set<MapWaySegment> bridgeSegments, Set<MapWaySegment> handledSegments) {
+
+		while (true) {
+
+			MapWaySegment lastSegment = getLast(segments);
+			MapNode lastNode = getLast(nodes);
+
+			/* the chain ends at nodes where other network segments branch off */
+
+			List<NetworkWaySegmentWorldObject> connectedSegments =
+					getConnectedNetworkSegments(lastNode, NetworkWaySegmentWorldObject.class, null);
+
+			if (connectedSegments.size() != 2
+					|| connectedSegments.get(0).getClass() != connectedSegments.get(1).getClass()) {
+				return;
+			}
+
+			MapWaySegment nextSegment = connectedSegments.stream()
+					.map(NetworkWaySegmentWorldObject::getPrimaryMapElement)
+					.filter(s -> s != lastSegment)
+					.findAny().orElse(null);
+
+			if (nextSegment == null
+					|| !bridgeSegments.contains(nextSegment)
+					|| !isSameBridge(lastSegment, nextSegment)
+					|| !handledSegments.add(nextSegment)) {
+				return;
+			}
+
+			segments.add(nextSegment);
+			nodes.add(nextSegment.getOtherNode(lastNode));
+
+		}
+
+	}
+
+	/**
+	 * checks whether two connected bridge segments should be represented by the same {@link Bridge}
+	 */
+	static boolean isSameBridge(MapWaySegment s1, MapWaySegment s2) {
+
+		if (s1.getWay() == s2.getWay()) return true;
+
+		TagSet tags1 = s1.getTags();
+		TagSet tags2 = s2.getTags();
+
+		return Objects.equals(tags1.getValue("bridge"), tags2.getValue("bridge"))
+				&& Objects.equals(tags1.getValue("bridge:structure"), tags2.getValue("bridge:structure"))
+				&& parseInt(tags1.getValue("layer"), 0) == parseInt(tags2.getValue("layer"), 0)
+				&& getBridgeRelations(s1.getWay()).equals(getBridgeRelations(s2.getWay()));
+
+	}
+
+	private static Set<MapRelation> getBridgeRelations(MapWay way) {
+		return way.getMemberships().stream()
+				.map(MapRelation.Membership::getRelation)
+				.filter(r -> r.getTags().contains("type", "bridge"))
+				.collect(Collectors.toSet());
 	}
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
@@ -930,32 +1030,71 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 	}
 
-	private class BridgeWaySegment extends Bridge<MapWaySegment> implements WaySegmentWorldObject {
+	/**
+	 * A bridge carrying one or more connected, non-branching {@link MapWaySegment}s
+	 * which belong to the same bridge according to {@link #isSameBridge(MapWaySegment, MapWaySegment)}.
+	 */
+	private class BridgeWay extends Bridge<MapWaySegment> implements WaySegmentWorldObject {
 
-		public BridgeWaySegment(MapWaySegment waySegment) {
-			super(waySegment);
+		/** the segments of this bridge, ordered from the start to the end of the bridge */
+		private final List<MapWaySegment> segments;
+
+		/**
+		 * the nodes connecting the {@link #segments}, including the start and end node of the bridge.
+		 * Segment <code>i</code> runs from node <code>i</code> to node <code>i+1</code>,
+		 * which may be opposite to the segment's own direction.
+		 */
+		private final List<MapNode> nodes;
+
+		public BridgeWay(List<MapWaySegment> segments, List<MapNode> nodes) {
+			super(segments.get(0));
+			if (nodes.size() != segments.size() + 1) throw new IllegalArgumentException("inconsistent chain");
+			this.segments = List.copyOf(segments);
+			this.nodes = List.copyOf(nodes);
 		}
 
 		@Override
 		protected Collection<MapWaySegment> getMapElements() {
-			return List.of(element);
+			return segments;
 		}
 
 		@Override
 		protected Collection<MapNode> getSupportCandidateNodes() {
-			return element.getStartEndNodes();
+			return nodes;
 		}
 
 		@Override
 		protected void initializeOutlineGeometry() {
 
-			MapWaySegment segment = element;
+			/* join the outlines and centerlines of all segments */
 
-			AbstractNetworkWaySegmentWorldObject primaryRep =
-					(AbstractNetworkWaySegmentWorldObject) segment.getPrimaryRepresentation();
+			List<VectorXZ> leftOutline = new ArrayList<>();
+			List<VectorXZ> rightOutline = new ArrayList<>();
+			List<VectorXZ> centerline = new ArrayList<>();
 
-			List<VectorXZ> leftOutline = primaryRep.getOutlineXZ(false);
-			List<VectorXZ> rightOutline = primaryRep.getOutlineXZ(true);
+			for (int i = 0; i < segments.size(); i++) {
+
+				MapWaySegment segment = segments.get(i);
+				boolean reversed = segment.getStartNode() != nodes.get(i);
+
+				AbstractNetworkWaySegmentWorldObject primaryRep =
+						(AbstractNetworkWaySegmentWorldObject) segment.getPrimaryRepresentation();
+
+				List<VectorXZ> segmentCenterline = primaryRep.getCenterlineXZ().vertices();
+
+				if (!reversed) {
+					appendToLine(leftOutline, primaryRep.getOutlineXZ(false));
+					appendToLine(rightOutline, primaryRep.getOutlineXZ(true));
+					appendToLine(centerline, segmentCenterline);
+				} else {
+					appendToLine(leftOutline, Lists.reverse(primaryRep.getOutlineXZ(true)));
+					appendToLine(rightOutline, Lists.reverse(primaryRep.getOutlineXZ(false)));
+					appendToLine(centerline, Lists.reverse(segmentCenterline));
+				}
+
+			}
+
+			/* build the bridge geometry from the joined lines */
 
 			this.edges = List.of(new PolylineXZ(leftOutline), new PolylineXZ(rightOutline));
 			this.caps = List.of(
@@ -966,34 +1105,46 @@ public class BridgeModule extends ConfigurableWorldModule {
 			outline.addAll(Lists.reverse(rightOutline));
 			this.polygon = new SimplePolygonXZ(closeLoop(outline));
 
-			this.centerline = primaryRep.getCenterlineXZ();
+			this.centerline = new PolylineXZ(centerline);
 
 		}
 
+		/**
+		 * appends vertices to a line, skipping the first vertex if it is (almost) identical
+		 * to the current last vertex of the line
+		 */
+		private static void appendToLine(List<VectorXZ> line, List<VectorXZ> vertices) {
+			if (!line.isEmpty() && getLast(line).distanceTo(vertices.get(0)) < 0.01) {
+				vertices = vertices.subList(1, vertices.size());
+			}
+			line.addAll(vertices);
+		}
 
 		@Override
 		public VectorXZ getStartPosition() {
-			WaySegmentWorldObject primaryRep = this.element.getPrimaryRepresentation();
+			MapWaySegment firstSegment = segments.get(0);
+			WaySegmentWorldObject primaryRep = firstSegment.getPrimaryRepresentation();
+			boolean reversed = firstSegment.getStartNode() != nodes.get(0);
 			if (primaryRep != null && primaryRep != this) {
-				return primaryRep.getStartPosition();
+				return reversed ? primaryRep.getEndPosition() : primaryRep.getStartPosition();
 			} else {
-				return element.getStartNode().getPos();
+				return nodes.get(0).getPos();
 			}
 		}
 
 		@Override
 		public VectorXZ getEndPosition() {
-			WaySegmentWorldObject primaryRep = this.element.getPrimaryRepresentation();
+			MapWaySegment lastSegment = getLast(segments);
+			WaySegmentWorldObject primaryRep = lastSegment.getPrimaryRepresentation();
+			boolean reversed = lastSegment.getStartNode() != nodes.get(nodes.size() - 2);
 			if (primaryRep != null && primaryRep != this) {
-				return primaryRep.getEndPosition();
+				return reversed ? primaryRep.getStartPosition() : primaryRep.getEndPosition();
 			} else {
-				return element.getEndNode().getPos();
+				return getLast(nodes).getPos();
 			}
 		}
 
 	}
-
-
 
 	/**
 	 * Default values for various bridge dimensions and properties.
