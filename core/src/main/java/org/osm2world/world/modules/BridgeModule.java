@@ -264,9 +264,10 @@ public class BridgeModule extends ConfigurableWorldModule {
 								td -> new GlobalXZTexCoordFunction(td, textureAngle)));
 
 				// don't use the original edges, those don't have the extra intersection points for curved bridges
-				Set<LineSegmentXYZ> triangulationEdges = new TriangleGeometry(undersideTrianglesXYZ,
+				Set<LineSegmentXYZ> triangulationEdges = new TriangleGeometry(
+						undersideTrianglesXYZ,
 						Interpolation.FLAT, List.of(), null)
-						.edges();
+						.outerEdges();
 
 				VectorXZ outlineCenter = polygon.getOuter().getCentroid();
 

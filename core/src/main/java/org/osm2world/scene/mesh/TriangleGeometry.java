@@ -8,7 +8,9 @@ import static org.osm2world.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.math.Angle;
@@ -365,16 +367,7 @@ public class TriangleGeometry implements Geometry {
 
 		Set<LineSegmentXYZ> result = new HashSet<>();
 
-		Multimap<LineSegmentXYZ, TriangleXYZ> adjacentTriangles = HashMultimap.create();
-
-		for (TriangleXYZ triangle : triangles) {
-			for (LineSegmentXYZ segment : triangle.segments()) {
-				LineSegmentXYZ canonicalSegment = (segment.getDirection().y > 0
-						|| (segment.getDirection().y == 0 && segment.getDirection().xz().angle() >= Math.PI))
-						? segment : segment.reverse();
-				adjacentTriangles.put(canonicalSegment, triangle);
-			}
-		}
+		Multimap<LineSegmentXYZ, TriangleXYZ> adjacentTriangles = adjacentTriangleMap();
 
 		for (LineSegmentXYZ segment : adjacentTriangles.keySet()) {
 			Collection<TriangleXYZ> triangles = adjacentTriangles.get(segment);
@@ -386,6 +379,37 @@ public class TriangleGeometry implements Geometry {
 		}
 
 		return result;
+
+	}
+
+	/**
+	 * Returns all edges of triangles in this geometry which are not shared by another triangle.
+	 */
+	public Set<LineSegmentXYZ> outerEdges() {
+
+		Multimap<LineSegmentXYZ, TriangleXYZ> adjacentTriangles = adjacentTriangleMap();
+
+		return adjacentTriangles.keySet().stream()
+				.filter(segment -> adjacentTriangles.get(segment).size() == 1)
+				.collect(Collectors.toSet());
+
+	}
+
+	@Nonnull
+	private Multimap<LineSegmentXYZ, TriangleXYZ> adjacentTriangleMap() {
+
+		Multimap<LineSegmentXYZ, TriangleXYZ> adjacentTriangles = HashMultimap.create();
+
+		for (TriangleXYZ triangle : triangles) {
+			for (LineSegmentXYZ segment : triangle.segments()) {
+				LineSegmentXYZ canonicalSegment = (segment.getDirection().y > 0
+						|| (segment.getDirection().y == 0 && segment.getDirection().xz().angle() >= Math.PI))
+						? segment : segment.reverse();
+				adjacentTriangles.put(canonicalSegment, triangle);
+			}
+		}
+
+		return adjacentTriangles;
 
 	}
 

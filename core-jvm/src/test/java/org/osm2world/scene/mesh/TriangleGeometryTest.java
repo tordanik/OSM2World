@@ -4,6 +4,7 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
+import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.osm2world.scene.color.Color.RED;
@@ -11,13 +12,12 @@ import static org.osm2world.scene.color.Color.YELLOW;
 import static org.osm2world.scene.mesh.MeshTestUtil.containsTriangle;
 import static org.osm2world.test.TestUtil.assertSameCyclicOrder;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Test;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.shapes.LineSegmentXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material.Interpolation;
 
@@ -92,6 +92,85 @@ public class TriangleGeometryTest {
 		assertSameCyclicOrder(false, result2.get(0).verticesNoDup(),
 				new VectorXYZ(0, 0, 0), new VectorXYZ(0, 0, 0.5), new VectorXYZ(0, 0.5, 0));
 
+	}
+
+	@Test
+	public void testEdges_singleTriangle() {
+
+		var a = new VectorXYZ(0, 0, 0);
+		var b = new VectorXYZ(1, 0, 0);
+		var c = new VectorXYZ(0, 1, 0);
+
+		TriangleGeometry geometry = geometryOf(new TriangleXYZ(a, b, c));
+
+		Set<Set<VectorXYZ>> expected = Set.of(Set.of(a, b), Set.of(b, c), Set.of(c, a));
+		assertEquals(expected, undirected(geometry.edges()));
+		assertEquals(expected, undirected(geometry.outerEdges()));
+
+	}
+
+	@Test
+	public void testEdges_flatQuad() {
+
+		var a = new VectorXYZ(0, 0, 0);
+		var b = new VectorXYZ(1, 0, 0);
+		var c = new VectorXYZ(1, 0, 1);
+		var d = new VectorXYZ(0, 0, 1);
+
+		TriangleGeometry geometry = geometryOf(new TriangleXYZ(a, b, c), new TriangleXYZ(a, c, d));
+
+		Set<Set<VectorXYZ>> expected = Set.of(Set.of(a, b), Set.of(b, c), Set.of(c, d), Set.of(d, a));
+		assertEquals(expected, undirected(geometry.edges()));
+		assertEquals(expected, undirected(geometry.outerEdges()));
+
+	}
+
+	@Test
+	public void testEdges_foldedQuad() {
+
+		var a = new VectorXYZ(0, 0, 0);
+		var b = new VectorXYZ(1, 0, 0);
+		var c = new VectorXYZ(1, 1, 1);
+		var d = new VectorXYZ(0, 0, 1);
+
+		TriangleGeometry geometry = geometryOf(new TriangleXYZ(a, b, c), new TriangleXYZ(a, c, d));
+
+		assertEquals(Set.of(Set.of(a, b), Set.of(b, c), Set.of(c, d), Set.of(d, a)),
+				undirected(geometry.outerEdges()));
+		assertEquals(Set.of(Set.of(a, b), Set.of(b, c), Set.of(c, d), Set.of(d, a), Set.of(a, c)),
+				undirected(geometry.edges()));
+
+	}
+
+	@Test
+	public void testEdges_closedTetrahedron() {
+
+		var a = new VectorXYZ(0, 0, 0);
+		var b = new VectorXYZ(1, 0, 0);
+		var c = new VectorXYZ(0, 0, 1);
+		var d = new VectorXYZ(0, 1, 0);
+
+		TriangleGeometry geometry = geometryOf(
+				new TriangleXYZ(a, b, c),
+				new TriangleXYZ(a, d, b),
+				new TriangleXYZ(b, d, c),
+				new TriangleXYZ(c, d, a));
+
+		assertTrue(geometry.outerEdges().isEmpty());
+		assertEquals(Set.of(Set.of(a, b), Set.of(a, c), Set.of(a, d), Set.of(b, c), Set.of(b, d), Set.of(c, d)),
+				undirected(geometry.edges()));
+
+	}
+
+	private static TriangleGeometry geometryOf(TriangleXYZ... triangles) {
+		var builder = new TriangleGeometry.Builder(0, null, Interpolation.FLAT);
+		builder.addTriangles(triangles);
+		return builder.build();
+	}
+
+	/** converts segments to sets of their endpoints to allow comparisons independent of segment direction */
+	private static Set<Set<VectorXYZ>> undirected(Collection<LineSegmentXYZ> segments) {
+		return segments.stream().map(s -> Set.of(s.p1, s.p2)).collect(toSet());
 	}
 
 }
