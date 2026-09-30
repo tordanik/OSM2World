@@ -65,13 +65,9 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 					} else if (element instanceof MapArea a) {
 						a.addRepresentation(new ExternalModelAreaWorldObject(a, model));
 					} else if (element instanceof MapWaySegment s) {
-						if (s.getIndexInWay() == 0) {
-							s.addRepresentation(new ExternalModelWayWorldObject(s, model));
-							for (int i = 1; i < s.getWay().getWaySegments().size(); i++) {
-								MapWaySegment segment = s.getWay().getWaySegments().get(i);
-								segment.addRepresentation(new EmptyWaySegmentWorldObject(segment));
-							}
-						}
+						// the model represents the entire way, so it is added to all segments of the way
+						var worldObject = new ExternalModelWayWorldObject(s, model);
+						s.getWay().getWaySegments().forEach(segment -> segment.addRepresentation(worldObject));
 					}
 
 				}
@@ -236,29 +232,6 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 		protected ExternalModelWayWorldObject(MapWaySegment element, Model model) {
 			super(element, model);
 		}
-	}
-
-	/**
-	 * only exists so that way segments other than the first still have a primary {@link WorldObject}.
-	 * (The first one will have an {@link ExternalModelWayWorldObject}.)
-	 */
-	private record EmptyWaySegmentWorldObject(MapWaySegment segment) implements WaySegmentWorldObject {
-
-		@Override
-		public MapWaySegment getPrimaryMapElement() {
-			return segment;
-		}
-
-		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			return List.of();
-		}
-
-		@Override
-		public List<Mesh> buildMeshes() {
-			return List.of();
-		}
-
 	}
 
 }

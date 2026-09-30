@@ -63,12 +63,10 @@ public class BicycleParkingModule extends AbstractModule {
 			if (element.getTags().contains("bicycle_parking", "stands")) {
 				if (element instanceof MapArea) {
 					((MapArea) element).addRepresentation(new BicycleStandsArea((MapArea) element));
-				} else if (element instanceof MapWaySegment) {
-					if (element.equals(((MapWaySegment) element).getWay().getWaySegments().get(0))) {
-						// renders the entire way at once, so only add it to the first way segment
-						((MapWaySegment) element).addRepresentation(new BicycleStandsWay((MapWaySegment) element));
-
-					}
+				} else if (element instanceof MapWaySegment segment) {
+					// renders the entire way at once, so it represents all segments of the way
+					BicycleStandsWay stands = new BicycleStandsWay(segment);
+					segment.getWay().getWaySegments().forEach(s -> s.addRepresentation(stands));
 				} else if (element instanceof MapNode) {
 					if (element.getTags().containsKey("direction")) {
 						((MapNode) element).addRepresentation(new BicycleStandsNode((MapNode) element));

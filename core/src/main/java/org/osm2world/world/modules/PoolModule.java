@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.map_data.data.MapArea;
+import org.osm2world.map_data.data.MapWay;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.creation.ZeroInterpolator;
@@ -44,18 +45,14 @@ public class PoolModule extends AbstractModule {
 	}
 
 	@Override
-	protected void applyToWaySegment(MapWaySegment segment) {
+	protected void applyToWay(MapWay way) {
 
-		if (segment.getTags().contains("attraction", "water_slide")) {
+		if (way.getTags().contains("attraction", "water_slide")) {
 
-			List<MapWaySegment> segments = segment.getWay().getWaySegments();
+			List<MapWaySegment> segments = way.getWaySegments();
 
-			// WaterSlide renders the entire way at once, so only add it to the first way segment
-			if (segment.equals(segments.get(0))) {
-
-				segment.addRepresentation(new WaterSlide(segment, segments));
-
-			}
+			WaterSlide waterSlide = new WaterSlide(segments.get(0), segments);
+			segments.forEach(s -> s.addRepresentation(waterSlide));
 
 		}
 
