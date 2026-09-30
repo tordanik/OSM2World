@@ -82,10 +82,6 @@ public class BridgeModule extends ConfigurableWorldModule {
 	@Override
 	public final void applyTo(MapData mapData) {
 
-		for (MapNode node : mapData.getMapNodes()) {
-			// TODO: create piers, including ones which don't have a bridge on them (anymore)
-		}
-
 		/* find bridge way segments, excluding those which are covered by a man_made=bridge area */
 
 		Set<MapWaySegment> bridgeSegments = new LinkedHashSet<>();
