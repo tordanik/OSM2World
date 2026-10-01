@@ -211,6 +211,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 	public abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
 
 		protected final E element;
+		protected final @Nullable MapRelation relation;
 		protected final int layer;
 
 		protected final BridgeDefaults defaults;
@@ -240,6 +241,23 @@ public class BridgeModule extends ConfigurableWorldModule {
 			this.layer = parseInt(element.getTags().getValue("layer"),0);
 
 			this.defaults = BridgeDefaults.forTags(element.getTags());
+
+			/* find the relation associated with this bridge (if any) */
+
+			MapRelation relation = null;
+
+			for (MapRelation.Membership membership : element.getElementWithId().getMemberships()) {
+				if (membership.getRelation().getTags().contains("type", "bridge")
+						&& "outline".equals(membership.getRole())) {
+					if (relation == null) {
+						relation = membership.getRelation();
+					} else {
+						ConversionLog.warn("More than one bridge relation for bridge outline", element.getElementWithId());
+					}
+				}
+			}
+
+			this.relation = relation;
 
 		}
 
@@ -684,41 +702,39 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			supports = new ArrayList<>();
 
-			/* look for explicitly mapped supports among the way's nodes and overlapping features */
+			/* look for explicitly mapped supports among way nodes, overlapping features and relation members */
 
-			Collection<MapElement> explicitlyMappedSupports = new LinkedHashSet<>();
+			Set<MapElement> supportCandidates = new LinkedHashSet<>(getSupportCandidateNodes());
 
-			for (MapNode node : getSupportCandidateNodes()) {
-				if (node.getTags().containsKey("bridge:support")) {
-					explicitlyMappedSupports.add(node);
-				}
+			supportCandidates.addAll(getOverlappingElements());
+
+			if (relation != null) {
+				relation.getMembers().stream()
+						.filter(m -> "support".equals(m.getRole()) || m.getRole().isBlank())
+						.filter(m -> m.getElement() instanceof MapElement)
+						.forEach(m -> supportCandidates.add((MapElement)m.getElement()));
 			}
 
-			getOverlappingElements().stream()
-					.filter(it -> it.getTags().containsKey("bridge:support"))
+			List<MapElement> explicitlyMappedSupports = supportCandidates.stream()
 					.filter(it -> it instanceof MapNode || it instanceof MapArea)
-					.forEach(explicitlyMappedSupports::add);
+					.filter(it -> BridgeSupportType.forTags(it.getTags()) != null)
+					.toList();
 
 			if (!explicitlyMappedSupports.isEmpty()) {
 
-				/* create the piers */
+				/* create the supports */
 
 				for (MapElement element : explicitlyMappedSupports) {
 
-					String bridgeSupportValue = element.getTags().getValue("bridge:support");
-					if (List.of("pier", "lift_pier", "pivot_pier", "pylon").contains(bridgeSupportValue)) {
+					VectorXZ pos = (element instanceof MapArea area)
+							? area.getOuterPolygon().getCenter()
+							: ((MapNode)element).getPos();
 
-						VectorXZ pos = (element instanceof MapArea area)
-								? area.getOuterPolygon().getCenter()
-								: ((MapNode)element).getPos();
+					SimplePolygonShapeXZ shape = (element instanceof MapArea area)
+							? asSimplePolygon(area.getOuterPolygon().shift(pos.invert())).makeCounterclockwise()
+							: null;
 
-						SimplePolygonShapeXZ shape = (element instanceof MapArea area)
-								? asSimplePolygon(area.getOuterPolygon().shift(pos.invert())).makeCounterclockwise()
-								: null;
-
-						supports.add(createPier(pos, shape, element.getTags()));
-
-					}
+					supports.add(createPier(pos, shape, element.getTags()));
 
 				}
 
@@ -793,7 +809,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			/* build the result */
 
-			return new BridgeSupportData(pos, shape, material, element.getTags());
+			return new BridgeSupportData(pos, shape, material, tags);
 
 		}
 
@@ -867,20 +883,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 		@Override
 		protected void initializeOutlineGeometry() {
 
-			/* find the bridge relation associated with this bridge (if any) */
-
-			MapRelation relation = null;
-
-			for (MapRelation.Membership membership : element.getElementWithId().getMemberships()) {
-				if (membership.getRelation().getTags().contains("type", "bridge")
-						&& "outline".equals(membership.getRole())) {
-					if (relation == null) {
-						relation = membership.getRelation();
-					} else {
-						ConversionLog.warn("More than one bridge relation for bridge outline", element.getElementWithId());
-					}
-				}
-			}
+			/* get edge members from the bridge relation associated with this bridge (if any) */
 
 			Set<MapWaySegment> edgeMemberSegments = Set.of();
 
@@ -1185,6 +1188,24 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			return new BridgeDefaults(material, hasArches, pierDistance, curvatureHeightPerLength);
 
+		}
+
+	}
+
+	/** type of bridge support */
+	protected enum BridgeSupportType {
+
+		PIER, ABUTMENT, LIFT_PIER, PIVOT_PIER, PYLON;
+
+		public static @Nullable BridgeSupportType forTags(TagSet tags) {
+			return switch (requireNonNullElse(tags.getValue("bridge:support"), "no")) {
+				case "abutment" -> ABUTMENT;
+				case "lift_pier" -> LIFT_PIER;
+				case "pivot_pier" -> PIVOT_PIER;
+				case "pylon" -> PYLON;
+				case "no" -> null;
+				default -> PIER;
+			};
 		}
 
 	}
