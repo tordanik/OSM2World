@@ -1,6 +1,8 @@
 package org.osm2world.world.modules;
 
 import static java.lang.Math.*;
+import static java.util.Collections.reverse;
+import static java.util.Collections.swap;
 import static java.util.Comparator.comparingDouble;
 import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
@@ -17,6 +19,7 @@ import static org.osm2world.util.ValueParseUtil.*;
 import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
+import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 import static org.osm2world.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.*;
@@ -117,11 +120,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			// extend the chain in both directions, keeping the direction of the initial segment
 			extendChain(segments, nodes, bridgeSegments, handledSegments);
-			Collections.reverse(segments);
-			Collections.reverse(nodes);
+			reverse(segments);
+			reverse(nodes);
 			extendChain(segments, nodes, bridgeSegments, handledSegments);
-			Collections.reverse(segments);
-			Collections.reverse(nodes);
+			reverse(segments);
+			reverse(nodes);
 
 			BridgeWay bridge = new BridgeWay(segments, nodes);
 			segments.forEach(s -> s.addRepresentation(bridge));
@@ -402,13 +405,19 @@ public class BridgeModule extends ConfigurableWorldModule {
 			/* draw the supports */
 
 			for (BridgeSupportData support : supports) {
-				support.renderTo(target, supportConnectors.get(support).getPosXYZ().y, this::getBridgeEleAt);
+				support.renderTo(target, supportConnectors.get(support).getPosXYZ().y, this::getBridgeEleAt, maxSpanLength());
 			}
 
 			/* draw arches between supports */
 
 			if (defaults.hasArches) {
 				renderArches(target, material, textureAngle);
+			}
+
+			/* draw cables */
+
+			if (defaults.cables != null) {
+				renderCables(target);
 			}
 
 		}
@@ -528,6 +537,71 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			}
 
+		}
+
+		private void renderCables(Target target) {
+
+			if (centerline == null) return;
+
+			List<VectorXYZ> cableAnchors = new ArrayList<>();
+			List<TagSet> cableAnchorTags = new ArrayList<>();
+
+			for (BridgeSupportData support : supports) {
+				if (support.type() == BridgeSupportType.PYLON) {
+					double baseEle = supportConnectors.get(support).getPosXYZ().y;
+					double height = support.getHeight(baseEle, this::getBridgeEleAt, this.maxSpanLength()) - 0.5;
+					cableAnchors.add(support.pos.xyz(baseEle + height));
+					cableAnchorTags.add(support.tags);
+				}
+			}
+
+			if (cableAnchors.isEmpty()) return;
+
+			if (defaults.cables == BridgeDefaults.CableType.SUSPENSION) {
+
+				// TODO implement suspension bridges
+
+			} else if (defaults.cables == BridgeDefaults.CableType.CABLE_STAYED_FAN) {
+
+				double[] anchorOffsets = cableAnchors.stream()
+						.mapToDouble(anchor -> centerline.offsetOf(centerline.closestPoint(anchor.xz())))
+						.toArray();
+
+				for (int i = 0; i < cableAnchors.size(); i++) {
+
+					VectorXYZ anchor = cableAnchors.get(i);
+
+					double offsetStart = (i > 0) ? (anchorOffsets[i - 1] + anchorOffsets[i]) / 2 : 0;
+					double offsetEnd = (i < cableAnchors.size() - 1)
+							? (anchorOffsets[i + 1] + anchorOffsets[i]) / 2
+							: centerline.getLength();
+
+					int cables = parseUInt(cableAnchorTags.get(i).getValue("cables"), 4);
+					double offsetStep = (offsetEnd - offsetStart) / cables;
+
+					for (int c = 0; c < cables; c++) {
+						double connectionOffset = offsetStart + (c + 0.5) * offsetStep;
+						VectorXZ connectionCenter = centerline.pointAtOffset(connectionOffset);
+						VectorXZ connectionLeft = edges.get(0).closestPoint(connectionCenter);
+						VectorXZ connectionRight = edges.get(1).closestPoint(connectionCenter);
+						for (VectorXZ connectionXZ : List.of(connectionLeft, connectionRight)) {
+							renderCable(target, anchor, connectionXZ.xyz(this::getBridgeEleAt));
+						}
+					}
+
+				}
+
+			}
+
+		}
+
+		private void renderCable(Target target, VectorXYZ p0, VectorXYZ p1) {
+			double diameter = max(0.1, min(p0.distanceTo(p1) / 250, 1.0));
+			Material material = PLASTIC.get(config.mapStyle());
+			List<VectorXYZ> path = List.of(p0, p1);
+			List<VectorXYZ> upVectors = Collections.nCopies(path.size(), VectorXYZ.Z_UNIT);
+			CircleXZ shape = new CircleXZ(new VectorXZ(0, 0), diameter / 2);
+			target.drawExtrudedShape(material, shape, path, upVectors, null, null);
 		}
 
 		/** makes sure the {@link #polygon}, {@link #edges}, {@link #caps} and {@link #supports} fields are populated */
@@ -734,7 +808,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 							? asSimplePolygon(area.getOuterPolygon().shift(pos.invert())).makeCounterclockwise()
 							: null;
 
-					supports.add(createPier(pos, shape, element.getTags()));
+					supports.add(createSupport(pos, shape, element.getTags()));
 
 				}
 
@@ -743,13 +817,15 @@ public class BridgeModule extends ConfigurableWorldModule {
 					supports.sort(comparingDouble(it -> centerline.offsetOf(centerline.closestPoint(it.pos))));
 				}
 
-			} else if (centerline != null && Double.isFinite(defaults.pierDistance)) {
+			} else if (centerline != null && defaults.supportType != null && Double.isFinite(defaults.pierDistance)) {
 
 				/* no explicitly mapped supports found, distribute some equally along the bridge's length */
 
-				double distance = min(defaults.pierDistance, centerline.getLength());
+				double distance = defaults.supportType == BridgeSupportType.PYLON
+						? centerline.getLength() / 1.9
+						: min(defaults.pierDistance, centerline.getLength());
 
-				List<VectorXZ> pierPositions = new ArrayList<>(equallyDistributePointsAlong(
+				List<VectorXZ> supportPositions = new ArrayList<>(equallyDistributePointsAlong(
 						distance, false, centerline));
 
 				/* make sure that the piers don't pierce anything on the ground */
@@ -770,32 +846,33 @@ public class BridgeModule extends ConfigurableWorldModule {
 					}
 				}
 
-				filterWorldObjectCollisions(pierPositions, avoidedObjects);
+				filterWorldObjectCollisions(supportPositions, avoidedObjects);
 
 				/* create the piers */
 
-				for (VectorXZ pos : pierPositions) {
-					supports.add(createPier(pos, null, TagSet.of()));
+				for (VectorXZ pos : supportPositions) {
+					supports.add(createSupport(pos, null, TagSet.of("bridge:support",
+							defaults.supportType.toString().toLowerCase(Locale.ROOT))));
 				}
 
 			}
 
 		}
 
-		private BridgeSupportData createPier(VectorXZ pos, @Nullable SimplePolygonShapeXZ shape, TagSet tags) {
+		private BridgeSupportData createSupport(VectorXZ pos, @Nullable SimplePolygonShapeXZ shape, TagSet tags) {
 
 			/* build shape */
 
 			if (shape == null) {
-				if (centerline != null) {
+				if (centerline != null && BridgeSupportType.forTags(tags) != BridgeSupportType.PYLON) {
 					double width = parseMeasure(tags.getValue("width"), getBridgeWidthAt(pos) * 0.7);
 					double length = parseMeasure(tags.getValue("length"), min(width / 2, defaults.pierDistance / 4));
 					double angle = centerline.closestSegment(pos).getDirection().angle();
 					shape = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
 					shape = shape.rotatedCW(angle);
 				} else {
-					double defaultDiameter = parseMeasure(tags.getValue("width"), min(4.0, polygon.getDiameter()));
-					shape = asSimplePolygon(new CircleXZ(NULL_VECTOR, defaultDiameter / 2));
+					double diameter = parseMeasure(tags.getValue("width"), min(4.0, getBridgeWidthAt(pos) * 0.7));
+					shape = asSimplePolygon(new CircleXZ(NULL_VECTOR, diameter / 2));
 				}
 			}
 
@@ -847,6 +924,26 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		private static double maxEle(Collection<EleConnector> connectors) {
 			return connectors.stream().mapToDouble(c -> c.getPosXYZ().y).max().orElse(0);
+		}
+
+		private double maxSpanLength() {
+
+			if (centerline != null) {
+
+				List<Double> offsets = new ArrayList<>();
+				supports.forEach(s -> offsets.add(centerline.offsetOf(centerline.closestPoint(s.pos))));
+				offsets.add(0, 0.0);
+				offsets.add(centerline.getLength());
+
+				double max = 0;
+				for (int i = 0; i + 1 < offsets.size(); i++) {
+					max = Math.max(max, offsets.get(i + 1) - offsets.get(i));
+				}
+				return max;
+
+			} else {
+				return polygon.getDiameter();
+			}
 		}
 
 		/**
@@ -974,14 +1071,14 @@ public class BridgeModule extends ConfigurableWorldModule {
 				// The first edge follows the direction of the outline, so the other edge is on its right
 				// if the bridge area is on the right of the outline.
 				if (!area.getAreaSegmentsOuter().get(0).isAreaRight()) {
-					Collections.swap(edges, 0, 1);
+					swap(edges, 0, 1);
 				}
 
 				VectorXZ start = getFirst(edges.get(0).vertices()).add(getFirst(edges.get(1).vertices())).mult(0.5);
 
 				if (caps.get(0).distanceTo(start) > caps.get(1).distanceTo(start)) {
 					// swap the caps so that the "start" cap is at index 0
-					Collections.swap(caps, 0, 1);
+					swap(caps, 0, 1);
 				}
 
 				this.centerline = calculateCenterlineBetween(edges.get(0), edges.get(1));
@@ -1149,17 +1246,21 @@ public class BridgeModule extends ConfigurableWorldModule {
 	 * Default values for various bridge dimensions and properties.
 	 *
 	 * @param material  default material for if different from the overall defaults for bridges
-	 * @param pierDistance  distance between the centers of piers (if not explicitly mapped), non-finite for no piers
+	 * @param pierDistance  distance between the centers of piers (if not explicitly mapped)
 	 * @param curvatureHeightPerLength  height-per-length ratio of the bridge's vertical curvature.
 	 * 0 if the bridge has no vertical curvature (may still have an incline if the ends are at different ele).
 	 * Negative values can be used for suspension-type bridges which are lower in the center than at the ends.
 	 */
 	protected record BridgeDefaults (
 			@Nullable MaterialOrRef material,
+			@Nullable CableType cables,
+			@Nullable BridgeSupportType supportType,
 			boolean hasArches,
 			double pierDistance,
 			double curvatureHeightPerLength
 		) {
+
+		public enum CableType { SUSPENSION, CABLE_STAYED_FAN }
 
 		public static BridgeDefaults forTags(TagSet tags) {
 
@@ -1170,6 +1271,18 @@ public class BridgeModule extends ConfigurableWorldModule {
 				case "clapper" -> ROCK;
 				case "simple-suspension" -> WOOD;
 				default -> ("boardwalk".equals(type)) ? WOOD : null;
+			};
+
+			@Nullable CableType cables = switch (structure) {
+				case "suspension" -> CableType.SUSPENSION;
+				case "cable-stayed" -> CableType.CABLE_STAYED_FAN;
+				default -> null;
+			};
+
+			@Nullable BridgeSupportType supportType = switch (structure) {
+				case "suspension", "cable-stayed" -> BridgeSupportType.PYLON;
+				case "simple-suspension", "floating" -> null;
+				default -> BridgeSupportType.PIER;
 			};
 
 			boolean hasArches = List.of("arch", "humpback").contains(structure);
@@ -1186,7 +1299,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 				default -> 0;
 			};
 
-			return new BridgeDefaults(material, hasArches, pierDistance, curvatureHeightPerLength);
+			return new BridgeDefaults(material, cables, supportType, hasArches, pierDistance, curvatureHeightPerLength);
 
 		}
 
@@ -1213,13 +1326,20 @@ public class BridgeModule extends ConfigurableWorldModule {
 	/** Data describing a bridge pier or other support element */
 	protected record BridgeSupportData(VectorXZ pos, SimplePolygonShapeXZ shape, Material material, TagSet tags) {
 
-		private void renderTo(Target target, double baseEle, Function<VectorXZ, Double> bridgeEleAt) {
+		private void renderTo(Target target, double baseEle, Function<VectorXZ, Double> bridgeEleAt, double maxSpanLength) {
 
 			double finalBaseEle = baseEle - 2.0; // sink into ground a bit
 
 			var outlineXZ = new PolylineXZ(shape.shift(pos).makeCounterclockwise().vertices());
 			PolylineXYZ lowerOutline = outlineXZ.xyz(finalBaseEle);
-			PolylineXYZ upperOutline = outlineXZ.xyz(p -> bridgeEleAt.apply(p) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
+			PolylineXYZ upperOutline;
+
+			if (type() != BridgeSupportType.PYLON) {
+				upperOutline = outlineXZ.xyz(p -> bridgeEleAt.apply(p) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
+			} else {
+				double pylonHeight = getHeight(baseEle, bridgeEleAt, maxSpanLength);
+				upperOutline = outlineXZ.xyz(baseEle + pylonHeight);
+			}
 
 			if (upperOutline.getVertices().stream().allMatch(v -> v.y >= finalBaseEle)) {
 
@@ -1231,6 +1351,22 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			}
 
+		}
+
+		public BridgeSupportType type() {
+			return BridgeSupportType.forTags(tags);
+		}
+
+		public double getHeight(double baseEle, Function<VectorXZ, Double> bridgeEleAt, double maxSpanLength) {
+			if (type() == BridgeSupportType.PYLON) {
+				Double pylonHeight = parseHeight(tags);
+				if (pylonHeight == null || baseEle + pylonHeight < bridgeEleAt.apply(pos) + 1.0) {
+					pylonHeight = bridgeEleAt.apply(pos) + max(8, maxSpanLength / 3) - baseEle;
+				}
+				return pylonHeight;
+			} else {
+				return bridgeEleAt.apply(pos) - baseEle;
+			}
 		}
 
 		public double getWidth(Angle centerlineDirection) {

@@ -174,6 +174,10 @@ public class VectorXZ implements Vector3D {
 		return new VectorXYZ(x, y, z);
 	}
 
+	public VectorXYZ xyz(Function<VectorXZ, Double> toY) {
+		return xyz(toY.apply(this));
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof VectorXZ)) {
