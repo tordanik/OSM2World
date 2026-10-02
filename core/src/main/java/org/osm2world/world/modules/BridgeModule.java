@@ -559,7 +559,42 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			if (defaults.cables == BridgeDefaults.CableType.SUSPENSION) {
 
-				// TODO implement suspension bridges
+				if (centerline.offsetOf(centerline.closestPoint(cableAnchors.get(0).xz())) > 3) {
+					cableAnchors.add(0, getFirst(centerline.vertices()).xyz(this::getBridgeEleAt));
+					cableAnchorTags.add(0, TagSet.of());
+				}
+				if (centerline.getLength() - centerline.offsetOf(centerline.closestPoint(getLast(cableAnchors).xz())) > 3) {
+					cableAnchors.add(getLast(centerline.vertices()).xyz(this::getBridgeEleAt));
+					cableAnchorTags.add(TagSet.of());
+				}
+
+				for (var edge : edges) {
+					for (int i = 0; i + 1 < cableAnchors.size(); i++) {
+
+						VectorXYZ anchorA = edge.closestPoint(cableAnchors.get(i).xz()).xyz(cableAnchors.get(i).y);
+						VectorXYZ anchorB = edge.closestPoint(cableAnchors.get(i + 1).xz()).xyz(cableAnchors.get(i + 1).y);
+
+						double segmentLength = anchorA.distanceToXZ(anchorB);
+						double droopAmount = 20; // TODO min(anchorA.y, anchorB.y) - bri);
+
+						List<VectorXYZ> pointsXYZ = equallyDistributePointsAlong(5, true, List.of(anchorA, anchorB));
+						pointsXYZ = pointsXYZ.stream().map(p -> p.addY(-circularArcHeightAt(droopAmount,
+										anchorA.distanceToXZ(p) / segmentLength, 0.5)))
+								.toList();
+
+						renderCable(target, pointsXYZ, false);
+
+						for (int j = 0; j < pointsXYZ.size(); j++) {
+							VectorXYZ point = pointsXYZ.get(j);
+							List<VectorXYZ> path = List.of(point, point.xz().xyz(this::getBridgeEleAt));
+							if (j == 0 || j == pointsXYZ.size() - 1 || path.get(0).distanceTo(path.get(1)) < 0.1)
+								continue;
+							renderCable(target, path, true);
+						}
+
+					}
+				}
+
 
 			} else if (defaults.cables == BridgeDefaults.CableType.CABLE_STAYED_FAN) {
 
@@ -585,7 +620,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 						VectorXZ connectionLeft = edges.get(0).closestPoint(connectionCenter);
 						VectorXZ connectionRight = edges.get(1).closestPoint(connectionCenter);
 						for (VectorXZ connectionXZ : List.of(connectionLeft, connectionRight)) {
-							renderCable(target, anchor, connectionXZ.xyz(this::getBridgeEleAt));
+							renderCable(target, List.of(anchor, connectionXZ.xyz(this::getBridgeEleAt)), false);
 						}
 					}
 
@@ -595,13 +630,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		}
 
-		private void renderCable(Target target, VectorXYZ p0, VectorXYZ p1) {
-			double diameter = max(0.1, min(p0.distanceTo(p1) / 250, 1.0));
+		private void renderCable(Target target, List<VectorXYZ> vs, boolean vertical) {
+			var path = new PolylineXYZ(vs);
+			double diameter = max(0.1, min(path.length() / 250, 1.0));
 			Material material = PLASTIC.get(config.mapStyle());
-			List<VectorXYZ> path = List.of(p0, p1);
-			List<VectorXYZ> upVectors = Collections.nCopies(path.size(), VectorXYZ.Z_UNIT);
+			List<VectorXYZ> upVectors = vertical ? null : Collections.nCopies(path.size(), VectorXYZ.Z_UNIT);
 			CircleXZ shape = new CircleXZ(new VectorXZ(0, 0), diameter / 2);
-			target.drawExtrudedShape(material, shape, path, upVectors, null, null);
+			target.drawExtrudedShape(material, shape, path.getVertices(), upVectors, null, null);
 		}
 
 		/** makes sure the {@link #polygon}, {@link #edges}, {@link #caps} and {@link #supports} fields are populated */
