@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
+import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXZ;
 
 /**
@@ -87,8 +88,8 @@ public interface PolylineShapeXZ extends ShapeXZ {
 	 * Essentially amounts to calling {@link #offsetOf(VectorXZ)} on the result of {@link #closestPoint(VectorXZ)},
 	 * but makes for more concise caller code and offers the opportunity for performance improvements.
 	 */
-	default double offsetOfClosestPoint(VectorXZ point) {
-		return offsetOf(closestPoint(point));
+	default double offsetOfClosestPoint(Vector3D point) {
+		return offsetOf(closestPoint(point.xz()));
 	}
 
 	/**

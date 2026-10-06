@@ -566,17 +566,49 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			if (defaults.cables == BridgeDefaults.CableType.SUSPENSION) {
 
-				if (centerline.offsetOfClosestPoint(cableAnchors.get(0).xz()) > 3) {
-					cableAnchors.add(0, getFirst(centerline.vertices()).xyz(this::getBridgeEleAt));
-					cableAnchorTags.add(0, TagSet.of());
+				/* build a path for the cables which extends beyond the deck to any anchors there */
+
+				VectorXZ deckStart = getFirst(centerline.vertices());
+				VectorXZ deckEnd = getLast(centerline.vertices());
+				VectorXZ outwardStartDirection = centerline.getSegments().get(0).getDirection().invert();
+				VectorXZ outwardEndDirection = getLast(centerline.getSegments()).getDirection();
+
+				List<VectorXZ> anchorsBeyondStart = cableAnchors.stream()
+						.map(VectorXYZ::xz)
+						.filter(a -> a.subtract(deckStart).dot(outwardStartDirection) > 1.0)
+						.sorted(comparingDouble(a -> -a.distanceTo(deckStart)))
+						.toList();
+				List<VectorXZ> anchorsBeyondEnd = cableAnchors.stream()
+						.map(VectorXYZ::xz)
+						.filter(a -> a.subtract(deckEnd).dot(outwardEndDirection) > 1.0)
+						.sorted(comparingDouble(a -> a.distanceTo(deckEnd)))
+						.toList();
+
+				List<VectorXZ> cablePathVertices = new ArrayList<>(anchorsBeyondStart);
+				cablePathVertices.addAll(centerline.vertices());
+				cablePathVertices.addAll(anchorsBeyondEnd);
+				PolylineXZ cablePath = new PolylineXZ(cablePathVertices);
+
+				double deckStartOffset = anchorsBeyondStart.isEmpty() ? 0
+						: new PolylineXZ(cablePathVertices.subList(0, anchorsBeyondStart.size() + 1)).getLength();
+				double deckEndOffset = deckStartOffset + centerline.getLength();
+
+				/* sort anchors along the cable path, add anchors at the deck ends if necessary */
+
+				List<VectorXYZ> suspensionAnchors = new ArrayList<>(cableAnchors);
+				suspensionAnchors.sort(comparingDouble(cablePath::offsetOfClosestPoint));
+
+				if (anchorsBeyondStart.isEmpty()
+						&& cablePath.offsetOfClosestPoint(suspensionAnchors.get(0)) - deckStartOffset > 3) {
+					suspensionAnchors.add(0, deckStart.xyz(getBridgeEleAt(deckStart)));
 				}
-				if (centerline.getLength() - centerline.offsetOfClosestPoint(getLast(cableAnchors).xz()) > 3) {
-					cableAnchors.add(getLast(centerline.vertices()).xyz(this::getBridgeEleAt));
-					cableAnchorTags.add(TagSet.of());
+				if (anchorsBeyondEnd.isEmpty()
+						&& deckEndOffset - cablePath.offsetOfClosestPoint(getLast(suspensionAnchors)) > 3) {
+					suspensionAnchors.add(deckEnd.xyz(getBridgeEleAt(deckEnd)));
 				}
 
-				double[] anchorOffsets = cableAnchors.stream()
-						.mapToDouble(anchor -> centerline.offsetOfClosestPoint(anchor.xz()))
+				double[] anchorOffsets = suspensionAnchors.stream()
+						.mapToDouble(cablePath::offsetOfClosestPoint)
 						.toArray();
 
 				double mainSpanLength = 0;
@@ -584,26 +616,32 @@ public class BridgeModule extends ConfigurableWorldModule {
 					mainSpanLength = max(mainSpanLength, anchorOffsets[i + 1] - anchorOffsets[i]);
 				}
 
-				for (int i = 0; i + 1 < cableAnchors.size(); i++) {
+				for (int i = 0; i + 1 < suspensionAnchors.size(); i++) {
 
 					double offsetA = anchorOffsets[i];
 					double offsetB = anchorOffsets[i + 1];
-					double eleA = cableAnchors.get(i).y;
-					double eleB = cableAnchors.get(i + 1).y;
+					double eleA = suspensionAnchors.get(i).y;
+					double eleB = suspensionAnchors.get(i + 1).y;
 					double spanLength = offsetB - offsetA;
 
 					if (spanLength <= 0) continue;
 
-					/* choose the sag: same curvature in all spans, but keep the cable above the deck */
-
 					int intervals = max(2, (int) ceil(spanLength / SUSPENSION_HANGER_SPACING));
+
+					double[] sampleOffsets = new double[intervals + 1];
+					for (int k = 0; k <= intervals; k++) {
+						sampleOffsets[k] = min(offsetA + k * spanLength / intervals, cablePath.getLength());
+					}
+
+					/* choose the sag: same curvature in all spans, but keep the cable above the deck */
 
 					double sag = SUSPENSION_SAG_RATIO * spanLength * spanLength / mainSpanLength;
 
 					for (int k = 1; k < intervals; k++) {
+						if (sampleOffsets[k] < deckStartOffset || sampleOffsets[k] > deckEndOffset) continue;
 						double t = k / (double) intervals;
 						double chordEle = eleA + t * (eleB - eleA);
-						double deckEle = getBridgeEleAt(centerline.pointAtOffset(offsetA + t * spanLength));
+						double deckEle = getBridgeEleAt(cablePath.pointAtOffset(sampleOffsets[k]));
 						sag = min(sag, (chordEle - deckEle) / (4 * t * (1 - t)) - SUSPENSION_CABLE_CLEARANCE);
 					}
 
@@ -613,18 +651,29 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 					for (var edge : edges) {
 
+						VectorXZ startLateralOffset = edge.closestPoint(deckStart).subtract(deckStart);
+						VectorXZ endLateralOffset = edge.closestPoint(deckEnd).subtract(deckEnd);
+
 						List<VectorXYZ> pointsXYZ = new ArrayList<>(intervals + 1);
 
 						for (int k = 0; k <= intervals; k++) {
-							double t = k / (double) intervals;
-							VectorXZ pointXZ = edge.closestPoint(centerline.pointAtOffset(offsetA + t * spanLength));
-							pointsXYZ.add(pointXZ.xyz(parabolicCableHeightAt(eleA, eleB, sag, t)));
+							VectorXZ center = cablePath.pointAtOffset(sampleOffsets[k]);
+							VectorXZ pointXZ;
+							if (sampleOffsets[k] < deckStartOffset) {
+								pointXZ = center.add(startLateralOffset);
+							} else if (sampleOffsets[k] > deckEndOffset) {
+								pointXZ = center.add(endLateralOffset);
+							} else {
+								pointXZ = edge.closestPoint(center);
+							}
+							pointsXYZ.add(pointXZ.xyz(parabolicCableHeightAt(eleA, eleB, sag, k / (double) intervals)));
 						}
 
 						renderCable(target, pointsXYZ, false);
 
-						for (int j = 1; j < pointsXYZ.size() - 1; j++) {
-							VectorXYZ point = pointsXYZ.get(j);
+						for (int k = 1; k < intervals; k++) {
+							if (sampleOffsets[k] < deckStartOffset || sampleOffsets[k] > deckEndOffset) continue;
+							VectorXYZ point = pointsXYZ.get(k);
 							List<VectorXYZ> path = List.of(point, point.xz().xyz(this::getBridgeEleAt));
 							if (path.get(0).y - path.get(1).y < 0.1)
 								continue;
@@ -638,7 +687,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			} else if (defaults.cables == BridgeDefaults.CableType.CABLE_STAYED_FAN) {
 
 				double[] anchorOffsets = cableAnchors.stream()
-						.mapToDouble(anchor -> centerline.offsetOfClosestPoint(anchor.xz()))
+						.mapToDouble(anchor -> centerline.offsetOfClosestPoint(anchor))
 						.toArray();
 
 				for (int i = 0; i < cableAnchors.size(); i++) {
