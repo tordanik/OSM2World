@@ -211,6 +211,13 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
+	/** sag of a suspension bridge's main cable in the longest span, relative to that span's length */
+	private static final double SUSPENSION_SAG_RATIO = 0.1;
+	/** minimum vertical distance between a suspension bridge's main cable and the deck at mid-span */
+	private static final double SUSPENSION_CABLE_CLEARANCE = 1.0;
+	/** approximate distance between a suspension bridge's hangers */
+	private static final double SUSPENSION_HANGER_SPACING = 10.0;
+
 	public abstract class Bridge<E extends MapElement> implements ProceduralWorldObject {
 
 		protected final E element;
@@ -568,33 +575,65 @@ public class BridgeModule extends ConfigurableWorldModule {
 					cableAnchorTags.add(TagSet.of());
 				}
 
-				for (var edge : edges) {
-					for (int i = 0; i + 1 < cableAnchors.size(); i++) {
+				double[] anchorOffsets = cableAnchors.stream()
+						.mapToDouble(anchor -> centerline.offsetOfClosestPoint(anchor.xz()))
+						.toArray();
 
-						VectorXYZ anchorA = edge.closestPoint(cableAnchors.get(i).xz()).xyz(cableAnchors.get(i).y);
-						VectorXYZ anchorB = edge.closestPoint(cableAnchors.get(i + 1).xz()).xyz(cableAnchors.get(i + 1).y);
+				double mainSpanLength = 0;
+				for (int i = 0; i + 1 < anchorOffsets.length; i++) {
+					mainSpanLength = max(mainSpanLength, anchorOffsets[i + 1] - anchorOffsets[i]);
+				}
 
-						double segmentLength = anchorA.distanceToXZ(anchorB);
-						double droopAmount = 20; // TODO min(anchorA.y, anchorB.y) - bri);
+				for (int i = 0; i + 1 < cableAnchors.size(); i++) {
 
-						List<VectorXYZ> pointsXYZ = equallyDistributePointsAlong(5, true, List.of(anchorA, anchorB));
-						pointsXYZ = pointsXYZ.stream().map(p -> p.addY(-circularArcHeightAt(droopAmount,
-										anchorA.distanceToXZ(p) / segmentLength, 0.5)))
-								.toList();
+					double offsetA = anchorOffsets[i];
+					double offsetB = anchorOffsets[i + 1];
+					double eleA = cableAnchors.get(i).y;
+					double eleB = cableAnchors.get(i + 1).y;
+					double spanLength = offsetB - offsetA;
+
+					if (spanLength <= 0) continue;
+
+					/* choose the sag: same curvature in all spans, but keep the cable above the deck */
+
+					int intervals = max(2, (int) ceil(spanLength / SUSPENSION_HANGER_SPACING));
+
+					double sag = SUSPENSION_SAG_RATIO * spanLength * spanLength / mainSpanLength;
+
+					for (int k = 1; k < intervals; k++) {
+						double t = k / (double) intervals;
+						double chordEle = eleA + t * (eleB - eleA);
+						double deckEle = getBridgeEleAt(centerline.pointAtOffset(offsetA + t * spanLength));
+						sag = min(sag, (chordEle - deckEle) / (4 * t * (1 - t)) - SUSPENSION_CABLE_CLEARANCE);
+					}
+
+					sag = max(0, sag);
+
+					/* render the main cable and hangers along each edge */
+
+					for (var edge : edges) {
+
+						List<VectorXYZ> pointsXYZ = new ArrayList<>(intervals + 1);
+
+						for (int k = 0; k <= intervals; k++) {
+							double t = k / (double) intervals;
+							VectorXZ pointXZ = edge.closestPoint(centerline.pointAtOffset(offsetA + t * spanLength));
+							pointsXYZ.add(pointXZ.xyz(parabolicCableHeightAt(eleA, eleB, sag, t)));
+						}
 
 						renderCable(target, pointsXYZ, false);
 
-						for (int j = 0; j < pointsXYZ.size(); j++) {
+						for (int j = 1; j < pointsXYZ.size() - 1; j++) {
 							VectorXYZ point = pointsXYZ.get(j);
 							List<VectorXYZ> path = List.of(point, point.xz().xyz(this::getBridgeEleAt));
-							if (j == 0 || j == pointsXYZ.size() - 1 || path.get(0).distanceTo(path.get(1)) < 0.1)
+							if (path.get(0).y - path.get(1).y < 0.1)
 								continue;
 							renderCable(target, path, true);
 						}
 
 					}
-				}
 
+				}
 
 			} else if (defaults.cables == BridgeDefaults.CableType.CABLE_STAYED_FAN) {
 
@@ -992,6 +1031,18 @@ public class BridgeModule extends ConfigurableWorldModule {
 			double dist = abs(offset - 0.5) * section;
 			double endHeight = sqrt(0.25 - (0.5 * section) * (0.5 * section));
 			return height * (sqrt(0.25 - dist * dist) - endHeight) / (0.5 - endHeight);
+		}
+
+		/**
+		 * Calculates the height of a suspension bridge's main cable, approximated as a parabola.
+		 *
+		 * @param eleA    elevation of the anchor at the start of the cable
+		 * @param eleB    elevation of the anchor at the end of the cable
+		 * @param sag     vertical distance between the cable and the straight line between the anchors at mid-span
+		 * @param offset  between 0 (inclusive, anchor A) and 1 (inclusive, anchor B)
+		 */
+		static double parabolicCableHeightAt(double eleA, double eleB, double sag, double offset) {
+			return eleA + offset * (eleB - eleA) - 4 * sag * offset * (1 - offset);
 		}
 
 	}
