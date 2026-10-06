@@ -82,6 +82,16 @@ public interface PolylineShapeXZ extends ShapeXZ {
 	}
 
 	/**
+	 * returns the length between the start of this polyline and the point on it which is closest to a given position,
+	 * measured along this polyline.
+	 * Essentially amounts to calling {@link #offsetOf(VectorXZ)} on the result of {@link #closestPoint(VectorXZ)},
+	 * but makes for more concise caller code and offers the opportunity for performance improvements.
+	 */
+	default double offsetOfClosestPoint(VectorXZ point) {
+		return offsetOf(closestPoint(point));
+	}
+
+	/**
 	 * returns the point at a given distance from the start of this polyline.
 	 * This is, semantically, the inverse of {@link #offsetOf(VectorXZ)}.
 	 *

@@ -213,7 +213,7 @@ public class IndoorModule extends AbstractModule {
 
 							DoorParameters params = DoorParameters.fromTags(doorNode.getTags(), TagSet.of());
 
-							VectorXZ v = new VectorXZ(carSegment.offsetOf(carSegment.closestPoint(doorNode.getPos())),0);
+							VectorXZ v = new VectorXZ(carSegment.offsetOfClosestPoint(doorNode.getPos()),0);
 							frontSurface.addElementIfSpaceFree(new Door(v, params));
 						}
 					}

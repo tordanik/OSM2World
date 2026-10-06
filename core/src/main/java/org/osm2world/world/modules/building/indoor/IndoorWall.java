@@ -900,8 +900,8 @@ public class IndoorWall {
 							objectLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
 							objectLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
-							VectorXZ posFront = new VectorXZ(frontLineSegment.offsetOf(frontLineSegment.closestPoint(node.getPos())), 0);
-							VectorXZ posback = new VectorXZ(backLineSegment.offsetOf(backLineSegment.closestPoint(node.getPos())), 0);
+							VectorXZ posFront = new VectorXZ(frontLineSegment.offsetOfClosestPoint(node.getPos()), 0);
+							VectorXZ posBack = new VectorXZ(backLineSegment.offsetOfClosestPoint(node.getPos()), 0);
 
 							if (objectLevels.contains(level)) {
 
@@ -914,7 +914,7 @@ public class IndoorWall {
 									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().levelStructure.level(level).height, config);
 
 									GeometryWindow windowFront = new GeometryWindow(new VectorXZ(posFront.x, params.breast), params, transparent);
-									GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posback.x, params.breast), params, transparent);
+									GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posBack.x, params.breast), params, transparent);
 
 									mainSurface.addElementIfSpaceFree(windowFront);
 									backSurface.addElementIfSpaceFree(windowBack);
@@ -924,7 +924,7 @@ public class IndoorWall {
 									DoorParameters params = DoorParameters.fromTags(node.getTags(), data.getBuildingPart().getTags());
 
 									mainSurface.addElementIfSpaceFree(new Door(posFront, params));
-									backSurface.addElementIfSpaceFree(new Door(posback, params));
+									backSurface.addElementIfSpaceFree(new Door(posBack, params));
 
 								}
 							}

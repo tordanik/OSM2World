@@ -483,7 +483,7 @@ public final class GeometryUtil {
 
 		Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
 			PolylineXZ lineXZ = new PolylineXZ(fullLine);
-			double ratio = lineXZ.offsetOf(lineXZ.closestPoint(point))/lineXZ.getLength();
+			double ratio = lineXZ.offsetOfClosestPoint(point)/lineXZ.getLength();
 			double ele = interpolateBetween(new VectorXZ(0, firstPointEle),
 					new VectorXZ(1, secondPointEle),
 					ratio)

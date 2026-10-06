@@ -194,7 +194,7 @@ public class BarrierModule extends AbstractModule {
 
 			Function<VectorXZ, Double> baseEleFunction = (VectorXZ point) -> {
 				PolylineXZ centerlineXZ = getCenterlineXZ();
-				double ratio = centerlineXZ.offsetOf(centerlineXZ.closestPoint(point));
+				double ratio = centerlineXZ.offsetOfClosestPoint(point);
 				return GeometryUtil.interpolateOn(getCenterline(), ratio).y;
 			};
 

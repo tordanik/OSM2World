@@ -466,8 +466,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 				double relativeStartWidth = (0.95 * min(1, supportAWidth / getBridgeWidthAt(supportAPos)));
 				double relativeEndWidth = (0.95 * min(1, supportBWidth / getBridgeWidthAt(supportBPos)));
 
-				double startOffset = centerline.offsetOf(centerline.closestPoint(supportAPos));
-				double endOffset = centerline.offsetOf(centerline.closestPoint(supportBPos));
+				double startOffset = centerline.offsetOfClosestPoint(supportAPos);
+				double endOffset = centerline.offsetOfClosestPoint(supportBPos);
 				double offsetStep = (endOffset - startOffset) / (archPoints - 1);
 
 				for (int i = 0; i < archPoints; i++) {
@@ -559,11 +559,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			if (defaults.cables == BridgeDefaults.CableType.SUSPENSION) {
 
-				if (centerline.offsetOf(centerline.closestPoint(cableAnchors.get(0).xz())) > 3) {
+				if (centerline.offsetOfClosestPoint(cableAnchors.get(0).xz()) > 3) {
 					cableAnchors.add(0, getFirst(centerline.vertices()).xyz(this::getBridgeEleAt));
 					cableAnchorTags.add(0, TagSet.of());
 				}
-				if (centerline.getLength() - centerline.offsetOf(centerline.closestPoint(getLast(cableAnchors).xz())) > 3) {
+				if (centerline.getLength() - centerline.offsetOfClosestPoint(getLast(cableAnchors).xz()) > 3) {
 					cableAnchors.add(getLast(centerline.vertices()).xyz(this::getBridgeEleAt));
 					cableAnchorTags.add(TagSet.of());
 				}
@@ -599,7 +599,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			} else if (defaults.cables == BridgeDefaults.CableType.CABLE_STAYED_FAN) {
 
 				double[] anchorOffsets = cableAnchors.stream()
-						.mapToDouble(anchor -> centerline.offsetOf(centerline.closestPoint(anchor.xz())))
+						.mapToDouble(anchor -> centerline.offsetOfClosestPoint(anchor.xz()))
 						.toArray();
 
 				for (int i = 0; i < cableAnchors.size(); i++) {
@@ -849,7 +849,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				if (centerline != null) {
 					// sort along the centerline
-					supports.sort(comparingDouble(it -> centerline.offsetOf(centerline.closestPoint(it.pos))));
+					supports.sort(comparingDouble(it -> centerline.offsetOfClosestPoint(it.pos)));
 				}
 
 			} else if (centerline != null && defaults.supportType != null && Double.isFinite(defaults.pierDistance)) {
@@ -935,7 +935,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				double startEle = maxEle(capConnectors.get(caps.get(0)));
 				double endEle = maxEle(capConnectors.get(caps.get(1)));
-				double offset = centerline.offsetOf(centerline.closestPoint(pos)) / centerline.getLength();
+				double offset = centerline.offsetOfClosestPoint(pos) / centerline.getLength();
 				ele = interpolateValue(offset, startEle, endEle);
 
 				if (defaults.curvatureHeightPerLength != 0) {
@@ -966,7 +966,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			if (centerline != null) {
 
 				List<Double> offsets = new ArrayList<>();
-				supports.forEach(s -> offsets.add(centerline.offsetOf(centerline.closestPoint(s.pos))));
+				supports.forEach(s -> offsets.add(centerline.offsetOfClosestPoint(s.pos)));
 				offsets.add(0, 0.0);
 				offsets.add(centerline.getLength());
 

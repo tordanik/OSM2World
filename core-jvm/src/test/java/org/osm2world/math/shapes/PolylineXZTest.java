@@ -34,14 +34,30 @@ public class PolylineXZTest {
 		/* vertices of the polyline */
 
 		assertEquals(0, p1.offsetOf(new VectorXZ(-1, 0)), 1e-5);
-		assertEquals(5, p1.offsetOf(new VectorXZ( 1, 3)), 1e-5);
-		assertEquals(7, p1.offsetOf(new VectorXZ(-1, 3)), 1e-5);
+		assertEquals(0, p1.offsetOfClosestPoint(new VectorXZ(-1, 0)), 1e-5);
 
-		/* points on the vertices of the polyline */
+		assertEquals(5, p1.offsetOf(new VectorXZ( 1, 3)), 1e-5);
+		assertEquals(5, p1.offsetOfClosestPoint(new VectorXZ( 1, 3)), 1e-5);
+
+		assertEquals(7, p1.offsetOf(new VectorXZ(-1, 3)), 1e-5);
+		assertEquals(7, p1.offsetOfClosestPoint(new VectorXZ(-1, 3)), 1e-5);
+
+		/* non-vertex points on the polyline */
 
 		assertEquals(0.5, p1.offsetOf(new VectorXZ(-0.5, 0)), 1e-5);
+		assertEquals(0.5, p1.offsetOfClosestPoint(new VectorXZ(-0.5, 0)), 1e-5);
+
 		assertEquals(1.5, p1.offsetOf(new VectorXZ(+0.5, 0)), 1e-5);
+		assertEquals(1.5, p1.offsetOfClosestPoint(new VectorXZ(+0.5, 0)), 1e-5);
+
 		assertEquals(3.0, p1.offsetOf(new VectorXZ(1, 1)), 1e-5);
+		assertEquals(3.0, p1.offsetOfClosestPoint(new VectorXZ(1, 1)), 1e-5);
+
+		/* points away from the polyline */
+
+		assertEquals(0, p1.offsetOfClosestPoint(new VectorXZ(-2, 0)), 1e-5);
+
+		assertEquals(6, p1.offsetOfClosestPoint(new VectorXZ(0, 3.5)), 1e-5);
 
 	}
 
