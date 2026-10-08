@@ -412,7 +412,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			/* draw the supports */
 
 			for (BridgeSupportData support : supports) {
-				support.renderTo(target, supportConnectors.get(support).getPosXYZ().y, this::getBridgeEleAt, maxSpanLength());
+				support.renderTo(target, supportConnectors.get(support).getPosXYZ().y, this);
 			}
 
 			/* draw arches between supports */
@@ -556,7 +556,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			for (BridgeSupportData support : supports) {
 				if (support.type() == BridgeSupportType.PYLON) {
 					double baseEle = supportConnectors.get(support).getPosXYZ().y;
-					double height = support.getHeight(baseEle, this::getBridgeEleAt, this.maxSpanLength()) - 0.5;
+					double height = support.getHeight(baseEle, this) - 0.5;
 					cableAnchors.add(support.pos.xyz(baseEle + height));
 					cableAnchorTags.add(support.tags);
 				}
@@ -1461,7 +1461,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 	/** Data describing a bridge pier or other support element */
 	protected record BridgeSupportData(VectorXZ pos, SimplePolygonShapeXZ shape, Material material, TagSet tags) {
 
-		private void renderTo(Target target, double baseEle, Function<VectorXZ, Double> bridgeEleAt, double maxSpanLength) {
+		private void renderTo(Target target, double baseEle, Bridge<?> bridge) {
 
 			double finalBaseEle = baseEle - 2.0; // sink into ground a bit
 
@@ -1470,9 +1470,9 @@ public class BridgeModule extends ConfigurableWorldModule {
 			PolylineXYZ upperOutline;
 
 			if (type() != BridgeSupportType.PYLON) {
-				upperOutline = outlineXZ.xyz(p -> bridgeEleAt.apply(p) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
+				upperOutline = outlineXZ.xyz(p -> bridge.getBridgeEleAt(p) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
 			} else {
-				double pylonHeight = getHeight(baseEle, bridgeEleAt, maxSpanLength);
+				double pylonHeight = getHeight(baseEle, bridge);
 				upperOutline = outlineXZ.xyz(baseEle + pylonHeight);
 			}
 
@@ -1492,15 +1492,19 @@ public class BridgeModule extends ConfigurableWorldModule {
 			return BridgeSupportType.forTags(tags);
 		}
 
-		public double getHeight(double baseEle, Function<VectorXZ, Double> bridgeEleAt, double maxSpanLength) {
+		public double getHeight(double baseEle, Bridge<?> bridge) {
 			if (type() == BridgeSupportType.PYLON) {
 				Double pylonHeight = parseHeight(tags);
-				if (pylonHeight == null || baseEle + pylonHeight < bridgeEleAt.apply(pos) + 1.0) {
-					pylonHeight = bridgeEleAt.apply(pos) + max(8, maxSpanLength / 3) - baseEle;
+				if (pylonHeight == null || baseEle + pylonHeight < bridge.getBridgeEleAt(pos) + 1.0) {
+					if (bridge.defaults.cables == BridgeDefaults.CableType.SUSPENSION) {
+						pylonHeight = bridge.getBridgeEleAt(pos) + max(5, bridge.maxSpanLength() / 8) - baseEle;
+					} else {
+						pylonHeight = bridge.getBridgeEleAt(pos) + max(8, bridge.maxSpanLength() / 3) - baseEle;
+					}
 				}
 				return pylonHeight;
 			} else {
-				return bridgeEleAt.apply(pos) - baseEle;
+				return bridge.getBridgeEleAt(pos) - baseEle;
 			}
 		}
 
