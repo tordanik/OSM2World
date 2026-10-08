@@ -1,8 +1,9 @@
 package org.osm2world.world.modules;
 
 import static java.lang.Math.*;
-import static java.util.Collections.reverse;
-import static java.util.Collections.swap;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
@@ -987,8 +988,10 @@ public class BridgeModule extends ConfigurableWorldModule {
 			/* build shape */
 
 			if (shape == null) {
-				if (centerline != null && BridgeSupportType.forTags(tags) != BridgeSupportType.PYLON) {
-					double width = parseMeasure(tags.getValue("width"), getBridgeWidthAt(pos) * 0.7);
+				if (centerline != null && !(BridgeSupportType.forTags(tags) == BridgeSupportType.PYLON
+						&& defaults.cables != BridgeDefaults.CableType.SUSPENSION)) {
+					double width = parseMeasure(tags.getValue("width"),
+							(defaults.cables == BridgeDefaults.CableType.SUSPENSION ? 1.2 : 0.7) * getBridgeWidthAt(pos));
 					double length = parseMeasure(tags.getValue("length"), min(width / 2, defaults.pierDistance / 4));
 					double angle = centerline.closestSegment(pos).getDirection().angle();
 					shape = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
@@ -1473,7 +1476,14 @@ public class BridgeModule extends ConfigurableWorldModule {
 				upperOutline = outlineXZ.xyz(p -> bridge.getBridgeEleAt(p) - 0.9 * BRIDGE_UNDERSIDE_HEIGHT);
 			} else {
 				double pylonHeight = getHeight(baseEle, bridge);
-				upperOutline = outlineXZ.xyz(baseEle + pylonHeight);
+				if (bridge.defaults.cables() != BridgeDefaults.CableType.SUSPENSION) {
+					upperOutline = outlineXZ.xyz(baseEle + pylonHeight);
+				} else {
+					// two-part suspension bridge pylon
+					double splitEle = bridge.getBridgeEleAt(pos) - 1;
+					upperOutline = outlineXZ.xyz(splitEle);
+					renderSuspensionPylonTopTo(target, splitEle, pylonHeight - (splitEle - baseEle), bridge);
+				}
 			}
 
 			if (upperOutline.getVertices().stream().allMatch(v -> v.y >= finalBaseEle)) {
@@ -1485,6 +1495,23 @@ public class BridgeModule extends ConfigurableWorldModule {
 				target.drawTriangles(material, triangles, TexCoordUtil.triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 
 			}
+
+		}
+
+		private void renderSuspensionPylonTopTo(Target target, double bottomEle, double topPartHeight,
+				Bridge<?> bridge) {
+
+			VectorXZ pA = bridge.getEdges().get(0).closestPoint(pos);
+			VectorXZ pB = bridge.getEdges().get(1).closestPoint(pos);
+
+			ShapeXZ shape = new AxisAlignedRectangleXZ(NULL_VECTOR, 0.4, 0.2);
+
+			List<VectorXYZ> path = List.of(
+					pA.xyz(bottomEle), pA.xyz(bottomEle + topPartHeight),
+					pB.xyz(bottomEle + topPartHeight), pB.xyz(bottomEle));
+			List<VectorXYZ> upVectors = nCopies(path.size(), pB.subtract(pA).rightNormal().xyz(0));
+
+			target.drawExtrudedShape(material, shape, path, upVectors, null, null);
 
 		}
 
