@@ -271,7 +271,7 @@ public class ExteriorBuildingWall {
 
 					try {
 
-						List<VectorXYZ> lower = (level.relativeEle <= floorEle + 0.02) ? bottomPoints
+						List<VectorXYZ> lower = (level.relativeEle <= floorHeight + 0.02) ? bottomPoints
 								: bottomPoints.stream().map(p -> p.addY(level.relativeEle - floorHeight)).toList();
 
 						List<VectorXYZ> upper = (level.relativeEleTop() - floorHeight >= roofBottomHeight - 0.02) ? roofBottomPoints
