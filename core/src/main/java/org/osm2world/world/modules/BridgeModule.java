@@ -1480,13 +1480,14 @@ public class BridgeModule extends ConfigurableWorldModule {
 					upperOutline = outlineXZ.xyz(baseEle + pylonHeight);
 				} else {
 					// two-part suspension bridge pylon
-					double splitEle = bridge.getBridgeEleAt(pos) - 1;
+					double splitEle = bridge.getOutlinePolygonXZ().contains(pos)
+						? bridge.getBridgeEleAt(pos) - 1 : finalBaseEle;
 					upperOutline = outlineXZ.xyz(splitEle);
 					renderSuspensionPylonTopTo(target, splitEle, pylonHeight - (splitEle - baseEle), bridge);
 				}
 			}
 
-			if (upperOutline.getVertices().stream().allMatch(v -> v.y >= finalBaseEle)) {
+			if (upperOutline.getVertices().stream().allMatch(v -> v.y > finalBaseEle)) {
 
 				List<VectorXYZ> stripVs = createTriangleStripBetween(upperOutline.getVertices(), lowerOutline.getVertices());
 				target.drawTriangleStrip(material, stripVs, TexCoordUtil.texCoordLists(stripVs, material, STRIP_WALL));
@@ -1501,8 +1502,18 @@ public class BridgeModule extends ConfigurableWorldModule {
 		private void renderSuspensionPylonTopTo(Target target, double bottomEle, double topPartHeight,
 				Bridge<?> bridge) {
 
-			VectorXZ pA = bridge.getEdges().get(0).closestPoint(pos);
-			VectorXZ pB = bridge.getEdges().get(1).closestPoint(pos);
+			VectorXZ pA, pB;
+
+			if (bridge.getOutlinePolygonXZ().contains(pos)) {
+				pA = bridge.getEdges().get(0).closestPoint(pos);
+				pB = bridge.getEdges().get(1).closestPoint(pos);
+			} else {
+				PolylineXZ closestCap = bridge.getCaps().stream()
+						.min(comparingDouble(c -> c.distanceTo(pos))).orElseThrow();
+				VectorXZ halfCap = getLast(closestCap.vertices()).subtract(getFirst(closestCap.vertices())).mult(0.5);
+				pA = pos.add(halfCap);
+				pB = pos.subtract(halfCap);
+			}
 
 			ShapeXZ shape = new AxisAlignedRectangleXZ(NULL_VECTOR, 0.4, 0.2);
 
