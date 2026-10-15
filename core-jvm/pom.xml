@@ -15,13 +15,6 @@
 	<name>OSM2World Core JVM</name>
 	<description>OSM2World core library with JVM-specific extras</description>
 
-	<repositories>
-		<repository>
-			<id>jogamp-repo</id>
-			<url>https://jogamp.org/deployment/maven/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 
 		<dependency>

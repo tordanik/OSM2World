@@ -17,8 +17,9 @@
 
 	<repositories>
 		<repository>
-			<id>jogamp-repo</id>
-			<url>https://jogamp.org/deployment/maven/</url>
+			<id>osm2world-build-repo</id>
+			<url>https://osm2world.org/build/maven/</url>
+			<snapshots><enabled>false</enabled></snapshots>
 		</repository>
 	</repositories>
 
