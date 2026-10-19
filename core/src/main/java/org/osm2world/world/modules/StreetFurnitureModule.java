@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNullElse;
 import static org.apache.commons.lang3.math.NumberUtils.max;
+import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
@@ -58,7 +59,6 @@ import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.MapBasedTexCoordFunction;
 import org.osm2world.util.platform.image.ImageUtil;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NodeModelInstance;
@@ -185,7 +185,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		/** Returns the bottom position for the model itself, excluding the support. */
 		public VectorXYZ getModelBase() {
-			if (isAttachedToVerticalSurface(attachmentConnector)) {
+			if (isAttachedToVerticalSurface(eleConnector)) {
 				return getBase();
 			} else {
 				return getBase().addY(getPreferredVerticalAttachmentHeight());
@@ -197,7 +197,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		 * or null if the model is attached to a vertical surface and therefore needs no supports.
 		 */
 		public @Nullable VectorXYZ getSupportBase() {
-			if (isAttachedToVerticalSurface(attachmentConnector)) {
+			if (isAttachedToVerticalSurface(eleConnector)) {
 				return null;
 			} else {
 				return getBase();
@@ -206,8 +206,8 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		/** Returns the facing direction. */
 		public VectorXZ getDirection() {
-			if (isAttachedToVerticalSurface(attachmentConnector)) {
-				return attachmentConnector.getAttachedSurfaceNormal().xz().normalize();
+			if (isAttachedToVerticalSurface(eleConnector)) {
+				return eleConnector.getAttachedSurfaceNormal().xz().normalize();
 			} else {
 				return VectorXZ.fromAngle(parseDirection(node.getTags(), PI));
 			}
@@ -1165,14 +1165,15 @@ public class StreetFurnitureModule extends AbstractModule {
 		private static final LocalTime TIME = LocalTime.parse("12:25");
 
 		private final MapNode node;
-		private final AttachmentConnector connector;
+		private final EleConnector connector;
 
 		public Clock(MapNode node) {
 
 			this.node = node;
 
 			double preferredHeight = parseHeight(node.getTags(), 10f);
-			connector = new AttachmentConnector(asList("wall"), node.getPos().xyz(0), this, preferredHeight, true);
+			connector = new EleConnector(node.getPos(), null, GroundState.ATTACHED,
+					new AttachmentProperties(List.of("wall"), preferredHeight, true), this);
 
 		}
 
@@ -1188,12 +1189,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
-			return emptyList();
-		}
-
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			return singleton(connector);
+			return List.of(connector);
 		}
 
 		@Override
@@ -1205,7 +1201,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			double diameter = parseWidth(node.getTags(), 1f);
 			var instance = new ModelInstance(new ClockFace(TIME, PLASTIC.get(config)), new InstanceParameters(
-					connector.getAttachedPos(),
+					connector.getPosXYZ(),
 					connector.getAttachedSurfaceNormal().xz().angle(),
 					diameter));
 			instance.render(target);

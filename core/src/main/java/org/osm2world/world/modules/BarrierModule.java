@@ -141,12 +141,10 @@ public class BarrierModule extends AbstractModule {
 
 		public LinearBarrier(MapWaySegment waySegment, double defaultHeight, double defaultWidth) {
 
-			super(waySegment);
+			super(waySegment, true);
 
 			height = parseHeight(waySegment.getTags(), defaultHeight);
 			width = parseWidth(waySegment.getTags(), defaultWidth);
-
-			createAttachmentConnectors();
 
 		}
 

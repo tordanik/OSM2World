@@ -157,14 +157,14 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, VK_B, false,
 					new GroundFootprintDebugView());
 
+			initAndAddDebugView(subMenu, VK_E, false,
+					new EleConnectorDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new ConnectorAttachmentDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new AttachmentSurfaceDebugView());
 			initAndAddDebugView(subMenu, -1, false,
-					new AttachmentConnectorDebugView());
-			initAndAddDebugView(subMenu, -1, false,
 					new EleDataSourceDebugView());
-			initAndAddDebugView(subMenu, VK_E, false,
-					new EleConnectorDebugView());
 			initAndAddDebugView(subMenu, VK_X, false,
 					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,

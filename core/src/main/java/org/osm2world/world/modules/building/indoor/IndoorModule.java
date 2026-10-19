@@ -1,8 +1,8 @@
 package org.osm2world.world.modules.building.indoor;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -13,6 +13,8 @@ import java.util.*;
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -21,7 +23,6 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.building.Door;
@@ -49,8 +50,8 @@ public class IndoorModule extends AbstractModule {
 		private final VectorXZ centroid;
 
 
-		private final AttachmentConnector topConnector;
-		private final AttachmentConnector bottomConnector;
+		private final EleConnector topConnector;
+		private final EleConnector bottomConnector;
 
 		public Elevator(MapArea area){
 			super(area);
@@ -62,11 +63,13 @@ public class IndoorModule extends AbstractModule {
 				List<Integer> levels = parseLevels(area.getTags().getValue("level"));
 
 				if (levels != null) {
-					topConnector = new AttachmentConnector(asList("ceiling" + levels.get(levels.size() - 1).toString()),
-							centroid.xyz(0), this, 0, false);
+					topConnector = new EleConnector(centroid, null, GroundState.ATTACHED,
+							new AttachmentProperties(List.of("ceiling" + levels.get(levels.size() - 1).toString()),
+							0, false), this);
 
-					bottomConnector = new AttachmentConnector(asList("floor" + levels.get(0).toString()),
-							centroid.xyz(0), this, 0, false);
+					bottomConnector = new EleConnector(centroid, null, GroundState.ATTACHED,
+							new AttachmentProperties(List.of("floor" + levels.get(0).toString()),
+							0, false), this);
 
 					noLevels = levels.get(levels.size() - 1) - levels.get(0) + 1;
 				} else {
@@ -89,11 +92,14 @@ public class IndoorModule extends AbstractModule {
 		public GroundState getGroundState() { return null; }
 
 		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+		public EleConnectorGroup getEleConnectors() {
 			if (topConnector == null) {
-				return emptyList();
+				return EleConnectorGroup.EMPTY;
 			} else {
-				return asList(topConnector, bottomConnector);
+				var group = new EleConnectorGroup();
+				group.add(topConnector);
+				group.add(bottomConnector);
+				return group;
 			}
 		}
 
@@ -158,7 +164,7 @@ public class IndoorModule extends AbstractModule {
 
 				if (bottomConnector != null) {
 					if (bottomConnector.isAttached()) {
-						tempBaseEle = bottomConnector.getAttachedPos().getY() + 0.001;
+						tempBaseEle = bottomConnector.getPosXYZ().getY() + 0.001;
 					}
 				}
 				if (tempBaseEle == null) {
@@ -173,7 +179,7 @@ public class IndoorModule extends AbstractModule {
 
 				if (topConnector != null) {
 					if (topConnector.isAttached()) {
-						tempTopEle = topConnector.getAttachedPos().getY();
+						tempTopEle = topConnector.getPosXYZ().getY();
 					}
 				}
 				if (tempTopEle == null){

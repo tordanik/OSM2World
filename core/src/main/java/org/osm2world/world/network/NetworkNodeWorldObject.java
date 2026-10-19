@@ -6,9 +6,9 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import org.osm2world.map_data.data.MapNode;
+import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.shapes.PolygonShapeXZ;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.OutlineNodeWorldObject;
 import org.osm2world.world.data.WorldObject;
 
@@ -70,8 +70,9 @@ public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObj
 
 			Set<String> segmentTypes = null;
 
-			for (AttachmentConnector connector : segment.getAttachmentConnectors()) {
-				List<String> segmentConnectorTypes = connector.compatibleSurfaceTypes;
+			for (EleConnector connector : segment.getEleConnectors()) {
+				List<String> segmentConnectorTypes = connector.attachmentProperties == null ? List.of()
+						: connector.attachmentProperties.compatibleSurfaceTypes();
 				if (connector.originalPos.distanceToXZ(node.getPos()) < 0.5) {
 					types.addAll(segmentConnectorTypes);
 				}

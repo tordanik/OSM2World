@@ -1,7 +1,5 @@
 package org.osm2world.world.data;
 
-import static java.lang.Math.abs;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
@@ -15,7 +13,6 @@ import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentUtil;
 
 /**
@@ -31,7 +28,6 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	protected final MapNode node;
 
 	protected final EleConnector eleConnector;
-	protected final AttachmentConnector attachmentConnector;
 
 	protected final boolean supportMinHeight;
 
@@ -44,20 +40,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 		this.node = node;
 		this.supportMinHeight = supportMinHeight;
 
-		this.eleConnector = new EleConnector(node.getPos(), node,
-				getGroundState());
-
-		List<String> attachmentTypes = getAttachmentTypes();
-
-		if (attachmentTypes.isEmpty()) {
-			this.attachmentConnector = null;
-		} else if (AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)) {
-			this.attachmentConnector = new AttachmentConnector(attachmentTypes,
-					node.getPos().xyz(0), this, getPreferredVerticalAttachmentHeight(), true);
-		} else {
-			this.attachmentConnector = new AttachmentConnector(attachmentTypes,
-					node.getPos().xyz(0), this, 0, false);
-		}
+		this.eleConnector = buildConnector();
 
 	}
 
@@ -74,25 +57,16 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	}
 
 	@Override
-	public Iterable<EleConnector> getEleConnectors() {
+	public final Iterable<EleConnector> getEleConnectors() {
 		return singleton(eleConnector);
 	}
 
 	@Override
 	public GroundState getGroundState() {
-		if (attachmentConnector != null && attachmentConnector.isAttached()) {
+		if (eleConnector != null && eleConnector.isAttached()) {
 			return GroundState.ATTACHED;
 		} else {
 			return GroundState.ON;
-		}
-	}
-
-	@Override
-	public Iterable<AttachmentConnector> getAttachmentConnectors() {
-		if (attachmentConnector == null) {
-			return emptyList();
-		} else {
-			return singleton(attachmentConnector);
 		}
 	}
 
@@ -103,6 +77,25 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	 */
 	protected List<String> getAttachmentTypes() {
 		return AttachmentUtil.getCompatibleSurfaceTypes(node);
+	}
+
+	/**
+	 * Builds a connector based on {@link #getAttachmentTypes()}.
+	 * Subclasses can override this to implement their own logic if just selecting custom types is not enough.
+	 */
+	protected EleConnector buildConnector() {
+
+		List<String> attachmentTypes = getAttachmentTypes();
+
+		if (attachmentTypes.isEmpty()) {
+			return new EleConnector(node.getPos(), node, getGroundState());
+		} else {
+			EleConnector.AttachmentProperties ap = AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)
+					? new EleConnector.AttachmentProperties(attachmentTypes, getPreferredVerticalAttachmentHeight(), true)
+					: new EleConnector.AttachmentProperties(attachmentTypes, 0, false);
+			return new EleConnector(node.getPos(), node, getGroundState(), ap, this);
+		}
+
 	}
 
 	protected double getPreferredVerticalAttachmentHeight() {
@@ -117,21 +110,14 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	/**
 	 * Provides subclasses with the 3d position of the {@link MapNode}.
 	 * Only works during rendering (i.e. after elevation calculation).
-	 * Will consider attachment, and will also consider min_height tags if {@link #supportMinHeight} is true.
 	 */
 	protected VectorXYZ getBase() {
 
-		VectorXYZ base = (attachmentConnector != null && attachmentConnector.isAttached())
-				? attachmentConnector.getAttachedPos()
-				: eleConnector.getPosXYZ();
+		VectorXYZ base = eleConnector.getPosXYZ();
 
 		double minHeight = getMinHeight();
 
 		if (minHeight <= 0) {
-			return base;
-		} else if (attachmentConnector != null && attachmentConnector.isAttached()
-				&& abs((attachmentConnector.getAttachedPos().y - eleConnector.getPosXYZ().y) - minHeight) < 0.5) {
-			// ignore redundant min_height, e.g. when both minHeight and location=roof are used
 			return base;
 		} else {
 			return base.addY(minHeight);

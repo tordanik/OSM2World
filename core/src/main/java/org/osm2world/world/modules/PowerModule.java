@@ -7,6 +7,8 @@ import static java.util.Collections.*;
 import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
+import static org.osm2world.map_elevation.data.GroundState.ATTACHED;
 import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.math.VectorXYZ.*;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
@@ -30,6 +32,7 @@ import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
+import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.Angle;
@@ -51,7 +54,6 @@ import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.ValueParseUtil;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NoOutlineWaySegmentWorldObject;
@@ -955,28 +957,31 @@ public final class PowerModule extends AbstractModule {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 
-		private final AttachmentConnector connector;
+		private final EleConnector connector;
 
 		public RooftopSolarPanels(MapArea area) {
 
 			super(area);
 
-			List<String> compatibleSurfaceTypes = asList("roof");
+			List<String> compatibleSurfaceTypes = List.of("roof");
 			if (area.getTags().containsKey("level")) {
 				List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
 				if (levels != null) {
-					compatibleSurfaceTypes = asList("roof" + levels.get(0), "roof");
+					compatibleSurfaceTypes = List.of("roof" + levels.get(0), "roof");
 				}
 			}
 
 			VectorXYZ attachmentPoint = area.getOuterPolygon().getPointInside().xyz(0);
-			connector = new AttachmentConnector(compatibleSurfaceTypes, attachmentPoint, this, 0, false);
+			connector = new EleConnector(attachmentPoint, null, ATTACHED,
+					new AttachmentProperties(compatibleSurfaceTypes, 0, false), this);
 
 		}
 
 		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			return singletonList(connector);
+		public EleConnectorGroup getEleConnectors() {
+			var eleConnectors = new EleConnectorGroup();
+			eleConnectors.add(connector);
+			return eleConnectors;
 		}
 
 		@Override
@@ -987,7 +992,7 @@ public final class PowerModule extends AbstractModule {
 				List<TriangleXZ> trianglesXZ = getTriangulationXZ();
 
 				TriangleXYZ plane = planeFromPosAndNormal(
-						connector.getAttachedPos().addY(DISTANCE_FROM_ROOF),
+						connector.getPosXYZ().addY(DISTANCE_FROM_ROOF),
 						connector.getAttachedSurfaceNormal());
 
 				List<TriangleXYZ> triangles = trianglesXZ.stream()

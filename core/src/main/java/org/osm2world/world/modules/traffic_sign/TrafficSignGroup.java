@@ -2,9 +2,8 @@ package org.osm2world.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static org.osm2world.map_elevation.data.GroundState.ATTACHED;
-import static org.osm2world.map_elevation.data.GroundState.ON;
+import static java.util.Objects.requireNonNullElse;
+import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.VectorXYZ.X_UNIT;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXZ.angleBetween;
@@ -22,6 +21,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapNode;
+import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -29,7 +29,6 @@ import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentUtil;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 
@@ -52,8 +51,6 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 	/** radius of the post. Will be ignored if the sign is attached to something else. */
 	public final double postRadius;
 
-	private AttachmentConnector connector = null;
-
 	public TrafficSignGroup(MapNode node, O2WConfig config) {
 		// TODO remove this constructor and make the class immutable
 		this(node, null, null, null, config);
@@ -70,46 +67,34 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 	}
 
 	@Override
-	public GroundState getGroundState() {
-		if (connector != null && connector.isAttached()) {
-			return ATTACHED;
-		} else {
-			return ON;
-		}
+	public List<Mesh> buildMeshes() {
+		return buildMeshesAndSubModels().getLeft();
 	}
 
 	@Override
-	public Iterable<AttachmentConnector> getAttachmentConnectors() {
+	public EleConnector buildConnector() {
 
 		List<String> types = AttachmentUtil.getCompatibleSurfaceTypes(node);
 
 		if (types.isEmpty()) {
-			return emptyList();
+			return super.buildConnector();
 		} else {
 
-			if (connector == null) {
+			VectorXZ p = requireNonNullElse(position, node.getPos());
 
-				if (position == null) throw new IllegalStateException();
+			double height = parseHeight(node.getTags(),
+					signs != null && !signs.isEmpty() ? (float) signs.get(0).defaultHeight : 2f);
 
-				double height = parseHeight(node.getTags(), (float) signs.get(0).defaultHeight);
-
-				Predicate<VectorXYZ> isAcceptableNormal = null;
-				if (direction != null) {
-					isAcceptableNormal = (v -> angleBetween(v.xz(), VectorXZ.fromAngle(direction)) < PI / 8);
-				}
-
-				connector = new AttachmentConnector(types, position.xyz(height), this, height, true, isAcceptableNormal);
-
+			Predicate<VectorXYZ> isAcceptableNormal = v -> true;
+			if (direction != null) {
+				isAcceptableNormal = (v -> angleBetween(v.xz(), VectorXZ.fromAngle(direction)) < PI / 8);
 			}
 
-			return singleton(connector);
+			return new EleConnector(p.xyz(height), null, GroundState.ATTACHED,
+					new AttachmentProperties(types, height, true, isAcceptableNormal), this);
+
 		}
 
-	}
-
-	@Override
-	public List<Mesh> buildMeshes() {
-		return buildMeshesAndSubModels().getLeft();
 	}
 
 	@Override
@@ -131,9 +116,9 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 		double direction = this.direction != null ? this.direction : PI;
 		boolean drawPosts = true;
 
-		if (connector != null && connector.isAttached()) {
-			signPositionXYZ = connector.getAttachedPos();
-			direction = connector.getAttachedSurfaceNormal().xz().angle();
+		if (eleConnector != null && eleConnector.isAttached()) {
+			signPositionXYZ = eleConnector.getPosXYZ();
+			direction = eleConnector.getAttachedSurfaceNormal().xz().angle();
 			drawPosts = false;
 		}
 

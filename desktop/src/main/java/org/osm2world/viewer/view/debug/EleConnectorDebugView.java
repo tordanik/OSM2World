@@ -16,7 +16,7 @@ public class EleConnectorDebugView extends StaticDebugView {
 	private static final float CONNECTOR_HALF_WIDTH = 0.25f;
 
 	public EleConnectorDebugView() {
-		super("Elevation connectors", "shows all elevation connectors");
+		super("Connectors", "shows all elevation connectors");
 	}
 
 	@Override

@@ -14,14 +14,13 @@ import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
-import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.world.attachment.AttachmentConnector;
+import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.attachment.AttachmentSurface;
 
 public interface WorldObject {
@@ -92,13 +91,6 @@ public interface WorldObject {
 	 * @see AttachmentSurface
 	 */
 	public default Collection<AttachmentSurface> getAttachmentSurfaces() {
-		return emptyList();
-	}
-
-	/**
-	 * returns all {@link AttachmentConnector}s used by this WorldObject
-	 */
-	public default Iterable<AttachmentConnector> getAttachmentConnectors() {
 		return emptyList();
 	}
 

@@ -35,6 +35,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -47,7 +48,6 @@ import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -703,14 +703,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Function<VectorXZ, VectorXYZ> eleFunction;
-
-			AttachmentConnector attachmentConnector = getConnectorIfAttached();
-			if (attachmentConnector != null) {
-				eleFunction = v -> v.xyz(attachmentConnector.getAttachedPos().y);
-			} else {
-				eleFunction = getEleConnectors()::getPosXYZ;
-			}
+			Function<VectorXZ, VectorXYZ> eleFunction = getEleConnectors()::getPosXYZ;
 
 			VectorXYZ startLeft = eleFunction.apply(startPos.subtract(cutVector.mult(0.5 * startWidth)));
 			VectorXYZ startRight = eleFunction.apply(startPos.add(cutVector.mult(0.5 * startWidth)));
@@ -770,10 +763,6 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			return super.getAttachmentConnectors();
-		}
 	}
 
 	/** representation of a road */
@@ -803,7 +792,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		public Road(MapWaySegment segment, O2WConfig config) {
 
-			super(segment);
+			super(segment, true);
 
 			this.config = config;
 
@@ -818,13 +807,10 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (steps) {
 				this.laneLayout = null;
 				this.width = parseWidth(tags, 1.0);
-
-				createAttachmentConnectors();
 			} else {
 				this.laneLayout = buildBasicLaneLayout();
 				this.width = calculateWidth();
 				laneLayout.setCalculatedValues(width);
-				createAttachmentConnectors();
 			}
 
 		}
@@ -1345,8 +1331,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
 			if (isBroken() || getOutlinePolygonXZ() == null) {
 				return emptyList();
-			} else if (steps && attachmentConnectorList.stream().allMatch(c -> c.isAttached())
-					&& attachmentConnectorList.stream().anyMatch(c -> !c.getAttachedSurface().getTypes().contains("roof"))) {
+			} else if (steps && connectors != null && connectors.stream().allMatch(EleConnector::isAttached)
+					&& connectors.stream().anyMatch(c -> !c.getAttachedSurface().getTypes().contains("roof"))) {
 				// do not cut out the floor below indoor steps (but remove the roof below rooftop steps)
 				return emptyList();
 			} else {

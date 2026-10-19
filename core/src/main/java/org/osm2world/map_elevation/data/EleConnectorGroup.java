@@ -1,10 +1,15 @@
 package org.osm2world.map_elevation.data;
 
 import java.util.*;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
+import org.osm2world.world.data.WorldObject;
 
 
 /**
@@ -28,9 +33,14 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	public void addConnectorsFor(Iterable<VectorXZ> positions,
 			Object reference, GroundState groundState) {
+		this.addConnectorsFor(positions, reference, groundState, null, null);
+	}
+
+	public void addConnectorsFor(Iterable<VectorXZ> positions, Object reference, GroundState groundState,
+			@Nullable EleConnector.AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
 
 		for (VectorXZ pos : positions) {
-			eleConnectors.add(new EleConnector(pos, reference, groundState));
+			eleConnectors.add(new EleConnector(pos, reference, groundState, attachmentProperties, object));
 		}
 
 	}
@@ -47,10 +57,11 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 	}
 
 	public void addConnectorsForTriangulation(Iterable<TriangleXZ> triangles,
-			Object reference, GroundState groundState) {
+			Object reference, GroundState groundState,
+			@Nullable EleConnector.AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
 		//TODO check later whether this method is still necessary
 
-		Set<VectorXZ> positions = new HashSet<VectorXZ>();
+		Set<VectorXZ> positions = new HashSet<>();
 
 		for (TriangleXZ t : triangles) {
 			positions.add(t.v1);
@@ -58,7 +69,7 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 			positions.add(t.v3);
 		}
 
-		addConnectorsFor(positions, null, groundState);
+		addConnectorsFor(positions, reference, groundState, attachmentProperties, object);
 
 	}
 
@@ -145,9 +156,14 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 				polygon.getRings().stream().map(this::getPosXYZ).toList());
 	}
 
+	@Nonnull
 	@Override
 	public Iterator<EleConnector> iterator() {
 		return eleConnectors.iterator();
+	}
+
+	public Stream<EleConnector> stream() {
+		return eleConnectors.stream();
 	}
 
 	public static final EleConnectorGroup EMPTY = new EleConnectorGroup(

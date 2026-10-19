@@ -145,7 +145,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 		public Rail(MapWaySegment segment) {
 
-			super(segment);
+			super(segment, true);
 
 			gaugeMeters = parseInt(segment.getTags(), DEFAULT_GAUGE_MM, "gauge") / 1000.0f;
 			railDist = gaugeMeters + 2 * (0.5f * RAIL_HEAD_WIDTH);
@@ -159,8 +159,6 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			// tram is often part of a street, omit ground mesh
 			ownGround = !segment.getTags().contains("railway", "tram");
-
-			createAttachmentConnectors();
 
 		}
 

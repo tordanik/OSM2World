@@ -9,10 +9,11 @@ import javax.annotation.Nullable;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.MapRelation;
 import org.osm2world.map_data.data.TagSet;
+import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.util.ValueParseUtil;
 
 /**
- * methods for working with {@link AttachmentConnector}s
+ * methods for working with {@link org.osm2world.map_elevation.data.EleConnector.AttachmentProperties}s
  */
 public final class AttachmentUtil {
 
@@ -85,9 +86,9 @@ public final class AttachmentUtil {
 	}
 
 	/**
-	 * Returns true if the attachment connector is attached to a vertical surface
+	 * Returns true if the connector is attached to a vertical surface
 	 */
-	public static boolean isAttachedToVerticalSurface(@Nullable AttachmentConnector connector) {
+	public static boolean isAttachedToVerticalSurface(@Nullable EleConnector connector) {
 		return connector != null && connector.isAttached()
 				&& connector.getAttachedSurfaceNormal().y < 0.8;
 	}

@@ -1,5 +1,6 @@
 package org.osm2world.world.modules;
 
+import static java.lang.Double.isFinite;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.util.Arrays.asList;
@@ -386,19 +387,14 @@ public class SportsModule extends AbstractModule {
 			//TODO: support this feature when elevation is enabled
 
 			boolean renderNet = true;
+			double ele = Double.NaN;
 
 			for (EleConnector connector : getEleConnectors()) {
-				if (abs(connector.getPosXYZ().y) > 0.01) {
+				if (!isFinite(ele)) { ele = connector.getPosXYZ().y; }
+				if (abs(connector.getPosXYZ().y - ele) > 0.01) {
 					renderNet = false;
 					break;
 				}
-			}
-
-			double ele = 0;
-
-			if (getConnectorIfAttached() != null) {
-					ele = getConnectorIfAttached().getAttachedPos().getY();
-					renderNet = true;
 			}
 
 			if (texFunction != null && renderNet) {

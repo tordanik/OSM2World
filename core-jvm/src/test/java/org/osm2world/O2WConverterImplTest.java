@@ -3,6 +3,7 @@ package org.osm2world;
 import static java.lang.Math.sqrt;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
@@ -11,9 +12,10 @@ import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FaceXYZ;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 
 public class O2WConverterImplTest {
@@ -26,16 +28,15 @@ public class O2WConverterImplTest {
 				new VectorXYZ(+1, 5, 0),
 				new VectorXYZ(0, 5, 2)))));
 
-		AttachmentConnector connector = new AttachmentConnector(List.of("test", "other2"),
-				new VectorXYZ(0, 2, 1),
-				null, 0, false);
+		var connector = new EleConnector(new VectorXYZ(0, 2, 1), null, GroundState.ATTACHED,
+				new AttachmentProperties(List.of("test", "other2"),0, false), null);
 
 		O2WConverterImpl.attachConnectorIfValid(connector, surface);
 
 		assertTrue(connector.isAttached());
 		assertSame(surface, connector.getAttachedSurface());
 		assertAlmostEquals(Y_UNIT, connector.getAttachedSurfaceNormal());
-		assertAlmostEquals(0, 5, 1, connector.getAttachedPos());
+		assertAlmostEquals(0, 5, 1, connector.getPosXYZ());
 
 	}
 
@@ -49,16 +50,15 @@ public class O2WConverterImplTest {
 
 		for (double preferredHeight : List.of(10, 15)) {
 
-			AttachmentConnector connector = new AttachmentConnector(List.of("test"),
-					new VectorXYZ(0, 10, 1),
-					null, preferredHeight, true);
+			var connector = new EleConnector(new VectorXYZ(0, 10, 1), null, GroundState.ATTACHED,
+					new AttachmentProperties(List.of("test"), preferredHeight, true), null);
 
 			O2WConverterImpl.attachConnectorIfValid(connector, surface);
 
 			assertTrue(connector.isAttached());
 			assertSame(surface, connector.getAttachedSurface());
 			assertAlmostEquals(Z_UNIT.invert(), connector.getAttachedSurfaceNormal());
-			assertAlmostEquals(0, preferredHeight, 0, connector.getAttachedPos());
+			assertAlmostEquals(0, preferredHeight, 0, connector.getPosXYZ());
 
 		}
 
@@ -74,9 +74,8 @@ public class O2WConverterImplTest {
 
 		for (boolean changeXZ : List.of(true, false)) {
 
-			AttachmentConnector connector = new AttachmentConnector(List.of("test"),
-					new VectorXYZ(0, 20, 10),
-					null, 20, changeXZ);
+			var connector = new EleConnector(new VectorXYZ(0, 20, 10), null, GroundState.ATTACHED,
+					new AttachmentProperties(List.of("test"), 20, changeXZ), null);
 
 			O2WConverterImpl.attachConnectorIfValid(connector, surface);
 
@@ -85,9 +84,9 @@ public class O2WConverterImplTest {
 			assertAlmostEquals(0, sqrt(2)/2, -sqrt(2)/2, connector.getAttachedSurfaceNormal());
 
 			if (changeXZ) {
-				assertAlmostEquals(0, 15, 15, connector.getAttachedPos());
+				assertAlmostEquals(0, 15, 15, connector.getPosXYZ());
 			} else {
-				assertAlmostEquals(0, 10, 10, connector.getAttachedPos());
+				assertAlmostEquals(0, 10, 10, connector.getPosXYZ());
 			}
 
 		}

@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
@@ -23,7 +24,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.world.data.WorldObject;
 
 /**
- * a surface (consisting of one or more {@link FaceXYZ}s) that {@link AttachmentConnector} can attach to
+ * a surface (consisting of one or more {@link FaceXYZ}s) that {@link EleConnector}s can attach to
  */
 public class AttachmentSurface implements BoundedObject {
 
@@ -45,9 +46,10 @@ public class AttachmentSurface implements BoundedObject {
 	 */
 	private final Function<VectorXZ, Double> baseEleFunction;
 
-	private final Collection<AttachmentConnector> attachedConnectors = new ArrayList<>();
+	private final Collection<EleConnector> attachedConnectors = new ArrayList<>();
 
-	public AttachmentSurface(Collection<String> types, WorldObject worldObject, Collection<? extends FlatSimplePolygonShapeXYZ> faces,
+	public AttachmentSurface(Collection<String> types, @Nullable WorldObject worldObject,
+			Collection<? extends FlatSimplePolygonShapeXYZ> faces,
 			Function<VectorXZ, Double> baseEleFunction) {
 		this.worldObject = worldObject;
 		if (types.isEmpty() || faces.isEmpty()) throw new IllegalArgumentException();
@@ -77,11 +79,11 @@ public class AttachmentSurface implements BoundedObject {
 		return baseEleFunction.apply(position);
 	}
 
-	public Collection<AttachmentConnector> getAttachedConnectors() {
+	public Collection<EleConnector> getAttachedConnectors() {
 		return attachedConnectors;
 	}
 
-	public void addAttachedConnector(AttachmentConnector connector) {
+	public void addAttachedConnector(EleConnector connector) {
 		this.attachedConnectors.add(connector);
 	}
 
@@ -100,7 +102,7 @@ public class AttachmentSurface implements BoundedObject {
 
 	public VectorXYZ closestPoint(VectorXYZ v) {
 		return getFaces().stream().map(f -> f.closestPoint(v))
-				.min(Comparator.comparingDouble(f -> f.distanceTo(v))).get();
+				.min(Comparator.comparingDouble(f -> f.distanceTo(v))).orElseThrow();
 	}
 
 	@Override

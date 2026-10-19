@@ -118,7 +118,7 @@ public class BicycleParkingModule extends AbstractModule {
 				/* create connectors for the area */
 
 				if (area() != null && !area().isEmpty()) {
-					eleConnectors.addConnectorsForTriangulation(triangulate(area()), null, getGroundState());
+					eleConnectors.addConnectorsForTriangulation(triangulate(area()), null, getGroundState(), null, null);
 				}
 
 				/* create a connector for each stand */

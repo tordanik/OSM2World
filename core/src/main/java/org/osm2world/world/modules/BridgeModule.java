@@ -49,7 +49,6 @@ import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -841,7 +840,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
 			if (subtractAttachedObjects && attachmentSurface != null) {
-				for (AttachmentConnector connector : attachmentSurface.getAttachedConnectors()) {
+				for (EleConnector connector : attachmentSurface.getAttachedConnectors()) {
 					if (connector.object != null) {
 						subtractPolys.addAll(connector.object.getRawGroundFootprint());
 					}

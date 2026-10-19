@@ -3,13 +3,13 @@ package org.osm2world;
 import static java.lang.Math.abs;
 import static java.lang.Math.ceil;
 import static java.time.Instant.now;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
 import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
 import static org.osm2world.conversion.ProgressListener.Phase.FINISHED;
 import static org.osm2world.conversion.ProgressListener.Phase.values;
+import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
@@ -50,7 +50,6 @@ import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.scene.Scene;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.platform.json.JsonUtil;
-import org.osm2world.world.attachment.AttachmentConnector;
 import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.creation.WorldCreator;
 import org.osm2world.world.creation.WorldModule;
@@ -255,16 +254,19 @@ class O2WConverterImpl {
 
 			if (object.getParent() != null) continue;
 
-			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
+			for (EleConnector connector : object.getEleConnectors()) {
 
-				for (String surfaceType : connector.compatibleSurfaceTypes) {
+				AttachmentProperties ap = connector.attachmentProperties;
+				if (ap == null) continue;
+
+				for (String surfaceType : ap.compatibleSurfaceTypes()) {
 
 					Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
-							bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ()));
+							bbox(singleton(connector.originalPos)).pad(ap.maxDistanceXZ()));
 
 					List<AttachmentSurface> compatibleSurfaces = Streams.stream(nearbySurfaces)
 							.filter(s -> s.getTypes().stream().anyMatch(t -> t.equals(surfaceType)))
-							.filter(s -> s.getFaces().stream().anyMatch(f -> connector.isAcceptableNormal.test(f.getNormal())))
+							.filter(s -> s.getFaces().stream().anyMatch(f -> ap.isAcceptableNormal().test(f.getNormal())))
 							.toList();
 
 					Optional<AttachmentSurface> candidateSurface = Optional.empty();
@@ -294,12 +296,15 @@ class O2WConverterImpl {
 
 	}
 
-	static void attachConnectorIfValid(AttachmentConnector connector, AttachmentSurface surface) {
+	static void attachConnectorIfValid(EleConnector connector, AttachmentSurface surface) {
 
-		double ele = surface.getBaseEleAt(connector.originalPos.xz()) + connector.preferredHeight;
+		AttachmentProperties ap = connector.attachmentProperties;
+		if (ap == null) return;
+
+		double ele = surface.getBaseEleAt(connector.originalPos.xz()) + ap.preferredHeight();
 		VectorXYZ posAtEle = connector.originalPos.y(ele);
 
-		for (boolean requirePreferredHeight : asList(true, false)) {
+		for (boolean requirePreferredHeight : List.of(true, false)) {
 
 			Predicate<FlatSimplePolygonShapeXYZ> matchesPreferredHeight = f -> {
 				if (!requirePreferredHeight) {
@@ -307,20 +312,20 @@ class O2WConverterImpl {
 				} else {
 					VectorXYZ closestPoint = f.closestPoint(posAtEle);
 					double height = closestPoint.y - surface.getBaseEleAt(closestPoint.xz());
-					return abs(height - connector.preferredHeight) < 0.001;
+					return abs(height - ap.preferredHeight()) < 0.001;
 				}
 			};
 
 			Optional<? extends FlatSimplePolygonShapeXYZ> closestFace = surface.getFaces().stream()
 					.filter(matchesPreferredHeight)
-					.filter(f -> connector.isAcceptableNormal.test(f.getNormal()))
-					.min(comparingDouble(f -> connector.changeXZ ? f.distanceTo(posAtEle) : f.distanceToXZ(posAtEle)));
+					.filter(f -> ap.isAcceptableNormal().test(f.getNormal()))
+					.min(comparingDouble(f -> ap.changeXZ() ? f.distanceTo(posAtEle) : f.distanceToXZ(posAtEle)));
 
 			if (closestFace.isEmpty()) continue; // try again without enforcing the preferred height
 
 			VectorXYZ closestPoint;
 
-			if (!connector.changeXZ && closestFace.get().getNormal().y >= 0.001) {
+			if (!ap.changeXZ() && closestFace.get().getNormal().y >= 0.001) {
 				// no XZ movement is desired, obtain the face point directly above/below the connector
 				VectorXYZ pointInFacePlane = posAtEle.y(closestFace.get().getYAt(posAtEle.xz()));
 				closestPoint = closestFace.get().closestPoint(pointInFacePlane);
@@ -328,7 +333,7 @@ class O2WConverterImpl {
 				closestPoint = closestFace.get().closestPoint(posAtEle);
 			}
 
-			if (closestPoint.xz().distanceTo(connector.originalPos.xz()) > connector.maxDistanceXZ() + 0.001) {
+			if (closestPoint.xz().distanceTo(connector.originalPos.xz()) > ap.maxDistanceXZ() + 0.001) {
 				continue;
 			}
 
