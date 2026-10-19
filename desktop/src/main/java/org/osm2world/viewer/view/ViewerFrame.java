@@ -165,8 +165,6 @@ public class ViewerFrame extends JFrame {
 					new EleDataSourceDebugView());
 			initAndAddDebugView(subMenu, VK_E, false,
 					new EleConnectorDebugView());
-			initAndAddDebugView(subMenu, VK_C, false,
-					new EleConstraintDebugView());
 			initAndAddDebugView(subMenu, VK_X, false,
 					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
@@ -246,13 +244,12 @@ public class ViewerFrame extends JFrame {
 
 			ButtonGroup eleCalculatorGroup = new ButtonGroup();
 
-			List<Class<? extends EleCalculator>> enforcerClasses = asList(
+			List<Class<? extends EleCalculator>> eleCalculatorClasses = List.of(
 					NoOpEleCalculator.class,
 					EleTagEleCalculator.class,
-					BridgeTunnelEleCalculator.class,
-					ConstraintEleCalculator.class);
+					BridgeTunnelEleCalculator.class);
 
-			for (Class<? extends EleCalculator> c : enforcerClasses) {
+			for (Class<? extends EleCalculator> c : eleCalculatorClasses) {
 
 				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
 						new SetEleCalculatorAction(c,

@@ -356,9 +356,6 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
-
-		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			//TODO port to new elevation model

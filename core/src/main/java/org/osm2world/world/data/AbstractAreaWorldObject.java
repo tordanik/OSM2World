@@ -12,7 +12,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.MapArea;
-import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.BoundedObject;
@@ -115,9 +114,6 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 		return connectors;
 
 	}
-
-	@Override
-	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 	@Override
 	public @Nonnull PolygonWithHolesXZ getOutlinePolygonXZ() {

@@ -14,8 +14,7 @@ public interface EleConstraintEnforcer {
 
 	/**
 	 * makes connectors known to this enforcer. Only these connectors can be
-	 * used in constraints later on, and only they will be affected by
-	 * {@link #enforceConstraints()}.
+	 * used in constraints later on.
 	 *
 	 * @param connectors  connectors with elevation values initially set to
 	 *  terrain elevation at their xz position
@@ -60,12 +59,5 @@ public interface EleConstraintEnforcer {
 	 * requires that there is a "smooth" transition between two line segments
 	 */
 	void requireSmoothness(EleConnector from, EleConnector via, EleConnector to);
-
-	/**
-	 * tries to enforce the previously added constraints
-	 * on elevations of connectors that have been added using
-	 * {@link #addConnectors(Iterable)}
-	 */
-	void enforceConstraints();
 
 }

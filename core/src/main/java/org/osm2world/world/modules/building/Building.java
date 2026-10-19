@@ -14,7 +14,6 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.MapRelation.Membership;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.map_elevation.data.GroundState;
@@ -160,9 +159,6 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	public EleConnectorGroup getEleConnectors() {
 		return outlineConnectors;
 	}
-
-	@Override
-	public void defineEleConstraints(EleConstraintEnforcer enforcer) { }
 
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {

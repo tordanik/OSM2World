@@ -37,7 +37,6 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
@@ -1191,9 +1190,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		public Iterable<EleConnector> getEleConnectors() {
 			return emptyList();
 		}
-
-		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 		@Override
 		public Iterable<AttachmentConnector> getAttachmentConnectors() {
