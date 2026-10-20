@@ -9,14 +9,20 @@ import static org.osm2world.math.algorithms.GeometryUtil.closeLoop;
 import static org.osm2world.test.TestUtil.assertAlmostEquals;
 import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FaceXYZ;
+import org.osm2world.osm.creation.OSMFileReader;
+import org.osm2world.util.test.TestFileUtil;
 import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.connectors.GroundState;
+import org.osm2world.world.modules.traffic_sign.TrafficSignGroup;
 
 public class O2WConverterImplTest {
 
@@ -90,6 +96,31 @@ public class O2WConverterImplTest {
 			}
 
 		}
+
+	}
+
+	@Ignore
+	@Test
+	public void testRecursiveAttachment() throws IOException {
+
+		File osmFile = TestFileUtil.getTestFile("recursiveAttachmentTest.osm");
+
+		var o2w = new O2WConverterImpl(null, List.of());
+		var scene = o2w.convert(new OSMFileReader(osmFile), null, null);
+
+		var trafficSigns = scene.getWorldObjects(TrafficSignGroup.class);
+
+		assertTrue(trafficSigns.iterator().hasNext());
+
+		var trafficSign = trafficSigns.iterator().next();
+
+		double minY = trafficSign.buildMeshesForModelHierarchy().stream()
+				.flatMap(m -> m.geometry.asTriangles().triangles.stream())
+				.flatMap(t -> t.verticesNoDup().stream())
+				.mapToDouble(v -> v.y)
+				.min().orElseThrow();
+
+		assertTrue("minY is " + minY + ", needs to be > 10", minY > 10);
 
 	}
 

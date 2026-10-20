@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never' generator='JOSM'>
+  <bounds minlat='48.5639199' minlon='13.4471425' maxlat='48.5655842' maxlon='13.4497191' origin='null' />
+  <node id='-103321' action='modify' lat='48.56481391967' lon='13.44848339592'>
+    <tag k='height' v='5 m' />
+    <tag k='highway' v='street_lamp' />
+    <tag k='location' v='roof' />
+  </node>
+  <node id='-103322' action='modify' lat='48.5648132393' lon='13.44848343401'>
+    <tag k='support' v='street_lamp' />
+    <tag k='traffic_sign' v='DE:101-10' />
+  </node>
+  <node id='-103323' action='modify' lat='48.56485271345' lon='13.44854385381' />
+  <node id='-103324' action='modify' lat='48.5647684775' lon='13.44854385381' />
+  <node id='-103325' action='modify' lat='48.56485271345' lon='13.44842427987' />
+  <node id='-103326' action='modify' lat='48.5647684775' lon='13.44842427987' />
+  <way id='-102428' action='modify'>
+    <nd ref='-103323' />
+    <nd ref='-103325' />
+    <nd ref='-103326' />
+    <nd ref='-103324' />
+    <nd ref='-103323' />
+    <tag k='building' v='yes' />
+    <tag k='height' v='10 m' />
+    <tag k='roof:shape' v='flat' />
+  </way>
+</osm>

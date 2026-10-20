@@ -80,8 +80,8 @@ class O2WConverterImpl {
 		this.listeners = new ArrayList<>(listeners);
 	}
 
-	Scene convert(OSMDataReader osmDataReader, GeoBounds bounds, MapProjection mapProjection, Output... outputs)
-			throws IOException{
+	Scene convert(OSMDataReader osmDataReader, @Nullable GeoBounds bounds, @Nullable MapProjection mapProjection,
+			Output... outputs) throws IOException{
 
 		if (osmDataReader == null) {
 			throw new IllegalArgumentException("osmDataReader is required");
