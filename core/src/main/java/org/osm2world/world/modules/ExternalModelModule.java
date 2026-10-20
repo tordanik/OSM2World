@@ -1,7 +1,7 @@
 package org.osm2world.world.modules;
 
 import static java.lang.Math.PI;
-import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
+import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +16,6 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolylineXZ;
@@ -29,7 +27,9 @@ import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.util.ValueParseUtil;
-import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.connectors.AttachmentUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.NodeWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -137,7 +137,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 		private final E element;
 		private final Model model;
 
-		private final EleConnector eleConnector;
+		private final Connector connector;
 
 		protected ExternalModelWorldObject(E element, Model model) {
 
@@ -159,7 +159,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 
 			var ap = attachmentTypes.isEmpty() ? null
 					: new AttachmentProperties(attachmentTypes, 0, true);
-			eleConnector = new EleConnector(pos, this, getGroundState(), ap, this);
+			connector = new Connector(pos, this, getGroundState(), ap, this);
 
 		}
 
@@ -169,13 +169,13 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			return List.of(eleConnector);
+		public Iterable<Connector> getConnectors() {
+			return List.of(connector);
 		}
 
 		@Override
 		public GroundState getGroundState() {
-			if (eleConnector != null && eleConnector.isAttached()) {
+			if (connector != null && connector.isAttached()) {
 				return GroundState.ATTACHED;
 			} else {
 				return GroundState.ON;
@@ -186,7 +186,7 @@ public class ExternalModelModule extends ConfigurableWorldModule {
 		@Override
 		public List<Mesh> buildMeshes() {
 
-			VectorXYZ pos = eleConnector.getPosXYZ();
+			VectorXYZ pos = connector.getPosXYZ();
 
 			double direction = element instanceof MapNode
 					? WorldModuleParseUtil.parseDirection(element.getTags(), PI)

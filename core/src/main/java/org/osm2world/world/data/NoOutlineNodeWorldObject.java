@@ -8,12 +8,12 @@ import java.util.List;
 
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
-import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.connectors.AttachmentUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 
 /**
  * superclass for {@link NodeWorldObject}s that don't have an outline,
@@ -27,7 +27,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 
 	protected final MapNode node;
 
-	protected final EleConnector eleConnector;
+	protected final Connector connector;
 
 	protected final boolean supportMinHeight;
 
@@ -40,7 +40,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 		this.node = node;
 		this.supportMinHeight = supportMinHeight;
 
-		this.eleConnector = buildConnector();
+		this.connector = buildConnector();
 
 	}
 
@@ -57,13 +57,13 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	}
 
 	@Override
-	public final Iterable<EleConnector> getEleConnectors() {
-		return singleton(eleConnector);
+	public final Iterable<Connector> getConnectors() {
+		return singleton(connector);
 	}
 
 	@Override
 	public GroundState getGroundState() {
-		if (eleConnector != null && eleConnector.isAttached()) {
+		if (connector != null && connector.isAttached()) {
 			return GroundState.ATTACHED;
 		} else {
 			return GroundState.ON;
@@ -83,17 +83,17 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	 * Builds a connector based on {@link #getAttachmentTypes()}.
 	 * Subclasses can override this to implement their own logic if just selecting custom types is not enough.
 	 */
-	protected EleConnector buildConnector() {
+	protected Connector buildConnector() {
 
 		List<String> attachmentTypes = getAttachmentTypes();
 
 		if (attachmentTypes.isEmpty()) {
-			return new EleConnector(node.getPos(), node, getGroundState());
+			return new Connector(node.getPos(), node, getGroundState());
 		} else {
-			EleConnector.AttachmentProperties ap = AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)
-					? new EleConnector.AttachmentProperties(attachmentTypes, getPreferredVerticalAttachmentHeight(), true)
-					: new EleConnector.AttachmentProperties(attachmentTypes, 0, false);
-			return new EleConnector(node.getPos(), node, getGroundState(), ap, this);
+			Connector.AttachmentProperties ap = AttachmentUtil.hasVerticalSurfaceTypes(attachmentTypes)
+					? new Connector.AttachmentProperties(attachmentTypes, getPreferredVerticalAttachmentHeight(), true)
+					: new Connector.AttachmentProperties(attachmentTypes, 0, false);
+			return new Connector(node.getPos(), node, getGroundState(), ap, this);
 		}
 
 	}
@@ -113,7 +113,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, Bound
 	 */
 	protected VectorXYZ getBase() {
 
-		VectorXYZ base = eleConnector.getPosXYZ();
+		VectorXYZ base = connector.getPosXYZ();
 
 		double minHeight = getMinHeight();
 

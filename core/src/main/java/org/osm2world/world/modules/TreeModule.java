@@ -16,8 +16,6 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -30,6 +28,8 @@ import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.style.Style;
 import org.osm2world.util.platform.image.ImageUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.*;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.modules.common.WorldModuleBillboardUtil;
@@ -419,7 +419,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		private final MapWaySegment segment;
 
-		private final List<EleConnector> treeConnectors;
+		private final List<Connector> treeConnectors;
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -464,7 +464,7 @@ public class TreeModule extends ConfigurableWorldModule {
 							return GeometryUtil.isBetween(it, getStartPosition(), getEndPosition());
 						}
 					})
-					.map(it -> new EleConnector(it, null, getGroundState()))
+					.map(it -> new Connector(it, null, getGroundState()))
 					.toList();
 
 		}
@@ -475,7 +475,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
+		public Iterable<Connector> getConnectors() {
 			return treeConnectors;
 		}
 
@@ -487,7 +487,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			for (EleConnector treeConnector : treeConnectors) {
+			for (Connector treeConnector : treeConnectors) {
 				VectorXYZ pos = treeConnector.getPosXYZ();
 				TreeModel treeModel = getTreeModel(pos, leafType, leafCycle, species, null);
 				TreeDimensions dimensions = TreeDimensions.fromTags(segment.getTags(), null, treeModel, defaultTreeHeight);
@@ -507,7 +507,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		private final MapArea area;
 		private final MapData mapData;
 
-		private Collection<EleConnector> treeConnectors = null;
+		private Collection<Connector> treeConnectors = null;
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -551,7 +551,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			/* create a terrain connector for each tree */
 
 			treeConnectors = treePositions.stream()
-					.map(it -> new EleConnector(it, null, getGroundState()))
+					.map(it -> new Connector(it, null, getGroundState()))
 					.toList();
 
 		}
@@ -562,7 +562,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
+		public Iterable<Connector> getConnectors() {
 
 			if (treeConnectors == null) {
 				createTreeConnectors(config.treesPerSquareMeter());
@@ -580,7 +580,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			for (EleConnector treeConnector : treeConnectors) {
+			for (Connector treeConnector : treeConnectors) {
 				VectorXYZ pos = treeConnector.getPosXYZ();
 				TreeModel treeModel = getTreeModel(pos, leafType, leafCycle, species, null);
 				TreeDimensions dimensions = TreeDimensions.fromTags(area.getTags(), new Random(area.getId()), treeModel,

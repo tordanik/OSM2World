@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNullElse;
 import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
 import static org.osm2world.conversion.ProgressListener.Phase.FINISHED;
 import static org.osm2world.conversion.ProgressListener.Phase.values;
-import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -33,7 +33,6 @@ import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_elevation.creation.*;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.IndexGrid;
 import org.osm2world.math.datastructures.SpatialIndex;
@@ -50,7 +49,8 @@ import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.scene.Scene;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.platform.json.JsonUtil;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.creation.WorldCreator;
 import org.osm2world.world.creation.WorldModule;
 import org.osm2world.world.data.WorldObject;
@@ -254,7 +254,7 @@ class O2WConverterImpl {
 
 			if (object.getParent() != null) continue;
 
-			for (EleConnector connector : object.getEleConnectors()) {
+			for (Connector connector : object.getConnectors()) {
 
 				AttachmentProperties ap = connector.attachmentProperties;
 				if (ap == null) continue;
@@ -296,7 +296,7 @@ class O2WConverterImpl {
 
 	}
 
-	static void attachConnectorIfValid(EleConnector connector, AttachmentSurface surface) {
+	static void attachConnectorIfValid(Connector connector, AttachmentSurface surface) {
 
 		AttachmentProperties ap = connector.attachmentProperties;
 		if (ap == null) return;
@@ -346,7 +346,7 @@ class O2WConverterImpl {
 
 	/**
 	 * uses OSM data and terrain elevation data (usually from an external
-	 * source) to calculate elevations for all {@link EleConnector}s of the
+	 * source) to calculate elevations for all {@link Connector}s of the
 	 * {@link WorldObject}s
 	 */
 	private void calculateElevations(MapData mapData, MapProjection projection,
@@ -384,7 +384,7 @@ class O2WConverterImpl {
 		final TerrainInterpolator finalInterpolator = interpolator;
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
-			for (EleConnector conn : worldObject.getEleConnectors()) {
+			for (Connector conn : worldObject.getConnectors()) {
 				conn.setPosXYZ(finalInterpolator.interpolateEle(conn.pos));
 			}
 		});

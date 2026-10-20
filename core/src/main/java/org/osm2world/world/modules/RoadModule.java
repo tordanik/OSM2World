@@ -35,8 +35,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
@@ -48,6 +46,8 @@ import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -703,7 +703,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Function<VectorXZ, VectorXYZ> eleFunction = getEleConnectors()::getPosXYZ;
+			Function<VectorXZ, VectorXYZ> eleFunction = getConnectors()::getPosXYZ;
 
 			VectorXYZ startLeft = eleFunction.apply(startPos.subtract(cutVector.mult(0.5 * startWidth)));
 			VectorXYZ startRight = eleFunction.apply(startPos.add(cutVector.mult(0.5 * startWidth)));
@@ -1304,8 +1304,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			/* impose sensible maximum incline (35% is "the world's steepest residential street") */
 
 			if (!isPath(tags) && !isSteps(tags) && !tags.containsKey("incline")) {
-				enforcer.requireIncline(MAX, +0.35, getCenterlineEleConnectors());
-				enforcer.requireIncline(MIN, -0.35, getCenterlineEleConnectors());
+				enforcer.requireIncline(MAX, +0.35, getCenterlineConnectors());
+				enforcer.requireIncline(MIN, -0.35, getCenterlineConnectors());
 			}
 
 		}
@@ -1331,7 +1331,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
 			if (isBroken() || getOutlinePolygonXZ() == null) {
 				return emptyList();
-			} else if (steps && connectors != null && connectors.stream().allMatch(EleConnector::isAttached)
+			} else if (steps && connectors != null && connectors.stream().allMatch(Connector::isAttached)
 					&& connectors.stream().anyMatch(c -> !c.getAttachedSurface().getTypes().contains("roof"))) {
 				// do not cut out the floor below indoor steps (but remove the roof below rooftop steps)
 				return emptyList();

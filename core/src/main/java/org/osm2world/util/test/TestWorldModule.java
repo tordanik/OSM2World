@@ -9,10 +9,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WorldObject;

@@ -47,7 +47,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NodeModelInstance;

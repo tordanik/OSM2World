@@ -13,7 +13,6 @@ import java.util.Set;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.CircleXZ;
@@ -24,6 +23,7 @@ import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;

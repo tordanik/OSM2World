@@ -15,10 +15,10 @@ import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -88,9 +88,9 @@ public class CliffModule extends ConfigurableWorldModule {
 
 			/* add vertical offset between left and right connectors */
 
-			List<EleConnector> center = getCenterlineEleConnectors();
-			List<EleConnector> left = connectors.getConnectors(getOutlineXZ(false));
-			List<EleConnector> right = connectors.getConnectors(getOutlineXZ(true));
+			List<Connector> center = getCenterlineConnectors();
+			List<Connector> left = connectors.getConnectors(getOutlineXZ(false));
+			List<Connector> right = connectors.getConnectors(getOutlineXZ(true));
 
 			for (int i = 0; i < center.size(); i++) {
 

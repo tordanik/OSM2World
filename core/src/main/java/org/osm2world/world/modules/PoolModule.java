@@ -20,13 +20,13 @@ import org.osm2world.map_data.data.MapWay;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.map_elevation.creation.ZeroInterpolator;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -147,20 +147,20 @@ public class PoolModule extends AbstractModule {
 		private final MapWaySegment primarySegment;
 		private final List<MapWaySegment> segments;
 
-		private final List<EleConnector> eleConnectors;
+		private final List<Connector> connectors;
 
 		public WaterSlide(MapWaySegment primarySegment, List<MapWaySegment> segments) {
 
 			this.primarySegment = primarySegment;
 			this.segments = segments;
 
-			eleConnectors = new ArrayList<EleConnector>();
+			connectors = new ArrayList<>();
 
-			eleConnectors.add(new EleConnector(segments.get(0).getStartNode().getPos(),
+			connectors.add(new Connector(segments.get(0).getStartNode().getPos(),
 					segments.get(0).getStartNode(), getGroundState()));
 
 			for (MapWaySegment segment : segments) {
-				eleConnectors.add(new EleConnector(segment.getEndNode().getPos(),
+				connectors.add(new Connector(segment.getEndNode().getPos(),
 						segment.getEndNode(), getGroundState()));
 			}
 
@@ -187,10 +187,10 @@ public class PoolModule extends AbstractModule {
 
 			/* construct the baseline */
 
-			List<VectorXYZ> baseline = new ArrayList<>(eleConnectors.size());
+			List<VectorXYZ> baseline = new ArrayList<>(connectors.size());
 
-			for (EleConnector eleConnector : eleConnectors) {
-				baseline.add(eleConnector.getPosXYZ());
+			for (Connector connector : connectors) {
+				baseline.add(connector.getPosXYZ());
 			}
 
 			/* calculate plausible elevations by assuming constant incline */
@@ -253,8 +253,8 @@ public class PoolModule extends AbstractModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			return eleConnectors;
+		public Iterable<Connector> getConnectors() {
+			return connectors;
 		}
 
 		@Override

@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.building.BuildingPart;
 
@@ -69,7 +69,7 @@ public class IndoorFloor {
     		List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
     		if (attachmentSurface != null) {
-    			for (EleConnector connector : attachmentSurface.getAttachedConnectors()) {
+    			for (Connector connector : attachmentSurface.getAttachedConnectors()) {
 					if (connector.object != null) {
     					subtractPolys.addAll(connector.object.getRawGroundFootprint());
     				}

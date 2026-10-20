@@ -2,10 +2,10 @@ package org.osm2world.world.modules;
 
 import static org.osm2world.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.map_elevation.data.GroundState.ABOVE;
-import static org.osm2world.map_elevation.data.GroundState.BELOW;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.world.connectors.GroundState.ABOVE;
+import static org.osm2world.world.connectors.GroundState.BELOW;
 
 import java.util.*;
 
@@ -16,8 +16,6 @@ import org.osm2world.map_data.data.Tag;
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.math.datastructures.VectorGridXZ;
@@ -27,6 +25,8 @@ import org.osm2world.math.shapes.TriangleXZ;
 import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.material.Material;
 import org.osm2world.util.FaultTolerantIterationUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;
@@ -139,19 +139,19 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			/* add a grid of points within the area for smoother surface shapes */
 
-			List<VectorXZ> eleConnectorPoints = new ArrayList<>();
+			List<VectorXZ> connectorPoints = new ArrayList<>();
 
 			VectorGridXZ pointGrid = new VectorGridXZ(
 					area.boundingBox(),
 					EmptyTerrainBuilder.POINT_GRID_DIST);
 
 			for (VectorXZ point : pointGrid) {
-				eleConnectorPoints.add(point);
+				connectorPoints.add(point);
 			}
 
 			/* triangulate, using elevation information from all participants */
 
-			triangulationXZ = JTSTriangulationUtil.triangulate(footprint, eleConnectorPoints);
+			triangulationXZ = JTSTriangulationUtil.triangulate(footprint, connectorPoints);
 
 			return triangulationXZ;
 
@@ -167,23 +167,23 @@ public class SurfaceAreaModule extends AbstractModule {
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			FaultTolerantIterationUtil.forEach(overlap.getOther(area).getRepresentations(),  otherWO -> {
 
-				for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+				for (Connector connector : otherWO.getConnectors()) {
 
-					EleConnector ownConnector = getEleConnectors().getConnector(eleConnector.pos);
+					Connector ownConnector = getConnectors().getConnector(connector.pos);
 
 					if (ownConnector == null) continue;
 
-					if (eleConnector.groundState == ABOVE) {
+					if (connector.groundState == ABOVE) {
 
 						enforcer.requireVerticalDistance(
 								MIN, 1,
-								eleConnector, ownConnector); //TODO actual clearing
+								connector, ownConnector); //TODO actual clearing
 
-					} else if (eleConnector.groundState == BELOW) {
+					} else if (connector.groundState == BELOW) {
 
 						enforcer.requireVerticalDistance(
 								MIN, 10,
-								ownConnector, eleConnector); //TODO actual clearing
+								ownConnector, connector); //TODO actual clearing
 
 					}
 

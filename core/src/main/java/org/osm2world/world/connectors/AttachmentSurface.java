@@ -1,4 +1,4 @@
-package org.osm2world.world.attachment;
+package org.osm2world.world.connectors;
 
 import static java.util.Collections.singletonList;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
@@ -11,7 +11,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
@@ -24,7 +23,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.world.data.WorldObject;
 
 /**
- * a surface (consisting of one or more {@link FaceXYZ}s) that {@link EleConnector}s can attach to
+ * a surface (consisting of one or more {@link FaceXYZ}s) that {@link Connector}s can attach to
  */
 public class AttachmentSurface implements BoundedObject {
 
@@ -46,7 +45,7 @@ public class AttachmentSurface implements BoundedObject {
 	 */
 	private final Function<VectorXZ, Double> baseEleFunction;
 
-	private final Collection<EleConnector> attachedConnectors = new ArrayList<>();
+	private final Collection<Connector> attachedConnectors = new ArrayList<>();
 
 	public AttachmentSurface(Collection<String> types, @Nullable WorldObject worldObject,
 			Collection<? extends FlatSimplePolygonShapeXYZ> faces,
@@ -79,11 +78,11 @@ public class AttachmentSurface implements BoundedObject {
 		return baseEleFunction.apply(position);
 	}
 
-	public Collection<EleConnector> getAttachedConnectors() {
+	public Collection<Connector> getAttachedConnectors() {
 		return attachedConnectors;
 	}
 
-	public void addAttachedConnector(EleConnector connector) {
+	public void addAttachedConnector(Connector connector) {
 		this.attachedConnectors.add(connector);
 	}
 

@@ -33,9 +33,6 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -49,7 +46,10 @@ import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -235,9 +235,9 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		protected List<BridgeSupportData> supports;
 
-		private EleConnectorGroup connectors = null;
-		private Multimap<PolylineXZ, EleConnector> capConnectors;
-		private Map<BridgeSupportData, EleConnector> supportConnectors;
+		private ConnectorGroup connectors = null;
+		private Multimap<PolylineXZ, Connector> capConnectors;
+		private Map<BridgeSupportData, Connector> supportConnectors;
 
 		private AttachmentSurface attachmentSurface = null;
 
@@ -287,18 +287,18 @@ public class BridgeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
+		public Iterable<Connector> getConnectors() {
 
 			if (connectors == null) {
 
 				initializeBridgeGeometry();
 
-				connectors = new EleConnectorGroup();
+				connectors = new ConnectorGroup();
 
 				capConnectors = HashMultimap.create();
 				for (PolylineXZ cap : caps) {
 					for (VectorXZ v : cap.vertices()) {
-						var connector = new EleConnector(v, null, GroundState.ON);
+						var connector = new Connector(v, null, GroundState.ON);
 						connectors.add(connector);
 						capConnectors.put(cap, connector);
 					}
@@ -306,7 +306,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				supportConnectors = new HashMap<>();
 				for (BridgeSupportData support : supports) {
-					var connector = new EleConnector(support.pos(), null, GroundState.ON);
+					var connector = new Connector(support.pos(), null, GroundState.ON);
 					connectors.add(connector);
 					supportConnectors.put(support, connector);
 				}
@@ -840,7 +840,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
 			if (subtractAttachedObjects && attachmentSurface != null) {
-				for (EleConnector connector : attachmentSurface.getAttachedConnectors()) {
+				for (Connector connector : attachmentSurface.getAttachedConnectors()) {
 					if (connector.object != null) {
 						subtractPolys.addAll(connector.object.getRawGroundFootprint());
 					}
@@ -1047,7 +1047,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 			return edges.stream().mapToDouble(edge -> edge.distanceTo(pos)).min().orElse(0) * 2;
 		}
 
-		private static double maxEle(Collection<EleConnector> connectors) {
+		private static double maxEle(Collection<Connector> connectors) {
 			return connectors.stream().mapToDouble(c -> c.getPosXYZ().y).max().orElse(0);
 		}
 

@@ -14,7 +14,7 @@ import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
 
 public class AttachmentSurfaceDebugView extends StaticDebugView {
 

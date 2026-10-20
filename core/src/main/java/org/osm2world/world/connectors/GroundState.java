@@ -1,4 +1,4 @@
-package org.osm2world.map_elevation.data;
+package org.osm2world.world.connectors;
 
 public enum GroundState {
 

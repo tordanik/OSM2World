@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.connectors.AttachmentUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
 
 /**
  * superclass for {@link NodeWorldObject}s that do have an outline
@@ -23,7 +23,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 
 	protected final MapNode node;
 
-	private EleConnectorGroup connectors = null;
+	private ConnectorGroup connectors = null;
 
 	protected OutlineNodeWorldObject(MapNode node) {
 		this.node = node;
@@ -38,7 +38,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 	}
 
 	@Override
-	public EleConnectorGroup getEleConnectors() {
+	public ConnectorGroup getConnectors() {
 
 		List<String> attachmentTypes = getAttachmentTypes();
 
@@ -48,14 +48,14 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 
 			if (outlinePolygonXZ == null) {
 
-				connectors = EleConnectorGroup.EMPTY;
+				connectors = ConnectorGroup.EMPTY;
 
 			} else {
 
 				var attachmentProperties = attachmentTypes.isEmpty() ? null
-					: new EleConnector.AttachmentProperties(attachmentTypes, 0, false);
+					: new Connector.AttachmentProperties(attachmentTypes, 0, false);
 
-				connectors = new EleConnectorGroup();
+				connectors = new ConnectorGroup();
 				connectors.addConnectorsFor(outlinePolygonXZ.getVertices(),
 						node, getGroundState(), attachmentProperties, this);
 

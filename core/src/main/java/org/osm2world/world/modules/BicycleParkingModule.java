@@ -29,8 +29,6 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.*;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -42,6 +40,8 @@ import org.osm2world.scene.mesh.*;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.NodeWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -83,8 +83,8 @@ public class BicycleParkingModule extends AbstractModule {
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
 		private static final double STAND_DEFAULT_HEIGHT = 0.7;
 
-		private EleConnectorGroup eleConnectors;
-		private List<EleConnector> standEleConnectors;
+		private ConnectorGroup connectors;
+		private List<Connector> standConnectors;
 
 		/** the line along which stand centers should be placed */
 		protected abstract PolylineShapeXZ lineThroughStandCenters();
@@ -108,17 +108,17 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public EleConnectorGroup getEleConnectors() {
+		public ConnectorGroup getConnectors() {
 
-			if (eleConnectors == null) {
+			if (connectors == null) {
 
-				eleConnectors = new EleConnectorGroup();
-				standEleConnectors = new ArrayList<>();
+				connectors = new ConnectorGroup();
+				standConnectors = new ArrayList<>();
 
 				/* create connectors for the area */
 
 				if (area() != null && !area().isEmpty()) {
-					eleConnectors.addConnectorsForTriangulation(triangulate(area()), null, getGroundState(), null, null);
+					connectors.addConnectorsForTriangulation(triangulate(area()), null, getGroundState(), null, null);
 				}
 
 				/* create a connector for each stand */
@@ -137,13 +137,13 @@ public class BicycleParkingModule extends AbstractModule {
 				for (VectorXYZ standLocation : standLocations) {
 					// no longer check for overlaps: would prevent stands without surface=* even on empty terrain, and any stands on sidewalks etc.
 					// if (area() == null || area().stream().anyMatch(it -> it.contains(standLocation.xz()))) {
-					EleConnector connector = new EleConnector(standLocation.xz(), null, getGroundState());
-					standEleConnectors.add(connector);
-					eleConnectors.add(connector);
+					Connector connector = new Connector(standLocation.xz(), null, getGroundState());
+					standConnectors.add(connector);
+					connectors.add(connector);
 				}
 			}
 
-			return eleConnectors;
+			return connectors;
 
 		}
 
@@ -157,7 +157,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 				/* render surface area */
 				var builder = new TriangleGeometry.Builder(texCoordFunctions(surfaceMaterial, GLOBAL_X_Z), null, SMOOTH);
-				builder.addTriangles(triangulationXZtoXYZ(triangulate(area), eleConnectors::getPosXYZ));
+				builder.addTriangles(triangulationXZtoXYZ(triangulate(area), connectors::getPosXYZ));
 				return List.of(new Mesh(builder.build(), surfaceMaterial));
 
 			} else {
@@ -186,7 +186,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 			List<ModelInstance> result = new ArrayList<>();
 
-			for (EleConnector standConnector : standEleConnectors) {
+			for (Connector standConnector : standConnectors) {
 
 				double localDirection;
 				if (direction != null) {

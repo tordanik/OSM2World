@@ -1,7 +1,7 @@
 package org.osm2world.world.data;
 
 import static java.util.Collections.emptyList;
-import static org.osm2world.map_elevation.data.GroundState.ON;
+import static org.osm2world.world.connectors.GroundState.ON;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
@@ -21,7 +19,9 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 
 public interface WorldObject {
 
@@ -76,13 +76,13 @@ public interface WorldObject {
 	}
 
 	/**
-	 * returns all {@link EleConnector}s used by this WorldObject
+	 * returns all {@link Connector}s used by this WorldObject
 	 */
-	public Iterable<EleConnector> getEleConnectors();
+	public Iterable<Connector> getConnectors();
 
 	/**
 	 * lets this object add constraints for the relative elevations of its
-	 * {@link EleConnector}s. Called after {@link #getEleConnectors()}.
+	 * {@link Connector}s. Called after {@link #getConnectors()}.
 	 */
 	public default void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 

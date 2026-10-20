@@ -5,11 +5,11 @@ import static java.util.Arrays.asList;
 import java.util.List;
 
 import org.osm2world.map_data.data.MapWaySegment;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
+import org.osm2world.world.connectors.Connector;
 
 /**
  * superclass for {@link WaySegmentWorldObject}s that don't have an outline,
@@ -20,16 +20,16 @@ public abstract class NoOutlineWaySegmentWorldObject implements WaySegmentWorldO
 
 	protected final MapWaySegment segment;
 
-	private final EleConnector startConnector;
-	private final EleConnector endConnector;
+	private final Connector startConnector;
+	private final Connector endConnector;
 
 	public NoOutlineWaySegmentWorldObject(MapWaySegment segment) {
 
 		this.segment = segment;
 
-		startConnector = new EleConnector(getStartPosition(),
+		startConnector = new Connector(getStartPosition(),
 				segment.getStartNode(), getGroundState());
-		endConnector = new EleConnector(getEndPosition(),
+		endConnector = new Connector(getEndPosition(),
 				segment.getEndNode(), getGroundState());
 
 	}
@@ -40,7 +40,7 @@ public abstract class NoOutlineWaySegmentWorldObject implements WaySegmentWorldO
 	}
 
 	@Override
-	public Iterable<EleConnector> getEleConnectors() {
+	public Iterable<Connector> getConnectors() {
 		return asList(startConnector, endConnector);
 	}
 

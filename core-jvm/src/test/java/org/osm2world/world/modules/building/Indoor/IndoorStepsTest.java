@@ -11,7 +11,7 @@ import org.osm2world.O2WTestConverter;
 import org.osm2world.map_data.creation.MapDataBuilder;
 import org.osm2world.map_data.data.MapWay;
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.modules.RoadModule;
 
 public class IndoorStepsTest {
@@ -40,7 +40,7 @@ public class IndoorStepsTest {
 		if (!(object instanceof RoadModule.Road road)) {
 			fail("Not a road: " + object);
 		} else {
-			List<EleConnector> connectors = road.getEleConnectors().eleConnectors;
+			List<Connector> connectors = road.getConnectors().connectors;
 			assertEquals("floor2", connectors.get(0).attachmentProperties.compatibleSurfaceTypes().get(0));
 			assertEquals("floor0", connectors.get(1).attachmentProperties.compatibleSurfaceTypes().get(0));
 			/*
@@ -78,7 +78,7 @@ public class IndoorStepsTest {
 		if (!(object instanceof RoadModule.Road road)) {
 			fail("Not a road: " + object);
 		} else {
-			List<EleConnector> connectors = road.getEleConnectors().eleConnectors;
+			List<Connector> connectors = road.getConnectors().connectors;
 			assertEquals("floor1", connectors.get(0).attachmentProperties.compatibleSurfaceTypes().get(0));
 			assertEquals("floor0", connectors.get(1).attachmentProperties.compatibleSurfaceTypes().get(0));
 			/*

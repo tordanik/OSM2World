@@ -2,7 +2,7 @@ package org.osm2world.map_elevation.creation;
 
 import java.util.List;
 
-import org.osm2world.map_elevation.data.EleConnector;
+import org.osm2world.world.connectors.Connector;
 
 
 public interface EleConstraintEnforcer {
@@ -19,23 +19,23 @@ public interface EleConstraintEnforcer {
 	 * @param connectors  connectors with elevation values initially set to
 	 *  terrain elevation at their xz position
 	 */
-	void addConnectors(Iterable<EleConnector> connectors);
+	void addConnectors(Iterable<Connector> connectors);
 
 	/**
 	 * requires two connectors to be at the same elevation
 	 */
-	public void requireSameEle(EleConnector c1, EleConnector c2);
+	public void requireSameEle(Connector c1, Connector c2);
 
 	/**
 	 * requires a number of connectors to be at the same elevation
 	 */
-	public void requireSameEle(Iterable<EleConnector> cs);
+	public void requireSameEle(Iterable<Connector> cs);
 
 	/**
 	 * requires two connectors' elevations to differ by a given distance
 	 */
 	void requireVerticalDistance(ConstraintType type, double distance,
-			EleConnector upper, EleConnector lower);
+			Connector upper, Connector lower);
 
 	/**
 	 * requires a connector to be a give distance above a line segment
@@ -44,7 +44,7 @@ public interface EleConstraintEnforcer {
 	 * @param distance  distance, may be negative if 'upper' is actually below
 	 */
 	void requireVerticalDistance(ConstraintType type, double distance,
-			EleConnector upper, EleConnector base1, EleConnector base2);
+			Connector upper, Connector base1, Connector base2);
 
 	/**
 	 * requires an incline along a sequence of connectors.
@@ -53,11 +53,11 @@ public interface EleConstraintEnforcer {
 	 *  negative values are inclines in opposite direction
 	 */
 	void requireIncline(ConstraintType type, double incline,
-			List<EleConnector> cs);
+			List<Connector> cs);
 
 	/**
 	 * requires that there is a "smooth" transition between two line segments
 	 */
-	void requireSmoothness(EleConnector from, EleConnector via, EleConnector to);
+	void requireSmoothness(Connector from, Connector via, Connector to);
 
 }

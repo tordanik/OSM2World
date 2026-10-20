@@ -1,10 +1,10 @@
 package org.osm2world.world.modules.building;
 
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.math.algorithms.CAGUtil.subtractPolygons;
 import static org.osm2world.math.algorithms.GeometryUtil.roughlyContains;
 import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
+import static org.osm2world.world.connectors.GroundState.ON;
 
 import java.util.*;
 
@@ -14,14 +14,14 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.MapRelation.Membership;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.mesh.LevelOfDetail;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.CachingProceduralWorldObject;
 import org.osm2world.world.modules.building.indoor.IndoorWall;
@@ -38,7 +38,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	private final List<BuildingPart> parts = new ArrayList<>();
 
-	private final EleConnectorGroup outlineConnectors;
+	private final ConnectorGroup outlineConnectors;
 
 	private Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
@@ -125,7 +125,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 		 * they aren't directly used for ele, but instead their minimum.
 		 */
 
-		outlineConnectors = new EleConnectorGroup();
+		outlineConnectors = new ConnectorGroup();
 		areas.forEach(area -> outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON));
 
 	}
@@ -156,7 +156,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	}
 
 	@Override
-	public EleConnectorGroup getEleConnectors() {
+	public ConnectorGroup getConnectors() {
 		return outlineConnectors;
 	}
 
@@ -177,7 +177,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 		double minEle = POSITIVE_INFINITY;
 
-		for (EleConnector c : outlineConnectors) {
+		for (Connector c : outlineConnectors) {
 			if (c.getPosXYZ().y < minEle) {
 				minEle = c.getPosXYZ().y;
 			}

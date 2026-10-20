@@ -1,6 +1,6 @@
-package org.osm2world.map_elevation.data;
+package org.osm2world.world.connectors;
 
-import static org.osm2world.map_elevation.data.GroundState.ON;
+import static org.osm2world.world.connectors.GroundState.ON;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -11,7 +11,6 @@ import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.math.Vector3D;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.world.attachment.AttachmentSurface;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -24,7 +23,7 @@ import org.osm2world.world.data.WorldObject;
  * but may be moved both horizontally and vertically to properly attach to nearby objects,
  * and will often be moved again vertically to reflect terrain elevation.
  */
-public class EleConnector {
+public class Connector {
 
 	/**
 	 * Parameters for connectors which try to attach to an {@link AttachmentSurface}.
@@ -93,12 +92,12 @@ public class EleConnector {
 	private VectorXYZ attachedSurfaceNormal = null;
 
 	/**
-	 * creates an EleConnector at the given coordinates.
+	 * creates a connector at the given coordinates.
 	 * @param pos          final value for {@link #pos}; != null
 	 * @param reference    final value for {@link #reference}; may be null
 	 * @param groundState  final value for {@link #groundState}
 	 */
-	public EleConnector(VectorXZ pos, @Nullable Object reference, GroundState groundState) {
+	public Connector(VectorXZ pos, @Nullable Object reference, GroundState groundState) {
 		assert pos != null;
 		this.pos = pos;
 		this.originalPos = pos.xyz(0);
@@ -109,9 +108,9 @@ public class EleConnector {
 	}
 
 	/**
-	 * creates an EleConnector with attachment information.
+	 * creates a connector with attachment information.
 	 */
-	public EleConnector(Vector3D originalPos, @Nullable Object reference, GroundState groundState,
+	public Connector(Vector3D originalPos, @Nullable Object reference, GroundState groundState,
 			@Nullable AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
 		this.pos = originalPos.xz();
 		this.originalPos = originalPos instanceof VectorXYZ vXYZ ? vXYZ : originalPos.xz().xyz(0);
@@ -131,7 +130,7 @@ public class EleConnector {
 
 	/**
 	 * returns the 3d position after it has been calculated.
-	 * This {@link VectorXYZ}, changes over the lifetime of an {@link EleConnector}:
+	 * This {@link VectorXYZ}, changes over the lifetime of an {@link Connector}:
 	 * It is null before elevation calculation, may contain some intermediate results,
 	 * and is eventually assigned its ultimate value.
 	 */
@@ -181,7 +180,7 @@ public class EleConnector {
 	 * It is possible that connectors are joined even if this method returns
 	 * false - that can happen when they are both joined to a third connector.
 	 */
-	public boolean connectsTo(EleConnector other) {
+	public boolean connectsTo(Connector other) {
 		return pos.equals(other.pos)
 				&& ((reference != null && reference == other.reference)
 					|| (groundState == ON && other.groundState == ON));

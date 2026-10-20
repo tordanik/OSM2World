@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.map_data.data.MapArea;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
@@ -34,6 +33,7 @@ import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.AbstractModule;
@@ -389,7 +389,7 @@ public class SportsModule extends AbstractModule {
 			boolean renderNet = true;
 			double ele = Double.NaN;
 
-			for (EleConnector connector : getEleConnectors()) {
+			for (Connector connector : getConnectors()) {
 				if (!isFinite(ele)) { ele = connector.getPosXYZ().y; }
 				if (abs(connector.getPosXYZ().y - ele) > 0.01) {
 					renderNet = false;

@@ -4,12 +4,12 @@ import static org.osm2world.math.VectorXZ.Z_UNIT;
 import static org.osm2world.scene.color.Color.GREEN;
 import static org.osm2world.scene.color.Color.RED;
 
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.Material.Interpolation;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.WorldObject;
 
 public class ConnectorAttachmentDebugView extends StaticDebugView {
@@ -25,7 +25,7 @@ public class ConnectorAttachmentDebugView extends StaticDebugView {
 	protected void fillOutput(JOGLOutput output) {
 
 		for (WorldObject object : scene.getWorldObjects()) {
-			for (EleConnector connector : object.getEleConnectors()) {
+			for (Connector connector : object.getConnectors()) {
 
 				if (connector.attachmentProperties == null) continue;
 

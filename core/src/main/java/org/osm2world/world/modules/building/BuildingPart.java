@@ -20,8 +20,6 @@ import javax.annotation.Nullable;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
@@ -34,7 +32,9 @@ import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -531,7 +531,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 	}
 
 	@Override
-	public Iterable<EleConnector> getEleConnectors() {
+	public Iterable<Connector> getConnectors() {
 		return emptySet();
 	}
 

@@ -1,4 +1,4 @@
-package org.osm2world.map_elevation.data;
+package org.osm2world.world.connectors;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -13,22 +13,20 @@ import org.osm2world.world.data.WorldObject;
 
 
 /**
- * TODO document
- *
- * This only exists to make it easier for WorldObjects to manage a large
- * number of EleConnectors.
+ * A group of {@link Connector}s.
+ * This only to make it easier for {@link WorldObject}s to create and manage a large number of {@link Connector}s.
  */
-public class EleConnectorGroup implements Iterable<EleConnector> {
+public class ConnectorGroup implements Iterable<Connector> {
 
 	//TODO make private
-	public final List<EleConnector> eleConnectors;
+	public final List<Connector> connectors;
 
-	public EleConnectorGroup() {
-		this(new ArrayList<EleConnector>());
+	public ConnectorGroup() {
+		this(new ArrayList<>());
 	}
 
-	private EleConnectorGroup(List<EleConnector> eleConnectors) {
-		this.eleConnectors = eleConnectors;
+	private ConnectorGroup(List<Connector> connectors) {
+		this.connectors = connectors;
 	}
 
 	public void addConnectorsFor(Iterable<VectorXZ> positions,
@@ -37,10 +35,10 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 	}
 
 	public void addConnectorsFor(Iterable<VectorXZ> positions, Object reference, GroundState groundState,
-			@Nullable EleConnector.AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
+			@Nullable Connector.AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
 
 		for (VectorXZ pos : positions) {
-			eleConnectors.add(new EleConnector(pos, reference, groundState, attachmentProperties, object));
+			connectors.add(new Connector(pos, reference, groundState, attachmentProperties, object));
 		}
 
 	}
@@ -58,7 +56,7 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	public void addConnectorsForTriangulation(Iterable<TriangleXZ> triangles,
 			Object reference, GroundState groundState,
-			@Nullable EleConnector.AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
+			@Nullable Connector.AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
 		//TODO check later whether this method is still necessary
 
 		Set<VectorXZ> positions = new HashSet<>();
@@ -73,26 +71,26 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	}
 
-	public void add(EleConnector newConnector) {
+	public void add(Connector newConnector) {
 
-		eleConnectors.add(newConnector);
+		connectors.add(newConnector);
 
 	}
 
-	public void addAll(Iterable<EleConnector> newConnectors) {
+	public void addAll(Iterable<Connector> newConnectors) {
 
-		for (EleConnector c : newConnectors) {
-			eleConnectors.add(c);
+		for (Connector c : newConnectors) {
+			connectors.add(c);
 		}
 
 	}
 
-	public EleConnector getConnector(VectorXZ pos) {
+	public Connector getConnector(VectorXZ pos) {
 		//TODO review this method (parameters sufficient? necessary at all?)
 
-		for (EleConnector eleConnector : eleConnectors) {
-			if (eleConnector.pos.equals(pos)) {
-				return eleConnector;
+		for (Connector connector : connectors) {
+			if (connector.pos.equals(pos)) {
+				return connector;
 			}
 		}
 
@@ -101,12 +99,12 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	}
 
-	public List<EleConnector> getConnectors(Iterable<VectorXZ> positions) {
+	public List<Connector> getConnectors(Iterable<VectorXZ> positions) {
 
-		List<EleConnector> connectors = new ArrayList<EleConnector>();
+		List<Connector> connectors = new ArrayList<>();
 
 		for (VectorXZ pos : positions) {
-			EleConnector connector = getConnector(pos);
+			Connector connector = getConnector(pos);
 			connectors.add(connector);
 			if (connector == null) {
 				throw new IllegalArgumentException();
@@ -119,7 +117,7 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	public VectorXYZ getPosXYZ(VectorXZ pos) {
 
-		EleConnector c = getConnector(pos);
+		Connector c = getConnector(pos);
 
 		if (c != null) {
 
@@ -136,7 +134,7 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	public List<VectorXYZ> getPosXYZ(Collection<VectorXZ> positions) {
 
-		List<VectorXYZ> result = new ArrayList<VectorXYZ>(positions.size());
+		List<VectorXYZ> result = new ArrayList<>(positions.size());
 
 		for (VectorXZ pos : positions) {
 			result.add(getPosXYZ(pos));
@@ -156,17 +154,15 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 				polygon.getRings().stream().map(this::getPosXYZ).toList());
 	}
 
-	@Nonnull
 	@Override
-	public Iterator<EleConnector> iterator() {
-		return eleConnectors.iterator();
+	public @Nonnull Iterator<Connector> iterator() {
+		return connectors.iterator();
 	}
 
-	public Stream<EleConnector> stream() {
-		return eleConnectors.stream();
+	public Stream<Connector> stream() {
+		return connectors.stream();
 	}
 
-	public static final EleConnectorGroup EMPTY = new EleConnectorGroup(
-			Collections.<EleConnector>emptyList());
+	public static final ConnectorGroup EMPTY = new ConnectorGroup(Collections.emptyList());
 
 }

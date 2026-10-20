@@ -1,7 +1,7 @@
 package org.osm2world.world.data;
 
-import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateOnTriangle;
+import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,14 +10,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.MapArea;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.connectors.AttachmentUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 
 
 /**
@@ -33,7 +33,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 	private PolygonWithHolesXZ outlinePolygonXZ;
 
-	private EleConnectorGroup connectors;
+	private ConnectorGroup connectors;
 
 	/** cached result of {@link #getGroundFootprint()} */
 	private @Nullable Collection<PolygonShapeXZ> groundFootprint = null;
@@ -44,7 +44,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 	@Override
 	public GroundState getGroundState() {
-		if (connectors != null && connectors.stream().allMatch(EleConnector::isAttached)) {
+		if (connectors != null && connectors.stream().allMatch(Connector::isAttached)) {
 			return GroundState.ATTACHED;
 		} else {
 			return GroundState.ON;
@@ -52,11 +52,11 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	}
 
 	@Override
-	public EleConnectorGroup getEleConnectors() {
+	public ConnectorGroup getConnectors() {
 
 		if (connectors == null) {
 
-			connectors = new EleConnectorGroup();
+			connectors = new ConnectorGroup();
 
 			List<String> attachmentTypes = AttachmentUtil.getCompatibleSurfaceTypes(area);
 			AttachmentProperties ap = attachmentTypes.isEmpty() ? null
@@ -114,7 +114,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	 */
 	public double getEleAt(VectorXZ pos) {
 
-		if (getEleConnectors().stream().allMatch(it -> it.getPosXYZ().y == 0.0)) {
+		if (getConnectors().stream().allMatch(it -> it.getPosXYZ().y == 0.0)) {
 			// fast case for disabled elevation
 			return 0.0;
 		}

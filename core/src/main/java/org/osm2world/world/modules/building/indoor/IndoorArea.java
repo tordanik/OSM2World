@@ -6,9 +6,9 @@ import java.util.Collection;
 
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapArea;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WorldObject;
@@ -52,7 +52,7 @@ public class IndoorArea implements AreaWorldObject, ProceduralWorldObject {
 	}
 
 	@Override
-	public Iterable<EleConnector> getEleConnectors() {
+	public Iterable<Connector> getConnectors() {
 		return emptyList();
 	}
 

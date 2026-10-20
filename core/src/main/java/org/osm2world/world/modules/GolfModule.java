@@ -26,8 +26,6 @@ import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.JTSBufferUtil;
@@ -35,13 +33,13 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.StreetFurnitureModule.Flagpole.StripedFlag;
 import org.osm2world.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.world.modules.common.AbstractModule;
-
-import com.google.common.collect.Streams;
 
 /**
  * adds golf courses to the map
@@ -133,7 +131,7 @@ public class GolfModule extends AbstractModule {
 			double[] dropSteps = {-0.03, -0.07, -0.05, -0.02};
 
 			List<PolygonWithHolesXZ> currentPolys = asList(area.getPolygon());
-			double currentEle = Streams.stream(getEleConnectors()).mapToDouble(c -> c.getPosXYZ().y).min().getAsDouble();
+			double currentEle = getConnectors().stream().mapToDouble(c -> c.getPosXYZ().y).min().getAsDouble();
 
 			for (int i = 0; i < dropSteps.length; i++) {
 
@@ -148,8 +146,8 @@ public class GolfModule extends AbstractModule {
 
 					Function<VectorXZ, VectorXYZ> xyzFunction = v -> {
 
-						if (getEleConnectors().getConnector(v) != null) {
-							return getEleConnectors().getPosXYZ(v);
+						if (getConnectors().getConnector(v) != null) {
+							return getConnectors().getPosXYZ(v);
 						} else if (large.vertices().contains(v)
 								|| large.getHoles().stream().anyMatch(h -> h.vertices().contains(v))) {
 							return v.xyz(oldEle);
@@ -196,7 +194,7 @@ public class GolfModule extends AbstractModule {
 
 		private final VectorXZ pinPosition;
 		private final SimplePolygonXZ pinHoleLoop;
-		private final EleConnectorGroup pinConnectors;
+		private final ConnectorGroup pinConnectors;
 
 		private Green(MapArea area) {
 
@@ -239,7 +237,7 @@ public class GolfModule extends AbstractModule {
 					.vertices(HOLE_CIRCLE_VERTICES))
 					.makeCounterclockwise();
 
-			pinConnectors = new EleConnectorGroup();
+			pinConnectors = new ConnectorGroup();
 			pinConnectors.addConnectorsFor(pinHoleLoop.getVertexCollection(), area, GroundState.ON);
 
 		}
@@ -255,15 +253,15 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public EleConnectorGroup getEleConnectors() {
+		public ConnectorGroup getConnectors() {
 
-			EleConnectorGroup eleConnectors = super.getEleConnectors();
+			ConnectorGroup connectors = super.getConnectors();
 
 			if (pinConnectors != null) {
-				eleConnectors.addAll(pinConnectors);
+				connectors.addAll(pinConnectors);
 			}
 
-			return eleConnectors;
+			return connectors;
 
 		}
 
@@ -281,7 +279,7 @@ public class GolfModule extends AbstractModule {
 			}
 
 			List<TriangleXZ> trianglesXZ = getGreenTriangulation();
-			List<TriangleXYZ> triangles = triangulationXZtoXYZ(trianglesXZ, getEleConnectors()::getPosXYZ);
+			List<TriangleXYZ> triangles = triangulationXZtoXYZ(trianglesXZ, this.getConnectors()::getPosXYZ);
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles , material, GLOBAL_X_Z));

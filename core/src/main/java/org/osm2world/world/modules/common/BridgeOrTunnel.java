@@ -3,9 +3,9 @@ package org.osm2world.world.modules.common;
 import static java.util.Collections.emptyList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.map_elevation.data.GroundState.ABOVE;
-import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.math.algorithms.GeometryUtil.isBetween;
+import static org.osm2world.world.connectors.GroundState.ABOVE;
+import static org.osm2world.world.connectors.GroundState.ON;
 
 import java.util.List;
 
@@ -16,9 +16,9 @@ import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -44,7 +44,7 @@ public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldOb
 	}
 
 	@Override
-	default Iterable<EleConnector> getEleConnectors() {
+	default Iterable<Connector> getConnectors() {
 		return emptyList();
 	}
 
@@ -78,9 +78,9 @@ public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldOb
 
 				if (otherWO instanceof AbstractNetworkWaySegmentWorldObject otherANWSWO) {
 
-					EleConnector thisConn = getPrimaryRep().getEleConnectors()
+					Connector thisConn = getPrimaryRep().getConnectors()
 							.getConnector(intersection.pos);
-					EleConnector otherConn = otherANWSWO.getEleConnectors()
+					Connector otherConn = otherANWSWO.getConnectors()
 							.getConnector(intersection.pos);
 
 					if (thisIsUpper) {
@@ -111,12 +111,12 @@ public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldOb
 						MapAreaSegment areaSegment =
 								overlapWA.getIntersectingAreaSegments().get(i);
 
-						EleConnector thisConn = getPrimaryRep().getEleConnectors()
+						Connector thisConn = getPrimaryRep().getConnectors()
 								.getConnector(pos);
 
-						EleConnector base1 = otherAAWO.getEleConnectors()
+						Connector base1 = otherAAWO.getConnectors()
 								.getConnector(areaSegment.getStartNode().getPos());
-						EleConnector base2 = otherAAWO.getEleConnectors()
+						Connector base2 = otherAAWO.getConnectors()
 								.getConnector(areaSegment.getEndNode().getPos());
 
 						if (thisConn != null && base1 != null && base2 != null) {
@@ -136,19 +136,19 @@ public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldOb
 				}
 
 				/*
-				 * require minimum distance to the area's elevation connectors.
+				 * require minimum distance to the area's connectors.
 				 * There is usually no direct counterpart for these in this segment.
 				 * Examples include trees on terrain above tunnels.
 				 */
 
 				if (!(otherWO instanceof Forest)) continue; //TODO enable and debug for other WO classes
 
-				eleConnectors:
-				for (EleConnector c : otherWO.getEleConnectors()) {
+				connectors:
+				for (Connector c : otherWO.getConnectors()) {
 
 					if (outlinePolygonXZ == null ||
 							!outlinePolygonXZ.contains(c.pos))
-						continue eleConnectors;
+						continue connectors;
 
 					for (List<VectorXZ> line : lines) {
 						for (int i = 0; i+1 < line.size(); i++) {
@@ -158,8 +158,8 @@ public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldOb
 
 							if (isBetween(c.pos, v1, v2)) {
 
-								EleConnector base1 = getPrimaryRep().getEleConnectors().getConnector(v1);
-								EleConnector base2 = getPrimaryRep().getEleConnectors().getConnector(v2);
+								Connector base1 = getPrimaryRep().getConnectors().getConnector(v1);
+								Connector base2 = getPrimaryRep().getConnectors().getConnector(v2);
 
 								if (base1 != null && base2 != null) {
 
@@ -175,7 +175,7 @@ public interface BridgeOrTunnel extends WaySegmentWorldObject, ProceduralWorldOb
 
 								}
 
-								continue eleConnectors;
+								continue connectors;
 
 							}
 

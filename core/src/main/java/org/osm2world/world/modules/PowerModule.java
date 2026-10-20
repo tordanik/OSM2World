@@ -7,9 +7,6 @@ import static java.util.Collections.*;
 import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
-import static org.osm2world.map_elevation.data.GroundState.ATTACHED;
-import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.math.VectorXYZ.*;
 import static org.osm2world.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.math.VectorXZ.angleBetween;
@@ -20,6 +17,9 @@ import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.world.connectors.Connector.AttachmentProperties;
+import static org.osm2world.world.connectors.GroundState.ATTACHED;
+import static org.osm2world.world.connectors.GroundState.ON;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
@@ -32,9 +32,6 @@ import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.MapWaySegment;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -54,6 +51,9 @@ import org.osm2world.scene.model.ProceduralModel;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.ValueParseUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NoOutlineWaySegmentWorldObject;
@@ -799,7 +799,7 @@ public final class PowerModule extends AbstractModule {
 		private final List<PolylineXZ> panelRows = new ArrayList<>();
 
 		/** connectors for every point in of the {@link #panelRows} */
-		private final EleConnectorGroup eleConnectors = new EleConnectorGroup();
+		private final ConnectorGroup connectors = new ConnectorGroup();
 
 		protected PhotovoltaicPlant(MapArea area) {
 
@@ -875,7 +875,7 @@ public final class PowerModule extends AbstractModule {
 					VectorXZ end = intersections.get(i + 1);
 					PolylineXZ polyline = new PolylineXZ(equallyDistributePointsAlong(20, true,start, end));
 					panelRows.add(polyline);
-					eleConnectors.addConnectorsFor(polyline.vertices(), this, ON);
+					connectors.addConnectorsFor(polyline.vertices(), this, ON);
 				}
 
 				posZ += panelUpVector.z * 1.5;
@@ -892,8 +892,8 @@ public final class PowerModule extends AbstractModule {
 				for (int i = 0; i + 1 < panelRow.vertices().size(); i++)
 
 				renderPanelsTo(target,
-						eleConnectors.getPosXYZ(panelRow.vertices().get(i)),
-						eleConnectors.getPosXYZ(panelRow.vertices().get(i+1)),
+						connectors.getPosXYZ(panelRow.vertices().get(i)),
+						connectors.getPosXYZ(panelRow.vertices().get(i+1)),
 						panelUpVector);
 
 			}
@@ -901,8 +901,8 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public EleConnectorGroup getEleConnectors() {
-			return eleConnectors;
+		public ConnectorGroup getConnectors() {
+			return connectors;
 		}
 
 		/**
@@ -957,7 +957,7 @@ public final class PowerModule extends AbstractModule {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 
-		private final EleConnector connector;
+		private final Connector connector;
 
 		public RooftopSolarPanels(MapArea area) {
 
@@ -972,16 +972,16 @@ public final class PowerModule extends AbstractModule {
 			}
 
 			VectorXYZ attachmentPoint = area.getOuterPolygon().getPointInside().xyz(0);
-			connector = new EleConnector(attachmentPoint, null, ATTACHED,
+			connector = new Connector(attachmentPoint, null, ATTACHED,
 					new AttachmentProperties(compatibleSurfaceTypes, 0, false), this);
 
 		}
 
 		@Override
-		public EleConnectorGroup getEleConnectors() {
-			var eleConnectors = new EleConnectorGroup();
-			eleConnectors.add(connector);
-			return eleConnectors;
+		public ConnectorGroup getConnectors() {
+			var connectors = new ConnectorGroup();
+			connectors.add(connector);
+			return connectors;
 		}
 
 		@Override

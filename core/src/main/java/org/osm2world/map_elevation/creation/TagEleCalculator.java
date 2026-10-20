@@ -5,8 +5,8 @@ import javax.annotation.Nonnull;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.map_data.data.TagSet;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.util.FaultTolerantIterationUtil;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.WorldObject;
 
 /**
@@ -20,7 +20,7 @@ public abstract class TagEleCalculator implements EleCalculator {
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 
-			for (EleConnector conn : worldObject.getEleConnectors()) {
+			for (Connector conn : worldObject.getConnectors()) {
 
 				Double ele = null;
 

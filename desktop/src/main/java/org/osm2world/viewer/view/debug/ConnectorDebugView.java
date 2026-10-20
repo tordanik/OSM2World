@@ -2,32 +2,32 @@ package org.osm2world.viewer.view.debug;
 
 import static org.osm2world.scene.color.Color.BLUE;
 
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.output.jogl.JOGLOutput;
 import org.osm2world.scene.color.Color;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.WorldObject;
 
 /**
- * shows all {@link EleConnector}s
+ * A debug view which shows all {@link Connector}s
  */
-public class EleConnectorDebugView extends StaticDebugView {
+public class ConnectorDebugView extends StaticDebugView {
 
 	private static final Color CONNECTOR_COLOR = BLUE;
 	private static final float CONNECTOR_HALF_WIDTH = 0.25f;
 
-	public EleConnectorDebugView() {
-		super("Connectors", "shows all elevation connectors");
+	public ConnectorDebugView() {
+		super("Connectors", "shows all connectors");
 	}
 
 	@Override
 	protected void fillOutput(JOGLOutput output) {
 
 		for (WorldObject worldObject : scene.getWorldObjects()) {
-			for (EleConnector eleConnector : worldObject.getEleConnectors()) {
-				if (eleConnector.getPosXYZ() == null) {
+			for (Connector connector : worldObject.getConnectors()) {
+				if (connector.getPosXYZ() == null) {
 					continue; //TODO shouldn't happen
 				}
-				drawBoxAround(output, eleConnector.getPosXYZ(),
+				drawBoxAround(output, connector.getPosXYZ(),
 						CONNECTOR_COLOR, CONNECTOR_HALF_WIDTH);
 			}
 		}

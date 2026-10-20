@@ -7,7 +7,6 @@ import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 import javax.annotation.Nullable;
 
 import org.osm2world.conversion.O2WConfig;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.Output;
 import org.osm2world.scene.Scene;
@@ -15,6 +14,7 @@ import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.WorldObject;
 
 /**

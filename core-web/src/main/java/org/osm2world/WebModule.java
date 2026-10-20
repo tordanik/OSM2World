@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_data.data.MapRelation;
 import org.osm2world.map_data.data.overlaps.MapElementId;
-import org.osm2world.map_elevation.data.EleConnector;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.osm.creation.JsonStringReader;
@@ -26,6 +25,7 @@ import org.osm2world.scene.mesh.MeshStore;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.util.platform.json.JsonImplementationBrowser;
 import org.osm2world.util.platform.uri.HttpUriImplementationBrowser;
+import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.WorldObject;
 import org.teavm.jso.*;
 import org.teavm.jso.core.JSArray;
@@ -349,7 +349,7 @@ public class WebModule {
 
 		/**
 		 * returns a set containing the world object itself, its ancestors (by recursing through
-		 * {@link WorldObject#getParent()}) and anything this object's {@link EleConnector}s
+		 * {@link WorldObject#getParent()}) and anything this object's {@link Connector}s
 		 * are attached to (again, recursively).
 		 */
 		private static Set<WorldObject> getAncestorsAndAttachmentTargets(WorldObject worldObject) {
@@ -372,7 +372,7 @@ public class WebModule {
 						nextObjects.add(currentObject.getParent());
 					}
 
-					for (EleConnector connector : currentObject.getEleConnectors()) {
+					for (Connector connector : currentObject.getConnectors()) {
 						if (connector.isAttached()) {
 							WorldObject attachmentTarget = connector.getAttachedSurface().getWorldObject();
 							if (attachmentTarget != null) {

@@ -5,8 +5,8 @@ import static java.util.Collections.emptyList;
 import java.util.List;
 
 import org.osm2world.map_data.data.*;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.world.data.NoOutlineWaySegmentWorldObject;

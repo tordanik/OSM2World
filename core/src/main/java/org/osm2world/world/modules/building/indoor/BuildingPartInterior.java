@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.map_data.data.MapElement;
-import org.osm2world.world.attachment.AttachmentSurface;
+import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.building.BuildingPart;
 

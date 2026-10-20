@@ -7,13 +7,13 @@ import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
-import static org.osm2world.map_elevation.data.GroundState.*;
 import static org.osm2world.math.VectorXZ.distance;
 import static org.osm2world.math.VectorXZ.distanceSquared;
 import static org.osm2world.math.algorithms.GeometryUtil.*;
 import static org.osm2world.util.ValueParseUtil.parseIncline;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
+import static org.osm2world.world.connectors.Connector.AttachmentProperties;
+import static org.osm2world.world.connectors.GroundState.*;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseInclineDirection;
 
 import java.util.ArrayList;
@@ -29,9 +29,6 @@ import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.BoundedObject;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
@@ -39,7 +36,10 @@ import org.osm2world.math.algorithms.GeometryUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.util.enums.UpDown;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.connectors.AttachmentUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.BridgeModule;
@@ -61,7 +61,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	private VectorXZ endCutCenter = null;
 	private VectorXZ endCutRight = null;
 
-	protected EleConnectorGroup connectors;
+	protected ConnectorGroup connectors;
 
 	private List<VectorXZ> centerlineXZ = null;
 
@@ -122,7 +122,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 			throw new IllegalStateException("cannot calculate outlines of " + this + " before cut information is set");
 		}
 
-		connectors = new EleConnectorGroup();
+		connectors = new ConnectorGroup();
 
 		{ /* calculate centerline */
 
@@ -133,7 +133,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 			centerlineXZ.add(start);
 
-			connectors.add(new EleConnector(start,
+			connectors.add(new Connector(start,
 					segment.getStartNode(), getGroundState(segment.getStartNode())));
 
 			// add intersections along the centerline
@@ -150,7 +150,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 					if (GeometryUtil.isBetween(intersection.pos, start, end)) {
 						if (!centerlineXZ.stream().anyMatch(p -> distance(p, intersection.pos) < CONNECTOR_SNAP_DIST)) {
 							centerlineXZ.add(intersection.pos);
-							connectors.add(new EleConnector(intersection.pos, null, getGroundState()));
+							connectors.add(new Connector(intersection.pos, null, getGroundState()));
 						}
 					}
 
@@ -169,7 +169,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 						if (GeometryUtil.isBetween(pos, start, end)) {
 							if (!centerlineXZ.stream().anyMatch(p -> distance(p, pos) < CONNECTOR_SNAP_DIST)) {
 								centerlineXZ.add(pos);
-								connectors.add(new EleConnector(pos, null, getGroundState()));
+								connectors.add(new Connector(pos, null, getGroundState()));
 							}
 						}
 
@@ -184,7 +184,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 			centerlineXZ.add(end);
 
-			connectors.add(new EleConnector(end,
+			connectors.add(new Connector(end,
 					segment.getEndNode(), getGroundState(segment.getEndNode())));
 
 			if (centerlineXZ.size() > 3) {
@@ -208,9 +208,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 			leftOutlineXZ.add(startCutLeft);
 			rightOutlineXZ.add(startCutRight);
 
-			connectors.add(new EleConnector(leftOutlineXZ.get(0),
+			connectors.add(new Connector(leftOutlineXZ.get(0),
 					segment.getStartNode(), getGroundState(segment.getStartNode())));
-			connectors.add(new EleConnector(rightOutlineXZ.get(0),
+			connectors.add(new Connector(rightOutlineXZ.get(0),
 					segment.getStartNode(), getGroundState(segment.getStartNode())));
 
 			for (int i = 1; i < centerlineXZ.size() - 1; i++) {
@@ -218,9 +218,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 				leftOutlineXZ.add(centerlineXZ.get(i).add(segment.getRightNormal().mult(-halfWidth)));
 				rightOutlineXZ.add(centerlineXZ.get(i).add(segment.getRightNormal().mult(halfWidth)));
 
-				connectors.add(new EleConnector(leftOutlineXZ.get(i),
+				connectors.add(new Connector(leftOutlineXZ.get(i),
 						null, getGroundState()));
-				connectors.add(new EleConnector(rightOutlineXZ.get(i),
+				connectors.add(new Connector(rightOutlineXZ.get(i),
 						null, getGroundState()));
 
 			}
@@ -228,9 +228,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 			leftOutlineXZ.add(endCutLeft);
 			rightOutlineXZ.add(endCutRight);
 
-			connectors.add(new EleConnector(leftOutlineXZ.get(leftOutlineXZ.size() - 1),
+			connectors.add(new Connector(leftOutlineXZ.get(leftOutlineXZ.size() - 1),
 					segment.getEndNode(), getGroundState(segment.getEndNode())));
-			connectors.add(new EleConnector(rightOutlineXZ.get(rightOutlineXZ.size() - 1),
+			connectors.add(new Connector(rightOutlineXZ.get(rightOutlineXZ.size() - 1),
 					segment.getEndNode(), getGroundState(segment.getEndNode())));
 
 		}
@@ -254,7 +254,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 				broken = outlinePolygonXZ.isClockwise();
 			} catch (InvalidGeometryException e) {
 				broken = true;
-				connectors = EleConnectorGroup.EMPTY;
+				connectors = ConnectorGroup.EMPTY;
 			}
 
 		}
@@ -262,7 +262,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		/* maybe override connectors with custom connectors for attachable endpoints */
 
 		if (!broken && attachableEndpoints) {
-			EleConnectorGroup newConnectors = createAttachableEndpointConnectors();
+			ConnectorGroup newConnectors = createAttachableEndpointConnectors();
 			if (newConnectors != null) {
 				connectors = newConnectors;
 			}
@@ -332,7 +332,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	}
 
 	@Override
-	public EleConnectorGroup getEleConnectors() {
+	public ConnectorGroup getConnectors() {
 
 		if (connectors == null) {
 			calculateXZGeometry();
@@ -349,9 +349,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		//TODO: maybe save connectors separately right away
 
-		List<EleConnector> center = getCenterlineEleConnectors();
-		List<EleConnector> left = connectors.getConnectors(getOutlineXZ(false));
-		List<EleConnector> right = connectors.getConnectors(getOutlineXZ(true));
+		List<Connector> center = getCenterlineConnectors();
+		List<Connector> left = connectors.getConnectors(getOutlineXZ(false));
+		List<Connector> right = connectors.getConnectors(getOutlineXZ(true));
 
 		/* left and right connectors have the same ele as their center conn. */
 
@@ -438,8 +438,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 				if (!previous.isBroken()) {
 
-					List<EleConnector> previousCenter =
-							previous.getCenterlineEleConnectors();
+					List<Connector> previousCenter =
+							previous.getCenterlineConnectors();
 
 					enforcer.requireSmoothness(
 							previousCenter.get(previousCenter.size() - 2),
@@ -463,7 +463,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 	}
 
-	protected List<EleConnector> getCenterlineEleConnectors() {
+	protected List<Connector> getCenterlineConnectors() {
 
 		if (isBroken()) return emptyList();
 
@@ -491,12 +491,12 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 */
 	public List<VectorXYZ> getCenterline() {
 
-		if (attachableEndpoints && connectors.stream().allMatch(EleConnector::isAttached)) {
+		if (attachableEndpoints && connectors.stream().allMatch(Connector::isAttached)) {
 
 			return interpolateEleOfSegment(getCenterlineXZ().vertices(),
 					segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()),
-					connectors.eleConnectors.get(0).getPosXYZ().getY(),
-					connectors.eleConnectors.get(1).getPosXYZ().getY());
+					connectors.connectors.get(0).getPosXYZ().getY(),
+					connectors.connectors.get(1).getPosXYZ().getY());
 
 		} else {
 			return connectors.getPosXYZ(getCenterlineXZ().vertices());
@@ -537,7 +537,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 * have been calculated.
 	 */
 	public List<VectorXYZ> getOutline(boolean right) {
-		if (attachableEndpoints && connectors != null && connectors.stream().allMatch(EleConnector::isAttached)) {
+		if (attachableEndpoints && connectors != null && connectors.stream().allMatch(Connector::isAttached)) {
 
 			List<VectorXYZ> centerline = getCenterline();
 			List<VectorXZ> outlineXZ = getOutlineXZ(right);
@@ -644,7 +644,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 	}
 
-	private @Nullable EleConnectorGroup createAttachableEndpointConnectors() {
+	private @Nullable ConnectorGroup createAttachableEndpointConnectors() {
 
 		MapNode wayStartNode = segment.getWay().getNodes().get(0);
 		MapNode wayEndNode = segment.getWay().getNodes().get(segment.getWay().getNodes().size() - 1);
@@ -701,11 +701,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		if (!firstNodeTypes.isEmpty() && !lastNodeTypes.isEmpty()) {
 
-			EleConnectorGroup result = new EleConnectorGroup();
+			ConnectorGroup result = new ConnectorGroup();
 
-			result.add(new EleConnector(wayStartNode.getPos(), null, getGroundState(),
+			result.add(new Connector(wayStartNode.getPos(), null, getGroundState(),
 					new AttachmentProperties(firstNodeTypes, 0, false), this));
-			result.add(new EleConnector(wayEndNode.getPos(), null, getGroundState(),
+			result.add(new Connector(wayEndNode.getPos(), null, getGroundState(),
 					new AttachmentProperties(lastNodeTypes, 0, false), this));
 
 			return result;

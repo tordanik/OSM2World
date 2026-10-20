@@ -21,11 +21,11 @@ import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.common.ConfigurableWorldModule;
@@ -117,7 +117,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			/* enforce downhill flow */
 
 			if (!segment.getTags().containsKey("incline")) {
-				enforcer.requireIncline(MAX, 0, getCenterlineEleConnectors());
+				enforcer.requireIncline(MAX, 0, getCenterlineConnectors());
 			}
 
 		}
@@ -159,7 +159,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			double depth = 1.0;
 
 			if (getGroundState() == GroundState.ABOVE
-					|| connectors.stream().anyMatch(EleConnector::isAttached)) {
+					|| connectors.stream().anyMatch(Connector::isAttached)) {
 				depth = Math.min(depth, 0.95 * BridgeModule.BRIDGE_UNDERSIDE_HEIGHT);
 			}
 
@@ -274,7 +274,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public GroundState getGroundState() {
-			if (super.getEleConnectors().stream().allMatch(EleConnector::isAttached)) {
+			if (super.getConnectors().stream().allMatch(Connector::isAttached)) {
 				return GroundState.ATTACHED;
 			} else if (BridgeModule.isBridge(area.getTags())) {
 				return GroundState.ABOVE;
@@ -287,7 +287,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
-			enforcer.requireSameEle(getEleConnectors());
+			enforcer.requireSameEle(getConnectors());
 		}
 
 		@Override

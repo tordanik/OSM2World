@@ -158,7 +158,7 @@ public class ViewerFrame extends JFrame {
 					new GroundFootprintDebugView());
 
 			initAndAddDebugView(subMenu, VK_E, false,
-					new EleConnectorDebugView());
+					new ConnectorDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new ConnectorAttachmentDebugView());
 			initAndAddDebugView(subMenu, -1, false,

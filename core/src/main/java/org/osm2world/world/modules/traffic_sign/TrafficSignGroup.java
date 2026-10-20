@@ -3,13 +3,13 @@ package org.osm2world.world.modules.traffic_sign;
 import static java.lang.Math.PI;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNullElse;
-import static org.osm2world.map_elevation.data.EleConnector.AttachmentProperties;
 import static org.osm2world.math.VectorXYZ.X_UNIT;
 import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.math.VectorXZ.angleBetween;
 import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
+import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.util.ArrayList;
@@ -21,15 +21,15 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.MapNode;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.world.attachment.AttachmentUtil;
+import org.osm2world.world.connectors.AttachmentUtil;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.NoOutlineNodeWorldObject;
 
 /**
@@ -72,7 +72,7 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 	}
 
 	@Override
-	public EleConnector buildConnector() {
+	public Connector buildConnector() {
 
 		List<String> types = AttachmentUtil.getCompatibleSurfaceTypes(node);
 
@@ -90,7 +90,7 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 				isAcceptableNormal = (v -> angleBetween(v.xz(), VectorXZ.fromAngle(direction)) < PI / 8);
 			}
 
-			return new EleConnector(p.xyz(height), null, GroundState.ATTACHED,
+			return new Connector(p.xyz(height), null, GroundState.ATTACHED,
 					new AttachmentProperties(types, height, true, isAcceptableNormal), this);
 
 		}
@@ -116,9 +116,9 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 		double direction = this.direction != null ? this.direction : PI;
 		boolean drawPosts = true;
 
-		if (eleConnector != null && eleConnector.isAttached()) {
-			signPositionXYZ = eleConnector.getPosXYZ();
-			direction = eleConnector.getAttachedSurfaceNormal().xz().angle();
+		if (connector != null && connector.isAttached()) {
+			signPositionXYZ = connector.getPosXYZ();
+			direction = connector.getAttachedSurfaceNormal().xz().angle();
 			drawPosts = false;
 		}
 

@@ -3,10 +3,10 @@ package org.osm2world.world.modules;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.EXACT;
-import static org.osm2world.map_elevation.data.GroundState.ON;
 import static org.osm2world.scene.material.DefaultMaterials.TUNNEL_DEFAULT;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.world.connectors.GroundState.ON;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ import javax.annotation.Nonnull;
 
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.map_elevation.data.EleConnector;
-import org.osm2world.map_elevation.data.EleConnectorGroup;
-import org.osm2world.map_elevation.data.GroundState;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.ConnectorGroup;
+import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.NodeWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -214,7 +214,7 @@ public class TunnelModule extends AbstractModule {
 		private VectorXZ upperCenter;
 		private VectorXZ upperRight;
 
-		private EleConnectorGroup connectors;
+		private ConnectorGroup connectors;
 
 		public TunnelEntrance(MapNode node,
 				AbstractNetworkWaySegmentWorldObject tunnelContent) {
@@ -266,18 +266,18 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
+		public Iterable<Connector> getConnectors() {
 
 			calculateOutlineIfNecessary();
 
 			if (connectors == null) {
-				connectors = new EleConnectorGroup();
-				connectors.add(new EleConnector(lowerLeft, node, ON));
-				connectors.add(new EleConnector(lowerCenter, node, ON));
-				connectors.add(new EleConnector(lowerRight, node, ON));
-				connectors.add(new EleConnector(upperLeft, null, ON));
-				connectors.add(new EleConnector(upperCenter, null, ON));
-				connectors.add(new EleConnector(upperRight, null, ON));
+				connectors = new ConnectorGroup();
+				connectors.add(new Connector(lowerLeft, node, ON));
+				connectors.add(new Connector(lowerCenter, node, ON));
+				connectors.add(new Connector(lowerRight, node, ON));
+				connectors.add(new Connector(upperLeft, null, ON));
+				connectors.add(new Connector(upperCenter, null, ON));
+				connectors.add(new Connector(upperRight, null, ON));
 			}
 
 			return connectors;
@@ -350,8 +350,8 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			// TODO EleConnectors for tunnels
+		public Iterable<Connector> getConnectors() {
+			// TODO connectors for tunnels
 			return emptyList();
 		}
 
