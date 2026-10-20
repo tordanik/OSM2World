@@ -44,7 +44,8 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 	@Override
 	public GroundState getGroundState() {
-		if (connectors != null && connectors.stream().allMatch(Connector::isAttached)) {
+		if (connectors != null && connectors.stream().findAny().isPresent()
+				&& connectors.stream().allMatch(Connector::isAttached)) {
 			return GroundState.ATTACHED;
 		} else {
 			return GroundState.ON;
@@ -62,8 +63,11 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 			AttachmentProperties ap = attachmentTypes.isEmpty() ? null
 					: new AttachmentProperties(attachmentTypes, 0, false);
 
+			GroundState groundState = AttachmentUtil.getCompatibleSurfaceTypes(area).isEmpty()
+					? GroundState.ON : GroundState.ATTACHED;
+
 			connectors.addConnectorsForTriangulation(
-					getTriangulationXZ(), null, getGroundState(), ap, this);
+					getTriangulationXZ(), null, groundState, ap, this);
 
 		}
 
