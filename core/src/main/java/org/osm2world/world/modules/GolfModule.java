@@ -255,7 +255,9 @@ public class GolfModule extends AbstractModule {
 		@Override
 		public ConnectorGroup getConnectors() {
 
-			ConnectorGroup connectors = super.getConnectors();
+			ConnectorGroup connectors = new ConnectorGroup();
+
+			connectors.addAll(super.getConnectors());
 
 			if (pinConnectors != null) {
 				connectors.addAll(pinConnectors);
