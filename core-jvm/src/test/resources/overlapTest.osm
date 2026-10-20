@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never' generator='JOSM'>
+  <bounds minlat='48.5639199' minlon='13.4471425' maxlat='48.5655842' maxlon='13.4497191' origin='null' />
+  <node id='137716' timestamp='2008-09-21T21:37:45Z' uid='27223' user='Tordanik' version='1' changeset='12345' lat='48.56516644405' lon='13.44859951035' />
+  <node id='137717' timestamp='2008-09-21T21:37:45Z' uid='27223' user='Tordanik' version='1' changeset='12345' lat='48.56435646386' lon='13.44891953517' />
+  <node id='137730' action='modify' timestamp='2008-09-21T21:37:45Z' uid='27223' user='Tordanik' version='1' changeset='12345' lat='48.56478882289' lon='13.44874870988' />
+  <way id='103380' timestamp='2008-09-21T21:37:45Z' uid='27223' user='Tordanik' version='1' changeset='12345'>
+    <nd ref='137716' />
+    <nd ref='137730' />
+    <nd ref='137717' />
+    <tag k='highway' v='tertiary' />
+  </way>
+</osm>
