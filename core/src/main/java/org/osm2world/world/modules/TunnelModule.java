@@ -271,13 +271,13 @@ public class TunnelModule extends AbstractModule {
 			calculateOutlineIfNecessary();
 
 			if (connectors == null) {
-				connectors = new ConnectorGroup();
-				connectors.add(new Connector(lowerLeft, node, ON));
-				connectors.add(new Connector(lowerCenter, node, ON));
-				connectors.add(new Connector(lowerRight, node, ON));
-				connectors.add(new Connector(upperLeft, null, ON));
-				connectors.add(new Connector(upperCenter, null, ON));
-				connectors.add(new Connector(upperRight, null, ON));
+				connectors = new ConnectorGroup(
+						new Connector(lowerLeft, node, ON),
+						new Connector(lowerCenter, node, ON),
+						new Connector(lowerRight, node, ON),
+						new Connector(upperLeft, null, ON),
+						new Connector(upperCenter, null, ON),
+						new Connector(upperRight, null, ON));
 			}
 
 			return connectors;

@@ -493,10 +493,13 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		if (attachableEndpoints && connectors.stream().allMatch(Connector::isAttached)) {
 
+			List<Connector> startEndConnectors = connectors.stream().toList();
+			assert startEndConnectors.size() == 2;
+
 			return interpolateEleOfSegment(getCenterlineXZ().vertices(),
 					segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()),
-					connectors.connectors.get(0).getPosXYZ().getY(),
-					connectors.connectors.get(1).getPosXYZ().getY());
+					startEndConnectors.get(0).getPosXYZ().getY(),
+					startEndConnectors.get(1).getPosXYZ().getY());
 
 		} else {
 			return connectors.getPosXYZ(getCenterlineXZ().vertices());

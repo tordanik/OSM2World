@@ -979,9 +979,7 @@ public final class PowerModule extends AbstractModule {
 
 		@Override
 		public ConnectorGroup getConnectors() {
-			var connectors = new ConnectorGroup();
-			connectors.add(connector);
-			return connectors;
+			return new ConnectorGroup(connector);
 		}
 
 		@Override

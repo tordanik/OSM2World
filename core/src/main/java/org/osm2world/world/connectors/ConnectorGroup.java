@@ -1,5 +1,7 @@
 package org.osm2world.world.connectors;
 
+import static java.util.Arrays.asList;
+
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -18,11 +20,14 @@ import org.osm2world.world.data.WorldObject;
  */
 public class ConnectorGroup implements Iterable<Connector> {
 
-	//TODO make private
-	public final List<Connector> connectors;
+	private final List<Connector> connectors;
 
 	public ConnectorGroup() {
 		this(new ArrayList<>());
+	}
+
+	public ConnectorGroup(Connector... connectors) {
+		this(new ArrayList<>(asList(connectors)));
 	}
 
 	private ConnectorGroup(List<Connector> connectors) {

@@ -40,7 +40,7 @@ public class IndoorStepsTest {
 		if (!(object instanceof RoadModule.Road road)) {
 			fail("Not a road: " + object);
 		} else {
-			List<Connector> connectors = road.getConnectors().connectors;
+			List<Connector> connectors = road.getConnectors().stream().toList();
 			assertEquals("floor2", connectors.get(0).attachmentProperties.compatibleSurfaceTypes().get(0));
 			assertEquals("floor0", connectors.get(1).attachmentProperties.compatibleSurfaceTypes().get(0));
 			/*
@@ -78,7 +78,7 @@ public class IndoorStepsTest {
 		if (!(object instanceof RoadModule.Road road)) {
 			fail("Not a road: " + object);
 		} else {
-			List<Connector> connectors = road.getConnectors().connectors;
+			List<Connector> connectors = road.getConnectors().stream().toList();
 			assertEquals("floor1", connectors.get(0).attachmentProperties.compatibleSurfaceTypes().get(0));
 			assertEquals("floor0", connectors.get(1).attachmentProperties.compatibleSurfaceTypes().get(0));
 			/*
