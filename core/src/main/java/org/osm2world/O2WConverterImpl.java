@@ -250,9 +250,9 @@ class O2WConverterImpl {
 
 		/* attach connectors to the surfaces */
 
-		for (WorldObject object : mapData.getWorldObjects()) {
+		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
 
-			if (object.getParent() != null) continue;
+			if (object.getParent() != null) return;
 
 			for (Connector connector : object.getConnectors()) {
 
@@ -292,7 +292,7 @@ class O2WConverterImpl {
 
 			}
 
-		}
+		});
 
 	}
 
