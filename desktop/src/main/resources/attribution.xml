@@ -272,7 +272,7 @@
          <name>GeoDesk</name>
          <groupId>com.geodesk</groupId>
          <artifactId>geodesk</artifactId>
-         <version>1.0.2</version>
+         <version>2.1.0</version>
          <projectUrl>http://www.geodesk.com</projectUrl>
          <type>jar</type>
          <licenses>
@@ -282,7 +282,7 @@
             </license>
          </licenses>
          <downloadUrls>
-            <string>https://repo.maven.apache.org/maven2/com/geodesk/geodesk/1.0.2/geodesk-1.0.2.jar</string>
+            <string>https://repo.maven.apache.org/maven2/com/geodesk/geodesk/2.1.0/geodesk-2.1.0.jar</string>
          </downloadUrls>
       </dependency>
       <dependency>

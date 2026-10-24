@@ -1,6 +1,6 @@
 package org.osm2world.osm.creation;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 import static org.osm2world.util.test.TestFileUtil.getTestFile;
 
 import java.io.File;
@@ -51,6 +51,24 @@ public class GeodeskReaderTest {
 	public void testMissingFile() throws IOException {
 		var reader = new GeodeskReader(new File("noSuchFile.gol"));
 		reader.getData(globalBounds);
+	}
+
+	@Test(expected = IOException.class)
+	public void testNonGeodeskFile() throws IOException {
+		var reader = new GeodeskReader(getTestFile("simpleTest01.osm"));
+		reader.getData(globalBounds);
+	}
+
+	@Test
+	public void testGeodeskV1File() throws IOException {
+
+		try {
+			new GeodeskReader(getTestFile("simpleTest01_v1.gol")).getData(globalBounds);
+			fail("expected an exception");
+		} catch (IOException e) {
+			assertTrue(e.getMessage().contains("1.x"));
+		}
+
 	}
 
 	@Test

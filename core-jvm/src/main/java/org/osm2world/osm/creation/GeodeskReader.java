@@ -3,9 +3,9 @@ package org.osm2world.osm.creation;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 
 import org.osm2world.map_data.data.TagSet;
@@ -16,6 +16,7 @@ import org.osm2world.osm.ruleset.HardcodedRuleset;
 
 import com.clarisma.common.store.StoreException;
 import com.geodesk.feature.*;
+import com.geodesk.feature.store.FeatureStore;
 import com.geodesk.geom.Box;
 import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
 import com.slimjars.dist.gnu.trove.map.TLongObjectMap;
@@ -30,13 +31,17 @@ import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 /**
- * {@link OSMDataReader} fetching data from a GeoDesk database (.gol file)
+ * {@link OSMDataReader} fetching data from a GeoDesk database (.gol file).
+ * Requires a file in the format used by GeoDesk 2.x.
  *
  * @param file  the gol file this reader is obtaining data from
  */
 public record GeodeskReader(File file) implements OSMDataReader {
 
 	private static final long ANONYMOUS_NODE_ID_OFFSET = 100_000_000_000L;
+
+	/** magic number at the start of .gol files created with GeoDesk 1.x, which are no longer supported */
+	private static final int GEODESK_V1_MAGIC = 0x7ADA0BB1;
 
 	/**
 	 * object used to prevent concurrent access to a Geodesk database.
@@ -50,6 +55,8 @@ public record GeodeskReader(File file) implements OSMDataReader {
 		if (!file.exists()) {
 			throw new FileNotFoundException("Geodesk file does not exist: " + file);
 		}
+
+		checkFileFormat();
 
 		synchronized (synchronizationObject) {
 
@@ -66,6 +73,30 @@ public record GeodeskReader(File file) implements OSMDataReader {
 				throw new IOException(e);
 			}
 
+		}
+
+	}
+
+	/**
+	 * checks the file header to reject unsupported files with a helpful message
+	 * (GeoDesk itself would fail with an unspecific exception in that case)
+	 */
+	private void checkFileFormat() throws IOException {
+
+		byte[] header = new byte[4];
+
+		try (var in = new DataInputStream(new FileInputStream(file))) {
+			in.readFully(header);
+		} catch (EOFException e) {
+			throw new IOException("Not a GeoDesk file (too short): " + file);
+		}
+
+		int magic = ByteBuffer.wrap(header).order(ByteOrder.LITTLE_ENDIAN).getInt();
+
+		if (magic == GEODESK_V1_MAGIC) {
+			throw new IOException("GeoDesk file uses the outdated 1.x format, rebuild it with gol 2.x: " + file);
+		} else if (magic != FeatureStore.MAGIC) {
+			throw new IOException("Not a GeoDesk file: " + file);
 		}
 
 	}
