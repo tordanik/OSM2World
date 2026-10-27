@@ -95,6 +95,36 @@ public interface WorldObject {
 	}
 
 	/**
+	 * recalculates the geometry of this object's attachment surfaces, e.g. after its connectors have moved.
+	 * The surfaces are updated in place because connectors keep references to them.
+	 * Connectors attached to the surfaces are not moved; that is the caller's responsibility.
+	 * <p>
+	 * The default implementation calls {@link #getAttachmentSurfaces()} again and copies the geometry of the
+	 * resulting surfaces into the previous ones, matching them by order.
+	 * This works for objects which create new surfaces on every call (such as {@link ProceduralWorldObject}s).
+	 * Objects which instead cache their surfaces need to override this method
+	 * if their surfaces' geometry can change.
+	 *
+	 * @param surfaces  the surfaces previously returned by {@link #getAttachmentSurfaces()}, in the same order
+	 */
+	public default void updateAttachmentSurfaces(List<AttachmentSurface> surfaces) {
+
+		List<AttachmentSurface> newSurfaces = List.copyOf(getAttachmentSurfaces());
+
+		if (newSurfaces.size() != surfaces.size()) {
+			throw new IllegalStateException("number of attachment surfaces has changed for " + this
+					+ ": " + surfaces.size() + " -> " + newSurfaces.size());
+		}
+
+		for (int i = 0; i < surfaces.size(); i++) {
+			if (surfaces.get(i) != newSurfaces.get(i)) {
+				surfaces.get(i).updateGeometryFrom(newSurfaces.get(i));
+			}
+		}
+
+	}
+
+	/**
 	 * returns a counterclockwise polygon defining the object's ground footprint in the XZ plane.
 	 * Can be used for purposes such as preventing bridge pillars from piercing through this WorldObject.
 	 *

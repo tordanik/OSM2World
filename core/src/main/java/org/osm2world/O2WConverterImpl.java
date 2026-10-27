@@ -1,6 +1,5 @@
 package org.osm2world;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.ceil;
 import static java.time.Instant.now;
 import static java.util.Collections.singleton;
@@ -21,7 +20,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -33,13 +31,11 @@ import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_elevation.creation.*;
-import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.IndexGrid;
 import org.osm2world.math.datastructures.SpatialIndex;
 import org.osm2world.math.geo.GeoBounds;
 import org.osm2world.math.geo.MapProjection;
 import org.osm2world.math.geo.TileNumber;
-import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
 import org.osm2world.osm.creation.OSMDataReader;
 import org.osm2world.osm.creation.OSMDataReaderView;
 import org.osm2world.osm.data.OSMData;
@@ -301,45 +297,10 @@ class O2WConverterImpl {
 		AttachmentProperties ap = connector.attachmentProperties;
 		if (ap == null) return;
 
-		double ele = surface.getBaseEleAt(connector.originalPos.xz()) + ap.preferredHeight();
-		VectorXYZ posAtEle = connector.originalPos.y(ele);
+		AttachmentSurface.AttachmentPoint point = surface.findAttachmentPoint(ap, connector.originalPos);
 
-		for (boolean requirePreferredHeight : List.of(true, false)) {
-
-			Predicate<FlatSimplePolygonShapeXYZ> matchesPreferredHeight = f -> {
-				if (!requirePreferredHeight) {
-					return true;
-				} else {
-					VectorXYZ closestPoint = f.closestPoint(posAtEle);
-					double height = closestPoint.y - surface.getBaseEleAt(closestPoint.xz());
-					return abs(height - ap.preferredHeight()) < 0.001;
-				}
-			};
-
-			Optional<? extends FlatSimplePolygonShapeXYZ> closestFace = surface.getFaces().stream()
-					.filter(matchesPreferredHeight)
-					.filter(f -> ap.isAcceptableNormal().test(f.getNormal()))
-					.min(comparingDouble(f -> ap.changeXZ() ? f.distanceTo(posAtEle) : f.distanceToXZ(posAtEle)));
-
-			if (closestFace.isEmpty()) continue; // try again without enforcing the preferred height
-
-			VectorXYZ closestPoint;
-
-			if (!ap.changeXZ() && closestFace.get().getNormal().y >= 0.001) {
-				// no XZ movement is desired, obtain the face point directly above/below the connector
-				VectorXYZ pointInFacePlane = posAtEle.y(closestFace.get().getYAt(posAtEle.xz()));
-				closestPoint = closestFace.get().closestPoint(pointInFacePlane);
-			} else {
-				closestPoint = closestFace.get().closestPoint(posAtEle);
-			}
-
-			if (closestPoint.xz().distanceTo(connector.originalPos.xz()) > ap.maxDistanceXZ() + 0.001) {
-				continue;
-			}
-
-			connector.attach(surface, closestPoint, closestFace.get().getNormal());
-			break; // attached, don't try again
-
+		if (point != null) {
+			connector.attach(surface, point.pos(), point.normal());
 		}
 
 	}
