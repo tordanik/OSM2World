@@ -231,64 +231,196 @@ class O2WConverterImpl {
 
 	}
 
+	/**
+	 * attaches connectors to {@link AttachmentSurface}s.
+	 * <p>
+	 * This happens in order of dependencies: A connector waits until all objects with nearby compatible surfaces
+	 * have attached their own connectors and updated their surfaces accordingly.
+	 * This allows an object to attach to another object which is itself attached to something,
+	 * e.g. a traffic sign attached to a street lamp on a roof.
+	 * If objects depend on each other in a cycle, one of the connectors is attached without waiting.
+	 */
 	private void attachConnectors(MapData mapData) {
 
 		/* collect the surfaces */
 
-		SpatialIndex<AttachmentSurface> attachmentSurfaceIndex =
-				new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
+		IndexGrid<AttachmentSurface> surfaceIndex = new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
+
+		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = new IdentityHashMap<>();
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
 			if (object.getParent() == null) {
-				object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
+				List<AttachmentSurface> surfaces = List.copyOf(object.getAttachmentSurfaces());
+				surfacesByObject.put(object, surfaces);
+				surfaces.forEach(surfaceIndex::insert);
 			}
 		});
 
-		/* attach connectors to the surfaces */
+		/* collect the connectors which should be attached, grouped by object */
+
+		Map<WorldObject, List<Connector>> pendingConnectors = new LinkedHashMap<>();
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
+			if (object.getParent() == null) {
+				List<Connector> connectors = new ArrayList<>();
+				for (Connector connector : object.getConnectors()) {
+					if (connector.attachmentProperties != null) {
+						connectors.add(connector);
+					}
+				}
+				if (!connectors.isEmpty()) {
+					pendingConnectors.put(object, connectors);
+				}
+			}
+		});
 
-			if (object.getParent() != null) return;
+		/* attach connectors, deferring those which depend on objects with pending connectors */
 
-			for (Connector connector : object.getConnectors()) {
+		boolean forceNext = false;
 
-				AttachmentProperties ap = connector.attachmentProperties;
-				if (ap == null) continue;
+		while (!pendingConnectors.isEmpty()) {
 
-				for (String surfaceType : ap.compatibleSurfaceTypes()) {
+			boolean progress = false;
 
-					Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
-							bbox(singleton(connector.originalPos)).pad(ap.maxDistanceXZ()));
+			for (var it = pendingConnectors.entrySet().iterator(); it.hasNext(); ) {
 
-					List<AttachmentSurface> compatibleSurfaces = Streams.stream(nearbySurfaces)
-							.filter(s -> s.getTypes().stream().anyMatch(t -> t.equals(surfaceType)))
-							.filter(s -> s.getFaces().stream().anyMatch(f -> ap.isAcceptableNormal().test(f.getNormal())))
-							.toList();
+				var entry = it.next();
+				WorldObject object = entry.getKey();
 
-					Optional<AttachmentSurface> candidateSurface = Optional.empty();
+				for (var connectorIt = entry.getValue().iterator(); connectorIt.hasNext(); ) {
 
-					if ("roof".equals(surfaceType)) {
-						// prioritize the topmost roof to avoid attaching to the hidden "roofs" of lower building parts
-						double minDistanceXZ = compatibleSurfaces.stream()
-								.mapToDouble(s -> s.distanceToXZ(connector.originalPos)).min().orElse(0);
-						candidateSurface = compatibleSurfaces.stream()
-								.filter(s -> s.distanceToXZ(connector.originalPos) < minDistanceXZ + 0.1)
-								.max(comparingDouble(s -> s.closestPoint(connector.originalPos).y));
-					} else {
-						// choose the closest surface by 3D distance
-						candidateSurface = compatibleSurfaces.stream()
-								.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+					Connector connector = connectorIt.next();
+
+					try {
+
+						CandidateSurfaces candidates = findCandidateSurfaces(connector, surfaceIndex);
+
+						boolean dependsOnPendingObject = candidates.surfaces().stream()
+								.map(s -> getRootObject(s.getWorldObject()))
+								.anyMatch(o -> o != null && o != object && pendingConnectors.containsKey(o));
+
+						if (dependsOnPendingObject) {
+							if (forceNext) {
+								var element = object.getPrimaryMapElement();
+								ConversionLog.warn("Cyclic attachment dependency, attaching connector without waiting",
+										element != null ? element.getElementWithId() : null);
+								forceNext = false;
+							} else {
+								continue;
+							}
+						}
+
+						attachToCandidateSurface(connector, candidates);
+
+					} catch (Exception e) {
+						FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER.accept(e, object);
 					}
 
-					if (candidateSurface.isPresent()) {
-						attachConnectorIfValid(connector, candidateSurface.get());
-						break;
-					}
+					connectorIt.remove();
+					progress = true;
+
+				}
+
+				if (entry.getValue().isEmpty()) {
+					it.remove();
+					updateSurfaces(object, surfacesByObject.getOrDefault(object, List.of()), surfaceIndex);
 				}
 
 			}
 
-		});
+			if (!progress) {
+				forceNext = true;
+			}
+
+		}
+
+	}
+
+	/** returns the object at the top of the {@link WorldObject#getParent()} hierarchy */
+	private static @Nullable WorldObject getRootObject(@Nullable WorldObject object) {
+		while (object != null && object.getParent() != null) {
+			object = object.getParent();
+		}
+		return object;
+	}
+
+	/** surfaces a connector might attach to, all of which have the given type */
+	private record CandidateSurfaces(@Nullable String surfaceType, List<AttachmentSurface> surfaces) {}
+
+	/**
+	 * returns the surfaces which a connector might attach to.
+	 * These are the nearby surfaces of the first compatible surface type (in order of preference) with any matches.
+	 */
+	private static CandidateSurfaces findCandidateSurfaces(Connector connector,
+			SpatialIndex<AttachmentSurface> surfaceIndex) {
+
+		AttachmentProperties ap = connector.attachmentProperties;
+		if (ap == null) return new CandidateSurfaces(null, List.of());
+
+		Iterable<AttachmentSurface> nearbySurfaces = surfaceIndex.probe(
+				bbox(singleton(connector.originalPos)).pad(ap.maxDistanceXZ()));
+
+		for (String surfaceType : ap.compatibleSurfaceTypes()) {
+
+			List<AttachmentSurface> compatibleSurfaces = Streams.stream(nearbySurfaces)
+					.filter(s -> s.getTypes().contains(surfaceType))
+					.filter(s -> s.getFaces().stream().anyMatch(f -> ap.isAcceptableNormal().test(f.getNormal())))
+					.toList();
+
+			if (!compatibleSurfaces.isEmpty()) {
+				return new CandidateSurfaces(surfaceType, compatibleSurfaces);
+			}
+
+		}
+
+		return new CandidateSurfaces(null, List.of());
+
+	}
+
+	/**
+	 * selects the most suitable of the candidate surfaces from {@link #findCandidateSurfaces(Connector, SpatialIndex)}
+	 * and attaches the connector to it (if possible)
+	 */
+	private static void attachToCandidateSurface(Connector connector, CandidateSurfaces candidateSurfaces) {
+
+		List<AttachmentSurface> candidates = candidateSurfaces.surfaces();
+
+		Optional<AttachmentSurface> candidateSurface;
+
+		if ("roof".equals(candidateSurfaces.surfaceType())) {
+			// prioritize the topmost roof to avoid attaching to the hidden "roofs" of lower building parts
+			double minDistanceXZ = candidates.stream()
+					.mapToDouble(s -> s.distanceToXZ(connector.originalPos)).min().orElse(0);
+			candidateSurface = candidates.stream()
+					.filter(s -> s.distanceToXZ(connector.originalPos) < minDistanceXZ + 0.1)
+					.max(comparingDouble(s -> s.closestPoint(connector.originalPos).y));
+		} else {
+			// choose the closest surface by 3D distance
+			candidateSurface = candidates.stream()
+					.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+		}
+
+		candidateSurface.ifPresent(s -> attachConnectorIfValid(connector, s));
+
+	}
+
+	/**
+	 * updates an object's surfaces after its connectors have been attached, and updates the spatial index
+	 */
+	private static void updateSurfaces(WorldObject object, List<AttachmentSurface> surfaces,
+			IndexGrid<AttachmentSurface> surfaceIndex) {
+
+		if (surfaces.isEmpty()) return;
+
+		surfaces.forEach(surfaceIndex::remove);
+
+		try {
+			object.updateAttachmentSurfaces(surfaces);
+		} catch (Exception e) {
+			FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER.accept(e, object);
+		}
+
+		surfaces.forEach(surfaceIndex::insert);
 
 	}
 

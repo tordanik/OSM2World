@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.FaceXYZ;
@@ -99,7 +98,6 @@ public class O2WConverterImplTest {
 
 	}
 
-	@Ignore
 	@Test
 	public void testRecursiveAttachment() throws IOException {
 
