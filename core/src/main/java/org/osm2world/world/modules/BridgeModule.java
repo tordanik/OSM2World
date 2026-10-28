@@ -1033,9 +1033,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 					ele += circularArcHeightAt(extraHeight, offset, 0.6);
 				}
 
+			} else if (!caps.isEmpty()) {
+				// complex bridge, interpolate between all caps
+				ele = interpolateBetweenCaps(pos);
 			} else {
-				// complex bridge, assume it's totally flat
-				ele = maxEle(capConnectors.values()) + 0.1;
+				ele = 0;
 			}
 
 			return ele + 0.1;
@@ -1045,6 +1047,35 @@ public class BridgeModule extends ConfigurableWorldModule {
 		public double getBridgeWidthAt(VectorXZ pos) {
 			initializeBridgeGeometry();
 			return edges.stream().mapToDouble(edge -> edge.distanceTo(pos)).min().orElse(0) * 2;
+		}
+
+		/**
+		 * interpolates the elevation of the caps using inverse distance weighting.
+		 * The result matches a cap's elevation exactly at that cap,
+		 * so bridges that meet at a shared cap have the same elevation there.
+		 */
+		private double interpolateBetweenCaps(VectorXZ pos) {
+
+			double weightedEleSum = 0;
+			double weightSum = 0;
+
+			for (PolylineXZ cap : caps) {
+
+				double capEle = maxEle(capConnectors.get(cap));
+				double distance = cap.distanceTo(pos);
+
+				if (distance < 1e-6) {
+					return capEle;
+				}
+
+				double weight = 1 / (distance * distance);
+				weightedEleSum += weight * capEle;
+				weightSum += weight;
+
+			}
+
+			return weightedEleSum / weightSum;
+
 		}
 
 		private static double maxEle(Collection<Connector> connectors) {
