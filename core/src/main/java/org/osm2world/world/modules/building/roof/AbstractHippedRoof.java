@@ -8,7 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;

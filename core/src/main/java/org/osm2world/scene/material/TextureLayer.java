@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.osm2world.scene.color.LColor;
 
 /**
@@ -45,7 +45,7 @@ public class TextureLayer {
 	/**
 	 * texture for base color and alpha as in glTF 2.0.
 	 */
-	public final @NonNull TextureData baseColorTexture;
+	public final @Nonnull TextureData baseColorTexture;
 
 	/**
 	 * tangent space normal map as in glTF 2.0.
@@ -65,7 +65,7 @@ public class TextureLayer {
 	/** whether the {@link #baseColorTexture} is multiplied with the material color */
 	public final boolean colorable;
 
-	public TextureLayer(@NonNull TextureData baseColorTexture, TextureData normalTexture, TextureData ormTexture,
+	public TextureLayer(@Nonnull TextureData baseColorTexture, TextureData normalTexture, TextureData ormTexture,
 			TextureData displacementTexture, boolean colorable) {
 		this.baseColorTexture = baseColorTexture;
 		this.normalTexture = normalTexture;
