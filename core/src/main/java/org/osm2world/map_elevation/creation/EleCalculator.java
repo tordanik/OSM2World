@@ -12,9 +12,14 @@ public interface EleCalculator {
 
 	/**
 	 * provides elevation information for all elements in the {@link MapData}.
-	 * The result will be provided to the {@link Connector}s
-	 * in the map data. It is assumed that connectors' elevations are initially set to the elevation of the terrain.
+	 * The result will be provided to the {@link Connector}s in the map data.
+	 * <p>
+	 * This is called after connectors have been attached to surfaces. Attached connectors must not be moved.
+	 * The terrain elevation at each connector is available from {@link Connector#getTerrainEle()}.
+	 * Calling this method multiple times must produce the same result.
+	 *
+	 * @param terrain  provides the terrain elevation at arbitrary positions
 	 */
-	void calculateElevations(@Nonnull MapData mapData);
+	void calculateElevations(@Nonnull MapData mapData, @Nonnull TerrainInterpolator terrain);
 
 }

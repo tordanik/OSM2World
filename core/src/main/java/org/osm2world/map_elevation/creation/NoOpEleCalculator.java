@@ -11,6 +11,6 @@ import org.osm2world.map_data.data.MapData;
 public class NoOpEleCalculator implements EleCalculator {
 
 	@Override
-	public void calculateElevations(@Nonnull MapData mapData) {}
+	public void calculateElevations(@Nonnull MapData mapData, @Nonnull TerrainInterpolator terrain) {}
 
 }

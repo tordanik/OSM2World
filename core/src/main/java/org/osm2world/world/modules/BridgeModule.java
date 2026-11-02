@@ -17,6 +17,7 @@ import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.util.ListUtil.getFirst;
 import static org.osm2world.util.ListUtil.getLast;
 import static org.osm2world.util.ValueParseUtil.*;
+import static org.osm2world.world.connectors.RigidConnectorSet.GroundEleRule.HIGHEST;
 import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
@@ -46,10 +47,7 @@ import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
-import org.osm2world.world.connectors.AttachmentSurface;
-import org.osm2world.world.connectors.Connector;
-import org.osm2world.world.connectors.ConnectorGroup;
-import org.osm2world.world.connectors.GroundState;
+import org.osm2world.world.connectors.*;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
@@ -61,9 +59,7 @@ import org.osm2world.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.world.network.NetworkWaySegmentWorldObject;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 
 /**
  * Adds bridges to the world.
@@ -227,7 +223,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 		protected final BridgeDefaults defaults;
 
 		protected PolygonShapeXZ polygon;
+
+		/** sides of the bridge which are in the air */
 		protected List<PolylineXZ> edges;
+
+		/** sides where the bridge ends (at the ground, another bridge, or something else such as a building) */
 		protected List<PolylineXZ> caps;
 
 		/** centerline between two edges; only exists for bridges with exactly 2 edges and a simple shape */
@@ -235,9 +235,12 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		protected List<BridgeSupportData> supports;
 
+		/** the map node at each vertex of the {@link #caps}, used as the reference of the connectors at that vertex */
+		protected final Map<VectorXZ, MapNode> capVertexNodes = new HashMap<>();
+
 		private ConnectorGroup connectors = null;
-		private Multimap<PolylineXZ, Connector> capConnectors;
 		private Map<BridgeSupportData, Connector> supportConnectors;
+		private Map<PolylineXZ, RigidConnectorSet> capConnectorSets;
 
 		private AttachmentSurface attachmentSurface = null;
 
@@ -295,13 +298,19 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				connectors = new ConnectorGroup();
 
-				capConnectors = HashMultimap.create();
+				capConnectorSets = new LinkedHashMap<>();
 				for (PolylineXZ cap : caps) {
+
+					List<Connector> connectorsForCap = new ArrayList<>();
+
 					for (VectorXZ v : cap.vertices()) {
-						var connector = new Connector(v, null, GroundState.ON);
+						var connector = new Connector(v, capVertexNodes.get(v), GroundState.ABOVE);
 						connectors.add(connector);
-						capConnectors.put(cap, connector);
+						connectorsForCap.add(connector);
 					}
+
+					capConnectorSets.put(cap, RigidConnectorSet.sameEle(HIGHEST, connectorsForCap));
+
 				}
 
 				supportConnectors = new HashMap<>();
@@ -318,6 +327,12 @@ public class BridgeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
+		public Collection<EleRelation> getEleRelations() {
+			getConnectors();
+			return List.copyOf(capConnectorSets.values());
+		}
+
+		@Override
 		public Collection<AttachmentSurface> getAttachmentSurfaces() {
 
 			if (attachmentSurface == null) {
@@ -328,6 +343,14 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			return List.of(attachmentSurface);
 
+		}
+
+		@Override
+		public void updateAttachmentSurfaces(List<AttachmentSurface> surfaces) {
+			// the deck surface is cached, so the surfaces parameter is ignored
+			if (attachmentSurface != null) {
+				attachmentSurface.updateGeometry(getDeckTriangles(false), null);
+			}
 		}
 
 		@Override
@@ -1017,14 +1040,14 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		public double getBridgeEleAt(VectorXZ pos) {
 
-			if (capConnectors == null) throw new IllegalStateException("connectors not initialized");
+			if (capConnectorSets == null) throw new IllegalStateException("connectors not initialized");
 
 			double ele;
 
 			if (centerline != null) {
 
-				double startEle = maxEle(capConnectors.get(caps.get(0)));
-				double endEle = maxEle(capConnectors.get(caps.get(1)));
+				double startEle = maxEle(capConnectorSets.get(caps.get(0)).getConnectors());
+				double endEle = maxEle(capConnectorSets.get(caps.get(1)).getConnectors());
 				double offset = centerline.offsetOfClosestPoint(pos) / centerline.getLength();
 				ele = interpolateValue(offset, startEle, endEle);
 
@@ -1061,7 +1084,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			for (PolylineXZ cap : caps) {
 
-				double capEle = maxEle(capConnectors.get(cap));
+				double capEle = maxEle(capConnectorSets.get(cap).getConnectors());
 				double distance = cap.distanceTo(pos);
 
 				if (distance < 1e-6) {
@@ -1190,7 +1213,8 @@ public class BridgeModule extends ConfigurableWorldModule {
 									s.getStartNode().equals(segment.getEndNode())));
 				} else {
 					isCap = isConnectedToGround(segment.getStartNode(), outline)
-							|| isConnectedToGround(segment.getEndNode(), outline);
+							|| isConnectedToGround(segment.getEndNode(), outline)
+							|| isSharedWithOtherBridge(segment);
 				}
 
 				if (isCap ^ currentIsCap) {
@@ -1228,6 +1252,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 			this.edges = edges;
 			this.caps = caps;
 
+			for (MapAreaSegment segment : area.getAreaSegmentsOuter()) {
+				capVertexNodes.put(segment.getStartNode().getPos(), segment.getStartNode());
+				capVertexNodes.put(segment.getEndNode().getPos(), segment.getEndNode());
+			}
+
 			/* calculate the centerline */
 
 			if (this.edges.size() == 2 && this.caps.size() == 2) {
@@ -1253,6 +1282,21 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			}
 
+		}
+
+		/**
+		 * returns true if a segment of this bridge's outline is also part of another bridge area's outline,
+		 * i.e. this bridge continues as a different bridge in the air
+		 */
+		private boolean isSharedWithOtherBridge(MapAreaSegment segment) {
+			for (MapArea other : segment.getStartNode().getAdjacentAreas()) {
+				if (other != element
+						&& other.getTags().contains("man_made", "bridge")
+						&& segment.getEndNode().getAdjacentAreas().contains(other)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		/**
@@ -1362,8 +1406,11 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			this.edges = List.of(new PolylineXZ(leftOutline), new PolylineXZ(rightOutline));
 			this.caps = List.of(
-					new PolylineXZ(getFirst(leftOutline), getFirst(rightOutline)),
-					new PolylineXZ(getLast(leftOutline), getLast(rightOutline)));
+					new PolylineXZ(getFirst(leftOutline), getFirst(nodes).getPos(), getFirst(rightOutline)),
+					new PolylineXZ(getLast(leftOutline), getLast(nodes).getPos(), getLast(rightOutline)));
+
+			this.caps.get(0).vertices().forEach(v -> capVertexNodes.put(v, getFirst(nodes)));
+			this.caps.get(1).vertices().forEach(v -> capVertexNodes.put(v, getLast(nodes)));
 
 			List<VectorXZ> outline = new ArrayList<>(leftOutline);
 			outline.addAll(Lists.reverse(rightOutline));

@@ -5,11 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bboxUnion;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -30,9 +26,8 @@ import org.osm2world.world.data.WorldObject;
 /**
  * a surface (consisting of one or more {@link FaceXYZ}s) that {@link Connector}s can attach to.
  * <p>
- * The surface's geometry can be replaced using {@link #updateGeometryFrom(AttachmentSurface)},
+ * The surface's geometry can be replaced using {@link #updateGeometry(Collection, Function)},
  * e.g. when the {@link WorldObject} it belongs to has been moved.
- * The instance itself is kept because attached {@link Connector}s hold references to it.
  */
 public class AttachmentSurface implements BoundedObject {
 
@@ -87,8 +82,45 @@ public class AttachmentSurface implements BoundedObject {
 	}
 
 	/**
-	 * replaces this surface's geometry (faces and base elevation) with that of another surface.
-	 * Attached connectors are kept, but not moved.
+	 * replaces this surface's geometry (faces and base elevation) and updates any attached connectors.
+	 */
+	public void updateGeometry(Collection<? extends FlatSimplePolygonShapeXYZ> faces,
+			@Nullable Function<VectorXZ, Double> baseEleFunction) {
+
+		setGeometry(faces, baseEleFunction);
+
+		for (Connector connector : attachedConnectors) {
+			assert connector.attachmentProperties != null;
+			AttachmentPoint p = findAttachmentPoint(connector.attachmentProperties, connector.getPosXYZ());
+			if (p != null) {
+				connector.setPosXYZ(p.pos);
+			}
+		}
+
+	}
+
+	/**
+	 * version of {@link #updateGeometry(Collection, Function)} which only moves the geometry by a given vector.
+	 * More constrained and efficient version because it doesn't allow the surface to be deformed.
+	 */
+	public void updateGeometry(VectorXYZ moveVector) {
+
+		Collection<? extends FlatSimplePolygonShapeXYZ> newFaces = faces.stream()
+				.map(f -> f.shift(moveVector))
+				.toList();
+		Function<VectorXZ, Double> newBaseEleFunction = baseEleFunction == null ? null
+				: xz -> baseEleFunction.apply(xz.subtract(moveVector.xz())) + moveVector.y;
+
+		setGeometry(newFaces, newBaseEleFunction);
+
+		for (Connector connector : attachedConnectors) {
+			connector.setPosXYZ(connector.getPosXYZ().add(moveVector));
+		}
+
+	}
+
+	/**
+	 * variant of {@link #updateGeometry(Collection, Function)} which takes the geometry from another surface object
 	 *
 	 * @param newSurface  surface with the new geometry, must have the same types as this one
 	 */
@@ -96,7 +128,7 @@ public class AttachmentSurface implements BoundedObject {
 		if (!types.equals(newSurface.types)) {
 			throw new IllegalArgumentException("surface types differ: " + types + " vs. " + newSurface.types);
 		}
-		setGeometry(newSurface.faces, newSurface.baseEleFunction);
+		updateGeometry(newSurface.faces, newSurface.baseEleFunction);
 	}
 
 	public Collection<String> getTypes() {

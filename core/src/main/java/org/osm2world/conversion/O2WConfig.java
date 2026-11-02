@@ -375,11 +375,12 @@ public class O2WConfig {
 		return switch (getString("eleCalculator", "")) {
 			case "NoOpEleCalculator" -> NoOpEleCalculator::new;
 			case "EleTagEleCalculator" -> EleTagEleCalculator::new;
+			case "BridgeTunnelEleCalculator" -> BridgeTunnelEleCalculator::new;
 			case "ConstraintEleCalculator" -> {
 				System.err.println("ConstraintEleCalculator is not available in this version of OSM2World");
-				yield BridgeTunnelEleCalculator::new;
+				yield ClusterEleCalculator::new;
 			}
-			default -> BridgeTunnelEleCalculator::new;
+			default -> ClusterEleCalculator::new;
 		};
 	}
 

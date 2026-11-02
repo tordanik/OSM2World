@@ -1,7 +1,5 @@
 package org.osm2world.world.connectors;
 
-import static org.osm2world.world.connectors.GroundState.ON;
-
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -88,6 +86,9 @@ public class Connector {
 	/** the current position of this connector, which is changed from {@link #originalPos} by various calculations */
 	private VectorXYZ posXYZ;
 
+	/** the terrain elevation at this connector's position, NaN if it has not been set yet */
+	private double terrainEle = Double.NaN;
+
 	private AttachmentSurface attachedSurface = null;
 	private VectorXYZ attachedSurfaceNormal = null;
 
@@ -126,6 +127,24 @@ public class Connector {
 	 */
 	public void setPosXYZ(VectorXYZ posXYZ) {
 		this.posXYZ = posXYZ;
+	}
+
+	/**
+	 * sets the terrain elevation at this connector's position.
+	 * This is done before any other elevation calculations and does not change the connector's position.
+	 */
+	public void setTerrainEle(double terrainEle) {
+		this.terrainEle = terrainEle;
+	}
+
+	/**
+	 * returns the terrain elevation at this connector's position.
+	 * Unlike {@link #getPosXYZ()}, this is not changed by elevation calculations.
+	 *
+	 * @return  the terrain elevation, or NaN if it has not been set yet
+	 */
+	public double getTerrainEle() {
+		return terrainEle;
 	}
 
 	/**
@@ -177,13 +196,13 @@ public class Connector {
 
 	/**
 	 * returns true if this connector is to be joined with the other one.
-	 * It is possible that connectors are joined even if this method returns
-	 * false - that can happen when they are both joined to a third connector.
+	 * This is the case if both are at the same position and have the same (non-null) {@link #reference}.
+	 * Attachment through {@link #attachmentProperties} is a separate mechanism which disables this type of connection.
 	 */
 	public boolean connectsTo(Connector other) {
 		return pos.equals(other.pos)
-				&& ((reference != null && reference == other.reference)
-					|| (groundState == ON && other.groundState == ON));
+				&& !isAttached() && !other.isAttached()
+				&& reference != null && reference == other.reference;
 	}
 
 	@Override

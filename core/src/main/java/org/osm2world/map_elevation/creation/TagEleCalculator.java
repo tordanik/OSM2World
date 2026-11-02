@@ -16,22 +16,26 @@ import org.osm2world.world.data.WorldObject;
 public abstract class TagEleCalculator implements EleCalculator {
 
 	@Override
-	public void calculateElevations(@Nonnull MapData mapData) {
+	public void calculateElevations(@Nonnull MapData mapData, @Nonnull TerrainInterpolator terrain) {
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 
 			for (Connector conn : worldObject.getConnectors()) {
 
+				if (conn.isAttached()) continue;
+
+				double terrainEle = Double.isNaN(conn.getTerrainEle()) ? conn.getPosXYZ().y : conn.getTerrainEle();
+
 				Double ele = null;
 
 				if (conn.reference instanceof MapNode node) {
 					// get ele from node
-					ele = getEleForTags(node.getTags(), conn.getPosXYZ().y);
+					ele = getEleForTags(node.getTags(), terrainEle);
 				}
 
 				if (ele == null) {
 					// get ele from Object's tags
-					ele = getEleForTags(worldObject.getPrimaryMapElement().getTags(), conn.getPosXYZ().y);
+					ele = getEleForTags(worldObject.getPrimaryMapElement().getTags(), terrainEle);
 				}
 
 				if (ele != null) {

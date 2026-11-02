@@ -38,4 +38,8 @@ public class FaceXYZ extends PolygonXYZ implements FlatSimplePolygonShapeXYZ {
 		return normal;
 	}
 
+	public FaceXYZ shift(VectorXYZ v) {
+		return new FaceXYZ(vertexLoop.stream().map(v::add).toList());
+	}
+
 }

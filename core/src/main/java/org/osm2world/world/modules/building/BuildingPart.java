@@ -535,6 +535,27 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		return emptySet();
 	}
 
+	public Collection<BuildingEntrance> getEntrances() {
+
+		List<BuildingEntrance> result = new ArrayList<>();
+
+		for (MapNode node : area.getBoundaryNodes()) {
+			if (Door.isDoorNode(node)) {
+
+				int levelNumber = parseLevels(node.getTags().getValue("level"), List.of(0)).get(0);
+				Level level = levelStructure.level(levelNumber);
+
+				if (level != null) {
+					result.add(new BuildingEntrance(node, level.relativeEle));
+				}
+
+			}
+		}
+
+		return result;
+
+	}
+
 	BuildingPartInterior getIndoor() {
 		return buildingPartInterior;
 	}

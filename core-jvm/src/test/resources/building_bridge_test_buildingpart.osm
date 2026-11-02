@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='false' generator='JOSM'>
+  <node id='-103362' action='modify' lat='48.56693403409' lon='13.44898192239' />
+  <node id='-103363' action='modify' lat='48.56700906454' lon='13.44897705076' />
+  <node id='-103368' action='modify' lat='48.56693844936' lon='13.44913721128' />
+  <node id='-103369' action='modify' lat='48.56701347981' lon='13.44913233965' />
+  <node id='-103374' action='modify' lat='48.56692465206' lon='13.44843550301' />
+  <node id='-103375' action='modify' lat='48.56692906733' lon='13.44859079191' />
+  <node id='-103376' action='modify' lat='48.56700409779' lon='13.44858592028' />
+  <node id='-103377' action='modify' lat='48.56699968252' lon='13.44843063139' />
+  <node id='-103378' action='modify' lat='48.56696658257' lon='13.44858835609'>
+    <tag k='entrance' v='yes' />
+    <tag k='level' v='1' />
+  </node>
+  <node id='-103379' action='modify' lat='48.56697154933' lon='13.44897948658'>
+    <tag k='entrance' v='yes' />
+    <tag k='level' v='2' />
+  </node>
+  <node id='-103484' action='modify' lat='48.56697455022' lon='13.44887073286'>
+    <tag k='highway' v='street_lamp' />
+    <tag k='location' v='bridge' />
+  </node>
+  <node id='-103682' action='modify' lat='48.56700882633' lon='13.4489687694' />
+  <node id='-103767' action='modify' lat='48.56693401431' lon='13.44897379397' />
+  <way id='-102395' action='modify'>
+    <nd ref='-103362' />
+    <nd ref='-103368' />
+    <nd ref='-103369' />
+    <nd ref='-103363' />
+    <nd ref='-103379' />
+    <nd ref='-103362' />
+    <tag k='building:levels' v='3' />
+    <tag k='building:min_level' v='1' />
+    <tag k='building:part' v='yes' />
+  </way>
+  <way id='-102400' action='modify'>
+    <nd ref='-103374' />
+    <nd ref='-103375' />
+    <nd ref='-103378' />
+    <nd ref='-103376' />
+    <nd ref='-103377' />
+    <nd ref='-103374' />
+    <tag k='building' v='yes' />
+    <tag k='building:levels' v='3' />
+    <tag k='roof:shape' v='flat' />
+  </way>
+  <way id='-102474' action='modify'>
+    <nd ref='-103379' />
+    <nd ref='-103378' />
+    <tag k='bridge' v='yes' />
+    <tag k='highway' v='footway' />
+    <tag k='width' v='2 m' />
+  </way>
+  <way id='-102480' action='modify'>
+    <nd ref='-103369' />
+    <nd ref='-103363' />
+    <nd ref='-103682' />
+    <nd ref='-103767' />
+    <nd ref='-103362' />
+    <nd ref='-103368' />
+    <nd ref='-103369' />
+    <tag k='building' v='yes' />
+    <tag k='roof:shape' v='flat' />
+  </way>
+  <way id='-102542' action='modify'>
+    <nd ref='-103767' />
+    <nd ref='-103362' />
+    <nd ref='-103368' />
+    <nd ref='-103369' />
+    <nd ref='-103363' />
+    <nd ref='-103682' />
+    <nd ref='-103767' />
+    <tag k='building:levels' v='1' />
+    <tag k='building:part' v='yes' />
+  </way>
+</osm>

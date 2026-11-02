@@ -247,7 +247,8 @@ public class ViewerFrame extends JFrame {
 			List<Class<? extends EleCalculator>> eleCalculatorClasses = List.of(
 					NoOpEleCalculator.class,
 					EleTagEleCalculator.class,
-					BridgeTunnelEleCalculator.class);
+					BridgeTunnelEleCalculator.class,
+					ClusterEleCalculator.class);
 
 			for (Class<? extends EleCalculator> c : eleCalculatorClasses) {
 

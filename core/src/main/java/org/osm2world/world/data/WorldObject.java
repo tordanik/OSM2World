@@ -21,6 +21,7 @@ import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.connectors.Connector;
+import org.osm2world.world.connectors.EleRelation;
 import org.osm2world.world.connectors.GroundState;
 
 public interface WorldObject {
@@ -85,6 +86,15 @@ public interface WorldObject {
 	 * {@link Connector}s. Called after {@link #getConnectors()}.
 	 */
 	public default void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+
+	/**
+	 * returns relations between the elevations of this object's {@link Connector}s,
+	 * such as connectors which can only move up or down together.
+	 * Called after {@link #getConnectors()}.
+	 */
+	public default Collection<EleRelation> getEleRelations() {
+		return emptyList();
+	}
 
 	/**
 	 * returns this object's surfaces that other objects can attach themselves to

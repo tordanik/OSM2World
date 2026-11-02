@@ -44,6 +44,7 @@ import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.BridgeModule;
 import org.osm2world.world.modules.TunnelModule;
+import org.osm2world.world.modules.building.Building;
 
 public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWaySegmentWorldObject, BoundedObject {
 
@@ -51,7 +52,16 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 	public final MapWaySegment segment;
 
-	public final boolean attachableEndpoints;
+	/** whether this type of object may use endpoint connectors (see {@link #usesEndpointConnectors}) */
+	private final boolean allowsEndpointConnectors;
+
+	/**
+	 * whether {@link #connectors} only consists of two connectors at the ends of the way,
+	 * which may attach to surfaces or connect to building entrances.
+	 * The elevation of the way is then interpolated between these two connectors.
+	 * Can only be true if {@link #allowsEndpointConnectors} is.
+	 */
+	private boolean usesEndpointConnectors = false;
 
 	private VectorXZ startCutLeft = null;
 	private VectorXZ startCutCenter = null;
@@ -76,9 +86,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		this(segment, false);
 	}
 
-	protected AbstractNetworkWaySegmentWorldObject(MapWaySegment segment, boolean attachableEndpoints) {
+	protected AbstractNetworkWaySegmentWorldObject(MapWaySegment segment, boolean allowsEndpointConnectors) {
 		this.segment = segment;
-		this.attachableEndpoints = attachableEndpoints;
+		this.allowsEndpointConnectors = allowsEndpointConnectors;
 	}
 
 	@Override
@@ -261,10 +271,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		/* maybe override connectors with custom connectors for attachable endpoints */
 
-		if (!broken && attachableEndpoints) {
+		if (!broken && allowsEndpointConnectors) {
 			ConnectorGroup newConnectors = createAttachableEndpointConnectors();
 			if (newConnectors != null) {
 				connectors = newConnectors;
+				usesEndpointConnectors = true;
 			}
 		}
 
@@ -491,7 +502,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 */
 	public List<VectorXYZ> getCenterline() {
 
-		if (attachableEndpoints && connectors.stream().allMatch(Connector::isAttached)) {
+		if (usesEndpointConnectors) {
 
 			List<Connector> startEndConnectors = connectors.stream().toList();
 			assert startEndConnectors.size() == 2;
@@ -540,7 +551,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 * have been calculated.
 	 */
 	public List<VectorXYZ> getOutline(boolean right) {
-		if (attachableEndpoints && connectors != null && connectors.stream().allMatch(Connector::isAttached)) {
+		if (usesEndpointConnectors) {
 
 			List<VectorXYZ> centerline = getCenterline();
 			List<VectorXZ> outlineXZ = getOutlineXZ(right);
@@ -700,23 +711,30 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 		firstNodeTypes.addAll(otherAttachmentTypes);
 		lastNodeTypes.addAll(otherAttachmentTypes);
 
-		/* instantiate attachment connectors */
+		/* ends at building entrances connect to the entrance (unless they need to attach to something else) */
 
-		if (!firstNodeTypes.isEmpty() && !lastNodeTypes.isEmpty()) {
+		boolean firstNodeIsEntrance = Building.isBuildingEntrance(wayStartNode) && otherAttachmentTypes.isEmpty();
+		boolean lastNodeIsEntrance = Building.isBuildingEntrance(wayEndNode) && otherAttachmentTypes.isEmpty();
 
-			ConnectorGroup result = new ConnectorGroup();
+		/* instantiate the connectors */
 
-			result.add(new Connector(wayStartNode.getPos(), null, getGroundState(),
-					new AttachmentProperties(firstNodeTypes, 0, false), this));
-			result.add(new Connector(wayEndNode.getPos(), null, getGroundState(),
-					new AttachmentProperties(lastNodeTypes, 0, false), this));
-
-			return result;
-
+		if ((firstNodeIsEntrance || !firstNodeTypes.isEmpty()) && (lastNodeIsEntrance || !lastNodeTypes.isEmpty())) {
+			return new ConnectorGroup(
+					createEndpointConnector(wayStartNode, firstNodeTypes),
+					createEndpointConnector(wayEndNode, lastNodeTypes));
 		} else {
 			return null;
 		}
 
+	}
+
+	private Connector createEndpointConnector(MapNode node, List<String> surfaceTypes) {
+		if (surfaceTypes.isEmpty()) {
+			return new Connector(node.getPos(), node, getGroundState());
+		} else {
+			return new Connector(node.getPos(), node, getGroundState(),
+					new AttachmentProperties(surfaceTypes, 0, false), this);
+		}
 	}
 
 	/**

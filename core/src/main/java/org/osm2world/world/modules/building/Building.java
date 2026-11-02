@@ -1,10 +1,10 @@
 package org.osm2world.world.modules.building;
 
-import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.math.algorithms.CAGUtil.subtractPolygons;
 import static org.osm2world.math.algorithms.GeometryUtil.roughlyContains;
 import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
-import static org.osm2world.world.connectors.GroundState.ON;
+import static org.osm2world.world.connectors.GroundState.DERIVED;
+import static org.osm2world.world.connectors.RigidConnectorSet.GroundEleRule.LOWEST;
 
 import java.util.*;
 
@@ -14,14 +14,12 @@ import org.osm2world.conversion.O2WConfig;
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_data.data.MapRelation.Membership;
 import org.osm2world.map_data.data.overlaps.MapOverlap;
+import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.scene.mesh.LevelOfDetail;
-import org.osm2world.world.connectors.AttachmentSurface;
-import org.osm2world.world.connectors.Connector;
-import org.osm2world.world.connectors.ConnectorGroup;
-import org.osm2world.world.connectors.GroundState;
+import org.osm2world.world.connectors.*;
 import org.osm2world.world.data.AreaWorldObject;
 import org.osm2world.world.data.CachingProceduralWorldObject;
 import org.osm2world.world.modules.building.indoor.IndoorWall;
@@ -38,7 +36,15 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	private final List<BuildingPart> parts = new ArrayList<>();
 
-	private final ConnectorGroup outlineConnectors;
+	private final ConnectorGroup connectors;
+	private final List<EleRelation> eleRelations;
+	private List<AttachmentSurface> surfaces;
+
+	/** connector for the building's base elevation, part of {@link #connectors}. */
+	private final Connector baseConnector;
+
+	/** the elevation of {@link #baseConnector} during the most recent update of the surfaces */
+	private Double lastBaseConnectorElevation = null;
 
 	private Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
@@ -120,14 +126,37 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 			areas.forEach(area -> parts.add(BuildingPart.create(this, area, config)));
 		}
 
-		/* create connectors along the outline.
-		 * Because the ground around buildings is not necessarily plane,
-		 * they aren't directly used for ele, but instead their minimum.
-		 */
+		/* create a connector for the overall building, representing the base elevation */
 
-		outlineConnectors = new ConnectorGroup();
-		areas.forEach(area -> outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON));
+		baseConnector = new Connector(areas.get(0).getPolygon().getOuter().getCentroid(), null, DERIVED);
+		connectors = new ConnectorGroup(baseConnector);
 
+		Map<Connector, Double> offsets = new HashMap<>();
+		offsets.put(baseConnector, 0.0);
+
+		LowestGroundContact lowestGroundRelation = new LowestGroundContact(baseConnector, areas.stream().map(MapArea::getPolygon).toList());
+
+		/* create connectors at entrances, at the height of the entrance's level.
+		 * All connectors move up and down together with the building's ground level. */
+
+		List<BuildingEntrance> entrances = parts.stream().flatMap(p -> p.getEntrances().stream()).toList();
+
+		for (BuildingEntrance entrance : entrances) {
+			var connector = new Connector(entrance.node().getPos(), entrance.node(), entrance.groundState());
+			connectors.add(connector);
+			offsets.put(connector, entrance.relativeEle());
+		}
+
+		eleRelations = entrances.isEmpty()
+				? List.of(lowestGroundRelation)
+				: List.of(new RigidConnectorSet(LOWEST, offsets), lowestGroundRelation);
+
+	}
+
+	/** returns true if the node is an entrance on the outline of a building */
+	public static boolean isBuildingEntrance(MapNode node) {
+		return node.getTags().containsKey("entrance")
+				&& node.getAdjacentAreas().stream().anyMatch(a -> a.getTags().containsKey("building"));
 	}
 
 	public List<BuildingPart> getParts() {
@@ -157,7 +186,12 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	public ConnectorGroup getConnectors() {
-		return outlineConnectors;
+		return connectors;
+	}
+
+	@Override
+	public Collection<EleRelation> getEleRelations() {
+		return eleRelations;
 	}
 
 	@Override
@@ -173,18 +207,12 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 		}
 	}
 
+	/**
+	 * returns the elevation of the building's ground level,
+	 * i.e. the lowest point where the building's outline has contact with the ground
+	 */
 	public double getGroundLevelEle() {
-
-		double minEle = POSITIVE_INFINITY;
-
-		for (Connector c : outlineConnectors) {
-			if (c.getPosXYZ().y < minEle) {
-				minEle = c.getPosXYZ().y;
-			}
-		}
-
-		return minEle;
-
+		return baseConnector.getPosXYZ().y;
 	}
 
 	@Override
@@ -200,9 +228,19 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 	@Override
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-		List<AttachmentSurface> result = new ArrayList<>(super.getAttachmentSurfaces());
-		forEach(parts, part -> result.addAll(part.getAttachmentSurfaces()));
-		return result;
+		if (surfaces == null) {
+			surfaces = new ArrayList<>(super.getAttachmentSurfaces());
+			forEach(parts, part -> surfaces.addAll(part.getAttachmentSurfaces()));
+			lastBaseConnectorElevation = baseConnector.getPosXYZ().y;
+		}
+		return surfaces;
+	}
+
+	@Override
+	public void updateAttachmentSurfaces(List<AttachmentSurface> surfaces) {
+		double eleDiff = baseConnector.getPosXYZ().y - lastBaseConnectorElevation;
+		surfaces.forEach(surface -> surface.updateGeometry(new VectorXYZ(0, eleDiff, 0)));
+		lastBaseConnectorElevation = baseConnector.getPosXYZ().y;
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import org.osm2world.conversion.ProgressListener;
 import org.osm2world.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.map_elevation.creation.*;
+import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.datastructures.IndexGrid;
 import org.osm2world.math.datastructures.SpatialIndex;
 import org.osm2world.math.geo.GeoBounds;
@@ -173,8 +174,16 @@ class O2WConverterImpl {
 		/* create terrain and attach connectors */
 		updatePhase(perfListener, ProgressListener.Phase.TERRAIN);
 
-		calculateElevations(mapData, mapProjection, eleData, config);
-		attachConnectors(mapData);
+		TerrainInterpolator terrain = interpolateTerrainElevations(mapData, mapProjection, eleData, config);
+
+		AttachmentOrder attachmentOrder = attachConnectors(mapData);
+
+		EleCalculator eleCalculator = config.eleCalculator().get();
+		eleCalculator.calculateElevations(mapData, terrain);
+
+		FaultTolerantIterationUtil.forEach(attachmentOrder.updateOrder, object -> {
+			object.updateAttachmentSurfaces(attachmentOrder.surfacesByObject.get(object));
+		});
 
 		/* convert 3d scene to target representation */
 		updatePhase(perfListener, ProgressListener.Phase.OUTPUT);
@@ -240,19 +249,23 @@ class O2WConverterImpl {
 	 * e.g. a traffic sign attached to a street lamp on a roof.
 	 * If objects depend on each other in a cycle, one of the connectors is attached without waiting.
 	 */
-	private void attachConnectors(MapData mapData) {
+	private AttachmentOrder attachConnectors(MapData mapData) {
 
 		/* collect the surfaces */
 
 		IndexGrid<AttachmentSurface> surfaceIndex = new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
 
 		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = new IdentityHashMap<>();
+		List<WorldObject> objectsWithSurfaces = new ArrayList<>();
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
 			if (object.getParent() == null) {
 				List<AttachmentSurface> surfaces = List.copyOf(object.getAttachmentSurfaces());
-				surfacesByObject.put(object, surfaces);
-				surfaces.forEach(surfaceIndex::insert);
+				if (!surfaces.isEmpty()) {
+					surfacesByObject.put(object, surfaces);
+					objectsWithSurfaces.add(object);
+					surfaces.forEach(surfaceIndex::insert);
+				}
 			}
 		});
 
@@ -274,7 +287,11 @@ class O2WConverterImpl {
 			}
 		});
 
-		/* attach connectors, deferring those which depend on objects with pending connectors */
+		/* attach connectors, deferring those which depend on objects with pending connectors.
+		 * Objects without pending connectors don't depend on others, so they come first in the update order. */
+
+		List<WorldObject> updateOrder = new ArrayList<>();
+		objectsWithSurfaces.stream().filter(o -> !pendingConnectors.containsKey(o)).forEach(updateOrder::add);
 
 		boolean forceNext = false;
 
@@ -323,7 +340,10 @@ class O2WConverterImpl {
 
 				if (entry.getValue().isEmpty()) {
 					it.remove();
-					updateSurfaces(object, surfacesByObject.getOrDefault(object, List.of()), surfaceIndex);
+					if (surfacesByObject.containsKey(object)) {
+						updateSurfaces(object, surfacesByObject.get(object), surfaceIndex);
+						updateOrder.add(object);
+					}
 				}
 
 			}
@@ -334,7 +354,18 @@ class O2WConverterImpl {
 
 		}
 
+		return new AttachmentOrder(updateOrder, surfacesByObject);
+
 	}
+
+	/**
+	 * information from {@link #attachConnectors(MapData)} which is needed to update surfaces later on
+	 *
+	 * @param updateOrder  all objects with surfaces, each object comes after the objects it is attached to
+	 * @param surfacesByObject  the surfaces of each object in {@link #updateOrder}
+	 */
+	private record AttachmentOrder(List<WorldObject> updateOrder,
+								   Map<WorldObject, List<AttachmentSurface>> surfacesByObject) {}
 
 	/** returns the object at the top of the {@link WorldObject#getParent()} hierarchy */
 	private static @Nullable WorldObject getRootObject(@Nullable WorldObject object) {
@@ -438,11 +469,12 @@ class O2WConverterImpl {
 	}
 
 	/**
-	 * uses OSM data and terrain elevation data (usually from an external
-	 * source) to calculate elevations for all {@link Connector}s of the
-	 * {@link WorldObject}s
+	 * uses terrain elevation data (usually from an external source)
+	 * to set initial elevations for all {@link Connector}s of the {@link WorldObject}s
+	 *
+	 * @return  the interpolator, which can be used to get the terrain elevation at other positions
 	 */
-	private void calculateElevations(MapData mapData, MapProjection projection,
+	private TerrainInterpolator interpolateTerrainElevations(MapData mapData, MapProjection projection,
 			TerrainEleDataSource eleData, O2WConfig config) {
 
 		TerrainInterpolator interpolator = config.terrainInterpolator().get();
@@ -478,14 +510,13 @@ class O2WConverterImpl {
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 			for (Connector conn : worldObject.getConnectors()) {
-				conn.setPosXYZ(finalInterpolator.interpolateEle(conn.pos));
+				VectorXYZ pos = finalInterpolator.interpolateEle(conn.pos);
+				conn.setTerrainEle(pos.y);
+				conn.setPosXYZ(pos);
 			}
 		});
 
-		/* refine terrain-based elevation with information from map data */
-
-		EleCalculator eleCalculator = config.eleCalculator().get();
-		eleCalculator.calculateElevations(mapData);
+		return finalInterpolator;
 
 	}
 

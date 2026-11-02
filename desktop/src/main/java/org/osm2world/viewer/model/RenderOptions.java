@@ -5,13 +5,13 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.map_elevation.creation.BridgeTunnelEleCalculator;
+import org.osm2world.map_elevation.creation.ClusterEleCalculator;
 import org.osm2world.map_elevation.creation.EleCalculator;
 import org.osm2world.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.map_elevation.creation.ZeroInterpolator;
-import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.output.common.rendering.MutableCamera;
 import org.osm2world.output.common.rendering.Projection;
+import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.viewer.view.debug.DebugView;
 
 public class RenderOptions {
@@ -28,7 +28,7 @@ public class RenderOptions {
 	private boolean backfaceCulling = true;
 
 	Class<? extends TerrainInterpolator> interpolatorClass = ZeroInterpolator.class;
-	Class<? extends EleCalculator> eleCalculatorClass = BridgeTunnelEleCalculator.class;
+	Class<? extends EleCalculator> eleCalculatorClass = ClusterEleCalculator.class;
 
 	public boolean isShowWorldObjects() {
 		return showWorldObjects;

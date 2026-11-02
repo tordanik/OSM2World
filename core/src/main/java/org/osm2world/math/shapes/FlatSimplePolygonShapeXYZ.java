@@ -224,4 +224,6 @@ public interface FlatSimplePolygonShapeXYZ extends BoundedObject {
 
 	}
 
+	FlatSimplePolygonShapeXYZ shift(VectorXYZ v);
+
 }
