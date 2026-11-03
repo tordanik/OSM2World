@@ -1,7 +1,6 @@
 package org.osm2world.output.common;
 
 import static java.util.Objects.requireNonNullElse;
-import static org.osm2world.util.FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER;
 import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 
 import javax.annotation.Nullable;
@@ -54,7 +53,7 @@ public interface DrawBasedOutput extends Output, CommonTarget {
 					renderObject(r);
 				}
 			}
-		}, (e, r) -> DEFAULT_EXCEPTION_HANDLER.accept(e, r.getPrimaryMapElement()));
+		});
 
 		if (!keepOpen) {
 			finish();

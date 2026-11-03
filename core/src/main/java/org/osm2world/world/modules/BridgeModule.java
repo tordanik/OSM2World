@@ -265,7 +265,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 					if (relation == null) {
 						relation = membership.getRelation();
 					} else {
-						ConversionLog.warn("More than one bridge relation for bridge outline", element.getElementWithId());
+						ConversionLog.warn("More than one bridge relation for bridge outline", element);
 					}
 				}
 			}
@@ -561,7 +561,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 						target.drawTriangleStrip(material, triangleStrip,
 								TexCoordUtil.texCoordLists(triangleStrip, material, STRIP_WALL));
 					} catch (InvalidGeometryException e) {
-						ConversionLog.warn("Broken geometry in bridge arches", e, element.getElementWithId());
+						ConversionLog.warn("Broken geometry in bridge arches", e, element);
 					}
 				}
 

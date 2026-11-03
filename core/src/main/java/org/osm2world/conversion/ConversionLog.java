@@ -8,7 +8,10 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.osm2world.map_data.data.MapAreaSegment;
+import org.osm2world.map_data.data.MapElement;
 import org.osm2world.map_data.data.MapRelationElement;
+import org.osm2world.world.data.WorldObject;
 
 /**
  * OSM2World's internal logging solution.
@@ -94,27 +97,27 @@ public class ConversionLog {
 		}
 	}
 
-	public static void log(LogLevel level, String message, @Nullable Throwable e, @Nullable MapRelationElement element) {
-		log(new Entry(level, Instant.now(), message, e, element));
+	public static void log(LogLevel level, String message, @Nullable Throwable e, @Nullable Object element) {
+		log(new Entry(level, Instant.now(), message, e, elementFor(element)));
 	}
 
-	public static void error(String message, Throwable e, @Nullable MapRelationElement element) {
+	public static void error(String message, Throwable e, @Nullable Object element) {
 		log(LogLevel.ERROR, message, e, element);
 	}
 
-	public static void error(String message, Throwable e) {
-		log(LogLevel.ERROR, message, e, null);
-	}
-
-	public static void error(String message, @Nullable MapRelationElement element) {
-		log(LogLevel.ERROR, message, null, element);
+	public static void error(String message, @Nullable Object throwableOrElement) {
+		if (throwableOrElement instanceof Throwable t) {
+			log(LogLevel.ERROR, message, t, null);
+		} else {
+			log(LogLevel.ERROR, message, null, throwableOrElement);
+		}
 	}
 
 	public static void error(String message) {
 		log(LogLevel.ERROR, message, null, null);
 	}
 
-	public static void error(Throwable e, @Nullable MapRelationElement element) {
+	public static void error(Throwable e, @Nullable Object element) {
 		log(LogLevel.ERROR, messageFor(e), e, element);
 	}
 
@@ -122,23 +125,23 @@ public class ConversionLog {
 		log(LogLevel.ERROR, messageFor(e), e, null);
 	}
 
-	public static void warn(String message, Throwable e, @Nullable MapRelationElement element) {
+	public static void warn(String message, Throwable e, @Nullable Object element) {
 		log(LogLevel.WARNING, message, e, element);
 	}
 
-	public static void warn(String message, Throwable e) {
-		log(LogLevel.WARNING, message, e, null);
-	}
-
-	public static void warn(String message, @Nullable MapRelationElement element) {
-		log(LogLevel.WARNING, message, null, element);
+	public static void warn(String message, @Nullable Object throwableOrElement) {
+		if (throwableOrElement instanceof Throwable t) {
+			log(LogLevel.WARNING, message, t, null);
+		} else {
+			log(LogLevel.WARNING, message, null, throwableOrElement);
+		}
 	}
 
 	public static void warn(String message) {
 		log(LogLevel.WARNING, message, null, null);
 	}
 
-	public static void warn(Throwable e, @Nullable MapRelationElement element) {
+	public static void warn(Throwable e, @Nullable Object element) {
 		log(LogLevel.WARNING, messageFor(e), e, element);
 	}
 
@@ -148,6 +151,20 @@ public class ConversionLog {
 
 	private static String messageFor(Throwable e) {
 		return (e.getMessage() != null) ? e.getMessage() : e.getClass().getSimpleName();
+	}
+
+	private static @Nullable MapRelationElement elementFor(@Nullable Object o) {
+		if (o instanceof MapRelationElement e) {
+			return e;
+		} else if (o instanceof MapElement e) {
+			return e.getElementWithId();
+		} else if (o instanceof MapAreaSegment s) {
+			return s.getArea();
+		} else if (o instanceof WorldObject wo && wo.getPrimaryMapElement() != null) {
+			return wo.getPrimaryMapElement().getElementWithId();
+		} else {
+			return null;
+		}
 	}
 
 	private static void flushSuppressedCopies() {

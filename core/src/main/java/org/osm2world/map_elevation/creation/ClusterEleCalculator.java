@@ -10,7 +10,6 @@ import org.osm2world.conversion.ConversionLog;
 import org.osm2world.map_data.data.MapData;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.connectors.LowestGroundContact;
 import org.osm2world.world.data.WorldObject;
@@ -47,7 +46,7 @@ public class ClusterEleCalculator implements EleCalculator {
 			try {
 				calculateClusterEle(cluster, terrainEle);
 			} catch (Exception e) {
-				FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER.accept(e, cluster.getElementForLogging());
+				ConversionLog.error(e, cluster.getElementForLogging());
 			}
 		}
 	}

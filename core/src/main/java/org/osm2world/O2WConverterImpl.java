@@ -330,7 +330,7 @@ class O2WConverterImpl {
 						attachToCandidateSurface(connector, candidates);
 
 					} catch (Exception e) {
-						FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER.accept(e, object);
+						ConversionLog.error(e, object);
 					}
 
 					connectorIt.remove();
@@ -448,7 +448,7 @@ class O2WConverterImpl {
 		try {
 			object.updateAttachmentSurfaces(surfaces);
 		} catch (Exception e) {
-			FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER.accept(e, object);
+			ConversionLog.error(e, object);
 		}
 
 		surfaces.forEach(surfaceIndex::insert);

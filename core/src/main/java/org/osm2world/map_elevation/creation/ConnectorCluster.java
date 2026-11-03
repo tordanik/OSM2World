@@ -99,11 +99,11 @@ public final class ConnectorCluster {
 				}
 
 				if (!connectorsInRigidSets.add(c)) {
-					warn("Connector is part of multiple rigid sets", object);
+					ConversionLog.warn("Connector is part of multiple rigid sets", object);
 				}
 
 				if (!unionFind.relate(c, first, set.getOffset(c) - set.getOffset(first))) {
-					warn("Contradictory rigid connector sets, ignoring part of " + set, object);
+					ConversionLog.warn("Contradictory rigid connector sets, ignoring part of " + set, object);
 				}
 
 			}
@@ -123,7 +123,7 @@ public final class ConnectorCluster {
 					Connector a = connectorsAtPos.get(i);
 					Connector b = connectorsAtPos.get(j);
 					if (a.connectsTo(b) && !unionFind.relate(a, b, 0)) {
-						warn("Ignoring connection which contradicts other elevation relations",
+						ConversionLog.warn("Ignoring connection which contradicts other elevation relations",
 								objectForConnector.get(a));
 					}
 				}
@@ -254,6 +254,8 @@ public final class ConnectorCluster {
 		for (Connector c : connectors) {
 			if (c.reference instanceof MapRelationElement element) {
 				return element;
+			} else if (c.reference instanceof MapElement element) {
+				return element.getElementWithId();
 			} else if (c.object != null && c.object.getPrimaryMapElement() != null) {
 				return c.object.getPrimaryMapElement().getElementWithId();
 			}
@@ -318,11 +320,6 @@ public final class ConnectorCluster {
 			case HIGHEST -> values.max().orElseThrow();
 		};
 
-	}
-
-	private static void warn(String message, @Nullable WorldObject object) {
-		MapElement element = object != null ? object.getPrimaryMapElement() : null;
-		ConversionLog.warn(message, element != null ? element.getElementWithId() : null);
 	}
 
 	/**
