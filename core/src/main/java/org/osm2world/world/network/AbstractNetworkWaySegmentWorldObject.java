@@ -45,6 +45,7 @@ import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.BridgeModule;
 import org.osm2world.world.modules.TunnelModule;
 import org.osm2world.world.modules.building.Building;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWaySegmentWorldObject, BoundedObject {
 
@@ -607,6 +608,17 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 		}
 
+	}
+
+	/** cached result of {@link #getSurfaceClaims()} */
+	private @Nullable List<SurfaceClaim> surfaceClaims = null;
+
+	@Override
+	public List<SurfaceClaim> getSurfaceClaims() {
+		if (surfaceClaims == null) {
+			surfaceClaims = SurfaceClaim.createDefaultClaims(this);
+		}
+		return surfaceClaims;
 	}
 
 	@Override

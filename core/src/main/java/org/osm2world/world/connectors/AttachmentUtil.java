@@ -50,11 +50,11 @@ public final class AttachmentUtil {
 				|| (tags.containsKey("bridge") && !"no".equals(tags.getValue("bridge")))
 				|| memberships.stream().anyMatch(m ->"on_bridge".equals(m.getRole())
 						&& m.getRelation().getTags().contains("type", "bridge"))) {
-			types.add("bridge");
 			Integer layer = ValueParseUtil.parseInt(tags.getValue("layer"));
 			if (layer != null) {
 				types.add("bridge-layer" + layer);
 			}
+			types.add("bridge");
 		}
 
 		/* handle rooftop features */

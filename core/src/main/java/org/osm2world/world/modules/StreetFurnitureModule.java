@@ -1704,6 +1704,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			return renderAttachmentSurfaces();
+		}
+
+		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			target.setCurrentLodRange(LOD3, LOD4);
@@ -1851,6 +1856,11 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public StreetLamp(MapNode node) {
 			super(node);
+		}
+
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			return renderAttachmentSurfaces();
 		}
 
 		@Override

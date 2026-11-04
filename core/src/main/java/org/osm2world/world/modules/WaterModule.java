@@ -274,7 +274,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public GroundState getGroundState() {
-			if (super.getConnectors().stream().allMatch(Connector::isAttached)) {
+			if (super.getGroundState() == GroundState.ATTACHED) {
 				return GroundState.ATTACHED;
 			} else if (BridgeModule.isBridge(area.getTags())) {
 				return GroundState.ABOVE;

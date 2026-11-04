@@ -5,12 +5,15 @@ import static java.util.stream.Collectors.toSet;
 import java.util.*;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.map_data.data.MapNode;
 import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.connectors.GroundState;
 import org.osm2world.world.data.OutlineNodeWorldObject;
 import org.osm2world.world.data.WorldObject;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 /**
  * parent type for junctions and connectors between {@link NetworkWaySegmentWorldObject}s, see there for more info
@@ -50,6 +53,17 @@ public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObj
 			return GroundState.ON;
 		}
 
+	}
+
+	/** cached result of {@link #getSurfaceClaims()} */
+	private @Nullable List<SurfaceClaim> surfaceClaims = null;
+
+	@Override
+	public List<SurfaceClaim> getSurfaceClaims() {
+		if (surfaceClaims == null) {
+			surfaceClaims = SurfaceClaim.createDefaultClaims(this);
+		}
+		return surfaceClaims;
 	}
 
 	@Override

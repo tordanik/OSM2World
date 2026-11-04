@@ -858,16 +858,12 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 			PolygonShapeXZ polygon = getOutlinePolygonXZ();
 
-			/* find attached features to subtract from the deck surface */
+			/* find the areas of objects on the deck to subtract from the deck surface */
 
 			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
 			if (subtractAttachedObjects && attachmentSurface != null) {
-				for (Connector connector : attachmentSurface.getAttachedConnectors()) {
-					if (connector.object != null) {
-						subtractPolys.addAll(connector.object.getRawGroundFootprint());
-					}
-				}
+				subtractPolys.addAll(attachmentSurface.getClaimedArea());
 			}
 
 			subtractPolys.addAll(polygon.getHoles());
@@ -1040,7 +1036,9 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 		public double getBridgeEleAt(VectorXZ pos) {
 
-			if (capConnectorSets == null) throw new IllegalStateException("connectors not initialized");
+			if (capConnectorSets == null) {
+				getConnectors();
+			}
 
 			double ele;
 

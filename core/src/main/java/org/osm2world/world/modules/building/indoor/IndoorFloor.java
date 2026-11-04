@@ -15,7 +15,6 @@ import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.connectors.AttachmentSurface;
-import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.building.BuildingPart;
 
@@ -64,16 +63,12 @@ public class IndoorFloor {
 
         if (render && polygon != null) {
 
-    		/* subtract attached areas from the floor polygon */
+    		/* subtract areas of objects on the floor from the floor polygon */
 
     		List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
     		if (attachmentSurface != null) {
-    			for (Connector connector : attachmentSurface.getAttachedConnectors()) {
-					if (connector.object != null) {
-    					subtractPolys.addAll(connector.object.getRawGroundFootprint());
-    				}
-    			}
+    			subtractPolys.addAll(attachmentSurface.getClaimedArea());
     		}
 
     		Collection<? extends PolygonShapeXZ> polygons;

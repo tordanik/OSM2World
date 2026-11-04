@@ -18,13 +18,15 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.AxisAlignedRectangleXZ;
 import org.osm2world.math.shapes.FaceXYZ;
 import org.osm2world.math.shapes.FlatSimplePolygonShapeXYZ;
+import org.osm2world.math.shapes.PolygonShapeXZ;
 import org.osm2world.scene.mesh.Geometry;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.world.connectors.Connector.AttachmentProperties;
 import org.osm2world.world.data.WorldObject;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 /**
- * a surface (consisting of one or more {@link FaceXYZ}s) that {@link Connector}s can attach to.
+ * a surface (consisting of {@link FaceXYZ}s) that {@link Connector}s and {@link SurfaceClaim}s can attach to.
  * <p>
  * The surface's geometry can be replaced using {@link #updateGeometry(Collection, Function)},
  * e.g. when the {@link WorldObject} it belongs to has been moved.
@@ -54,6 +56,8 @@ public class AttachmentSurface implements BoundedObject {
 	private double minEle;
 
 	private final Collection<Connector> attachedConnectors = new ArrayList<>();
+
+	private final List<SurfaceClaim> claims = new ArrayList<>();
 
 	/**
 	 * @param baseEleFunction  function for {@link #getBaseEleAt(VectorXZ)},
@@ -153,6 +157,25 @@ public class AttachmentSurface implements BoundedObject {
 
 	public void addAttachedConnector(Connector connector) {
 		this.attachedConnectors.add(connector);
+	}
+
+	/** returns the claims which have been placed on this surface */
+	public List<SurfaceClaim> getClaims() {
+		return Collections.unmodifiableList(claims);
+	}
+
+	/**
+	 * returns the areas covered by the {@link #getClaims()} on this surface, i.e. their resolved footprints.
+	 * The owner of the surface can subtract these from the surface's visible geometry.
+	 */
+	public List<PolygonShapeXZ> getClaimedArea() {
+		return claims.stream().flatMap(c -> c.getFootprint().stream()).toList();
+	}
+
+	/** adds a claim. Only for use by {@link SurfaceClaim#assign(String, AttachmentSurface)} */
+	public void addClaim(SurfaceClaim claim) {
+		if (claim.getSurface() != this) throw new IllegalArgumentException("claim is not assigned to this surface");
+		this.claims.add(claim);
 	}
 
 	@Override

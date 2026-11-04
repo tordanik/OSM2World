@@ -170,6 +170,12 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			getConnectors(); // rendering needs the connectors to exist
+			return renderAttachmentSurfaces();
+		}
+
+		@Override
 		public void buildMeshesAndModels(Target target) {
 
 			LevelOfDetail minLod = LOD2;

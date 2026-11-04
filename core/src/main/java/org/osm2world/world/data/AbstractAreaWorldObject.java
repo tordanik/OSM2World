@@ -18,6 +18,7 @@ import org.osm2world.world.connectors.AttachmentUtil;
 import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.connectors.ConnectorGroup;
 import org.osm2world.world.connectors.GroundState;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 
 /**
@@ -132,6 +133,17 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 			throw new IllegalArgumentException(pos + " is not within the triangulation of " + this);
 		}
 
+	}
+
+	/** cached result of {@link #getSurfaceClaims()} */
+	private @Nullable List<SurfaceClaim> surfaceClaims = null;
+
+	@Override
+	public List<SurfaceClaim> getSurfaceClaims() {
+		if (surfaceClaims == null) {
+			surfaceClaims = SurfaceClaim.createDefaultClaims(this);
+		}
+		return surfaceClaims;
 	}
 
 	@Override

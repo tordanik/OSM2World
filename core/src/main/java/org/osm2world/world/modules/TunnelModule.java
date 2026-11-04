@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.*;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
@@ -33,6 +34,7 @@ import org.osm2world.world.modules.common.BridgeOrTunnel;
 import org.osm2world.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.world.network.JunctionNodeWorldObject;
 import org.osm2world.world.network.VisibleConnectorNodeWorldObject;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 /**
  * adds tunnels to the world.
@@ -314,6 +316,17 @@ public class TunnelModule extends AbstractModule {
 
 			return outline;
 
+		}
+
+		/** cached result of {@link #getSurfaceClaims()} */
+		private @Nullable List<SurfaceClaim> surfaceClaims = null;
+
+		@Override
+		public List<SurfaceClaim> getSurfaceClaims() {
+			if (surfaceClaims == null) {
+				surfaceClaims = SurfaceClaim.createDefaultClaims(this);
+			}
+			return surfaceClaims;
 		}
 
 		@Override

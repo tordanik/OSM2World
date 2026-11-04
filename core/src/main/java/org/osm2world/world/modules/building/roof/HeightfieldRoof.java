@@ -22,7 +22,6 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.connectors.AttachmentSurface;
-import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.modules.building.BuildingPart;
 
 /**
@@ -132,16 +131,12 @@ abstract public class HeightfieldRoof extends Roof {
 
 	private List<TriangleXYZ> getRoofTriangles(double baseEle) {
 
-		/* subtract attached rooftop areas (parking, helipads, pools, etc.) from the roof polygon */
+		/* subtract rooftop areas (parking, helipads, pools, etc.) from the roof polygon */
 
 		List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 
 		if (attachmentSurface != null) {
-			for (Connector connector : attachmentSurface.getAttachedConnectors()) {
-				if (connector.object != null) {
-					subtractPolys.addAll(connector.object.getRawGroundFootprint());
-				}
-			}
+			subtractPolys.addAll(attachmentSurface.getClaimedArea());
 		}
 
 		subtractPolys.addAll(this.getPolygon().getHoles());

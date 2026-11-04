@@ -102,6 +102,7 @@ public class Connector {
 		assert pos != null;
 		this.pos = pos;
 		this.originalPos = pos.xyz(0);
+		this.posXYZ = originalPos;
 		this.reference = reference;
 		this.groundState = groundState;
 		this.attachmentProperties = null;
@@ -115,6 +116,7 @@ public class Connector {
 			@Nullable AttachmentProperties attachmentProperties, @Nullable WorldObject object) {
 		this.pos = originalPos.xz();
 		this.originalPos = originalPos instanceof VectorXYZ vXYZ ? vXYZ : originalPos.xz().xyz(0);
+		this.posXYZ = this.originalPos;
 		this.groundState = groundState;
 		this.attachmentProperties = attachmentProperties;
 		this.object = object;
@@ -148,10 +150,8 @@ public class Connector {
 	}
 
 	/**
-	 * returns the 3d position after it has been calculated.
-	 * This {@link VectorXYZ}, changes over the lifetime of an {@link Connector}:
-	 * It is null before elevation calculation, may contain some intermediate results,
-	 * and is eventually assigned its ultimate value.
+	 * returns the 3d position.
+	 * Starts out at {@link #originalPos}, but changes over the lifetime of an {@link Connector}.
 	 */
 	public VectorXYZ getPosXYZ() {
 		return posXYZ;

@@ -44,6 +44,7 @@ import org.osm2world.world.modules.building.LevelAndHeightData.Level.LevelType;
 import org.osm2world.world.modules.building.indoor.BuildingPartInterior;
 import org.osm2world.world.modules.building.roof.ComplexRoof;
 import org.osm2world.world.modules.building.roof.Roof;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 /**
  * part of a building, as defined by the Simple 3D Buildings standard.
@@ -499,6 +500,17 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	public PolygonWithHolesXZ getPolygon() {
 		return polygon;
+	}
+
+	/** cached result of {@link #getSurfaceClaims()} */
+	private @Nullable List<SurfaceClaim> surfaceClaims = null;
+
+	@Override
+	public List<SurfaceClaim> getSurfaceClaims() {
+		if (surfaceClaims == null) {
+			surfaceClaims = SurfaceClaim.createDefaultClaims(this);
+		}
+		return surfaceClaims;
 	}
 
 	@Override

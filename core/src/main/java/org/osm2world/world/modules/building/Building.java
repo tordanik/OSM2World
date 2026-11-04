@@ -229,7 +229,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	@Override
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
 		if (surfaces == null) {
-			surfaces = new ArrayList<>(super.getAttachmentSurfaces());
+			surfaces = new ArrayList<>(renderAttachmentSurfaces());
 			forEach(parts, part -> surfaces.addAll(part.getAttachmentSurfaces()));
 			lastBaseConnectorElevation = baseConnector.getPosXYZ().y;
 		}

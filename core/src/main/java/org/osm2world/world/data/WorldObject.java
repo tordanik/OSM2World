@@ -1,7 +1,6 @@
 package org.osm2world.world.data;
 
 import static java.util.Collections.emptyList;
-import static org.osm2world.world.connectors.GroundState.ON;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,19 +9,16 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.map_data.data.MapElement;
-import org.osm2world.map_data.data.overlaps.MapOverlap;
 import org.osm2world.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.math.algorithms.CAGUtil;
 import org.osm2world.math.shapes.PolygonShapeXZ;
-import org.osm2world.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.connectors.EleRelation;
 import org.osm2world.world.connectors.GroundState;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 public interface WorldObject {
 
@@ -97,7 +93,8 @@ public interface WorldObject {
 	}
 
 	/**
-	 * returns this object's surfaces that other objects can attach themselves to
+	 * returns this object's surfaces that other objects can attach {@link Connector}s and {@link SurfaceClaim}s to.
+	 * The surfaces' heights are provisional and may be updated later with {@link #updateAttachmentSurfaces(List)}.
 	 * @see AttachmentSurface
 	 */
 	public default Collection<AttachmentSurface> getAttachmentSurfaces() {
@@ -147,8 +144,8 @@ public interface WorldObject {
 	/**
 	 * returns a list of polygons defining an object's raw ground footprint in the xz plane.
 	 * The "ground" is most commonly the terrain, but could also be a different surface, such as a roof or bridge.
-	 * The true ground footprint, {@link #getGroundFootprint()}, may be smaller if other areas have a higher
-	 * {@link #getOverlapPriority()}.
+	 * The true ground footprint, {@link #getGroundFootprint()}, may be smaller if other objects on the same surface
+	 * have a higher {@link #getOverlapPriority()}.
 	 *
 	 * @return collection of outline polygons, empty if the world object doesn't cover any area
 	 */
@@ -157,11 +154,21 @@ public interface WorldObject {
 	}
 
 	/**
-	 * priority relative to other objects when it comes to resolving overlaps.
-	 * This is relevant when the same area would otherwise be covered by multiple objects,
-	 * and the objects are both on the ground (according to {@link #getGroundState()}),
-	 * or otherwise directly in conflict (e.g. both attached to the same roof).
+	 * returns this object's footprints which will be placed on surfaces such as the terrain, roofs or bridge decks.
+	 * Must return the same instances every time it is called, because the claims are updated during the conversion.
+	 * <p>
+	 * Objects which claim their {@link #getRawGroundFootprint()} can create their claims with
+	 * {@link SurfaceClaim#createDefaultClaims(WorldObject)}.
 	 *
+	 * @return  the claims, empty if this object doesn't claim any surface
+	 */
+	public default List<SurfaceClaim> getSurfaceClaims() {
+		return List.of();
+	}
+
+	/**
+	 * priority relative to other objects when it comes to resolving overlaps between {@link SurfaceClaim}s.
+	 * <p>
 	 * Typical values:
 	 * - MAX_VALUE: will always be left intact (e.g. linear roads); this is the default
 	 * - 50: highway polygons
@@ -176,55 +183,22 @@ public interface WorldObject {
 	}
 
 	/**
-	 * calculates the true ground footprint of this area by removing area covered by overlapping features
-	 * with a higher {@link #getOverlapPriority()}.
+	 * returns the part of the surface which this object covers after overlaps with other objects have been resolved.
+	 * This is the combined {@link SurfaceClaim#getFootprint()} of its {@link #getSurfaceClaims()}.
+	 * Objects without claims cover their {@link #getOutlinePolygonXZ()}.
+	 * Only available once overlaps have been resolved, which happens before connectors are created.
 	 *
 	 * TODO: move to {@link ProceduralWorldObject} once all procedural objects use that interface
 	 */
 	default Collection<PolygonShapeXZ> getGroundFootprint() {
 
-		if (getOutlinePolygonXZ() == null) {
-			return emptyList();
-		} else if (getOverlapPriority() == Integer.MAX_VALUE) {
-			// this has the highest possible priority, nothing will be subtracted
-			return List.of(getOutlinePolygonXZ());
-		}
+		List<SurfaceClaim> claims = getSurfaceClaims();
 
-		SimplePolygonShapeXZ outerPoly = getOutlinePolygonXZ().getOuter();
-		List<PolygonShapeXZ> subtractPolys = new ArrayList<>(getOutlinePolygonXZ().getHoles());
-
-		/* collect the outlines of overlapping objects */
-
-		for (MapOverlap<?, ?> overlap : getPrimaryMapElement().getOverlaps()) {
-			for (WorldObject otherWO : overlap.getOther(getPrimaryMapElement()).getRepresentations()) {
-
-				/* TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way).
-				 * Perhaps overlaps should be calculated on world objects, not elements. */
-
-				// check that both are on the ground, otherwise there is usually no conflict
-				// TODO: there can also be a conflict if both are attached to the same AttachmentSurface (e.g. the same roof)
-				boolean bothOnGround = this.getGroundState() == ON && otherWO.getGroundState() == ON;
-
-				if (bothOnGround && otherWO.getOverlapPriority() > this.getOverlapPriority()) {
-
-					try {
-						subtractPolys.addAll(otherWO.getRawGroundFootprint());
-					} catch (InvalidGeometryException ignored) {
-						// Prevent errors in other objects from affecting this object
-					}
-
-				}
-
-			}
-
-		}
-
-		/* create "leftover" polygons by subtracting the existing ones */
-
-		if (subtractPolys.isEmpty()) {
-			return getRawGroundFootprint();
+		if (claims.isEmpty()) {
+			PolygonShapeXZ outline = getOutlinePolygonXZ();
+			return outline == null ? List.of() : List.of(outline);
 		} else {
-			return new ArrayList<>(CAGUtil.subtractPolygons(outerPoly, subtractPolys));
+			return claims.stream().flatMap(c -> c.getFootprint().stream()).toList();
 		}
 
 	}

@@ -55,6 +55,9 @@ import org.osm2world.world.modules.*;
 import org.osm2world.world.modules.building.BuildingModule;
 import org.osm2world.world.modules.building.indoor.IndoorModule;
 import org.osm2world.world.modules.traffic_sign.TrafficSignModule;
+import org.osm2world.world.surfaces.SurfaceAssignmentUtil;
+import org.osm2world.world.surfaces.SurfaceClaim;
+import org.osm2world.world.surfaces.SurfacePartitionUtil;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -162,6 +165,14 @@ class O2WConverterImpl {
 		WorldCreator moduleManager = new WorldCreator(config, createModuleList(config));
 		moduleManager.addRepresentationsTo(mapData);
 
+		/* collect surfaces and divide them between claims */
+
+		CollectedSurfaces surfaces = collectAttachmentSurfaces(mapData);
+
+		List<SurfaceClaim> claims = SurfaceAssignmentUtil.collectClaims(mapData.getWorldObjects());
+		SurfaceAssignmentUtil.assignSurfaces(claims, surfaces.allSurfaces());
+		SurfacePartitionUtil.resolveOverlaps(claims);
+
 		/* determine elevations */
 		updatePhase(perfListener, ProgressListener.Phase.ELEVATION);
 
@@ -176,7 +187,11 @@ class O2WConverterImpl {
 
 		TerrainInterpolator terrain = interpolateTerrainElevations(mapData, mapProjection, eleData, config);
 
-		AttachmentOrder attachmentOrder = attachConnectors(mapData);
+		FaultTolerantIterationUtil.forEach(surfaces.objectsWithSurfaces(), object -> {
+			object.updateAttachmentSurfaces(surfaces.surfacesByObject().get(object));
+		});
+
+		AttachmentOrder attachmentOrder = attachConnectors(mapData, surfaces);
 
 		EleCalculator eleCalculator = config.eleCalculator().get();
 		eleCalculator.calculateElevations(mapData, terrain);
@@ -241,19 +256,22 @@ class O2WConverterImpl {
 	}
 
 	/**
-	 * attaches connectors to {@link AttachmentSurface}s.
-	 * <p>
-	 * This happens in order of dependencies: A connector waits until all objects with nearby compatible surfaces
-	 * have attached their own connectors and updated their surfaces accordingly.
-	 * This allows an object to attach to another object which is itself attached to something,
-	 * e.g. a traffic sign attached to a street lamp on a roof.
-	 * If objects depend on each other in a cycle, one of the connectors is attached without waiting.
+	 * the {@link AttachmentSurface}s of all root objects
+	 *
+	 * @param objectsWithSurfaces  all root objects which have at least one surface
+	 * @param surfacesByObject     the surfaces of each object in {@link #objectsWithSurfaces}
 	 */
-	private AttachmentOrder attachConnectors(MapData mapData) {
+	private record CollectedSurfaces(List<WorldObject> objectsWithSurfaces,
+									 Map<WorldObject, List<AttachmentSurface>> surfacesByObject) {
 
-		/* collect the surfaces */
+		List<AttachmentSurface> allSurfaces() {
+			return objectsWithSurfaces.stream().flatMap(o -> surfacesByObject.get(o).stream()).toList();
+		}
 
-		IndexGrid<AttachmentSurface> surfaceIndex = new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
+	}
+
+	/** collects the {@link AttachmentSurface}s of all root objects */
+	private static CollectedSurfaces collectAttachmentSurfaces(MapData mapData) {
 
 		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = new IdentityHashMap<>();
 		List<WorldObject> objectsWithSurfaces = new ArrayList<>();
@@ -264,10 +282,33 @@ class O2WConverterImpl {
 				if (!surfaces.isEmpty()) {
 					surfacesByObject.put(object, surfaces);
 					objectsWithSurfaces.add(object);
-					surfaces.forEach(surfaceIndex::insert);
 				}
 			}
 		});
+
+		return new CollectedSurfaces(objectsWithSurfaces, surfacesByObject);
+
+	}
+
+	/**
+	 * attaches connectors to {@link AttachmentSurface}s.
+	 * <p>
+	 * This happens in order of dependencies: A connector waits until all objects with nearby compatible surfaces
+	 * have attached their own connectors and updated their surfaces accordingly.
+	 * This allows an object to attach to another object which is itself attached to something,
+	 * e.g. a traffic sign attached to a street lamp on a roof.
+	 * If objects depend on each other in a cycle, one of the connectors is attached without waiting.
+	 */
+	private AttachmentOrder attachConnectors(MapData mapData, CollectedSurfaces collectedSurfaces) {
+
+		/* index the surfaces */
+
+		IndexGrid<AttachmentSurface> surfaceIndex = new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
+
+		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = collectedSurfaces.surfacesByObject();
+		List<WorldObject> objectsWithSurfaces = collectedSurfaces.objectsWithSurfaces();
+
+		collectedSurfaces.allSurfaces().forEach(surfaceIndex::insert);
 
 		/* collect the connectors which should be attached, grouped by object */
 
@@ -359,7 +400,7 @@ class O2WConverterImpl {
 	}
 
 	/**
-	 * information from {@link #attachConnectors(MapData)} which is needed to update surfaces later on
+	 * information from {@link #attachConnectors(MapData, CollectedSurfaces)} which is needed to update surfaces later
 	 *
 	 * @param updateOrder  all objects with surfaces, each object comes after the objects it is attached to
 	 * @param surfacesByObject  the surfaces of each object in {@link #updateOrder}

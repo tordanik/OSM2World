@@ -47,6 +47,7 @@ import org.osm2world.world.data.NodeWorldObject;
 import org.osm2world.world.data.WaySegmentWorldObject;
 import org.osm2world.world.data.WorldObject;
 import org.osm2world.world.modules.common.AbstractModule;
+import org.osm2world.world.surfaces.SurfaceClaim;
 
 /**
  * places bicycle parking facilities in the world
@@ -222,6 +223,17 @@ public class BicycleParkingModule extends AbstractModule {
 
 			return result;
 
+		}
+
+		/** cached result of {@link #getSurfaceClaims()} */
+		private @Nullable List<SurfaceClaim> surfaceClaims = null;
+
+		@Override
+		public List<SurfaceClaim> getSurfaceClaims() {
+			if (surfaceClaims == null) {
+				surfaceClaims = SurfaceClaim.createDefaultClaims(this);
+			}
+			return surfaceClaims;
 		}
 
 		@Override

@@ -92,8 +92,21 @@ public interface ProceduralWorldObject extends WorldObject {
 		return target.subModels;
 	}
 
+	/**
+	 * returns no surfaces by default.
+	 * Objects which declare surfaces while rendering (using {@link Target#setCurrentAttachmentTypes})
+	 * can return {@link #renderAttachmentSurfaces()} instead.
+	 */
 	@Override
 	default Collection<AttachmentSurface> getAttachmentSurfaces() {
+		return List.of();
+	}
+
+	/**
+	 * renders this object and returns the surfaces declared during rendering.
+	 * This happens before elevations have been calculated, so rendering must work with provisional elevations.
+	 */
+	default Collection<AttachmentSurface> renderAttachmentSurfaces() {
 		var target = new Target();
 		buildMeshesAndModels(target);
 		return target.attachmentSurfaces;
