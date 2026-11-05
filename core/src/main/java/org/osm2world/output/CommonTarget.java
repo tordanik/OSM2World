@@ -45,6 +45,7 @@ public interface CommonTarget {
 	default void drawTriangles(@Nonnull Material material,
 							   @Nonnull List<? extends TriangleXYZ> triangles,
 							   @Nonnull List<List<VectorXZ>> texCoordLists) {
+		if (triangles.isEmpty()) return;
 		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.interpolation(),
 				texCoordLists, null), material));
 	}
