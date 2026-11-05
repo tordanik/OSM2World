@@ -1328,7 +1328,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			if (isBroken() || getOutlinePolygonXZ() == null) {
 				return emptyList();
 			} else if (steps && connectors != null && connectors.stream().allMatch(Connector::isAttached)

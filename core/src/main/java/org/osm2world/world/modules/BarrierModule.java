@@ -398,7 +398,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 
@@ -529,7 +529,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 
@@ -615,7 +615,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 
@@ -688,7 +688,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 
@@ -839,7 +839,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 
@@ -901,7 +901,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 
@@ -947,7 +947,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return emptyList();
 		}
 

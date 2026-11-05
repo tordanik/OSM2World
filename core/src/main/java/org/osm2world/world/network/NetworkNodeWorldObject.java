@@ -67,7 +67,7 @@ public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObj
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+	public Collection<PolygonShapeXZ> getRawFootprint() {
 		if (getOutlinePolygonXZ() == null) {
 			return List.of();
 		} else {

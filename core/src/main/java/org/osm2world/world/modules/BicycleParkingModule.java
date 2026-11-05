@@ -237,7 +237,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			if (getSurfaceMaterial() != null && getOutlinePolygonXZ() != null) {
 				return List.of(getOutlinePolygonXZ());
 			} else {
@@ -291,7 +291,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 		@Override
 		protected Collection<PolygonShapeXZ> area() {
-			return getGroundFootprint();
+			return getFootprint();
 		}
 
 	}

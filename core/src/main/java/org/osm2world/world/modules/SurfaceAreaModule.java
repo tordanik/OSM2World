@@ -135,7 +135,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				return triangulationXZ;
 			}
 
-			Collection<PolygonShapeXZ> footprint = getGroundFootprint();
+			Collection<PolygonShapeXZ> footprint = getFootprint();
 
 			/* add a grid of points within the area for smoother surface shapes */
 
@@ -206,7 +206,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return List.of(getOutlinePolygonXZ());
 		}
 

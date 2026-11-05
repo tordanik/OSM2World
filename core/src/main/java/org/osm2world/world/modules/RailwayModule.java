@@ -261,7 +261,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			if (!ownGround || getOutlinePolygonXZ() == null) {
 				return emptyList();
 			} else {

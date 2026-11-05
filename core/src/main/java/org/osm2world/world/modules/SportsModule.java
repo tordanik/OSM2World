@@ -97,7 +97,7 @@ public class SportsModule extends AbstractModule {
 		protected abstract Material getFallbackPitchMaterial();
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return List.of(getOutlinePolygonXZ());
 		}
 

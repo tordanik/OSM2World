@@ -142,14 +142,14 @@ public interface WorldObject {
 	}
 
 	/**
-	 * returns a list of polygons defining an object's raw ground footprint in the xz plane.
-	 * The "ground" is most commonly the terrain, but could also be a different surface, such as a roof or bridge.
-	 * The true ground footprint, {@link #getGroundFootprint()}, may be smaller if other objects on the same surface
+	 * returns a list of polygons defining an object's raw footprint in the xz plane.
+	 * The footprint is on a surface, most commonly the terrain, but it could also be on a roof or bridge deck.
+	 * The resolved footprint, {@link #getFootprint()}, may be smaller if other objects on the same surface
 	 * have a higher {@link #getOverlapPriority()}.
 	 *
 	 * @return collection of outline polygons, empty if the world object doesn't cover any area
 	 */
-	public default Collection<PolygonShapeXZ> getRawGroundFootprint() {
+	public default Collection<PolygonShapeXZ> getRawFootprint() {
 		return emptyList();
 	}
 
@@ -157,7 +157,7 @@ public interface WorldObject {
 	 * returns this object's footprints which will be placed on surfaces such as the terrain, roofs or bridge decks.
 	 * Must return the same instances every time it is called, because the claims are updated during the conversion.
 	 * <p>
-	 * Objects which claim their {@link #getRawGroundFootprint()} can create their claims with
+	 * Objects which claim their {@link #getRawFootprint()} can create their claims with
 	 * {@link SurfaceClaim#createDefaultClaims(WorldObject)}.
 	 *
 	 * @return  the claims, empty if this object doesn't claim any surface
@@ -190,7 +190,7 @@ public interface WorldObject {
 	 *
 	 * TODO: move to {@link ProceduralWorldObject} once all procedural objects use that interface
 	 */
-	default Collection<PolygonShapeXZ> getGroundFootprint() {
+	default Collection<PolygonShapeXZ> getFootprint() {
 
 		List<SurfaceClaim> claims = getSurfaceClaims();
 

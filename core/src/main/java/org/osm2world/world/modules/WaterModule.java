@@ -312,7 +312,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return List.of(getOutlinePolygonXZ());
 		}
 

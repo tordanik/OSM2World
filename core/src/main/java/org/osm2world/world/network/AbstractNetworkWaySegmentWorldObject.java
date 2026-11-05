@@ -622,7 +622,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+	public Collection<PolygonShapeXZ> getRawFootprint() {
 		if (getOutlinePolygonXZ() == null) {
 			return List.of();
 		} else {

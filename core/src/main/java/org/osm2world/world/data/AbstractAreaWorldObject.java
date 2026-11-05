@@ -36,8 +36,8 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 	private ConnectorGroup connectors;
 
-	/** cached result of {@link #getGroundFootprint()} */
-	private @Nullable Collection<PolygonShapeXZ> groundFootprint = null;
+	/** cached result of {@link #getFootprint()} */
+	private @Nullable Collection<PolygonShapeXZ> footprint = null;
 
 	protected AbstractAreaWorldObject(MapArea area) {
 		this.area = area;
@@ -103,7 +103,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	 * decompose this area into counterclockwise triangles.
 	 */
 	protected List<TriangleXZ> getTriangulationXZ() {
-		return TriangulationUtil.triangulate(getGroundFootprint(), List.of());
+		return TriangulationUtil.triangulate(getFootprint(), List.of());
 	}
 
 	/**
@@ -147,12 +147,12 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getGroundFootprint() {
+	public Collection<PolygonShapeXZ> getFootprint() {
 		// cache the otherwise unchanged result
-		if (groundFootprint == null) {
-			groundFootprint = AreaWorldObject.super.getGroundFootprint();
+		if (footprint == null) {
+			footprint = AreaWorldObject.super.getFootprint();
 		}
-		return groundFootprint;
+		return footprint;
 	}
 
 	@Override

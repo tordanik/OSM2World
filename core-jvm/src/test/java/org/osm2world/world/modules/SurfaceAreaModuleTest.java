@@ -38,7 +38,7 @@ public class SurfaceAreaModuleTest {
 
 		for (SurfaceArea terrain : terrainAreas) {
 			for (MapWaySegment segment : roadSegments) {
-				assertTrue(terrain.getGroundFootprint().stream().noneMatch(p -> p.contains(segment.getCenter())));
+				assertTrue(terrain.getFootprint().stream().noneMatch(p -> p.contains(segment.getCenter())));
 			}
 		}
 

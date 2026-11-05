@@ -158,7 +158,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 				.map(o -> o.getOther(area))
 				.filter(o -> o.getTags().containsAny(List.of("tunnel"), asList("building_passage", "passage")))
 				.map(MapElement::getPrimaryRepresentation)
-				.filter(o -> o != null && !o.getRawGroundFootprint().isEmpty())
+				.filter(o -> o != null && !o.getRawFootprint().isEmpty())
 				.filter(o -> o.getGroundState() == GroundState.ON)
 				.filter(o -> clearingAbovePassage > floorHeight)
 				.toList();
@@ -181,7 +181,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 			for (WorldObject o : buildingPassages) {
 
-				for (PolygonShapeXZ subtractPolyShape : o.getRawGroundFootprint()) {
+				for (PolygonShapeXZ subtractPolyShape : o.getRawFootprint()) {
 
 					SimplePolygonShapeXZ subtractPoly = subtractPolyShape.getOuter();
 
@@ -236,7 +236,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			/* construct the polygons directly above the passages */
 
 			for (WorldObject o : buildingPassages) {
-				for (PolygonShapeXZ b : o.getRawGroundFootprint()) {
+				for (PolygonShapeXZ b : o.getRawFootprint()) {
 
 					Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
 
@@ -514,7 +514,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getRawGroundFootprint(){
+	public Collection<PolygonShapeXZ> getRawFootprint(){
 		if (levelStructure.bottomHeight() <= 0 && getIndoor() != null) {
 			return List.of(getPolygon());
 		} else {

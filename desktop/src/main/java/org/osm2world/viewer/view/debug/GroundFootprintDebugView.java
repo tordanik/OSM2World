@@ -21,7 +21,7 @@ public class GroundFootprintDebugView extends StaticDebugView {
 	private static final Color AREA_BOUNDARY_COLOR = new Color(0.65f, 0.65f, 1);
 
 	public GroundFootprintDebugView() {
-		super("Ground footprints", "draws raw ground footprints defined by world objects");
+		super("Ground footprints", "draws raw footprints defined by world objects");
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class GroundFootprintDebugView extends StaticDebugView {
 					color = AREA_BOUNDARY_COLOR;
 				}
 
-				for (PolygonShapeXZ p : o.getRawGroundFootprint()) {
+				for (PolygonShapeXZ p : o.getRawFootprint()) {
 					for (SimplePolygonShapeXZ ring : p.getRings()) {
 						output.drawLineLoop(color, 1, listXYZ(ring.vertices(), 0));
 					}

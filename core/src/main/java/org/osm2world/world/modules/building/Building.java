@@ -244,7 +244,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+	public Collection<PolygonShapeXZ> getRawFootprint() {
 		return List.of(); // BuildingParts return their own footprint if necessary
 	}
 

@@ -158,13 +158,13 @@ public class SurfaceClaim implements BoundedObject {
 	}
 
 	/**
-	 * creates the claims for objects which claim their {@link WorldObject#getRawGroundFootprint()}:
+	 * creates the claims for objects which claim their {@link WorldObject#getRawFootprint()}:
 	 * one claim for each polygon, using {@link WorldObject#getOverlapPriority()}
 	 * and {@link #defaultSurfaceTypes(WorldObject)}.
 	 */
 	public static List<SurfaceClaim> createDefaultClaims(WorldObject object) {
 
-		Collection<PolygonShapeXZ> rawFootprint = object.getRawGroundFootprint();
+		Collection<PolygonShapeXZ> rawFootprint = object.getRawFootprint();
 		if (rawFootprint.isEmpty()) return List.of();
 
 		List<String> surfaceTypes = defaultSurfaceTypes(object);

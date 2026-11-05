@@ -84,7 +84,7 @@ public class ParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return List.of(getOutlinePolygonXZ());
 		}
 

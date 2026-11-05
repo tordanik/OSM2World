@@ -103,7 +103,7 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return List.of(getOutlinePolygonXZ());
 		}
 
@@ -248,7 +248,7 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		public Collection<PolygonShapeXZ> getRawFootprint() {
 			return List.of(getOutlinePolygonXZ());
 		}
 
