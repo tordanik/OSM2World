@@ -169,7 +169,7 @@ public class LevelAndHeightData {
 
 		if (roofHeight == null && tags.containsKey("roof:levels")) {
 			try {
-				roofHeight = defaults.heightPerLevel * Integer.parseInt(tags.getValue("roof:levels"));
+				roofHeight = defaults.heightPerLevel * Double.parseDouble(tags.getValue("roof:levels"));
 			} catch (NumberFormatException e) {}
 		}
 
