@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.osm2world.conversion.ConversionLog;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
@@ -67,6 +68,33 @@ public final class TriangulationUtil {
 			PolygonShapeXZ polygon) {
 
 		return triangulate(polygon.getOuter(), polygon.getHoles());
+
+	}
+
+	/**
+	 * triangulates a polygon with holes and unconnected points within it, without adding any other vertices.
+	 * In particular, no vertices are added to the polygon's outline (to prevent cracks between adjacent,
+	 * separately triangulated polygons).
+	 * Attempts to avoid narrow triangles as far as possible.
+	 * Points which are not inside the polygon, or very close to its outline, are ignored.
+	 */
+	public static List<TriangleXZ> triangulateWithoutAddingVertices(PolygonShapeXZ polygon,
+			Collection<VectorXZ> points) {
+
+		List<TriangleXZ> result;
+
+		try {
+			result = TinfourTriangulationUtil.triangulateWithoutAddingVertices(
+					polygon.getOuter(), polygon.getHoles(), points);
+		} catch (RuntimeException e) {
+			ConversionLog.warn("Triangulation failed, ignoring the points within the polygon: " + e.getMessage(), e);
+			result = triangulate(polygon.getOuter(), polygon.getHoles());
+		}
+
+		// remove very small triangles which would cause errors when constructing TriangleXYZs from them
+		result = result.stream().filter(t -> t.getArea() >= 1e-5).toList();
+
+		return result;
 
 	}
 

@@ -2,6 +2,7 @@ package org.osm2world.math.algorithms;
 
 import static java.util.Collections.emptyList;
 import static org.osm2world.math.algorithms.JTSConversionUtil.*;
+import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.List;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder;
+import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
 
@@ -79,7 +81,14 @@ public final class JTSTriangulationUtil {
 
 		/* run triangulation */
 
-		Geometry triangulationResult = triangulationBuilder.getTriangles(GF);
+		Geometry triangulationResult;
+
+		try {
+			triangulationResult = triangulationBuilder.getTriangles(GF);
+		} catch (ConstraintEnforcementException e) {
+			// this happens for some inputs, such as long and thin polygons
+			return triangulateFallback(polygon, holes, segments, points);
+		}
 
 		/* interpret the resulting polygons as triangles,
 		 * filter out those which are outside the polygon or in a hole */
@@ -99,6 +108,33 @@ public final class JTSTriangulationUtil {
 		}
 
 		return triangles;
+
+	}
+
+	/** fallback using {@link TinfourTriangulationUtil} for inputs where the conforming Delaunay triangulation fails */
+	private static List<TriangleXZ> triangulateFallback(
+			SimplePolygonShapeXZ polygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
+			Collection<LineSegmentXZ> segments,
+			Collection<VectorXZ> points) {
+
+		List<PolygonWithHolesXZ> faces;
+
+		if (segments.isEmpty()) {
+			faces = List.of(new PolygonWithHolesXZ(asSimplePolygon(polygon),
+					holes.stream().map(SimplePolygonXZ::asSimplePolygon).toList()));
+		} else {
+			faces = List.copyOf(FaceDecompositionUtil.splitPolygonIntoFaces(polygon, holes, segments));
+		}
+
+		List<TriangleXZ> result = new ArrayList<>();
+
+		for (PolygonWithHolesXZ face : faces) {
+			result.addAll(TinfourTriangulationUtil.triangulateWithoutAddingVertices(
+					face.getOuter(), face.getHoles(), points));
+		}
+
+		return result;
 
 	}
 

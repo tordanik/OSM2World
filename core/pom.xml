@@ -45,6 +45,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.tinfour</groupId>
+			<artifactId>TinfourCore</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.topobyte</groupId>
 			<artifactId>osm4j-core</artifactId>
 			<version>1.4.1</version>
