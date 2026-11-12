@@ -40,6 +40,7 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
+import org.osm2world.scene.texcoord.StripCoordinates;
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
@@ -2025,8 +2026,11 @@ public class RoadModule extends ConfigurableWorldModule {
 
 					}
 
+					List<VectorXZ> leftLaneBorderXZ = leftLaneBorder.stream().map(VectorXYZ::xz).toList();
+					List<VectorXZ> rightLaneBorderXZ = rightLaneBorder.stream().map(VectorXYZ::xz).toList();
+
 					target.drawTriangleStrip(surface, vs,
-							new ArrowTexCoordFunction(roadPart, rightHandTraffic, mirrorLeftRight));
+							new ArrowTexCoordFunction(new StripCoordinates(leftLaneBorderXZ, rightLaneBorderXZ), roadPart, rightHandTraffic, mirrorLeftRight));
 
 				} else {
 
@@ -2327,7 +2331,8 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * To reduce the number of necessary textures, it uses mirrored versions of
 	 * the various right-pointing arrows for left-pointing arrows.
 	 */
-	private record ArrowTexCoordFunction (
+	private record ArrowTexCoordFunction(
+		StripCoordinates lane,
 		RoadPart roadPart,
 		boolean rightHandTraffic,
 		boolean mirrorLeftRight
@@ -2336,75 +2341,26 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public List<VectorXZ> apply(TextureDataDimensions textureDimensions, List<VectorXYZ> vs) {
 
-			if (vs.size() % 2 == 1) {
-				throw new IllegalArgumentException("not a triangle strip lane");
-			}
+			boolean forward = roadPart == RoadPart.LEFT ^ rightHandTraffic;
+			boolean leftIsLowerT = forward ^ mirrorLeftRight;
 
 			List<VectorXZ> result = new ArrayList<>(vs.size());
 
-			boolean forward = roadPart == RoadPart.LEFT ^ rightHandTraffic;
+			for (VectorXYZ v : vs) {
 
-			/* calculate length of the lane */
-
-			double totalLength = 0;
-
-			for (int i = 0; i+2 < vs.size(); i += 2) {
-				totalLength += vs.get(i).distanceToXZ(vs.get(i+2));
-			}
-
-			/* calculate texture coordinate list */
-
-			double accumulatedLength = forward ? totalLength : 0;
-
-			for (int i = 0; i < vs.size(); i++) {
-
-				VectorXYZ v = vs.get(i);
-
-				// increase accumulated length after every second vector
-
-				if (i > 0 && i % 2 == 0) {
-
-					double segmentLength = v.xz().distanceTo(vs.get(i-2).xz());
-
-					if (forward) {
-						accumulatedLength -= segmentLength;
-					} else {
-						accumulatedLength += segmentLength;
-					}
-
-				}
-
-				// determine width of the lane at that point
-
-				double width = (i % 2 == 0)
-						? v.distanceTo(vs.get(i+1))
-						: v.distanceTo(vs.get(i-1));
-
-				// determine whether this vertex should get the higher or
-				// lower t coordinate from the vertex pair
-
-				boolean higher = i % 2 == 0;
-
-				if (!forward) {
-					higher = !higher;
-				}
-
-				if (mirrorLeftRight) {
-					higher = !higher;
-				}
-
-				// calculate texture coords
+				StripCoordinates.StripPosition position = lane.positionOf(v.xz());
 
 				double s, t;
 
-				s = accumulatedLength / textureDimensions.width();
+				double distance = forward ? lane.getLength() - position.distanceAlong() : position.distanceAlong();
+				s = distance / textureDimensions.width();
 
-				if (width > textureDimensions.height()) {
-					double padding = ((width / textureDimensions.height()) - 1)  / 2;
-					t = higher ? 0 - padding : 1 + padding;
-				} else {
-					t = higher ? 0 : 1;
-				}
+				double padding = position.width() > textureDimensions.height()
+						? ((position.width() / textureDimensions.height()) - 1) / 2
+						: 0;
+				double tLeft = leftIsLowerT ? 0 - padding : 1 + padding;
+				double tRight = leftIsLowerT ? 1 + padding : 0 - padding;
+				t = tLeft + position.fractionAcross() * (tRight - tLeft);
 
 				VectorXZ rawTexCoord = new VectorXZ(s, t);
 				result.add(textureDimensions.applyPadding(rawTexCoord));
