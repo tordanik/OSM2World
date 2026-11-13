@@ -9,6 +9,7 @@ import static org.osm2world.conversion.ConversionLog.LogLevel.FATAL;
 import static org.osm2world.conversion.ProgressListener.Phase.FINISHED;
 import static org.osm2world.conversion.ProgressListener.Phase.values;
 import static org.osm2world.math.shapes.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.util.FaultTolerantIterationUtil.forEach;
 import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 
 import java.io.File;
@@ -44,7 +45,6 @@ import org.osm2world.output.Output;
 import org.osm2world.output.common.compression.Compression;
 import org.osm2world.output.common.compression.CompressionUtil;
 import org.osm2world.scene.Scene;
-import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.platform.json.JsonUtil;
 import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.connectors.Connector;
@@ -167,10 +167,10 @@ class O2WConverterImpl {
 
 		/* collect surfaces and divide them between claims */
 
-		CollectedSurfaces surfaces = collectAttachmentSurfaces(mapData);
+		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = collectAttachmentSurfaces(mapData);
 
 		List<SurfaceClaim> claims = SurfaceAssignmentUtil.collectClaims(mapData.getWorldObjects());
-		SurfaceAssignmentUtil.assignSurfaces(claims, surfaces.allSurfaces());
+		SurfaceAssignmentUtil.assignSurfaces(claims, surfacesByObject.values().stream().flatMap(List::stream).toList());
 		SurfacePartitionUtil.resolveOverlaps(claims);
 
 		/* determine elevations */
@@ -187,18 +187,16 @@ class O2WConverterImpl {
 
 		TerrainInterpolator terrain = interpolateTerrainElevations(mapData, mapProjection, eleData, config);
 
-		FaultTolerantIterationUtil.forEach(surfaces.objectsWithSurfaces(), object -> {
-			object.updateAttachmentSurfaces(surfaces.surfacesByObject().get(object));
-		});
+		forEach(surfacesByObject.keySet(), object ->
+				object.updateAttachmentSurfaces(surfacesByObject.get(object)));
 
-		AttachmentOrder attachmentOrder = attachConnectors(mapData, surfaces);
+		List<WorldObject> updateOrder = attachConnectors(mapData, surfacesByObject);
 
 		EleCalculator eleCalculator = config.eleCalculator().get();
 		eleCalculator.calculateElevations(mapData, terrain);
 
-		FaultTolerantIterationUtil.forEach(attachmentOrder.updateOrder, object -> {
-			object.updateAttachmentSurfaces(attachmentOrder.surfacesByObject.get(object));
-		});
+		forEach(updateOrder, object ->
+				object.updateAttachmentSurfaces(surfacesByObject.get(object)));
 
 		/* convert 3d scene to target representation */
 		updatePhase(perfListener, ProgressListener.Phase.OUTPUT);
@@ -256,37 +254,24 @@ class O2WConverterImpl {
 	}
 
 	/**
-	 * the {@link AttachmentSurface}s of all root objects
+	 * collects the {@link AttachmentSurface}s of all root objects
 	 *
-	 * @param objectsWithSurfaces  all root objects which have at least one surface
-	 * @param surfacesByObject     the surfaces of each object in {@link #objectsWithSurfaces}
+	 * @return  the surfaces of each root object which has at least one surface, in a deterministic order
 	 */
-	private record CollectedSurfaces(List<WorldObject> objectsWithSurfaces,
-									 Map<WorldObject, List<AttachmentSurface>> surfacesByObject) {
+	private static Map<WorldObject, List<AttachmentSurface>> collectAttachmentSurfaces(MapData mapData) {
 
-		List<AttachmentSurface> allSurfaces() {
-			return objectsWithSurfaces.stream().flatMap(o -> surfacesByObject.get(o).stream()).toList();
-		}
+		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = new LinkedHashMap<>();
 
-	}
-
-	/** collects the {@link AttachmentSurface}s of all root objects */
-	private static CollectedSurfaces collectAttachmentSurfaces(MapData mapData) {
-
-		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = new IdentityHashMap<>();
-		List<WorldObject> objectsWithSurfaces = new ArrayList<>();
-
-		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
+		forEach(mapData.getWorldObjects(), object -> {
 			if (object.getParent() == null) {
 				List<AttachmentSurface> surfaces = List.copyOf(object.getAttachmentSurfaces());
 				if (!surfaces.isEmpty()) {
 					surfacesByObject.put(object, surfaces);
-					objectsWithSurfaces.add(object);
 				}
 			}
 		});
 
-		return new CollectedSurfaces(objectsWithSurfaces, surfacesByObject);
+		return surfacesByObject;
 
 	}
 
@@ -298,23 +283,25 @@ class O2WConverterImpl {
 	 * This allows an object to attach to another object which is itself attached to something,
 	 * e.g. a traffic sign attached to a street lamp on a roof.
 	 * If objects depend on each other in a cycle, one of the connectors is attached without waiting.
+	 *
+	 * @param surfacesByObject  result of {@link #collectAttachmentSurfaces(MapData)}
+	 * @return  all objects with surfaces, each object comes after the objects it is attached to.
+	 *          This is the order in which surfaces need to be updated after elevations have been calculated.
 	 */
-	private AttachmentOrder attachConnectors(MapData mapData, CollectedSurfaces collectedSurfaces) {
+	private List<WorldObject> attachConnectors(MapData mapData,
+			Map<WorldObject, List<AttachmentSurface>> surfacesByObject) {
 
 		/* index the surfaces */
 
 		IndexGrid<AttachmentSurface> surfaceIndex = new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
 
-		Map<WorldObject, List<AttachmentSurface>> surfacesByObject = collectedSurfaces.surfacesByObject();
-		List<WorldObject> objectsWithSurfaces = collectedSurfaces.objectsWithSurfaces();
-
-		collectedSurfaces.allSurfaces().forEach(surfaceIndex::insert);
+		surfacesByObject.values().forEach(surfaces -> surfaces.forEach(surfaceIndex::insert));
 
 		/* collect the connectors which should be attached, grouped by object */
 
 		Map<WorldObject, List<Connector>> pendingConnectors = new LinkedHashMap<>();
 
-		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
+		forEach(mapData.getWorldObjects(), object -> {
 			if (object.getParent() == null) {
 				List<Connector> connectors = new ArrayList<>();
 				for (Connector connector : object.getConnectors()) {
@@ -332,7 +319,7 @@ class O2WConverterImpl {
 		 * Objects without pending connectors don't depend on others, so they come first in the update order. */
 
 		List<WorldObject> updateOrder = new ArrayList<>();
-		objectsWithSurfaces.stream().filter(o -> !pendingConnectors.containsKey(o)).forEach(updateOrder::add);
+		surfacesByObject.keySet().stream().filter(o -> !pendingConnectors.containsKey(o)).forEach(updateOrder::add);
 
 		boolean forceNext = false;
 
@@ -395,18 +382,9 @@ class O2WConverterImpl {
 
 		}
 
-		return new AttachmentOrder(updateOrder, surfacesByObject);
+		return updateOrder;
 
 	}
-
-	/**
-	 * information from {@link #attachConnectors(MapData, CollectedSurfaces)} which is needed to update surfaces later
-	 *
-	 * @param updateOrder  all objects with surfaces, each object comes after the objects it is attached to
-	 * @param surfacesByObject  the surfaces of each object in {@link #updateOrder}
-	 */
-	private record AttachmentOrder(List<WorldObject> updateOrder,
-								   Map<WorldObject, List<AttachmentSurface>> surfacesByObject) {}
 
 	/** returns the object at the top of the {@link WorldObject#getParent()} hierarchy */
 	private static @Nullable WorldObject getRootObject(@Nullable WorldObject object) {
@@ -549,7 +527,7 @@ class O2WConverterImpl {
 
 		final TerrainInterpolator finalInterpolator = interpolator;
 
-		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
+		forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 			for (Connector conn : worldObject.getConnectors()) {
 				VectorXYZ pos = finalInterpolator.interpolateEle(conn.pos);
 				conn.setTerrainEle(pos.y);
