@@ -76,7 +76,7 @@ public class ShapeGeometry implements Geometry {
 
 		// TODO better default texture coordinate function
 		List<? extends TexCoordSimpleFunction> defaultTexCoordFunction = textureDimensions.stream()
-						.map(GlobalXZTexCoordFunction::new)
+						.map(new GlobalXZTexCoordFunction())
 						.toList();
 
 		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(defaultTexCoordFunction, color, normalMode);

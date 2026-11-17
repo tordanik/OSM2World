@@ -15,6 +15,7 @@ import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.building.WindowParameters.WindowRegion.CENTER;
 import static org.osm2world.world.modules.building.WindowParameters.WindowRegion.TOP;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
@@ -27,12 +28,10 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.JTSBufferUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.LODRange;
 import org.osm2world.util.enums.LeftRightBoth;
-import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.building.WindowParameters.RegionProperties;
 import org.osm2world.world.modules.building.WindowParameters.WindowRegion;
 
@@ -252,7 +251,7 @@ public class GeometryWindow implements Window {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config) {
+	public void renderTo(Target target, WallSurface surface, O2WConfig config) {
 
 		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
 
@@ -268,25 +267,19 @@ public class GeometryWindow implements Window {
 
 		if (transparent) {
 			LODRange previousLodRange = null;
-			boolean skip = false;
-			if (target instanceof ProceduralWorldObject.Target t) {
-				previousLodRange = t.getCurrentLodRange();
-				// intersect with previousLodRange to avoid loosening LOD, e.g. if GeometryWindow is only used at LOD4
-				var lodRange = LODRange.intersection(previousLodRange, new LODRange(BuildingPart.INDOOR_MIN_LOD, LOD4));
-				t.setCurrentLodRange(lodRange);
-				skip = (lodRange == null);
-			}
-			if (!skip) {
+			previousLodRange = target.getCurrentLodRange();
+			// intersect with previousLodRange to avoid loosening LOD, e.g. if GeometryWindow is only used at LOD4
+			var lodRange = LODRange.intersection(previousLodRange, new LODRange(BuildingPart.INDOOR_MIN_LOD, LOD4));
+			target.setCurrentLodRange(lodRange);
+			if (lodRange != null) {
 				Material transparentMaterial = params.transparentWindowMaterial(config.mapStyle());
 				target.drawTriangles(transparentMaterial, paneTriangles,
 						triangleTexCoordLists(paneTriangles, transparentMaterial, surface::texCoordFunction));
 			}
-			if (target instanceof ProceduralWorldObject.Target t) {
-				t.setCurrentLodRange(LOD0, BuildingPart.INDOOR_MIN_LOD);
-				t.drawTriangles(params.opaqueWindowMaterial(), paneTriangles,
-						triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial(), surface::texCoordFunction));
-				t.setCurrentLodRange(previousLodRange);
-			}
+			target.setCurrentLodRange(LOD0, BuildingPart.INDOOR_MIN_LOD);
+			target.drawTriangles(params.opaqueWindowMaterial(), paneTriangles,
+					triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial(), surface::texCoordFunction));
+			target.setCurrentLodRange(previousLodRange);
 		} else {
 			target.drawTriangles(params.opaqueWindowMaterial(), paneTriangles,
 					triangleTexCoordLists(paneTriangles, params.opaqueWindowMaterial(), surface::texCoordFunction));

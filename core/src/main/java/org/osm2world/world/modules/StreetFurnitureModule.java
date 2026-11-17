@@ -21,7 +21,6 @@ import static org.osm2world.scene.mesh.ExtrusionGeometry.createColumn;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.mesh.MeshUtil.createBox;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.world.connectors.AttachmentUtil.getCompatibleSurfaceTypes;
@@ -446,12 +445,10 @@ public class StreetFurnitureModule extends AbstractModule {
 					int materialIndex = (int) floor(stripeMaterials.size() * (row + 0.5) / (mesh[0].length - 1));
 					Material material = stripeMaterials.get(materialIndex);
 
-					target.drawTriangleStrip(material, vsFront, texCoordLists(
-							vsFront, material, t -> texCoordFunction));
+					target.drawTriangleStrip(material, vsFront, texCoordFunction);
 
 					if (!material.doubleSided()) {
-						target.drawTriangleStrip(material, vsBack, texCoordLists(
-								vsBack, material, t -> texCoordFunction));
+						target.drawTriangleStrip(material, vsBack, texCoordFunction);
 					}
 
 				}
@@ -737,8 +734,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
 
-			target.drawTriangleStrip(ADVERTISING_POSTER.get(config), vsListPoster,
-					texCoordLists(vsListPoster, ADVERTISING_POSTER.get(config), STRIP_FIT));
+			target.drawTriangleStrip(ADVERTISING_POSTER.get(config), vsListPoster, STRIP_FIT);
 
 			List<VectorXYZ> vsBoard = List.of(
 					vsPoster[2],
@@ -750,14 +746,12 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (node.getTags().contains("two_sided", "yes")) {
 
 				Material backMaterial = ADVERTISING_POSTER.get(config);
-				target.drawTriangleStrip(backMaterial, vsBoard,
-						texCoordLists(vsBoard, backMaterial, STRIP_FIT));
+				target.drawTriangleStrip(backMaterial, vsBoard, STRIP_FIT);
 
 			} else {
 
 				Material backMaterial = CONCRETE.get(config);
-				target.drawTriangleStrip(backMaterial, vsBoard,
-						texCoordLists(vsBoard, backMaterial, STRIP_WALL));
+				target.drawTriangleStrip(backMaterial, vsBoard, STRIP_WALL);
 
 			}
 
@@ -1481,7 +1475,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
 
 			Material lidMaterial = material;
-			target.drawTriangleFan(lidMaterial, vs, texCoordLists(vs, lidMaterial, SLOPED_TRIANGLES));
+			target.drawTriangleFan(lidMaterial, vs, SLOPED_TRIANGLES);
 
 		}
 
@@ -1908,7 +1902,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 
-			target.drawTriangleFan(material, vs, texCoordLists(vs, material, GLOBAL_X_Z));
+			target.drawTriangleFan(material, vs, GLOBAL_X_Z);
 
 			// upper part
 			vs = new ArrayList<VectorXYZ>();
@@ -1919,7 +1913,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 
-			target.drawTriangleFan(material, vs, texCoordLists(vs, material, GLOBAL_X_Z));
+			target.drawTriangleFan(material, vs, GLOBAL_X_Z);
 		}
 
 	}

@@ -17,14 +17,14 @@ import org.osm2world.scene.material.TextureDataDimensions;
  *
  * @param rotateAngle  optional angle by which the texture will be rotated in the plane
  */
-public record GlobalXZTexCoordFunction(TextureDataDimensions textureDimensions, @Nullable Angle rotateAngle) implements TexCoordSimpleFunction {
+public record GlobalXZTexCoordFunction(@Nullable Angle rotateAngle) implements TexCoordFunction {
 
-	public GlobalXZTexCoordFunction(TextureDataDimensions textureDimensions) {
-		this(textureDimensions, null);
+	public GlobalXZTexCoordFunction() {
+		this(null);
 	}
 
 	@Override
-	public List<VectorXZ> apply(List<VectorXYZ> vs) {
+	public List<VectorXZ> apply(TextureDataDimensions textureDimensions, List<VectorXYZ> vs) {
 
 		List<VectorXZ> result = new ArrayList<>(vs.size());
 

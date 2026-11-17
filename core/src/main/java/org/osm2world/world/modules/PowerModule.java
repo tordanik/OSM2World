@@ -15,7 +15,6 @@ import static org.osm2world.scene.color.Color.BLACK;
 import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 import static org.osm2world.world.connectors.GroundState.ATTACHED;
@@ -24,7 +23,6 @@ import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.rotateS
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.*;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -48,7 +46,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
-import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
+import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.ValueParseUtil;
 import org.osm2world.world.connectors.Connector;
@@ -938,16 +936,14 @@ public final class PowerModule extends AbstractModule {
 					bottomRight.add(upVector),
 					bottomRight);
 
-			target.drawTriangleStrip(SOLAR_PANEL.get(config), vs,
-					texCoordLists(vs, SOLAR_PANEL.get(config), STRIP_FIT_HEIGHT));
+			target.drawTriangleStrip(SOLAR_PANEL.get(config), vs, STRIP_FIT_HEIGHT);
 
 			/* draw back */
 
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 
 			Material backMaterial = PLASTIC.get(config).withColor(new Color(184, 184, 184));
-			target.drawTriangleStrip(backMaterial, vs,
-					texCoordLists(vs, backMaterial, STRIP_WALL));
+			target.drawTriangleStrip(backMaterial, vs, STRIP_WALL);
 
 		}
 
@@ -997,11 +993,9 @@ public final class PowerModule extends AbstractModule {
 						.map(it -> it.xyz(v -> pointToPlane(plane, v)))
 						.collect(toList());
 
-				Function<TextureDataDimensions, PanelTexCoordFunction> texCoordFunctionGenerator =
-						placePanelTextures(area.getPolygon(), plane.getNormal());
+				TexCoordFunction texCoordFunction = placePanelTextures(area.getPolygon(), plane.getNormal());
 
-				target.drawTriangles(SOLAR_PANEL.get(config), triangles,
-						triangleTexCoordLists(triangles, SOLAR_PANEL.get(config), texCoordFunctionGenerator));
+				target.drawTriangles(SOLAR_PANEL.get(config), triangles, texCoordFunction);
 
 			}
 
@@ -1021,7 +1015,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		/** attempts to place textures so that all points lie roughly on integer multiples of a panel's dimensions */
-		private static final Function<TextureDataDimensions, PanelTexCoordFunction> placePanelTextures(
+		private static TexCoordFunction placePanelTextures(
 				PolygonShapeXZ polygon, VectorXYZ roofNormal) {
 
 			SimplePolygonShapeXZ outerPolygon = polygon.getOuter();
@@ -1066,7 +1060,7 @@ public final class PowerModule extends AbstractModule {
 
 			List<LineSegmentXZ> segments = rotatedPolygon.getRings().stream()
 					.flatMap(r -> r.getSegments().stream())
-					.collect(toList());
+					.toList();
 
 			for (LineSegmentXZ s : segments) {
 
@@ -1088,7 +1082,7 @@ public final class PowerModule extends AbstractModule {
 
 			/* construct the result */
 
-			return t -> new PanelTexCoordFunction(origin, zDirection, totalWidth, totalHeight, panelsX, panelsZ, t);
+			return new PanelTexCoordFunction(origin, zDirection, totalWidth, totalHeight, panelsX, panelsZ);
 
 		}
 
@@ -1147,7 +1141,7 @@ public final class PowerModule extends AbstractModule {
 
 		}
 
-		static class PanelTexCoordFunction implements TexCoordSimpleFunction {
+		static class PanelTexCoordFunction implements TexCoordFunction {
 
 			public final VectorXZ origin;
 			public final Angle zDirection;
@@ -1155,25 +1149,23 @@ public final class PowerModule extends AbstractModule {
 			public final double totalHeight;
 			public final @Nullable Integer panelsX;
 			public final @Nullable Integer panelsZ;
-			public final TextureDataDimensions texDim;
 
 			public PanelTexCoordFunction(VectorXZ origin, Angle zDirection, double totalWidth, double totalHeight,
-					@Nullable Integer panelsX, @Nullable Integer panelsZ, TextureDataDimensions textureData) {
+					@Nullable Integer panelsX, @Nullable Integer panelsZ) {
 				this.origin = origin;
 				this.zDirection = zDirection;
 				this.totalWidth = totalWidth;
 				this.totalHeight = totalHeight;
 				this.panelsX = panelsX;
 				this.panelsZ = panelsZ;
-				this.texDim = textureData;
 			}
 
 			@Override
-			public List<VectorXZ> apply(List<VectorXYZ> vs) {
-				return vs.stream().map(v -> apply(v)).collect(toList());
+			public List<VectorXZ> apply(TextureDataDimensions texDim, List<VectorXYZ> vs) {
+				return vs.stream().map(v -> apply(texDim, v)).collect(toList());
 			}
 
-			VectorXZ apply(VectorXYZ v) {
+			VectorXZ apply(TextureDataDimensions texDim, VectorXYZ v) {
 
 				double defaultEntityWidth = texDim.widthPerEntity() != null ? texDim.widthPerEntity() : texDim.width();
 				double defaultEntityHeight = texDim.heightPerEntity() != null ? texDim.heightPerEntity() : texDim.height();

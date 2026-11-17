@@ -6,7 +6,6 @@ import static org.osm2world.scene.material.DefaultMaterials.getSurfaceMaterial;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD3;
 import static org.osm2world.scene.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,8 +95,7 @@ public class ParkingModule extends AbstractModule {
 
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+			target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 			/* draw cars on the parking spaces */
 

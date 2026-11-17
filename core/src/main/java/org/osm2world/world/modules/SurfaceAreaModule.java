@@ -3,7 +3,6 @@ package org.osm2world.world.modules;
 import static org.osm2world.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.world.connectors.GroundState.ABOVE;
 import static org.osm2world.world.connectors.GroundState.BELOW;
 
@@ -115,8 +114,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				List<TriangleXYZ> triangles = getTriangulation();
 
 				if (!triangles.isEmpty()) {
-					target.drawTriangles(material, triangles,
-							triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+					target.drawTriangles(material, triangles, GLOBAL_X_Z);
 				}
 
 			}

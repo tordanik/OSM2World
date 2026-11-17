@@ -21,6 +21,7 @@ import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.output.common.ExtrudeOption;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.modules.building.BuildingPart;
 
 abstract public class SpindleRoof extends Roof {
@@ -46,7 +47,7 @@ abstract public class SpindleRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, double baseEle) {
+	public void renderTo(ProceduralWorldObject.Target target, double baseEle) {
 
 		List<Double> heights = new ArrayList<>();
 		List<Double> scaleFactors = new ArrayList<>();

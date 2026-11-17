@@ -1,8 +1,7 @@
 package org.osm2world.world.modules.building;
 
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +10,6 @@ import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 
 /** the underside of a {@link BuildingPart} */
@@ -29,7 +27,7 @@ class BuildingBottom {
 		this.floorHeight = floorHeight;
 	}
 
-	public void renderTo(CommonTarget target) {
+	public void renderTo(Target target) {
 
 		double floorEle = buildingPart.building.getGroundLevelEle() + floorHeight - 0.01;
 
@@ -37,10 +35,9 @@ class BuildingBottom {
 
 		List<TriangleXYZ> trianglesXYZ = triangles.stream()
 				.map(t -> t.makeClockwise().xyz(floorEle))
-				.collect(toList());
+				.toList();
 
-		target.drawTriangles(material, trianglesXYZ,
-				triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+		target.drawTriangles(material, trianglesXYZ, GLOBAL_X_Z);
 
 	}
 

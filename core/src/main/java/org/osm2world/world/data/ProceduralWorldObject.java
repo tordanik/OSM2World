@@ -1,18 +1,26 @@
 package org.osm2world.world.data;
 
+import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
+import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.output.CommonTarget;
+import org.osm2world.scene.material.Material;
 import org.osm2world.scene.mesh.LODRange;
 import org.osm2world.scene.mesh.LevelOfDetail;
 import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.ModelInstance;
+import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.world.connectors.AttachmentSurface;
 
 /**
@@ -69,6 +77,43 @@ public interface ProceduralWorldObject extends WorldObject {
 			if (!currentAttachmentTypes.isEmpty()) {
 				attachmentSurfaces.add(AttachmentSurface.fromMeshes(currentAttachmentTypes, currentAttachmentObject, List.of(mesh), currentBaseEleFunction));
 			}
+
+		}
+
+		/**
+		 * draws triangles.
+		 *
+		 * @param defaultTexCoordFunction  the {@link TexCoordFunction} for texture layers that do not specify one
+		 */
+		public void drawTriangles(@Nonnull Material material,
+				@Nonnull List<TriangleXYZ> triangles,
+				TexCoordFunction defaultTexCoordFunction) {
+			drawTriangles(material, triangles,
+					triangleTexCoordLists(triangles, material, defaultTexCoordFunction));
+		}
+
+		/**
+		 * draws a triangle strip.
+		 *
+		 * @param vs                       vertices of the triangle strip
+		 * @param defaultTexCoordFunction  the {@link TexCoordFunction} for texture layers that do not specify one
+		 */
+		public void drawTriangleStrip(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+				TexCoordFunction defaultTexCoordFunction) {
+			drawTriangleStrip(material, vs,
+					texCoordLists(vs, material, defaultTexCoordFunction));
+		}
+
+		/**
+		 * draws a triangle fan.
+		 *
+		 * @see #drawTriangleStrip(Material, List, TexCoordFunction)
+		 */
+		public void drawTriangleFan(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+				TexCoordFunction defaultTexCoordFunction) {
+
+			drawTriangleFan(material, vs,
+					texCoordLists(vs, material, defaultTexCoordFunction));
 
 		}
 

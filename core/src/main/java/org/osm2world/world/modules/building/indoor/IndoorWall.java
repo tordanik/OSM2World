@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.math3.util.MathUtils.TWO_PI;
 import static org.osm2world.math.VectorXZ.listXYZ;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
 import static org.osm2world.world.modules.building.Building.NodeWithLevelAndHeights;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.inheritTags;
@@ -25,7 +24,6 @@ import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.math.shapes.TriangleXZ;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.DefaultMaterials;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.MaterialRef;
@@ -697,7 +695,7 @@ public class IndoorWall {
     	return v1.subtract(v2).lengthSquared() < 0.00001;
 	}
 
-	public static void renderNodePolygons(CommonTarget target, Map<NodeWithLevelAndHeights,
+	public static void renderNodePolygons(ProceduralWorldObject.Target target, Map<NodeWithLevelAndHeights,
 			List<LineSegmentXZ>> nodeToLineSegments, O2WConfig config) {
 
 		for (Map.Entry<NodeWithLevelAndHeights, List<LineSegmentXZ>> entry : nodeToLineSegments.entrySet()) {
@@ -786,14 +784,12 @@ public class IndoorWall {
 
 					target.drawExtrudedShape(material, polygon, path, null, null, null);
 
-					target.drawTriangles(material, trianglesXYZBottom,
-							triangleTexCoordLists(trianglesXYZBottom, material, GLOBAL_X_Z));
+					target.drawTriangles(material, trianglesXYZBottom, GLOBAL_X_Z);
 
-					target.drawTriangles(material, trianglesXYZTop,
-							triangleTexCoordLists(trianglesXYZTop, material, GLOBAL_X_Z));
+					target.drawTriangles(material, trianglesXYZTop, GLOBAL_X_Z);
 
 
-				} catch (InvalidGeometryException e) {}
+				} catch (InvalidGeometryException ignored) {}
 			}
 		}
 	}
@@ -874,8 +870,8 @@ public class IndoorWall {
 									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - topOffset))
 									.toList();
 
-							target.drawTriangles(innerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
-							target.drawTriangles(innerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(innerMaterial, bottomTriangles, GLOBAL_X_Z);
+							target.drawTriangles(innerMaterial, tempTopTriangles, GLOBAL_X_Z);
 
 
 							rightSurface = new WallSurface(data.getBuildingPart(), material,

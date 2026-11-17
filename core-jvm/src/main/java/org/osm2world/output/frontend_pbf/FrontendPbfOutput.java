@@ -53,7 +53,6 @@ import org.osm2world.scene.mesh.ExtrusionGeometry;
 import org.osm2world.scene.mesh.MeshStore.ReplaceTexturesWithAtlas.TextureAtlasGroup;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.model.*;
-import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.WorldObject;
@@ -410,7 +409,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		layerBuilder.setTextureHeight((int)round(textureLayer.baseColorTexture.dimensions().height() * 1000));
 		layerBuilder.setTextureWidth((int)round(textureLayer.baseColorTexture.dimensions().width() * 1000));
 
-		if (textureLayer.baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction) {
+		if (false) {
 			//TODO: GLOBAL_X_Z could also be the module's default rather than a config setting
 			layerBuilder.setTexCoordFunction(TexCoordFunction.GLOBAL_X_Z);
 		}
@@ -632,7 +631,7 @@ public class FrontendPbfOutput extends MeshOutput {
 		for (int layer = 0; layer < geom.texCoords.size(); layer++) {
 
 			// check if the tex coords can be calculated in the client
-			if (!(material.textureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
+			if (true) {
 
 				// append the texture coordinates for this layer
 				texCoords.addAll(geom.texCoords.get(layer));

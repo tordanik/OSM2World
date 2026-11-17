@@ -17,10 +17,9 @@ import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.*;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.ValueConstraint.POSITIVE;
 import static org.osm2world.util.ValueParseUtil.*;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.*;
@@ -39,10 +38,9 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.TriangulationUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
-import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
+import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
@@ -600,8 +598,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			target.setCurrentLodRange(LOD0, LOD4);
 
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+			target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 			/* connect some lanes such as sidewalks between adjacent roads */
 
@@ -675,8 +672,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			List<TriangleXYZ> trianglesXYZ = getTriangulation();
 
-			target.drawTriangles(material, trianglesXYZ,
-					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+			target.drawTriangles(material, trianglesXYZ, GLOBAL_X_Z);
 
 		}
 
@@ -725,8 +721,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vs = asList(endLeft, startLeft, endRight, startRight);
 
-			target.drawTriangleStrip(surface, vs,
-					texCoordLists(vs, surface, GLOBAL_X_Z));
+			target.drawTriangleStrip(surface, vs, GLOBAL_X_Z);
 
 			/* draw lane connections */
 
@@ -1379,16 +1374,14 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vs = createTriangleStripBetween(
 					leftOutline, rightOutline);
 
-			target.drawTriangleStrip(ASPHALT.get(config), vs,
-					texCoordLists(vs, ASPHALT.get(config), GLOBAL_X_Z));
+			target.drawTriangleStrip(ASPHALT.get(config), vs, GLOBAL_X_Z);
 
 			// render underside for indoor stairs
 
 			List<VectorXYZ> vsDown = createTriangleStripBetween(
 					rightOutline, leftOutline);
 
-			target.drawTriangleStrip(ASPHALT.get(config), vsDown,
-					texCoordLists(vsDown, ASPHALT.get(config), GLOBAL_X_Z));
+			target.drawTriangleStrip(ASPHALT.get(config), vsDown, GLOBAL_X_Z);
 
 			/* Determine the position of the start/end for each step.
 			 * May need to look beyond this way segment because step_count refers to the entire way. */
@@ -1467,15 +1460,13 @@ public class RoadModule extends ConfigurableWorldModule {
 				}
 
 				List<VectorXYZ> topStrip = List.of(front.left, front.right, edgeLeft, edgeRight, back.left, back.right);
-				target.drawTriangleStrip(material, topStrip,
-						texCoordLists(topStrip, material, STRIP_WALL));
+				target.drawTriangleStrip(material, topStrip, STRIP_WALL);
 
 				List<TriangleXYZ> sideTriangles = List.of(
 						new TriangleXYZ(front.left, edgeLeft, back.left),
 						new TriangleXYZ(back.right, edgeRight, front.right));
 
-				target.drawTriangles(material, sideTriangles,
-						triangleTexCoordLists(sideTriangles, material, SLOPED_TRIANGLES));
+				target.drawTriangles(material, sideTriangles, SLOPED_TRIANGLES);
 
 				/* draw handrails */
 
@@ -1549,8 +1540,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						getOutline(false),
 						addYList(getOutline(false), firstLane.getHeightAboveRoad()));
 
-				target.drawTriangleStrip(getSurface(), vs,
-						texCoordLists(vs, getSurface(), STRIP_WALL));
+				target.drawTriangleStrip(getSurface(), vs, STRIP_WALL);
 
 			}
 
@@ -1560,8 +1550,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						addYList(getOutline(true), lastLane.getHeightAboveRoad()),
 						getOutline(true));
 
-				target.drawTriangleStrip(getSurface(), vs,
-						texCoordLists(vs, getSurface(), STRIP_WALL));
+				target.drawTriangleStrip(getSurface(), vs, STRIP_WALL);
 
 			}
 
@@ -1619,8 +1608,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = getSurfaceMaterial(surface, ASPHALT, config);
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+			target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 		}
 
@@ -1862,7 +1850,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(CommonTarget target, O2WConfig config) {
+		public void renderTo(Target target, O2WConfig config) {
 
 			assert phase > 1;
 
@@ -1938,7 +1926,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(CommonTarget target, O2WConfig config) {
+		public void renderTo(Target target, O2WConfig config) {
 
 			type.render(target, roadPart, rightHandTraffic,
 					roadTags, laneTags, leftBorder, rightBorder, config);
@@ -1967,7 +1955,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public abstract void render(CommonTarget target, RoadPart roadPart,
+		public abstract void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic,
 				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
@@ -1998,7 +1986,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(CommonTarget target, RoadPart roadPart,
+		public void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic,
 				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
@@ -2038,8 +2026,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					}
 
 					target.drawTriangleStrip(surface, vs,
-							texCoordLists(vs, surface, textureDimensions -> new ArrowTexCoordFunction(
-									roadPart, rightHandTraffic, mirrorLeftRight, textureDimensions)));
+							new ArrowTexCoordFunction(roadPart, rightHandTraffic, mirrorLeftRight));
 
 				} else {
 
@@ -2055,12 +2042,9 @@ public class RoadModule extends ConfigurableWorldModule {
 					List<VectorXYZ> vsRight = createTriangleStripBetween(
 							rightMiddleBorder, rightLaneBorder);
 
-					target.drawTriangleStrip(surface, vsLeft,
-							texCoordLists(vsLeft, surface, GLOBAL_X_Z));
-					target.drawTriangleStrip(surfaceMiddle, vsMiddle,
-							texCoordLists(vsMiddle, surfaceMiddle, GLOBAL_X_Z));
-					target.drawTriangleStrip(surface, vsRight,
-							texCoordLists(vsRight, surface, GLOBAL_X_Z));
+					target.drawTriangleStrip(surface, vsLeft, GLOBAL_X_Z);
+					target.drawTriangleStrip(surfaceMiddle, vsMiddle, GLOBAL_X_Z);
+					target.drawTriangleStrip(surface, vsRight, GLOBAL_X_Z);
 
 				}
 
@@ -2086,8 +2070,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				List<TriangleXYZ> triangles = TriangulationUtil.triangulateXYZ(
 						new PolygonXYZ(closeLoop(outline)));
 
-				target.drawTriangles(surface, triangles,
-						triangleTexCoordLists(triangles, surface, GLOBAL_X_Z));
+				target.drawTriangles(surface, triangles, GLOBAL_X_Z);
 
 			}
 
@@ -2225,7 +2208,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			"KERB", true, true) {
 
 		@Override
-		public void render(CommonTarget target, RoadPart roadPart,
+		public void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic, TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder, O2WConfig config) {
@@ -2249,14 +2232,12 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vsTop = createTriangleStripBetween(
 					borderTop0, borderTop1);
-			target.drawTriangleStrip(DefaultMaterials.KERB.get(config), vsTop,
-					texCoordLists(vsTop, DefaultMaterials.KERB.get(config), STRIP_FIT_HEIGHT));
+			target.drawTriangleStrip(DefaultMaterials.KERB.get(config), vsTop, STRIP_FIT_HEIGHT);
 
 			if (height > 0) {
 				List<VectorXYZ> vsFront = createTriangleStripBetween(
 						borderFront0, borderFront1);
-				target.drawTriangleStrip(DefaultMaterials.KERB.get(config), vsFront,
-						texCoordLists(vsFront, DefaultMaterials.KERB.get(config), STRIP_FIT_HEIGHT));
+				target.drawTriangleStrip(DefaultMaterials.KERB.get(config), vsFront, STRIP_FIT_HEIGHT);
 			}
 
 		}
@@ -2342,19 +2323,18 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * a texture coordinate function for arrow road markings on turn lanes.
 	 * Has special features including centering the arrow, placing it at an
 	 * offset from the end of the road, and taking available space into account.
-	 *
+	 * <p>
 	 * To reduce the number of necessary textures, it uses mirrored versions of
 	 * the various right-pointing arrows for left-pointing arrows.
 	 */
 	private record ArrowTexCoordFunction (
 		RoadPart roadPart,
 		boolean rightHandTraffic,
-		boolean mirrorLeftRight,
-		TextureDataDimensions textureDimensions
-	) implements TexCoordSimpleFunction {
+		boolean mirrorLeftRight
+	) implements TexCoordFunction {
 
 		@Override
-		public List<VectorXZ> apply(List<VectorXYZ> vs) {
+		public List<VectorXZ> apply(TextureDataDimensions textureDimensions, List<VectorXYZ> vs) {
 
 			if (vs.size() % 2 == 1) {
 				throw new IllegalArgumentException("not a triangle strip lane");

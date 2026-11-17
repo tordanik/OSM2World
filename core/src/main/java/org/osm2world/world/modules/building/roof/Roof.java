@@ -5,6 +5,7 @@ import static java.util.Comparator.comparingDouble;
 import static org.osm2world.math.Angle.radiansBetween;
 import static org.osm2world.util.ValueParseUtil.parseAngle;
 import static org.osm2world.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,7 +22,6 @@ import org.osm2world.math.Angle;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.LineSegmentXZ;
 import org.osm2world.math.shapes.PolygonWithHolesXZ;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.modules.building.BuildingPart;
@@ -89,7 +89,7 @@ abstract public class Roof {
 	/**
 	 * returns the attachment surfaces for this roof
 	 *
-	 * @param baseEle  the lower elevation of the roof, as in {@link #renderTo(CommonTarget, double)}
+	 * @param baseEle  the lower elevation of the roof, as in {@link #renderTo(Target, double)}
 	 * @param level  the roof's level number. This allows distinction between multiple vertically stacked roofs
 	 * when attaching objects to the roofs' {@link AttachmentSurface}s.
 	 */
@@ -100,7 +100,7 @@ abstract public class Roof {
 	/**
 	 * renders the roof. Needs the lower elevation of the roof (which is not yet known at construction time).
 	 */
-	public abstract void renderTo(CommonTarget target, double baseEle);
+	public abstract void renderTo(Target target, double baseEle);
 
 	/**
 	 * creates the correct roof for the given roof:shape value

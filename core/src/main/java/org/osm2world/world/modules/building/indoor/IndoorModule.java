@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.scene.material.DefaultMaterials.STEEL;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseLevels;
 import static org.osm2world.world.connectors.Connector.AttachmentProperties;
 
@@ -240,10 +239,8 @@ public class IndoorModule extends AbstractModule {
 				List<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon)
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle - 0.0001)).toList();
 
-				target.drawTriangles(STEEL.get(config), trianglesBottomDown,
-						triangleTexCoordLists(trianglesBottomDown, STEEL.get(config), GLOBAL_X_Z));
-				target.drawTriangles(STEEL.get(config), trianglesBottomUp,
-						triangleTexCoordLists(trianglesBottomUp, STEEL.get(config), GLOBAL_X_Z));
+				target.drawTriangles(STEEL.get(config), trianglesBottomDown, GLOBAL_X_Z);
+				target.drawTriangles(STEEL.get(config), trianglesBottomUp, GLOBAL_X_Z);
 
 
 				/* draw ceiling */
@@ -254,10 +251,8 @@ public class IndoorModule extends AbstractModule {
 				List<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon)
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle + carHeight)).toList();
 
-				target.drawTriangles(STEEL.get(config), trianglesTopDown,
-						triangleTexCoordLists(trianglesTopDown, STEEL.get(config), GLOBAL_X_Z));
-				target.drawTriangles(STEEL.get(config), trianglesTopUp,
-						triangleTexCoordLists(trianglesTopUp, STEEL.get(config), GLOBAL_X_Z));
+				target.drawTriangles(STEEL.get(config), trianglesTopDown, GLOBAL_X_Z);
+				target.drawTriangles(STEEL.get(config), trianglesTopUp, GLOBAL_X_Z);
 
 
 				/* draw cable */

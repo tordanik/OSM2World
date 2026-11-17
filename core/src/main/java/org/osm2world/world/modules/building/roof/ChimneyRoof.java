@@ -5,7 +5,8 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.output.common.ExtrudeOption.TEX_HEIGHT_ALONG_PATH;
 import static org.osm2world.scene.material.DefaultMaterials.VOID;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -18,12 +19,10 @@ import org.osm2world.map_data.data.TagSet;
 import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.*;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.scene.model.ExternalResourceModel;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.world.modules.building.BuildingPart;
 
 /** the top of a chimney, modeled as a special kind of "roof" */
@@ -57,7 +56,7 @@ public class ChimneyRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, double baseEle) {
+	public void renderTo(Target target, double baseEle) {
 
 		double chimneyHoleEle = baseEle - 3.0;
 
@@ -69,8 +68,7 @@ public class ChimneyRoof extends Roof {
 		List<TriangleXZ> trianglesXZ = new PolygonWithHolesXZ(outerPolygon, List.of(chimneyHole)).getTriangulation();
 		List<TriangleXYZ> triangles = trianglesXZ.stream().map(t -> t.xyz(baseEle)).toList();
 
-		target.drawTriangles(material, triangles,
-				triangleTexCoordLists(triangles, material, NamedTexCoordFunction.GLOBAL_X_Z));
+		target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 		/* draw the walls and bottom of the hole */
 
@@ -81,8 +79,7 @@ public class ChimneyRoof extends Roof {
 		List<TriangleXZ> holeTrianglesXZ = chimneyHole.getTriangulation();
 		List<TriangleXYZ> holeTriangles = holeTrianglesXZ.stream().map(t -> t.xyz(chimneyHoleEle)).collect(toList());
 
-		target.drawTriangles(VOID.get(config), holeTriangles,
-				triangleTexCoordLists(holeTriangles, VOID.get(config), NamedTexCoordFunction.GLOBAL_X_Z));
+		target.drawTriangles(VOID.get(config), holeTriangles, GLOBAL_X_Z);
 
 		/* mark the location where a client might want to emit a smoke effect */
 

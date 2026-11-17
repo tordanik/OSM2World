@@ -3,7 +3,6 @@ package org.osm2world.world.modules;
 import static java.lang.Math.min;
 import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseWidth;
@@ -110,11 +109,11 @@ public class AerowayModule extends ConfigurableWorldModule {
 		public void buildMeshesAndModels(Target target) {
 
 			TexCoordFunction localXZTexCoordFunction = (TextureDataDimensions dimensions, List<VectorXYZ> vs) -> {
-                var globalXZ = new GlobalXZTexCoordFunction(dimensions);
+                var globalXZ = new GlobalXZTexCoordFunction();
                 VectorXZ center = area.getOuterPolygon().getCentroid();
                 VectorXZ shift = center.add(-dimensions.width() / 2, -dimensions.height() / 2);
                 List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(shift)).toList();
-                return globalXZ.apply(localCoords);
+                return globalXZ.apply(dimensions, localCoords);
 			};
 
 			List<TriangleXYZ> triangles = getTriangulation();
@@ -144,9 +143,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 			Material material = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT, config);
 
-			List<TriangleXYZ> triangles = getTriangulation();
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+			target.drawTriangles(material, getTriangulation(), GLOBAL_X_Z);
 
 		}
 
@@ -177,15 +174,15 @@ public class AerowayModule extends ConfigurableWorldModule {
 			Material material = getSurface().get(config);
 
 			List<VectorXYZ> leftVs = WorldModuleGeometryUtil.createTriangleStripBetween(leftOuter, leftInner);
-			target.drawTriangleStrip(material, leftVs, texCoordLists(leftVs, material, GLOBAL_X_Z));
+			target.drawTriangleStrip(material, leftVs, GLOBAL_X_Z);
 
 			List<VectorXYZ> rightVs = WorldModuleGeometryUtil.createTriangleStripBetween(rightInner, rightOuter);
-			target.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, GLOBAL_X_Z));
+			target.drawTriangleStrip(material, rightVs, GLOBAL_X_Z);
 
 			material = getCenterlineSurface();
 
 			List<VectorXYZ> centerVs = WorldModuleGeometryUtil.createTriangleStripBetween(leftInner, rightInner);
-			target.drawTriangleStrip(material, centerVs, texCoordLists(centerVs, material, GLOBAL_X_Z));
+			target.drawTriangleStrip(material, centerVs, GLOBAL_X_Z);
 
 
 		}
@@ -255,10 +252,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 		public void buildMeshesAndModels(Target target) {
 
 			Material material = getSurfaceForNode(node).get(config);
-			List<TriangleXYZ> triangles = super.getTriangulation();
 
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+			target.drawTriangles(material, getTriangulation(), GLOBAL_X_Z);
 
 		}
 
@@ -284,10 +279,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 			Material material = getSurfaceForNode(node).get(config);
 
-			List<TriangleXYZ> trianglesXYZ = getTriangulation();
-
-			target.drawTriangles(material, trianglesXYZ,
-					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+			target.drawTriangles(material, getTriangulation(), GLOBAL_X_Z);
 
 		}
 

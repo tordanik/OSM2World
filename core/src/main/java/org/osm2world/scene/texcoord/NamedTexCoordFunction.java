@@ -83,7 +83,7 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 	public TexCoordSimpleFunction apply(TextureDataDimensions dimensions) {
 		return switch (this) {
 			case GLOBAL_X_Y -> new GlobalXYTexCoordFunction(dimensions);
-			case GLOBAL_X_Z -> new GlobalXZTexCoordFunction(dimensions);
+			case GLOBAL_X_Z -> new GlobalXZTexCoordFunction().apply(dimensions);
 			case GLOBAL_Z_Y -> new GlobalZYTexCoordFunction(dimensions);
 			case SLOPED_TRIANGLES -> new SlopedTrianglesTexCoordFunction(dimensions);
 			case STRIP_WALL, STRIP_FIT_HEIGHT, STRIP_FIT ->

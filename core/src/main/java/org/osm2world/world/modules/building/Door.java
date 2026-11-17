@@ -5,7 +5,6 @@ import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.scene.texcoord.TexCoordUtil.mirroredHorizontally;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 
@@ -16,8 +15,8 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
+import org.osm2world.world.data.ProceduralWorldObject;
 
 public class Door implements WallElement {
 
@@ -49,7 +48,7 @@ public class Door implements WallElement {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config) {
+	public void renderTo(ProceduralWorldObject.Target target, WallSurface surface, O2WConfig config) {
 
 		Material doorMaterial = switch (parameters.type) {
 			case "no" -> VOID.get(config);
@@ -75,8 +74,7 @@ public class Door implements WallElement {
 		if (parameters.numberOfWings == 1 || !"hinged".equals(parameters.type)) {
 
 			List<VectorXYZ> vsDoor = asList(topLeft, bottomLeft, topRight, bottomRight);
-			target.drawTriangleStrip(doorMaterial, vsDoor,
-					texCoordLists(vsDoor, doorMaterial, STRIP_FIT));
+			target.drawTriangleStrip(doorMaterial, vsDoor, STRIP_FIT);
 
 		} else {
 
@@ -88,12 +86,10 @@ public class Door implements WallElement {
 			VectorXYZ topCenter = interpolateBetween(topLeft, topRight, 0.5);
 
 			List<VectorXYZ> vsDoorLeft = asList(topLeft, bottomLeft, topCenter, bottomCenter);
-			target.drawTriangleStrip(doorMaterial, vsDoorLeft,
-					texCoordLists(vsDoorLeft, doorMaterial, STRIP_FIT));
+			target.drawTriangleStrip(doorMaterial, vsDoorLeft, STRIP_FIT);
 
 			List<VectorXYZ> vsDoorRight = asList(topCenter, bottomCenter, topRight, bottomRight);
-			target.drawTriangleStrip(doorMaterial, vsDoorRight,
-					texCoordLists(vsDoorRight, doorMaterial, mirroredHorizontally(STRIP_FIT)));
+			target.drawTriangleStrip(doorMaterial, vsDoorRight, mirroredHorizontally(STRIP_FIT));
 
 		}
 

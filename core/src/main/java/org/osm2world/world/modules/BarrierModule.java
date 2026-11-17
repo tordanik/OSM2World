@@ -17,8 +17,6 @@ import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
@@ -210,7 +208,7 @@ public class BarrierModule extends AbstractModule {
 						leftBottomOutline.get(0),
 						rightTopOutline.get(0),
 						rightBottomOutline.get(0));
-				target.drawTriangleStrip(material, startCapVs, texCoordLists(startCapVs, material, STRIP_WALL));
+				target.drawTriangleStrip(material, startCapVs, STRIP_WALL);
 			}
 
 			if (capNeededAtNode(segment.getEndNode())) {
@@ -219,7 +217,7 @@ public class BarrierModule extends AbstractModule {
 						rightBottomOutline.get(rightBottomOutline.size() - 1),
 						leftTopOutline.get(leftTopOutline.size() - 1),
 						leftBottomOutline.get(leftBottomOutline.size() - 1));
-				target.drawTriangleStrip(material, startCapVs, texCoordLists(startCapVs, material, STRIP_WALL));
+				target.drawTriangleStrip(material, startCapVs, STRIP_WALL);
 			}
 
 			/* draw the top of the wall */
@@ -234,7 +232,7 @@ public class BarrierModule extends AbstractModule {
 				topVs = createTriangleStripBetween(leftTopOutline, rightTopOutline);
 			}
 
-			target.drawTriangleStrip(material, topVs, texCoordLists(topVs, material, STRIP_WALL));
+			target.drawTriangleStrip(material, topVs, STRIP_WALL);
 
 			/* draw the sides of the wall */
 
@@ -244,10 +242,10 @@ public class BarrierModule extends AbstractModule {
 			reverse(leftBottomOutline);
 
 			List<VectorXYZ> leftVs = createTriangleStripBetween(leftTopOutline, leftBottomOutline);
-			target.drawTriangleStrip(material, leftVs, texCoordLists(leftVs, material, STRIP_WALL));
+			target.drawTriangleStrip(material, leftVs, STRIP_WALL);
 
 			List<VectorXYZ> rightVs = createTriangleStripBetween(rightTopOutline, rightBottomOutline);
-			target.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, STRIP_WALL));
+			target.drawTriangleStrip(material, rightVs, STRIP_WALL);
 
 		}
 
@@ -498,8 +496,7 @@ public class BarrierModule extends AbstractModule {
 			List<VectorXYZ> pointsWithEle = getCenterline();
 
 			List<VectorXYZ> vsFence = createVerticalTriangleStrip(pointsWithEle, 0, height);
-			target.drawTriangleStrip(CHAIN_LINK_FENCE.get(config), vsFence,
-					texCoordLists(vsFence, CHAIN_LINK_FENCE.get(config), STRIP_WALL));
+			target.drawTriangleStrip(CHAIN_LINK_FENCE.get(config), vsFence, STRIP_WALL);
 
 			if (!CHAIN_LINK_FENCE.get(config).doubleSided()) {
 
@@ -507,8 +504,7 @@ public class BarrierModule extends AbstractModule {
 				Collections.reverse(pointsWithEleBack);
 
 				List<VectorXYZ> vsFenceBack = createVerticalTriangleStrip(pointsWithEleBack, 0, height);
-				target.drawTriangleStrip(CHAIN_LINK_FENCE.get(config), vsFenceBack,
-						texCoordLists(vsFenceBack, CHAIN_LINK_FENCE.get(config), STRIP_WALL));
+				target.drawTriangleStrip(CHAIN_LINK_FENCE.get(config), vsFenceBack, STRIP_WALL);
 
 			}
 
@@ -588,14 +584,8 @@ public class BarrierModule extends AbstractModule {
 				if (barStartHeight > 0) {
 					List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(baseline, barStartHeight, barEndHeight);
 					List<VectorXYZ> vsLowBack = createVerticalTriangleStrip(baseline, barEndHeight, barStartHeight);
-
-					List<List<VectorXZ>> texCoordListsFenceFront = texCoordLists(
-							vsLowFront, material, STRIP_WALL);
-					List<List<VectorXZ>> texCoordListsFenceBack = texCoordLists(
-							vsLowBack, material, STRIP_WALL);
-
-					target.drawTriangleStrip(material, vsLowFront, texCoordListsFenceFront);
-					target.drawTriangleStrip(material, vsLowBack, texCoordListsFenceBack);
+					target.drawTriangleStrip(material, vsLowFront, STRIP_WALL);
+					target.drawTriangleStrip(material, vsLowBack, STRIP_WALL);
 				}
 			}
 
@@ -1159,11 +1149,11 @@ public class BarrierModule extends AbstractModule {
 				List<TriangleXYZ> topTriangles = getTriangulation().stream()
 						.map(t -> t.shift(new VectorXYZ(0, height, 0)))
 						.toList();
-				target.drawTriangles(HEDGE.get(config), topTriangles, triangleTexCoordLists(topTriangles, HEDGE.get(config), GLOBAL_X_Z));
+				target.drawTriangles(HEDGE.get(config), topTriangles, GLOBAL_X_Z);
 				for (PolygonXYZ ring : getOutlinePolygon().rings()) {
 					List<VectorXYZ> outerStrip = createTriangleStripBetween(
 							addYList(ring.vertices(), height), ring.vertices());
-					target.drawTriangleStrip(HEDGE.get(config), outerStrip, texCoordLists(outerStrip, HEDGE.get(config), STRIP_WALL));
+					target.drawTriangleStrip(HEDGE.get(config), outerStrip, STRIP_WALL);
 				}
 				break;
 			}

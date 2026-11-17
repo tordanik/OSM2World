@@ -5,7 +5,6 @@ import static java.util.Collections.emptyList;
 import static org.osm2world.map_elevation.creation.EleConstraintEnforcer.ConstraintType.EXACT;
 import static org.osm2world.scene.material.DefaultMaterials.TUNNEL_DEFAULT;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.world.connectors.GroundState.ON;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -186,12 +185,9 @@ public class TunnelModule extends AbstractModule {
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					aboveLeftOutline, leftOutline);
 
-			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip1,
-					texCoordLists(strip1, TUNNEL_DEFAULT.get(config), STRIP_WALL));
-			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip2,
-					texCoordLists(strip1, TUNNEL_DEFAULT.get(config), STRIP_WALL));
-			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip3,
-					texCoordLists(strip1, TUNNEL_DEFAULT.get(config), STRIP_WALL));
+			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip1, STRIP_WALL);
+			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip2, STRIP_WALL);
+			target.drawTriangleStrip(TUNNEL_DEFAULT.get(config), strip3, STRIP_WALL);
 
 		}
 

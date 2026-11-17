@@ -13,7 +13,6 @@ import static org.osm2world.scene.mesh.LevelOfDetail.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.triangulateAreaBetween;
 
@@ -115,8 +114,7 @@ public class GolfModule extends AbstractModule {
 			target.setCurrentLodRange(LOD0, LOD1);
 
 			List<TriangleXYZ> basicTriangulation = getTriangulation();
-			target.drawTriangles(SAND.get(config), basicTriangulation,
-					triangleTexCoordLists(basicTriangulation, SAND.get(config), GLOBAL_X_Z));
+			target.drawTriangles(SAND.get(config), basicTriangulation, GLOBAL_X_Z);
 
 			/* draw the bunker as a depression by shrinking the outline polygon and lowering it at each step.
 			 *
@@ -183,8 +181,7 @@ public class GolfModule extends AbstractModule {
 
 			/* render everything with a sand texture */
 
-			target.drawTriangles(SAND.get(config), resultingTriangulation,
-					triangleTexCoordLists(resultingTriangulation, SAND.get(config), GLOBAL_X_Z));
+			target.drawTriangles(SAND.get(config), resultingTriangulation, GLOBAL_X_Z);
 
 		}
 
@@ -283,8 +280,7 @@ public class GolfModule extends AbstractModule {
 			List<TriangleXZ> trianglesXZ = getGreenTriangulation();
 			List<TriangleXYZ> triangles = triangulationXZtoXYZ(trianglesXZ, this.getConnectors()::getPosXYZ);
 
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles , material, GLOBAL_X_Z));
+			target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 			/* render pin */
 
@@ -316,8 +312,7 @@ public class GolfModule extends AbstractModule {
 
 			Material groundMaterial = EARTH.get(config).makeSmooth();
 
-			target.drawTriangleStrip(groundMaterial, vs,
-					texCoordLists(vs, groundMaterial, STRIP_WALL));
+			target.drawTriangleStrip(groundMaterial, vs, STRIP_WALL);
 
 			target.drawConvexPolygon(groundMaterial, lowerHoleRing,
 					texCoordLists(lowerHoleRing, groundMaterial, GLOBAL_X_Z));

@@ -7,9 +7,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateBetween;
 import static org.osm2world.scene.material.DefaultMaterials.*;
+import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +30,6 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
-import org.osm2world.scene.texcoord.NamedTexCoordFunction;
 import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
@@ -114,15 +112,13 @@ public class SportsModule extends AbstractModule {
 
 				Material material = getPitchMaterial();
 
-				target.drawTriangles(material, triangles,
-						triangleTexCoordLists(triangles, material, t -> texFunction));
+				target.drawTriangles(material, triangles, texFunction);
 
 			} else {
 
 				Material material = getFallbackPitchMaterial();
 
-				target.drawTriangles(material, triangles,
-						triangleTexCoordLists(triangles, material, NamedTexCoordFunction.GLOBAL_X_Z));
+				target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 			}
 
@@ -450,12 +446,10 @@ public class SportsModule extends AbstractModule {
 
 				}
 
-				target.drawTriangleStrip(TENNIS_NET.get(config), verticesNet,
-						texCoordLists(verticesNet, TENNIS_NET.get(config), STRIP_FIT_HEIGHT));
+				target.drawTriangleStrip(TENNIS_NET.get(config), verticesNet, STRIP_FIT_HEIGHT);
 
 				if (!TENNIS_NET.get(config).doubleSided()) {
-					target.drawTriangleStrip(TENNIS_NET.get(config), verticesNetBack,
-							texCoordLists(verticesNetBack, TENNIS_NET.get(config), STRIP_FIT_HEIGHT));
+					target.drawTriangleStrip(TENNIS_NET.get(config), verticesNetBack, STRIP_FIT_HEIGHT);
 				}
 
 			}

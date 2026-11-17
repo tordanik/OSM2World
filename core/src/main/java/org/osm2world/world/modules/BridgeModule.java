@@ -45,7 +45,6 @@ import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.MaterialOrRef;
 import org.osm2world.scene.mesh.TriangleGeometry;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordUtil;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.connectors.*;
 import org.osm2world.world.data.AreaWorldObject;
@@ -392,9 +391,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				if (!trianglesXYZ.isEmpty()) {
 
-					target.drawTriangles(material, trianglesXYZ,
-							TexCoordUtil.triangleTexCoordLists(trianglesXYZ, material,
-									td -> new GlobalXZTexCoordFunction(td, textureAngle)));
+					target.drawTriangles(material, trianglesXYZ, new GlobalXZTexCoordFunction(textureAngle));
 
 				}
 
@@ -406,9 +403,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 						.map(t -> t.shift(new VectorXYZ(0, -BRIDGE_UNDERSIDE_HEIGHT, 0)).reverse())
 						.toList();
 
-				target.drawTriangles(material, undersideTrianglesXYZ,
-						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, material,
-								td -> new GlobalXZTexCoordFunction(td, textureAngle)));
+				target.drawTriangles(material, undersideTrianglesXYZ, new GlobalXZTexCoordFunction(textureAngle));
 
 				// don't use the original edges, those don't have the extra intersection points for curved bridges
 				Set<LineSegmentXYZ> triangulationEdges = new TriangleGeometry(
@@ -425,8 +420,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 					List<VectorXYZ> triangleStrip = createTriangleStripBetween(
 							edge.shift(new VectorXYZ(0, bridgeIsRight ? 0 : BRIDGE_UNDERSIDE_HEIGHT, 0)).vertices(),
 							edge.shift(new VectorXYZ(0, bridgeIsRight ? BRIDGE_UNDERSIDE_HEIGHT : 0, 0)).vertices());
-					target.drawTriangleStrip(material, triangleStrip,
-							TexCoordUtil.texCoordLists(triangleStrip, material, STRIP_WALL));
+					target.drawTriangleStrip(material, triangleStrip, STRIP_WALL);
 
 				}
 
@@ -546,9 +540,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 						.map(t -> t.shift(new VectorXYZ(0, -BRIDGE_UNDERSIDE_HEIGHT, 0)).reverse())
 						.toList();
 
-				target.drawTriangles(material, undersideTrianglesXYZ,
-						TexCoordUtil.triangleTexCoordLists(undersideTrianglesXYZ, material,
-								td -> new GlobalXZTexCoordFunction(td, textureAngle)));
+				target.drawTriangles(material, undersideTrianglesXYZ, new GlobalXZTexCoordFunction(textureAngle));
 
 				List<List<VectorXYZ>> triangleStrips = List.of(
 						createTriangleStripBetween(leftBottom.getVertices(), leftTop.getVertices()),
@@ -558,8 +550,7 @@ public class BridgeModule extends ConfigurableWorldModule {
 
 				for (var triangleStrip : triangleStrips) {
 					try {
-						target.drawTriangleStrip(material, triangleStrip,
-								TexCoordUtil.texCoordLists(triangleStrip, material, STRIP_WALL));
+						target.drawTriangleStrip(material, triangleStrip, STRIP_WALL);
 					} catch (InvalidGeometryException e) {
 						ConversionLog.warn("Broken geometry in bridge arches", e, element);
 					}
@@ -1565,10 +1556,10 @@ public class BridgeModule extends ConfigurableWorldModule {
 			if (upperOutline.getVertices().stream().allMatch(v -> v.y > finalBaseEle)) {
 
 				List<VectorXYZ> stripVs = createTriangleStripBetween(upperOutline.getVertices(), lowerOutline.getVertices());
-				target.drawTriangleStrip(material, stripVs, TexCoordUtil.texCoordLists(stripVs, material, STRIP_WALL));
+				target.drawTriangleStrip(material, stripVs, STRIP_WALL);
 
 				var triangles = triangulateXYZ(new PolygonXYZ(upperOutline.getVertices()));
-				target.drawTriangles(material, triangles, TexCoordUtil.triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+				target.drawTriangles(material, triangles, GLOBAL_X_Z);
 
 			}
 

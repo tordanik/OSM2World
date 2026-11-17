@@ -3,7 +3,6 @@ package org.osm2world.world.modules.building;
 import static java.util.Arrays.asList;
 import static org.osm2world.scene.material.DefaultMaterials.SINGLE_WINDOW;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ import org.osm2world.math.VectorXYZ;
 import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.PolygonXYZ;
 import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.output.CommonTarget;
+import org.osm2world.world.data.ProceduralWorldObject;
 
 class TexturedWindow implements Window {
 
@@ -44,7 +43,7 @@ class TexturedWindow implements Window {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config) {
+	public void renderTo(ProceduralWorldObject.Target target, WallSurface surface, O2WConfig config) {
 
 		PolygonXYZ frontOutline = surface.convertTo3D(outline());
 
@@ -61,8 +60,7 @@ class TexturedWindow implements Window {
 
 		List<VectorXYZ> vsWindow = asList(topLeft, bottomLeft, topRight, bottomRight);
 
-		target.drawTriangleStrip(SINGLE_WINDOW.get(config), vsWindow,
-				texCoordLists(vsWindow, SINGLE_WINDOW.get(config), STRIP_FIT));
+		target.drawTriangleStrip(SINGLE_WINDOW.get(config), vsWindow, STRIP_FIT);
 
 	}
 

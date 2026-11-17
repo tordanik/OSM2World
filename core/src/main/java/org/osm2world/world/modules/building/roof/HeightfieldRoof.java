@@ -5,7 +5,7 @@ import static org.osm2world.math.algorithms.GeometryUtil.distanceFromLineSegment
 import static org.osm2world.math.algorithms.GeometryUtil.interpolateValue;
 import static org.osm2world.math.shapes.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.SLOPED_TRIANGLES;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +19,6 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.math.shapes.*;
-import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.Material;
 import org.osm2world.world.connectors.AttachmentSurface;
 import org.osm2world.world.modules.building.BuildingPart;
@@ -118,14 +117,13 @@ abstract public class HeightfieldRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(CommonTarget target, double baseEle) {
+	public void renderTo(Target target, double baseEle) {
 
 		List<TriangleXYZ> trianglesXYZ = getRoofTriangles(baseEle);
 
 		/* draw triangles */
 
-		target.drawTriangles(material, trianglesXYZ,
-				triangleTexCoordLists(trianglesXYZ, material, SLOPED_TRIANGLES));
+		target.drawTriangles(material, trianglesXYZ, SLOPED_TRIANGLES);
 
 	}
 

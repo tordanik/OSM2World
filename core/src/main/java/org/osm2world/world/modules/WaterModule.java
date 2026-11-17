@@ -7,7 +7,6 @@ import static org.osm2world.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.scene.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -200,8 +199,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				);
 
 				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(TERRAIN_DEFAULT.get(config), strip,
-						texCoordLists(strip, TERRAIN_DEFAULT.get(config), GLOBAL_X_Z));
+					target.drawTriangleStrip(TERRAIN_DEFAULT.get(config), strip, GLOBAL_X_Z);
 				}
 
 				/* render water */
@@ -209,8 +207,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				List<VectorXYZ> vs = createTriangleStripBetween(
 						leftWaterBorder, rightWaterBorder);
 
-				target.drawTriangleStrip(WATER.get(config), vs,
-						texCoordLists(vs, WATER.get(config), GLOBAL_X_Z));
+				target.drawTriangleStrip(WATER.get(config), vs, GLOBAL_X_Z);
 
 			}
 
@@ -292,9 +289,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public void buildMeshesAndModels(Target target) {
-			List<TriangleXYZ> triangles = getTriangulation();
-			target.drawTriangles(WATER.get(config), triangles,
-					triangleTexCoordLists(triangles, WATER.get(config), GLOBAL_X_Z));
+			target.drawTriangles(WATER.get(config), getTriangulation(), GLOBAL_X_Z);
 		}
 
 	}
@@ -322,8 +317,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			/* render water */
 
 			List<TriangleXYZ> triangles = getTriangulation();
-			target.drawTriangles(WATER.get(config), triangles,
-					triangleTexCoordLists(triangles, WATER.get(config), GLOBAL_X_Z));
+			target.drawTriangles(WATER.get(config), triangles, GLOBAL_X_Z);
 
 			/* render walls */
 

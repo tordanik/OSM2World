@@ -1,8 +1,9 @@
 package org.osm2world.world.modules.building;
 
+import static org.osm2world.world.data.ProceduralWorldObject.Target;
+
 import org.osm2world.conversion.O2WConfig;
 import org.osm2world.math.shapes.SimplePolygonXZ;
-import org.osm2world.output.CommonTarget;
 
 /**
  * something that can be placed into a wall, such as a window or door
@@ -21,6 +22,6 @@ interface WallElement {
 	 */
 	public double insetDistance();
 
-	public void renderTo(CommonTarget target, WallSurface surface, O2WConfig config);
+	public void renderTo(Target target, WallSurface surface, O2WConfig config);
 
 }

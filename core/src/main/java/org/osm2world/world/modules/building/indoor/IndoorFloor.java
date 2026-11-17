@@ -3,7 +3,6 @@ package org.osm2world.world.modules.building.indoor;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,8 +83,7 @@ public class IndoorFloor {
 
     		List<TriangleXYZ> trianglesXYZ = triangulateFloorPolygons(polygons);
 
-            target.drawTriangles(material, trianglesXYZ,
-                    triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+            target.drawTriangles(material, trianglesXYZ, GLOBAL_X_Z);
 
         }
     }

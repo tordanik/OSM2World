@@ -7,7 +7,6 @@ import static org.osm2world.scene.color.Color.ORANGE;
 import static org.osm2world.scene.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.scene.material.DefaultMaterials.*;
 import static org.osm2world.scene.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.scene.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.util.ValueParseUtil.parseColor;
 import static org.osm2world.world.modules.common.WorldModuleParseUtil.parseHeight;
 
@@ -77,8 +76,7 @@ public class PoolModule extends AbstractModule {
 
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			target.drawTriangles(WATER.get(config), triangles,
-					triangleTexCoordLists(triangles, WATER.get(config), GLOBAL_X_Z));
+			target.drawTriangles(WATER.get(config), triangles, GLOBAL_X_Z);
 
 			/* draw a small area around the pool */
 
