@@ -20,7 +20,7 @@ import org.osm2world.scene.material.TextureDataDimensions;
  * alternating between upper and lower vertex.
  */
 public record StripWallTexCoordFunction(TextureDataDimensions textureDimensions, boolean fitWidth, boolean fitHeight)
-		implements TexCoordFunction {
+		implements TexCoordSimpleFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {

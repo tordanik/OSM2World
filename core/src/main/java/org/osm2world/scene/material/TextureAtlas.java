@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osm2world.math.VectorXZ;
-import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
 
 import com.google.common.base.Objects;
@@ -72,8 +71,8 @@ public class TextureAtlas extends RuntimeTexture {
 	}
 
 	/**
-	 * converts a {@link TexCoordFunction} for one of the {@link TextureData}s in this atlas
-	 * to a {@link TexCoordFunction} for this atlas
+	 * converts texture coordinates for one of the {@link TextureData}s in this atlas
+	 * to texture coordinates for this atlas
 	 */
 	public List<VectorXZ> mapTexCoords(TextureData texture, List<VectorXZ> texCoords) {
 		return texCoords.stream()

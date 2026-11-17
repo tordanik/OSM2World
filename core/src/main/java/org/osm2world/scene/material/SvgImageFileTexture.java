@@ -1,14 +1,13 @@
 package org.osm2world.scene.material;
 
 import java.io.File;
-import java.util.function.Function;
 
 import org.osm2world.scene.texcoord.TexCoordFunction;
 
 public class SvgImageFileTexture extends ImageFileTexture {
 
 	public SvgImageFileTexture(File file, TextureDataDimensions dimensions,
-			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			Wrap wrap, TexCoordFunction texCoordFunction) {
 		super(file, dimensions, wrap, texCoordFunction);
 	}
 

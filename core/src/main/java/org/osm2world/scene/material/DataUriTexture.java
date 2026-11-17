@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
@@ -17,7 +16,7 @@ public class DataUriTexture extends RuntimeTexture {
 	private final String dataUri;
 
 	public DataUriTexture(String dataUri, TextureDataDimensions dimensions, Wrap wrap,
-						  @Nullable Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+						  @Nullable TexCoordFunction texCoordFunction) {
 		super(dimensions, wrap, texCoordFunction);
 		this.dataUri = dataUri;
 	}

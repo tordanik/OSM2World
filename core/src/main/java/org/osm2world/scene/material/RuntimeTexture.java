@@ -1,7 +1,6 @@
 package org.osm2world.scene.material;
 
 import java.awt.image.BufferedImage;
-import java.util.function.Function;
 
 import org.osm2world.scene.texcoord.TexCoordFunction;
 import org.osm2world.util.Resolution;
@@ -13,7 +12,7 @@ import org.osm2world.util.platform.image.ImageUtil;
 public abstract class RuntimeTexture extends TextureData {
 
 	protected RuntimeTexture(TextureDataDimensions dimensions, Wrap wrap,
-			Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			TexCoordFunction texCoordFunction) {
 		super(dimensions, wrap, texCoordFunction);
 	}
 

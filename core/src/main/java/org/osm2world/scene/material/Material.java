@@ -221,7 +221,7 @@ public record Material(Interpolation interpolation, Color color, boolean doubleS
 							texture.fontStyle, texture.dimensions,
 							texture.topOffset, texture.leftOffset,
 							color, texture.relativeFontSize,
-							texture.wrap, t -> texture.coordFunction);
+							texture.wrap, texture.coordFunction);
 
 					textureDataList.set(numberOfTextLayer, new TextureLayer(newTextTexture,
 							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
@@ -302,7 +302,7 @@ public record Material(Interpolation interpolation, Color color, boolean doubleS
 						textTexture.fontName, textTexture.fontStyle, textTexture.dimensions,
 						textTexture.topOffset, textTexture.leftOffset,
 						textTexture.textColor, textTexture.relativeFontSize,
-						textTexture.wrap, t -> textTexture.coordFunction);
+						textTexture.wrap, textTexture.coordFunction);
 			}
 
 		}

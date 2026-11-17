@@ -17,7 +17,7 @@ import org.osm2world.scene.material.TextureDataDimensions;
  *
  * @param rotateAngle  optional angle by which the texture will be rotated in the plane
  */
-public record GlobalXZTexCoordFunction(TextureDataDimensions textureDimensions, @Nullable Angle rotateAngle) implements TexCoordFunction {
+public record GlobalXZTexCoordFunction(TextureDataDimensions textureDimensions, @Nullable Angle rotateAngle) implements TexCoordSimpleFunction {
 
 	public GlobalXZTexCoordFunction(TextureDataDimensions textureDimensions) {
 		this(textureDimensions, null);

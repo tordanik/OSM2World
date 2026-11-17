@@ -14,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Base64;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 import javax.imageio.IIOImage;
@@ -27,6 +26,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.color.LColor;
 import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 import org.osm2world.util.Resolution;
 import org.osm2world.util.platform.image.ImageUtil;
 
@@ -65,13 +65,12 @@ public abstract class TextureData {
 	public final Wrap wrap;
 
 	/** calculation rule for texture coordinates */
-	public final @Nullable TexCoordFunction coordFunction;
+	public final @Nullable TexCoordSimpleFunction coordFunction;
 
 	/** cached result of {@link #getAverageColor()} */
 	private LColor averageColor = null;
 
-	protected TextureData(TextureDataDimensions dimensions,
-			Wrap wrap, @Nullable  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+	protected TextureData(TextureDataDimensions dimensions, Wrap wrap, @Nullable TexCoordFunction texCoordFunction) {
 		this.dimensions = dimensions;
 		this.wrap = wrap;
 		this.coordFunction = texCoordFunction == null ? null : texCoordFunction.apply(this.dimensions());

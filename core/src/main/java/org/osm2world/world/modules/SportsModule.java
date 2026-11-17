@@ -32,7 +32,7 @@ import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.Model;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 import org.osm2world.world.connectors.Connector;
 import org.osm2world.world.data.AbstractAreaWorldObject;
 import org.osm2world.world.data.ProceduralWorldObject;
@@ -107,7 +107,7 @@ public class SportsModule extends AbstractModule {
 			List<TriangleXYZ> triangles = getTriangulation();
 
 			List<TextureLayer> layers = getPitchMaterial().textureLayers();
-			TexCoordFunction texFunction = layers.isEmpty() ? null
+			TexCoordSimpleFunction texFunction = layers.isEmpty() ? null
 					: configureTexFunction(area.getOuterPolygon(), layers.get(layers.size() - 1).baseColorTexture.dimensions());
 
 			if (texFunction != null) {
@@ -192,7 +192,7 @@ public class SportsModule extends AbstractModule {
 		/**
 		 * specialized texture coordinate calculation for pitch marking textures
 		 */
-		static class PitchTexFunction implements TexCoordFunction {
+		static class PitchTexFunction implements TexCoordSimpleFunction {
 
 			private final VectorXZ origin;
 			private final VectorXZ longSide;

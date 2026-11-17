@@ -2,7 +2,6 @@ package org.osm2world.scene.material;
 
 import java.net.URI;
 import java.util.Objects;
-import java.util.function.Function;
 
 import org.osm2world.scene.texcoord.TexCoordFunction;
 
@@ -11,7 +10,7 @@ public class UriTexture extends TextureData {
 	private final URI imageUri;
 
 	public UriTexture(URI imageUri, TextureDataDimensions dimensions, Wrap wrap,
-			Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			TexCoordFunction texCoordFunction) {
 		super(dimensions, wrap, texCoordFunction);
 		this.imageUri = imageUri;
 	}

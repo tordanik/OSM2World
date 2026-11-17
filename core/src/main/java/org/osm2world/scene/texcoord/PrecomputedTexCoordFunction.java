@@ -14,9 +14,7 @@ import org.osm2world.scene.material.TextureDataDimensions;
  * a texture coordinate function that stores a known texture coordinate for each vertex.
  * Unlike {@link MapBasedTexCoordFunction}, this allows vertices in the same location to have different texture coords.
  */
-public class PrecomputedTexCoordFunction implements TexCoordFunction {
-
-	public final List<VectorXZ> texCoords;
+public record PrecomputedTexCoordFunction(List<VectorXZ> texCoords) implements TexCoordSimpleFunction {
 
 	public PrecomputedTexCoordFunction(List<VectorXZ> texCoords) {
 		this.texCoords = unmodifiableList(texCoords);
@@ -26,13 +24,13 @@ public class PrecomputedTexCoordFunction implements TexCoordFunction {
 	 * variant constructor where texCoords are raw coordinates for a 1m x 1m texture
 	 * and need to be scaled (e.g. halved for 2m x 2m textures)
 	 *
-	 * @param totalX  size of the range of X values, used for texture snapping, optional
-	 * @param totalZ  size of the range of Z values, used for texture snapping, optional
+	 * @param totalX size of the range of X values, used for texture snapping, optional
+	 * @param totalZ size of the range of Z values, used for texture snapping, optional
 	 */
 	public PrecomputedTexCoordFunction(List<VectorXZ> rawTexCoords, TextureDataDimensions textureDimensionsForScaling,
 			@Nullable Double totalX, @Nullable Double totalZ) {
 
-		this.texCoords = textureDimensionsForScaling.scaleTexCoords(rawTexCoords, totalX, totalZ);
+		this(textureDimensionsForScaling.scaleTexCoords(rawTexCoords, totalX, totalZ));
 
 	}
 

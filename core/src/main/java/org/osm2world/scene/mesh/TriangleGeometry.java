@@ -21,7 +21,7 @@ import org.osm2world.math.shapes.LineSegmentXYZ;
 import org.osm2world.math.shapes.TriangleXYZ;
 import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -141,7 +141,7 @@ public class TriangleGeometry implements Geometry {
 	public static class Builder {
 
 		public final int numTextureLayers;
-		public final @Nullable List<? extends TexCoordFunction> defaultTexCoordFunctions;
+		public final @Nullable List<? extends TexCoordSimpleFunction> defaultTexCoordFunctions;
 		public final @Nullable Color defaultColor;
 		public final @Nullable Interpolation normalMode;
 
@@ -174,10 +174,10 @@ public class TriangleGeometry implements Geometry {
 		}
 
 		/**
-		 * @param defaultTexCoordFunctions  the {@link TexCoordFunction} that are used to calculate texture coords
+		 * @param defaultTexCoordFunctions  the {@link TexCoordSimpleFunction} that are used to calculate texture coords
 		 *  if none are passed in explicitly
 		 */
-		public Builder(List<? extends TexCoordFunction> defaultTexCoordFunctions, @Nullable Color defaultColor,
+		public Builder(List<? extends TexCoordSimpleFunction> defaultTexCoordFunctions, @Nullable Color defaultColor,
 				@Nullable Interpolation normalMode) {
 
 			this.numTextureLayers = defaultTexCoordFunctions.size();

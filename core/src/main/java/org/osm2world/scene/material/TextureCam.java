@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -379,7 +378,7 @@ public class TextureCam {
 		private final String name;
 
 		public RenderedTexture(BufferedImage image, String name, TextureDataDimensions dimensions, Wrap wrap,
-							   Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+							   TexCoordFunction texCoordFunction) {
 			super(dimensions, wrap, texCoordFunction);
 			this.image = image;
 			this.name = name;

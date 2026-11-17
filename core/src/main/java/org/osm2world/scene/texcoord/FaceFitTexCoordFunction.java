@@ -14,7 +14,7 @@ import org.osm2world.scene.material.TextureDataDimensions;
  * fits an image onto a flat polygon.
  * Vertices must represent the vertex loop of a {@link FaceXYZ}
  */
-public record FaceFitTexCoordFunction(TextureDataDimensions textureDimensions) implements TexCoordFunction {
+public record FaceFitTexCoordFunction(TextureDataDimensions textureDimensions) implements TexCoordSimpleFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {

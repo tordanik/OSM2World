@@ -16,7 +16,7 @@ import org.osm2world.scene.material.TextureDataDimensions;
  *
  * TODO: introduce face requirement?
  */
-public record SlopedTrianglesTexCoordFunction(TextureDataDimensions textureDimensions) implements TexCoordFunction {
+public record SlopedTrianglesTexCoordFunction(TextureDataDimensions textureDimensions) implements TexCoordSimpleFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {

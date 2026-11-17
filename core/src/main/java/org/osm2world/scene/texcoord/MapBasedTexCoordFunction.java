@@ -1,7 +1,6 @@
 package org.osm2world.scene.texcoord;
 
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toList;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +13,7 @@ import org.osm2world.math.VectorXZ;
 import org.osm2world.scene.material.TextureDataDimensions;
 
 /** a texture coordinate function that stores a known texture coordinate for each 3d position */
-public class MapBasedTexCoordFunction implements TexCoordFunction {
+public class MapBasedTexCoordFunction implements TexCoordSimpleFunction {
 
 	private final Map<VectorXYZ, VectorXZ> texCoordMap;
 
@@ -22,7 +21,7 @@ public class MapBasedTexCoordFunction implements TexCoordFunction {
 	private final @Nullable TextureDataDimensions textureDimensionsForScaling;
 
 	public MapBasedTexCoordFunction(Map<VectorXYZ, VectorXZ> texCoordMap,
-			TextureDataDimensions textureDimensionsForScaling) {
+			@Nullable TextureDataDimensions textureDimensionsForScaling) {
 		this.texCoordMap = texCoordMap;
 		this.textureDimensionsForScaling = textureDimensionsForScaling;
 	}
@@ -33,7 +32,7 @@ public class MapBasedTexCoordFunction implements TexCoordFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {
-		return vs.stream().map(v -> apply(v)).collect(toList());
+		return vs.stream().map(this::apply).toList();
 	}
 
 	public VectorXZ apply(VectorXYZ v) {
@@ -57,7 +56,7 @@ public class MapBasedTexCoordFunction implements TexCoordFunction {
 			texCoordFunction.texCoordMap.forEach((k, v) -> mergedMap.merge(k, v, (v1, v2) -> v1));
 		}
 
-		return new MapBasedTexCoordFunction(mergedMap );
+		return new MapBasedTexCoordFunction(mergedMap);
 
 	}
 

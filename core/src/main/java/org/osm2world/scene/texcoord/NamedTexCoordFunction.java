@@ -1,15 +1,17 @@
 package org.osm2world.scene.texcoord;
 
-import java.util.function.Function;
+import java.util.List;
 
+import org.osm2world.math.VectorXYZ;
+import org.osm2world.math.VectorXZ;
 import org.osm2world.math.shapes.FaceXYZ;
 import org.osm2world.scene.material.TextureDataDimensions;
 
 /**
- * offers generators for several useful {@link TexCoordFunction} implementations.
+ * offers generators for several useful {@link TexCoordSimpleFunction} implementations.
  * They can be referenced by name in style definition files.
  */
-public enum NamedTexCoordFunction implements Function<TextureDataDimensions, TexCoordFunction> {
+public enum NamedTexCoordFunction implements TexCoordFunction {
 
 	/**
 	 * uses x and z vertex coords together with the texture's width and height
@@ -33,7 +35,6 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 	/**
 	 * creates texture coordinates for individual triangles that
 	 * orient the texture based on each triangle's downward slope.
-	 *
 	 * TODO: introduce face requirement?
 	 */
 	SLOPED_TRIANGLES,
@@ -42,7 +43,7 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 	 * creates texture coordinates for a triangle strip (alternating between
 	 * upper and lower vertex), based on the length along a wall from the
 	 * starting point, height of the vertex, and texture size.
-	 *
+	 * <p>
 	 * This only works for vertices forming a triangle strip,
 	 * alternating between upper and lower vertex.
 	 */
@@ -52,7 +53,7 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 	 * creates texture coordinates for a triangle strip (alternating between
 	 * upper and lower vertex), based on the length along a wall from the
 	 * starting point.
-	 *
+	 * <p>
 	 * Similar to {@link #STRIP_WALL}, except that one texture coordinate
 	 * dimension alternates between 1 and 0 instead of being based on height.
 	 */
@@ -61,7 +62,7 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 	/**
 	 * stretches the texture exactly once onto a triangle strip (alternating
 	 * between upper and lower vertex).
-	 *
+	 * <p>
 	 * Most commonly used to texture a rectangle represented as a
 	 * triangle strip with 2 triangles.
 	 */
@@ -74,7 +75,12 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 	FACE_FIT;
 
 	@Override
-	public TexCoordFunction apply(TextureDataDimensions dimensions) {
+	public List<VectorXZ> apply(TextureDataDimensions dimensions, List<VectorXYZ> vs) {
+		return apply(dimensions).apply(vs);
+	}
+
+	@Override
+	public TexCoordSimpleFunction apply(TextureDataDimensions dimensions) {
 		return switch (this) {
 			case GLOBAL_X_Y -> new GlobalXYTexCoordFunction(dimensions);
 			case GLOBAL_X_Z -> new GlobalXZTexCoordFunction(dimensions);

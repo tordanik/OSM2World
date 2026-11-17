@@ -42,7 +42,7 @@ import org.osm2world.math.shapes.*;
 import org.osm2world.output.CommonTarget;
 import org.osm2world.scene.material.*;
 import org.osm2world.scene.mesh.Mesh;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 import org.osm2world.style.Style;
 import org.osm2world.util.enums.LeftRight;
 import org.osm2world.util.enums.UpDown;
@@ -2351,7 +2351,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		boolean rightHandTraffic,
 		boolean mirrorLeftRight,
 		TextureDataDimensions textureDimensions
-	) implements TexCoordFunction {
+	) implements TexCoordSimpleFunction {
 
 		@Override
 		public List<VectorXZ> apply(List<VectorXYZ> vs) {

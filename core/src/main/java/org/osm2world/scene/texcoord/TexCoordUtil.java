@@ -2,7 +2,6 @@ package org.osm2world.scene.texcoord;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,36 +28,36 @@ public final class TexCoordUtil {
 	 * returns the texture coordinate functions based on the
 	 * {@link TexCoordFunction} associated with each {@link TextureLayer} and a default
 	 */
-	public static final List<TexCoordFunction> texCoordFunctions(Material material,
-			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
+	public static List<TexCoordSimpleFunction> texCoordFunctions(Material material,
+			Function<TextureDataDimensions, ? extends TexCoordSimpleFunction> defaultCoordFunction) {
 
 		List<TextureLayer> textureLayers = material.textureLayers();
 
-		if (textureLayers.size() == 0) {
+		if (textureLayers.isEmpty()) {
 
 			return emptyList();
 
 		} else if (textureLayers.size() == 1) {
 
 			TextureData textureData = textureLayers.get(0).baseColorTexture;
-			TexCoordFunction coordFunction = textureData.coordFunction;
+			TexCoordSimpleFunction coordFunction = textureData.coordFunction;
 			if (coordFunction == null) {
-				coordFunction = defaultCoordFunctionGenerator.apply(textureData.dimensions());
+				coordFunction = defaultCoordFunction.apply(textureData.dimensions());
 			}
 
 			return singletonList(coordFunction);
 
 		} else {
 
-			List<TexCoordFunction> result = new ArrayList<>();
+			List<TexCoordSimpleFunction> result = new ArrayList<>();
 
 			for (TextureLayer textureLayer : textureLayers) {
 
 				TextureData textureData = textureLayer.baseColorTexture;
 
-				TexCoordFunction coordFunction = textureData.coordFunction;
+				TexCoordSimpleFunction coordFunction = textureData.coordFunction;
 				if (coordFunction == null) {
-					coordFunction = defaultCoordFunctionGenerator.apply(textureData.dimensions());
+					coordFunction = defaultCoordFunction.apply(textureData.dimensions());
 				}
 
 				result.add(coordFunction);
@@ -73,18 +72,18 @@ public final class TexCoordUtil {
 
 	/**
 	 * calculates the texture coordinate lists based on the
-	 * {@link TexCoordFunction} associated with each {@link TextureLayer}
+	 * {@link TexCoordFunction} associated with each {@link TextureLayer} and a default
 	 */
-	public static final List<List<VectorXZ>> texCoordLists(List<VectorXYZ> vs, Material material,
-			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
+	public static List<List<VectorXZ>> texCoordLists(List<VectorXYZ> vs, Material material,
+			Function<TextureDataDimensions, ? extends TexCoordSimpleFunction> defaultCoordFunction) {
 
-		List<TexCoordFunction> texCoordFunctions = texCoordFunctions(material, defaultCoordFunctionGenerator);
+		List<TexCoordSimpleFunction> texCoordFunctions = texCoordFunctions(material, defaultCoordFunction);
 
-		switch (texCoordFunctions.size()) {
-		case 0: return emptyList();
-		case 1: return singletonList(texCoordFunctions.get(0).apply(vs));
-		default: return texCoordFunctions.stream().map(it -> it.apply(vs)).collect(toList());
-		}
+		return switch (texCoordFunctions.size()) {
+			case 0 -> emptyList();
+			case 1 -> List.of(texCoordFunctions.get(0).apply(vs));
+			default -> texCoordFunctions.stream().map(it -> it.apply(vs)).toList();
+		};
 
 	}
 
@@ -92,11 +91,11 @@ public final class TexCoordUtil {
 	 * equivalent of {@link #texCoordLists(List, Material, Function)}
 	 * for a collection of triangle objects.
 	 */
-	public static final List<List<VectorXZ>> triangleTexCoordLists(
+	public static List<List<VectorXZ>> triangleTexCoordLists(
 			Collection<TriangleXYZ> triangles, Material material,
-			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
+			Function<TextureDataDimensions, ? extends TexCoordSimpleFunction> defaultCoordFunction) {
 
-		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(triangles.size() * 3);
+		List<VectorXYZ> vs = new ArrayList<>(triangles.size() * 3);
 
 		for (TriangleXYZ triangle : triangles) {
 			vs.add(triangle.v1);
@@ -104,26 +103,28 @@ public final class TexCoordUtil {
 			vs.add(triangle.v3);
 		}
 
-		return texCoordLists(vs, material, defaultCoordFunctionGenerator);
+		return texCoordLists(vs, material, defaultCoordFunction);
 
 	}
 
-	public static final List<List<VectorXZ>> mirroredVertically(List<List<VectorXZ>> texCoordLists) {
+	public static List<List<VectorXZ>> mirroredVertically(List<List<VectorXZ>> texCoordLists) {
 		return texCoordLists.stream().map(list ->
 				list.stream().map(v -> new VectorXZ(v.x, 1.0 - v.z)).toList()).toList();
 	}
 
-	/** returns a horizontally flipped version of a {@link TexCoordFunction} */
-	public static final TexCoordFunction mirroredHorizontally(TexCoordFunction texCoordFunction) {
+	/** returns a horizontally flipped version of a {@link TexCoordSimpleFunction} */
+	public static TexCoordSimpleFunction mirroredHorizontally(TexCoordSimpleFunction texCoordFunction) {
 		return (List<VectorXYZ> vs) -> {
 			List<VectorXZ> result = texCoordFunction.apply(vs);
 			return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).toList();
 		};
 	}
 
-	public static final Function<TextureDataDimensions, TexCoordFunction> mirroredHorizontally(
-			Function<TextureDataDimensions, ? extends TexCoordFunction> generator) {
-		return (TextureDataDimensions textureDimensions) -> mirroredHorizontally(generator.apply(textureDimensions));
+	/** returns a horizontally flipped version of a {@link TexCoordFunction} */
+	public static TexCoordFunction mirroredHorizontally(
+			Function<TextureDataDimensions, ? extends TexCoordSimpleFunction> texCoordFunction) {
+		return (TextureDataDimensions dimensions, List<VectorXYZ> vs) ->
+				mirroredHorizontally(texCoordFunction.apply(dimensions)).apply(vs);
 	}
 
 }

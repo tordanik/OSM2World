@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -330,7 +329,7 @@ public class PropertyStyle implements Style {
 		String normalizedPrefix = keyPrefix.replaceFirst("_(?:color|normal|orm|displacement)$", "");
 		TextureDataDimensions dimensions = createTextureDataDimensions(config, normalizedPrefix);
 		TextureData.Wrap wrap = getWrap(config.getString(normalizedPrefix + "_wrap"));
-		@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
+		@Nullable TexCoordFunction coordFunction =
 				getCoordFunction(config.getString(normalizedPrefix + "_coord_function"));
 
 		//get texture layer type
@@ -415,11 +414,12 @@ public class PropertyStyle implements Style {
 
 	}
 
-	private static TextureData createTexture(URI imageURI, TextureDataDimensions dimensions, TextureData.Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> coordFunction) {
+	private static TextureData createTexture(URI imageURI, TextureDataDimensions dimensions, TextureData.Wrap wrap,
+			TexCoordFunction texCoordFunction) {
 		if ("file".equals(imageURI.getScheme())) {
-			return ImageFileTexture.create(new File(imageURI), dimensions, wrap, coordFunction);
+			return ImageFileTexture.create(new File(imageURI), dimensions, wrap, texCoordFunction);
 		} else {
-			return new UriTexture(imageURI, dimensions, wrap, coordFunction);
+			return new UriTexture(imageURI, dimensions, wrap, texCoordFunction);
 		}
 	}
 
@@ -458,10 +458,9 @@ public class PropertyStyle implements Style {
 		}
 	}
 
-	private static @Nullable Function<TextureDataDimensions, TexCoordFunction> getCoordFunction(
-			String coordFunctionString) {
+	private static @Nullable TexCoordFunction getCoordFunction(String coordFunctionString) {
 
-		Function<TextureDataDimensions, TexCoordFunction> result = null;
+		TexCoordFunction result = null;
 
 		if (coordFunctionString != null) {
 			result = NamedTexCoordFunction.valueOf(coordFunctionString.toUpperCase());

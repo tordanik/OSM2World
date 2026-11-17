@@ -48,7 +48,7 @@ import org.osm2world.scene.mesh.Mesh;
 import org.osm2world.scene.model.InstanceParameters;
 import org.osm2world.scene.model.ModelInstance;
 import org.osm2world.scene.model.ProceduralModel;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 import org.osm2world.util.FaultTolerantIterationUtil;
 import org.osm2world.util.ValueParseUtil;
 import org.osm2world.world.connectors.Connector;
@@ -1147,7 +1147,7 @@ public final class PowerModule extends AbstractModule {
 
 		}
 
-		static class PanelTexCoordFunction implements TexCoordFunction {
+		static class PanelTexCoordFunction implements TexCoordSimpleFunction {
 
 			public final VectorXZ origin;
 			public final Angle zDirection;

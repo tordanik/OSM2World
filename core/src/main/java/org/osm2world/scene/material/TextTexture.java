@@ -2,7 +2,6 @@ package org.osm2world.scene.material;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -57,7 +56,7 @@ public class TextTexture extends RuntimeTexture {
 
 	public TextTexture(String text, @Nullable String fontName, FontStyle fontStyle, TextureDataDimensions dimensions,
 			double topOffset, double leftOffset, Color textColor, double relativeFontSize,
-			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			Wrap wrap, TexCoordFunction texCoordFunction) {
 
 		super(dimensions, wrap, texCoordFunction);
 

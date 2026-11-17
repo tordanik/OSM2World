@@ -1,7 +1,6 @@
 package org.osm2world.scene.material;
 
 import java.io.File;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -18,13 +17,13 @@ public abstract class ImageFileTexture extends TextureData {
 	protected final File file;
 
 	protected ImageFileTexture(File file, TextureDataDimensions dimensions, Wrap wrap,
-			Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			TexCoordFunction texCoordFunction) {
 		super(dimensions, wrap, texCoordFunction);
 		this.file = file;
 	}
 
 	public static ImageFileTexture create(File file, TextureDataDimensions dimensions, Wrap wrap,
-			@Nullable Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			@Nullable TexCoordFunction texCoordFunction) {
 		if (file.getName().endsWith(".svg")) {
 			return new SvgImageFileTexture(file, dimensions, wrap, texCoordFunction);
 		} else {

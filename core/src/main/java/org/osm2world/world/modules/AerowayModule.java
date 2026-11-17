@@ -12,7 +12,6 @@ import static org.osm2world.world.network.NetworkUtil.getConnectedNetworkSegment
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
 import org.osm2world.map_data.data.MapArea;
 import org.osm2world.map_data.data.MapData;
@@ -110,14 +109,12 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
-			Function<TextureDataDimensions, TexCoordFunction> localXZTexCoordFunction = (TextureDataDimensions textureDimensions) -> {
-				return (List<VectorXYZ> vs) -> {
-					var globalXZ = new GlobalXZTexCoordFunction(textureDimensions);
-					VectorXZ center = area.getOuterPolygon().getCentroid();
-					VectorXZ shift = center.add(-textureDimensions.width() / 2, -textureDimensions.height() / 2);
-					List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(shift)).toList();
-					return globalXZ.apply(localCoords);
-				};
+			TexCoordFunction localXZTexCoordFunction = (TextureDataDimensions dimensions, List<VectorXYZ> vs) -> {
+                var globalXZ = new GlobalXZTexCoordFunction(dimensions);
+                VectorXZ center = area.getOuterPolygon().getCentroid();
+                VectorXZ shift = center.add(-dimensions.width() / 2, -dimensions.height() / 2);
+                List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(shift)).toList();
+                return globalXZ.apply(localCoords);
 			};
 
 			List<TriangleXYZ> triangles = getTriangulation();

@@ -1,7 +1,6 @@
 package org.osm2world.scene.mesh;
 
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import org.osm2world.scene.color.Color;
 import org.osm2world.scene.material.Material.Interpolation;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.texcoord.GlobalXZTexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 
 /** a geometry defined by placing a 2D shape ({@link ClosedShapeXZ}) in 3D space at some location, rotation and scale */
 public class ShapeGeometry implements Geometry {
@@ -76,9 +75,9 @@ public class ShapeGeometry implements Geometry {
 	public TriangleGeometry asTriangles() {
 
 		// TODO better default texture coordinate function
-		List<TexCoordFunction> defaultTexCoordFunction = textureDimensions.stream()
-						.map(t -> new GlobalXZTexCoordFunction(t))
-						.collect(toList());
+		List<? extends TexCoordSimpleFunction> defaultTexCoordFunction = textureDimensions.stream()
+						.map(GlobalXZTexCoordFunction::new)
+						.toList();
 
 		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(defaultTexCoordFunction, color, normalMode);
 

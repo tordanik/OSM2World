@@ -29,7 +29,7 @@ import org.osm2world.scene.material.Material;
 import org.osm2world.scene.material.TextureDataDimensions;
 import org.osm2world.scene.material.TextureLayer;
 import org.osm2world.scene.texcoord.NamedTexCoordFunction;
-import org.osm2world.scene.texcoord.TexCoordFunction;
+import org.osm2world.scene.texcoord.TexCoordSimpleFunction;
 import org.osm2world.util.exception.InvalidGeometryException;
 import org.osm2world.world.data.ProceduralWorldObject;
 import org.osm2world.world.data.WorldObject;
@@ -405,9 +405,9 @@ public class WallSurface {
 	}
 
 	/**
-	 * returns a {@link TexCoordFunction} based on {@link #texCoordsGlobal(List, TextureDataDimensions)}.
+	 * returns a {@link TexCoordSimpleFunction} based on {@link #texCoordsGlobal(List, TextureDataDimensions)}.
 	 */
-	public TexCoordFunction texCoordFunction(TextureDataDimensions textureDimensions) {
+	public TexCoordSimpleFunction texCoordFunction(TextureDataDimensions textureDimensions) {
 		return vs -> texCoordsGlobal(vs, textureDimensions);
 	}
 
